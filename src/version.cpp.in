@@ -1,0 +1,11 @@
+#define DEF_RYO_VERSION_TAG "@VERSIONTAG@"
+#define DEF_RYO_VERSION "0.2.0.0-dev"
+#define DEF_RYO_RELEASE_NAME "Free Radical"
+#define DEF_RYO_VERSION_FULL DEF_RYO_VERSION "-" DEF_RYO_VERSION_TAG
+
+#include "version.h"
+
+const char* const RYO_VERSION_TAG = DEF_RYO_VERSION_TAG;
+const char* const RYO_VERSION = DEF_RYO_VERSION;
+const char* const RYO_RELEASE_NAME = DEF_RYO_RELEASE_NAME;
+const char* const RYO_VERSION_FULL = DEF_RYO_VERSION_FULL;
