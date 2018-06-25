@@ -48,7 +48,7 @@
 
 using namespace std;
 
-namespace Monero
+namespace Ryo
 {
 
 TransactionInfo::~TransactionInfo() {}
@@ -141,5 +141,3 @@ uint64_t TransactionInfoImpl::unlockTime() const
 }
 
 } // namespace
-
-namespace Bitmonero = Monero;

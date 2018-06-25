@@ -54,7 +54,7 @@
 #include <vector>
 
 //  Public interface for libwallet library
-namespace Monero
+namespace Ryo
 {
 
 enum NetworkType : uint8_t
@@ -1038,5 +1038,3 @@ struct WalletManagerFactory
 	static void setLogCategories(const std::string &categories);
 };
 }
-
-namespace Bitmonero = Monero;

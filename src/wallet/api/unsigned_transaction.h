@@ -50,7 +50,7 @@
 #include <string>
 #include <vector>
 
-namespace Monero
+namespace Ryo
 {
 
 class WalletImpl;
@@ -86,5 +86,3 @@ class UnsignedTransactionImpl : public UnsignedTransaction
 	std::string m_confirmationMessage;
 };
 }
-
-namespace Bitmonero = Monero;

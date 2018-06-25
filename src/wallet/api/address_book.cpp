@@ -52,7 +52,7 @@
 
 #include <vector>
 
-namespace Monero
+namespace Ryo
 {
 
 AddressBook::~AddressBook() {}
@@ -202,5 +202,3 @@ AddressBookImpl::~AddressBookImpl()
 }
 
 } // namespace
-
-namespace Bitmonero = Monero;
