@@ -1087,7 +1087,7 @@ bool device_ledger::sc_secret_add(crypto::secret_key &r, const crypto::secret_ke
 	return true;
 }
 
-crypto::secret_key device_ledger::generate_keys(crypto::public_key &pub, crypto::secret_key &sec, const crypto::secret_key &recovery_key, bool recover)
+crypto::secret_key device_ledger::generate_legacy_keys(crypto::public_key &pub, crypto::secret_key &sec, const crypto::secret_key &recovery_key, bool recover)
 {
 	AUTO_LOCK_CMD();
 	if(recover)
