@@ -119,7 +119,7 @@ class account_base
 	void set_createtime(uint64_t val) { m_creation_timestamp = val; }
 
 	uint8_t get_account_options() const { return m_acc_opt; }
-	bool is_kurz() { return m_keys.m_spend_secret_key == m_keys.m_view_secret_key; }
+	bool is_kurz() const { return m_keys.m_spend_secret_key == m_keys.m_view_secret_key; }
 
 	bool has_25word_seed() const;
 	bool has_14word_seed() const;

@@ -185,7 +185,7 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_FIXED_FEE, 4, 4, 1},
 	{FORK_NO_TIMED_LOCK, 4, 4, 1},
 	{FORK_NEED_V3_TXES, 4, 4, 1},
-	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, 4, 1}};
+	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1}};
 
 struct common_config
 {

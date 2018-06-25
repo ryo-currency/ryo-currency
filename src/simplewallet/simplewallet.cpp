@@ -841,11 +841,19 @@ bool simple_wallet::prepare_multisig(const std::vector<std::string> &args)
 		fail_msg_writer() << tr("command not supported by HW wallet");
 		return true;
 	}
+
+	if(m_wallet->is_kurz())
+	{
+		fail_msg_writer() << tr("Multisig wallets need a viewkey, therefore kurz wallets are not supported.");
+		return true;
+	}
+
 	if(m_wallet->multisig())
 	{
 		fail_msg_writer() << tr("This wallet is already multisig");
 		return true;
 	}
+
 	if(m_wallet->watch_only())
 	{
 		fail_msg_writer() << tr("wallet is watch-only and cannot be made multisig");
@@ -879,11 +887,19 @@ bool simple_wallet::make_multisig(const std::vector<std::string> &args)
 		fail_msg_writer() << tr("command not supported by HW wallet");
 		return true;
 	}
+
+	if(m_wallet->is_kurz())
+	{
+		fail_msg_writer() << tr("Multisig wallets need a viewkey, therefore kurz wallets are not supported.");
+		return true;
+	}
+
 	if(m_wallet->multisig())
 	{
 		fail_msg_writer() << tr("This wallet is already multisig");
 		return true;
 	}
+
 	if(m_wallet->watch_only())
 	{
 		fail_msg_writer() << tr("wallet is watch-only and cannot be made multisig");
@@ -6858,6 +6874,12 @@ bool simple_wallet::print_address(const std::vector<std::string> &args /* = std:
 	}
 	else if(local_args[0] == "new")
 	{
+		if(m_wallet->is_kurz())
+		{
+			fail_msg_writer() << tr("Kurz subaddresses are not supported yet");
+			return true;
+		}
+
 		local_args.erase(local_args.begin());
 		std::string label;
 		if(local_args.size() > 0)
