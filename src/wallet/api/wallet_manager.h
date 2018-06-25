@@ -48,7 +48,7 @@
 #include "wallet/api/wallet2_api.h"
 #include <string>
 
-namespace Monero
+namespace Ryo
 {
 
 class WalletManagerImpl : public WalletManager
@@ -106,5 +106,3 @@ class WalletManagerImpl : public WalletManager
 };
 
 } // namespace
-
-namespace Bitmonero = Monero;

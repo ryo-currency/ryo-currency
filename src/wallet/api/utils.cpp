@@ -49,7 +49,7 @@
 
 using namespace std;
 
-namespace Monero
+namespace Ryo
 {
 namespace Utils
 {
@@ -74,5 +74,3 @@ void onStartup()
 }
 
 } // namespace
-
-namespace Bitmonero = Monero;

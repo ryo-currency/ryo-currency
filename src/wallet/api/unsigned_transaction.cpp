@@ -58,7 +58,7 @@
 
 using namespace std;
 
-namespace Monero
+namespace Ryo
 {
 
 UnsignedTransaction::~UnsignedTransaction() {}
@@ -344,5 +344,3 @@ uint64_t UnsignedTransactionImpl::minMixinCount() const
 }
 
 } // namespace
-
-namespace Bitmonero = Monero;

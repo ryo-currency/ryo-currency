@@ -47,7 +47,7 @@
 #include "wallet/api/wallet2_api.h"
 #include <boost/thread/shared_mutex.hpp>
 
-namespace Monero
+namespace Ryo
 {
 
 class WalletImpl;
@@ -70,5 +70,3 @@ class TransactionHistoryImpl : public TransactionHistory
 	mutable boost::shared_mutex m_historyMutex;
 };
 }
-
-namespace Bitmonero = Monero;

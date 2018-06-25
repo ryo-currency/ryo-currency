@@ -50,7 +50,7 @@
 
 #include <vector>
 
-namespace Monero
+namespace Ryo
 {
 
 SubaddressAccount::~SubaddressAccount() {}
