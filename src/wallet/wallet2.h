@@ -654,6 +654,8 @@ class wallet2
      */
 	void set_seed_language(const std::string &language);
 
+	bool is_kurz() const { return get_account().is_kurz(); }
+
 	// Subaddress scheme
 	cryptonote::account_public_address get_subaddress(const cryptonote::subaddress_index &index) const;
 	cryptonote::account_public_address get_address() const { return get_subaddress({0, 0}); }
