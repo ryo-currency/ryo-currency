@@ -919,6 +919,9 @@ void wallet2::add_subaddress_account(const std::string &label)
 //----------------------------------------------------------------------------------------------------
 void wallet2::add_subaddress(uint32_t index_major, const std::string &label)
 {
+	if(m_account.is_kurz())
+		THROW_WALLET_EXCEPTION(tools::error::wallet_internal_error, std::string(tools::wallet2::tr("This feature is not yet implemented for kurz addresses.")));
+
 	THROW_WALLET_EXCEPTION_IF(index_major >= m_subaddress_labels.size(), error::account_index_outofbound);
 	uint32_t index_minor = (uint32_t)get_num_subaddresses(index_major);
 	expand_subaddresses({index_major, index_minor});

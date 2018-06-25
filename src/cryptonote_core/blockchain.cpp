@@ -2521,7 +2521,7 @@ bool Blockchain::check_tx_outputs(const transaction &tx, tx_verification_context
 		}
 	}
 
-	if(check_hard_fork_feature(FORK_BULLETPROOFS))
+	if(!check_hard_fork_feature(FORK_BULLETPROOFS))
 	{
 		const bool bulletproof = tx.rct_signatures.type == rct::RCTTypeFullBulletproof || tx.rct_signatures.type == rct::RCTTypeSimpleBulletproof;
 		if(bulletproof || !tx.rct_signatures.p.bulletproofs.empty())
