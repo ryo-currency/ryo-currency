@@ -71,7 +71,7 @@ using namespace cryptonote;
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "WalletAPI"
 
-namespace Monero
+namespace Ryo
 {
 
 namespace
@@ -88,7 +88,7 @@ static const int DEFAULT_CONNECTION_TIMEOUT_MILLIS = 1000 * 30;
 std::string get_default_ringdb_path()
 {
 	boost::filesystem::path dir = tools::get_default_data_dir();
-	// remove .bitmonero, replace with .shared-ringdb
+	// remove .ryo, replace with .shared-ringdb
 	dir = dir.remove_filename();
 	dir /= ".shared-ringdb";
 	return dir.string();
@@ -2203,5 +2203,3 @@ void WalletImpl::keyReuseMitigation2(bool mitigation)
 }
 
 } // namespace
-
-namespace Bitmonero = Monero;

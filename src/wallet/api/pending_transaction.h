@@ -50,7 +50,7 @@
 #include <string>
 #include <vector>
 
-namespace Monero
+namespace Ryo
 {
 
 class WalletImpl;
@@ -80,5 +80,3 @@ class PendingTransactionImpl : public PendingTransaction
 	std::vector<tools::wallet2::pending_tx> m_pending_tx;
 };
 }
-
-namespace Bitmonero = Monero;

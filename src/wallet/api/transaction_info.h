@@ -48,7 +48,7 @@
 #include <ctime>
 #include <string>
 
-namespace Monero
+namespace Ryo
 {
 
 class TransactionHistoryImpl;
@@ -99,5 +99,3 @@ class TransactionInfoImpl : public TransactionInfo
 };
 
 } // namespace
-
-namespace Bitmonero = Monero;

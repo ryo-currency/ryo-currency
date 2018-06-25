@@ -63,7 +63,7 @@ namespace epee
 unsigned int g_test_dbg_lock_sleep = 0;
 }
 
-namespace Monero
+namespace Ryo
 {
 
 Wallet *WalletManagerImpl::createWallet(const std::string &path, const std::string &password,
@@ -376,5 +376,3 @@ void WalletManagerFactory::setLogCategories(const std::string &categories)
 	mlog_set_log(categories.c_str());
 }
 }
-
-namespace Bitmonero = Monero;

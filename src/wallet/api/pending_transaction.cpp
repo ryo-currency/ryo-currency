@@ -58,7 +58,7 @@
 
 using namespace std;
 
-namespace Monero
+namespace Ryo
 {
 
 PendingTransaction::~PendingTransaction() {}
@@ -225,5 +225,3 @@ std::vector<std::set<uint32_t>> PendingTransactionImpl::subaddrIndices() const
 	return result;
 }
 }
-
-namespace Bitmonero = Monero;

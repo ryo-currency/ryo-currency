@@ -55,7 +55,7 @@
 #include <boost/thread/thread.hpp>
 #include <string>
 
-namespace Monero
+namespace Ryo
 {
 class TransactionHistoryImpl;
 class PendingTransactionImpl;
@@ -239,7 +239,5 @@ class WalletImpl : public Wallet
 };
 
 } // namespace
-
-namespace Bitmonero = Monero;
 
 #endif

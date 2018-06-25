@@ -56,7 +56,7 @@
 
 using namespace epee;
 
-namespace Monero
+namespace Ryo
 {
 
 TransactionHistory::~TransactionHistory() {}
@@ -257,5 +257,3 @@ void TransactionHistoryImpl::refresh()
 }
 
 } // namespace
-
-namespace Bitmonero = Monero;
