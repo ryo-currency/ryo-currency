@@ -301,8 +301,8 @@ difficulty_type next_difficulty_v3(const std::vector<std::uint64_t> &timestamps,
 	for(int64_t i = 1; i <= N; i++)
 		L += clamp(-FTL, int64_t(timestamps[i]) - int64_t(timestamps[i - 1]), 6 * T) * i;
 
-	constexpr int64_t clamp_increase = (T * (N + 1) * 99) / int64_t(100.0 * 2.0 * 2.5);
-	constexpr int64_t clamp_decrease = (T * (N + 1) * 99) / int64_t(100.0 * 2.0 * 0.2);
+	constexpr int64_t clamp_increase = (T * N * (N + 1) * 99) / int64_t(100.0 * 2.0 * 2.5);
+	constexpr int64_t clamp_decrease = (T * N * (N + 1) * 99) / int64_t(100.0 * 2.0 * 0.2);
 	L = clamp(clamp_increase, L, clamp_decrease); // This guarantees positive L
 
 	// Commetary by fireice
