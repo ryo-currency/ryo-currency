@@ -104,7 +104,7 @@ bool gen_block_big_minor_version::generate(std::vector<test_event_entry> &events
 bool gen_block_ts_not_checked::generate(std::vector<test_event_entry> &events) const
 {
 	BLOCK_VALIDATION_INIT_GENERATE();
-	REWIND_BLOCKS_N(events, blk_0r, blk_0, miner_account, common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3 - 2);
+	REWIND_BLOCKS_N(events, blk_0r, blk_0, miner_account, common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V4 - 2);
 
 	block blk_1;
 	generator.construct_block_manually(blk_1, blk_0r, miner_account, test_generator::bf_timestamp, 0, 0, blk_0.timestamp - 60 * 60);
@@ -118,9 +118,9 @@ bool gen_block_ts_not_checked::generate(std::vector<test_event_entry> &events) c
 bool gen_block_ts_in_past::generate(std::vector<test_event_entry> &events) const
 {
 	BLOCK_VALIDATION_INIT_GENERATE();
-	REWIND_BLOCKS_N(events, blk_0r, blk_0, miner_account, common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3 - 1);
+	REWIND_BLOCKS_N(events, blk_0r, blk_0, miner_account, common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V4 - 1);
 
-	uint64_t ts_below_median = boost::get<block>(events[common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3 / 2 - 1]).timestamp;
+	uint64_t ts_below_median = boost::get<block>(events[common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V4 / 2 - 1]).timestamp;
 	block blk_1;
 	generator.construct_block_manually(blk_1, blk_0r, miner_account, test_generator::bf_timestamp, 0, 0, ts_below_median);
 	events.push_back(blk_1);
@@ -135,7 +135,7 @@ bool gen_block_ts_in_future::generate(std::vector<test_event_entry> &events) con
 	BLOCK_VALIDATION_INIT_GENERATE();
 
 	block blk_1;
-	generator.construct_block_manually(blk_1, blk_0, miner_account, test_generator::bf_timestamp, 0, 0, time(NULL) + 60 * 60 + common_config::BLOCK_FUTURE_TIME_LIMIT_V3);
+	generator.construct_block_manually(blk_1, blk_0, miner_account, test_generator::bf_timestamp, 0, 0, time(NULL) + 60 * 60 + common_config::BLOCK_FUTURE_TIME_LIMIT_V4);
 	events.push_back(blk_1);
 
 	DO_CALLBACK(events, "check_block_purged");

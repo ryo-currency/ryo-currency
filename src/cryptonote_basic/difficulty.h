@@ -71,4 +71,5 @@ bool check_hash(const crypto::hash &hash, difficulty_type difficulty);
 difficulty_type next_difficulty_v1(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds);
 difficulty_type next_difficulty_v2(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds);
 difficulty_type next_difficulty_v3(const std::vector<std::uint64_t> &timestamps, const std::vector<difficulty_type> &cumulative_difficulties);
+difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties);
 }

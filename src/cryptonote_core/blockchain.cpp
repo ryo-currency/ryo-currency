@@ -123,7 +123,8 @@ static const struct
 	{1, 1, 0, 1482806500},
 	{2, 5150, 0, 1497181713},
 	{3, 103580, 0, 1522540800}, // April 01, 2018
-	{4, 123575, 0, 1529873000}
+	{4, 123575, 0, 1529873000},
+	{5, 123910, 0, 1529875000}
 };
 static const uint64_t testnet_hard_fork_version_1_till = (uint64_t)-1;
 
@@ -786,7 +787,9 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
 		return (difficulty_type)480000000;
 
 	size_t block_count;
-	if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
+	if(check_hard_fork_feature(FORK_V4_DIFFICULTY))
+		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V4;
+	else if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
 		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V3;
 	else if(check_hard_fork_feature(FORK_V2_DIFFICULTY))
 		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V2;
@@ -832,7 +835,9 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
 		m_difficulties = difficulties;
 	}
 
-	if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
+	if(check_hard_fork_feature(FORK_V4_DIFFICULTY))
+		return next_difficulty_v4(timestamps, difficulties);
+	else if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
 		return next_difficulty_v3(timestamps, difficulties);
 	else if(check_hard_fork_feature(FORK_V2_DIFFICULTY))
 		return next_difficulty_v2(timestamps, difficulties, common_config::DIFFICULTY_TARGET);
@@ -936,7 +941,10 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 				high_timestamp = it->second.bl.timestamp;
 		}
 
-		uint64_t block_ftl = check_hard_fork_feature(FORK_V3_DIFFICULTY) ? common_config::BLOCK_FUTURE_TIME_LIMIT_V3 : common_config::BLOCK_FUTURE_TIME_LIMIT_V2;
+		uint64_t block_ftl =
+			check_hard_fork_feature(FORK_V4_DIFFICULTY) ? common_config::BLOCK_FUTURE_TIME_LIMIT_V4 :
+			check_hard_fork_feature(FORK_V3_DIFFICULTY) ? common_config::BLOCK_FUTURE_TIME_LIMIT_V3 :
+			common_config::BLOCK_FUTURE_TIME_LIMIT_V2;
 		// This would fail later anyway
 		if(high_timestamp > get_adjusted_time() + block_ftl)
 		{
@@ -1068,7 +1076,9 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
 	std::vector<difficulty_type> cumulative_difficulties;
 
 	size_t block_count;
-	if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
+	if(check_hard_fork_feature(FORK_V4_DIFFICULTY))
+		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V4;
+	else if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
 		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V3;
 	else if(check_hard_fork_feature(FORK_V2_DIFFICULTY))
 		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V2;
@@ -1130,8 +1140,9 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
 	}
 
 	// FIXME: This will fail if fork activation heights are subject to voting
-
-	if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
+	if(check_hard_fork_feature(FORK_V4_DIFFICULTY))
+		return next_difficulty_v4(timestamps, cumulative_difficulties);
+	else if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
 		return next_difficulty_v3(timestamps, cumulative_difficulties);
 	else if(check_hard_fork_feature(FORK_V2_DIFFICULTY))
 		return next_difficulty_v2(timestamps, cumulative_difficulties, common_config::DIFFICULTY_TARGET);
@@ -1385,7 +1396,10 @@ bool Blockchain::complete_timestamps_vector(uint64_t start_top_height, std::vect
 {
 	LOG_PRINT_L3("Blockchain::" << __func__);
 
-	uint64_t window_size = check_hard_fork_feature(FORK_V3_DIFFICULTY) ? common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3 : common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V2;
+	uint64_t window_size =
+		check_hard_fork_feature(FORK_V4_DIFFICULTY) ? common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V4 :
+		check_hard_fork_feature(FORK_V3_DIFFICULTY) ? common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3 :
+		common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V2;
 
 	if(timestamps.size() >= window_size)
 		return true;
@@ -3120,10 +3134,15 @@ bool Blockchain::check_block_timestamp(const block &b, uint64_t &median_ts) cons
 {
 	LOG_PRINT_L3("Blockchain::" << __func__);
 
-	uint64_t block_future_time_limit = check_hard_fork_feature(FORK_V3_DIFFICULTY) ? common_config::BLOCK_FUTURE_TIME_LIMIT_V3 : common_config::BLOCK_FUTURE_TIME_LIMIT_V2;
+	uint64_t block_future_time_limit = 
+		check_hard_fork_feature(FORK_V4_DIFFICULTY) ? common_config::BLOCK_FUTURE_TIME_LIMIT_V4 :
+		check_hard_fork_feature(FORK_V3_DIFFICULTY) ? common_config::BLOCK_FUTURE_TIME_LIMIT_V3 :
+		common_config::BLOCK_FUTURE_TIME_LIMIT_V2;
 
 	size_t blockchain_timestamp_check_window;
-	if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
+	if(check_hard_fork_feature(FORK_V4_DIFFICULTY))
+		blockchain_timestamp_check_window = common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V4;
+	else if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
 		blockchain_timestamp_check_window = common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3;
 	else if(check_hard_fork_feature(FORK_V2_DIFFICULTY))
 		blockchain_timestamp_check_window = common_config::BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V2;

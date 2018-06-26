@@ -49,6 +49,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <vector>
+#include <array>
 
 #include "common/int-util.h"
 #include "crypto/hash.h"
@@ -293,6 +294,51 @@ difficulty_type next_difficulty_v3(const std::vector<std::uint64_t> &timestamps,
 	constexpr int64_t T = common_config::DIFFICULTY_TARGET;
 	constexpr int64_t N = common_config::DIFFICULTY_WINDOW_V3 - 1;
 	constexpr int64_t FTL = common_config::BLOCK_FUTURE_TIME_LIMIT_V3;
+
+	assert(timestamps.size() == N + 1);
+	assert(cumulative_difficulties.size() == N + 1);
+
+	int64_t L = 0;
+	for(int64_t i = 1; i <= N; i++)
+		L += clamp(-FTL, int64_t(timestamps[i]) - int64_t(timestamps[i - 1]), 6 * T) * i;
+
+	constexpr int64_t clamp_increase = (T * N * (N + 1) * 99) / int64_t(100.0 * 2.0 * 2.5);
+	constexpr int64_t clamp_decrease = (T * N * (N + 1) * 99) / int64_t(100.0 * 2.0 * 0.2);
+	L = clamp(clamp_increase, L, clamp_decrease); // This guarantees positive L
+
+	// Commetary by fireice
+	// Let's take CD as a sum of N difficulties. Sum of weights is 0.5(N^2+N)
+	// L is a sigma(timeperiods * weights)
+	// Therefore D = CD*0.5*(N^2+N)*T / NL
+	// Therefore D = 0.5*CD*(N+1)*T / L
+	// Therefore D = CD*(N+1)*T / 2L
+	uint64_t next_D = uint64_t((cumulative_difficulties[N] - cumulative_difficulties[0]) * T * (N + 1)) / uint64_t(2 * L);
+
+	// 99/100 adds a small bias towards decreasing diff, unlike zawy we do it in a separate step to avoid an overflow at 6GH/s
+	next_D = (next_D * 99ull) / 100ull;
+
+	LOG_PRINT_L2("diff sum: " << (cumulative_difficulties[N] - cumulative_difficulties[0]) << " L " << L << " sizes " << timestamps.size() << " " << cumulative_difficulties.size() << " next_D " << next_D);
+
+	return next_D;
+}
+
+difficulty_type next_difficulty_v4(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties)
+{
+	// array is reversed ordered to allow faster object erase
+	std::array<size_t, common_config::DIFFICULTY_HOLES_V4> holeIdxList = {31, 29, 23, 19, 17, 13, 11, 7, 5, 3};
+
+	assert(timestamps.size() == common_config::DIFFICULTY_BLOCKS_COUNT_V4);
+	assert(cumulative_difficulties.size() == common_config::DIFFICULTY_BLOCKS_COUNT_V4);
+
+	for(size_t offset : holeIdxList)
+	{
+	  timestamps.erase(timestamps.begin() + offset - 1);
+	  cumulative_difficulties.erase(cumulative_difficulties.begin() + offset - 1);
+	}
+
+	constexpr int64_t T = common_config::DIFFICULTY_TARGET;
+	constexpr int64_t N = common_config::DIFFICULTY_WINDOW_V4 - 1;
+	constexpr int64_t FTL = common_config::BLOCK_FUTURE_TIME_LIMIT_V4;
 
 	assert(timestamps.size() == N + 1);
 	assert(cumulative_difficulties.size() == N + 1);
