@@ -558,7 +558,7 @@ bool gen_block_invalid_binary_format::generate(std::vector<test_event_entry> &ev
 
 	// Unlock blk_0 outputs
 	block blk_last = blk_0;
-	assert(CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW < DIFFICULTY_WINDOW);
+	assert(CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW < common_config::DIFFICULTY_WINDOW_V1);
 	for(size_t i = 0; i < CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW; ++i)
 	{
 		MAKE_NEXT_BLOCK(events, blk_curr, blk_last, miner_account);
