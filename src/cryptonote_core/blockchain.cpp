@@ -109,7 +109,8 @@ static const struct
 } mainnet_hard_forks[] = {
 	{1, 1, 0, 1482806500},
 	{2, 21300, 0, 1497657600},
-	{3, MAINNET_HARDFORK_V3_HEIGHT, 0, 1522800000}};
+	{3, MAINNET_HARDFORK_V3_HEIGHT, 0, 1522800000},
+	{4, 148300, 0, 1530550800}};
 
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
 
