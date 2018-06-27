@@ -891,7 +891,7 @@ bool Blockchain::rollback_blockchain_switching(std::list<block> &original_chain,
 // lam     - lambda parameter - in our case, how many blocks, on average, you would expect to see in the interval
 // k       - k parameter - in our case, how many blocks we have actually seen
 //           !!! k must not be zero
-// return  - ln(p), my recommendation would be to reject ln(p) smaller than -100 (e^-100 = 3x10^-44)
+// return  - ln(p)
 double calc_poisson_ln(double lam, uint64_t k)
 {
 	double logx = -lam + k * log(lam);

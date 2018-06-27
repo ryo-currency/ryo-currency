@@ -190,8 +190,8 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 struct common_config
 {
 	static constexpr uint64_t POISSON_CHECK_TRIGGER = 10;  // Reorg size that triggers poisson timestamp check
-	static constexpr uint64_t POISSON_CHECK_DEPTH = 150;   // Main-chain depth of the poisson check. The attacker will have to tamper 50% of those blocks
-	static constexpr double POISSON_LOG_P_REJECT = -100.0; // Reject reorg if the probablity that the timestamps are genuine is below e^x, -100 = 10^-44
+	static constexpr uint64_t POISSON_CHECK_DEPTH = 60;   // Main-chain depth of the poisson check. The attacker will have to tamper 50% of those blocks
+	static constexpr double POISSON_LOG_P_REJECT = -75.0; // Reject reorg if the probablity that the timestamps are genuine is below e^x, -75 = 10^-33
 
 	static constexpr uint64_t DIFFICULTY_TARGET = 240; // 4 minutes
 
