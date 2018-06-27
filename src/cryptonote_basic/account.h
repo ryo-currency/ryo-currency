@@ -91,6 +91,7 @@ class account_base
 	{
 		crypto::generate_wallet_secret(m_keys.m_short_seed);
 		m_acc_opt = acc_opt;
+		m_creation_timestamp = time(NULL);
 		return generate();
 	}
 
@@ -98,6 +99,7 @@ class account_base
 	{
 		m_keys.m_short_seed = recovery_seed;
 		m_acc_opt = acc_opt;
+		m_creation_timestamp = EARLIEST_TIMESTAMP;
 		generate();
 	}
 
