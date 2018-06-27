@@ -110,7 +110,6 @@ crypto::secret_key_16 account_base::generate()
 		generate_wallet_keys(m_keys.m_account_address.m_view_public_key, m_keys.m_view_secret_key, m_keys.m_short_seed, KEY_VARIANT_VIEWKEY);
 	}
 
-	m_creation_timestamp = time(NULL);
 	return m_keys.m_short_seed;
 }
 
