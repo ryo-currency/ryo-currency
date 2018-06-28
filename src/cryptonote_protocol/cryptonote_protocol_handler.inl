@@ -16,7 +16,7 @@
 //
 // As long as the following conditions are met:
 //
-// 3. You must not distribute modified copies of the to third parties. This includes
+// 3. You must not distribute modified copies of the work to third parties. This includes
 //    posting the work online, or hosting copies of the modified work for download.
 //
 // 4. Any derivative version of this work is also covered by this license, including point 8.
