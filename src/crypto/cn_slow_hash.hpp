@@ -64,7 +64,9 @@
 #if defined(__x86_64__) || defined(__i386__) || defined(_M_X86) || defined(_M_X64)
 #ifdef __GNUC__
 #include <x86intrin.h>
-#pragma GCC target("aes")
+#ifndef __clang__
+#	pragma GCC target("aes")
+#endif
 #if !defined(HAS_WIN_INTRIN_API)
 #include <cpuid.h>
 #endif // !defined(HAS_WIN_INTRIN_API)

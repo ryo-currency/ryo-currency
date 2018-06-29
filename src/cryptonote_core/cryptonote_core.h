@@ -1009,7 +1009,10 @@ class core : public i_miner_handler
 	} check_updates_level;
 
 	tools::download_async_handle m_update_download;
+// updates are currently disabled
+#if 0
 	size_t m_last_update_length;
+#endif
 	boost::mutex m_update_mutex;
 
 	bool m_fluffy_blocks_enabled;

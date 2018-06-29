@@ -948,7 +948,7 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 		LOG_PRINT_L1("Poisson check triggered by reorg size of " << alt_chain_size);
 
 		uint64_t failed_checks = 0, i = 1;
-		constexpr crypto::hash zero_hash = {0};
+		constexpr crypto::hash zero_hash = {{0}};
 		for(; i <= common_config::POISSON_CHECK_DEPTH; i++)
 		{
 			// This means we reached the genesis block
