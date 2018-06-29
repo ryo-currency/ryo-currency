@@ -208,6 +208,7 @@ bool checkpoints::init_default_checkpoints(network_type nettype)
 		ADD_CHECKPOINT(116520, "da1cb8f30305cd5fad7d6c33b3ed88fede053e0926102d8e544b65e93e33a08b"); // v3 fork
 		ADD_CHECKPOINT(137500, "86a5ccbf6ef872e074a63440b980f0543b3177745bf2c6fd268f93164a277e8b"); // ryo fork
 		ADD_CHECKPOINT(137512, "008f4867478e8060352610b145055ad81b655a0f082f350505def8267275a1bd");
+		ADD_CHECKPOINT(146899, "68ab183b6cae2fc63fdc6cd2b7029797433cf11c6fa79a24c12a382d2a53b25b");
 	}
 
 	return true;
