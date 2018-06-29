@@ -99,16 +99,19 @@ bool address_validator::evaluate_address_attributes(const std::string &net_type,
 	{
 		valid = get_account_address_from_str<MAINNET>(attr.info, addr_str, true);
 		attr.network = valid ? "mainnet" : "";
+		attr.nettype = MAINNET;
 	}
 	else if(net_type == "testnet")
 	{
 		valid = get_account_address_from_str<TESTNET>(attr.info, addr_str, true);
 		attr.network = valid ? "testnet" : "";
+		attr.nettype = TESTNET;
 	}
 	else if(net_type == "stagenet")
 	{
 		valid = get_account_address_from_str<STAGENET>(attr.info, addr_str, true);
 		attr.network = valid ? "stagenet" : "";
+		attr.nettype = STAGENET;
 	}
 	attr.is_valid = valid;
 	return valid;
@@ -169,7 +172,7 @@ void address_validator::print(writer &out, const std::string &addr_str, const ad
 	out << "  {\n";
 	out << "    valid : " << (attr.is_valid ? "true" : "false") << "," << separator;
 	out << "    input_address : \"" << addr_str << "\"," << separator;
-	std::string address_str = get_public_address_as_str<MAINNET>(attr.info.is_subaddress, attr.info.address);
+	std::string address_str = get_public_address_as_str(attr.nettype, attr.info.is_subaddress, attr.info.address);
 	out << "    address : \"" << (attr.is_valid ? address_str : "") << "\"," << separator;
 	out << "    is_subaddress : " << (attr.is_valid && attr.info.is_subaddress ? "true" : "false") << "," << separator;
 	out << "    is_kurz : " << (attr.is_valid && attr.info.is_kurz ? "true" : "false") << "," << separator;
