@@ -99,6 +99,7 @@ class address_validator
 		address_parse_info info;
 		bool is_valid = false;
 		std::string network;
+		network_type nettype;
 	};
 
 	/*! evaluate an address
