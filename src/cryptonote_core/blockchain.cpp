@@ -1327,7 +1327,8 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
    */
 	//make blocks coin-base tx looks close to real coinbase tx to get truthful blob size
 	size_t max_outs = 1;
-	bool r = construct_miner_tx(height, median_size, already_generated_coins, txs_size, fee, miner_address, b.miner_tx, ex_nonce, max_outs);
+	bool v3_tx = check_hard_fork_feature(FORK_NEED_V3_TXES);
+	bool r = construct_miner_tx(height, median_size, already_generated_coins, txs_size, fee, miner_address, b.miner_tx, ex_nonce, max_outs, v3_tx);
 	CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, first chance");
 	size_t cumulative_size = txs_size + get_object_blobsize(b.miner_tx);
 #if defined(DEBUG_CREATE_BLOCK_TEMPLATE)
@@ -1335,7 +1336,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 #endif
 	for(size_t try_count = 0; try_count != 10; ++try_count)
 	{
-		r = construct_miner_tx(height, median_size, already_generated_coins, cumulative_size, fee, miner_address, b.miner_tx, ex_nonce, max_outs);
+		r = construct_miner_tx(height, median_size, already_generated_coins, cumulative_size, fee, miner_address, b.miner_tx, ex_nonce, max_outs, v3_tx);
 
 		CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, second chance");
 		size_t coinbase_blob_size = get_object_blobsize(b.miner_tx);
