@@ -908,9 +908,11 @@ uint64_t BlockchainLMDB::add_output(const crypto::hash &tx_hash,
 	CURSOR(output_txs)
 	CURSOR(output_amounts)
 
+	if(tx_output.amount != 0 && tx_output.amount != 1)
+		throw0(DB_ERROR("RCT-non output"));
 	if(tx_output.target.type() != typeid(txout_to_key))
 		throw0(DB_ERROR("Wrong output type: expected txout_to_key"));
-	if(tx_output.amount == 0 && !commitment)
+	if(!commitment)
 		throw0(DB_ERROR("RCT output without commitment"));
 
 	outtx ot = {m_num_outputs, tx_hash, local_index};
@@ -936,19 +938,13 @@ uint64_t BlockchainLMDB::add_output(const crypto::hash &tx_hash,
 		throw0(DB_ERROR(lmdb_error("Failed to get output amount in db transaction: ", result).c_str()));
 	else
 		ok.amount_index = 0;
+
 	ok.output_id = m_num_outputs;
 	ok.data.pubkey = boost::get<txout_to_key>(tx_output.target).key;
 	ok.data.unlock_time = unlock_time;
 	ok.data.height = m_height;
-	if(tx_output.amount == 0)
-	{
-		ok.data.commitment = *commitment;
-		data.mv_size = sizeof(ok);
-	}
-	else
-	{
-		data.mv_size = sizeof(pre_rct_outkey);
-	}
+	ok.data.commitment = *commitment;
+	data.mv_size = sizeof(ok);
 	data.mv_data = &ok;
 
 	if((result = mdb_cursor_put(m_cur_output_amounts, &val_amount, &data, MDB_APPENDDUP)))
@@ -957,8 +953,7 @@ uint64_t BlockchainLMDB::add_output(const crypto::hash &tx_hash,
 	return ok.amount_index;
 }
 
-void BlockchainLMDB::add_tx_amount_output_indices(const uint64_t tx_id,
-												  const std::vector<uint64_t> &amount_output_indices)
+void BlockchainLMDB::add_tx_amount_output_indices(const uint64_t tx_id, const std::vector<uint64_t> &amount_output_indices)
 {
 	LOG_PRINT_L3("BlockchainLMDB::" << __func__);
 	check_open();
