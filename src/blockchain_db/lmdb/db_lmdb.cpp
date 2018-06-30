@@ -1452,7 +1452,7 @@ std::string BlockchainLMDB::get_db_name() const
 {
 	LOG_PRINT_L3("BlockchainLMDB::" << __func__);
 
-	return std::string("lmdb");
+	return std::string("lmdb02");
 }
 
 // TODO: this?
