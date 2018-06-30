@@ -90,7 +90,7 @@ void classify_addresses(const std::vector<tx_destination_entry> &destinations, c
 	LOG_PRINT_L2("destinations include " << num_stdaddresses << " standard addresses and " << num_subaddresses << " subaddresses");
 }
 //---------------------------------------------------------------
-bool construct_miner_tx(size_t height, size_t median_size, uint64_t already_generated_coins, size_t current_block_size, uint64_t fee, const account_public_address &miner_address, transaction &tx, const blobdata &extra_nonce, size_t max_outs)
+bool construct_miner_tx(size_t height, size_t median_size, uint64_t already_generated_coins, size_t current_block_size, uint64_t fee, const account_public_address &miner_address, transaction &tx, const blobdata &extra_nonce, size_t max_outs, bool txv3)
 {
 	tx.vin.clear();
 	tx.vout.clear();
@@ -155,7 +155,7 @@ bool construct_miner_tx(size_t height, size_t median_size, uint64_t already_gene
 
 	CHECK_AND_ASSERT_MES(summary_amounts == block_reward, false, "Failed to construct miner tx, summary_amounts = " << summary_amounts << " not equal block_reward = " << block_reward);
 
-	tx.version = CURRENT_TRANSACTION_VERSION;
+	tx.version = txv3 ? 3 : 2;
 
 	//lock
 	tx.unlock_time = height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW;

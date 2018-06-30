@@ -131,6 +131,7 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 {
 	bool miner_tx = false;
 	crypto::hash tx_hash;
+	
 	if(!tx_hash_ptr)
 	{
 		// should only need to compute hash for miner transactions
@@ -177,20 +178,36 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 	{
 		// miner v2 txes have their coinbase output in one single out to save space,
 		// and we store them as rct outputs with an identity mask
-		if(miner_tx && tx.version >= 2)
+		if(miner_tx)
 		{
 			cryptonote::tx_out vout = tx.vout[i];
 			rct::key commitment = rct::zeroCommit(vout.amount);
-			vout.amount = 0;
-			amount_output_indices.push_back(add_output(tx_hash, vout, i, tx.unlock_time,
-													   &commitment));
+
+			if(m_hardfork->get_current_version_num() <= 3 && tx.version > 2)
+				vout.amount = 1; //Put those on a different index to fix a bug
+			else
+				vout.amount = 0;
+
+			amount_output_indices.push_back(add_output(tx_hash, vout, i, tx.unlock_time, &commitment));
 		}
 		else
 		{
-			amount_output_indices.push_back(add_output(tx_hash, tx.vout[i], i, tx.unlock_time,
-													   &tx.rct_signatures.outPk[i].mask));
+			if(tx.vout[i].amount != 0)
+			{
+				//Better be safe than sorry
+				LOG_PRINT_L1("Unsupported index type, removing key images and aborting transaction addition");
+				for(const txin_v &tx_input : tx.vin)
+				{
+					if(tx_input.type() == typeid(txin_to_key))
+						remove_spent_key(boost::get<txin_to_key>(tx_input).k_image);
+				}
+				return;
+			}
+
+			amount_output_indices.push_back(add_output(tx_hash, tx.vout[i], i, tx.unlock_time, &tx.rct_signatures.outPk[i].mask));
 		}
 	}
+
 	add_tx_amount_output_indices(tx_id, amount_output_indices);
 }
 
