@@ -380,6 +380,7 @@ std::set<std::string> node_server<t_payload_net_handler>::get_seed_nodes(crypton
 	{
 		full_addrs.insert("212.8.248.8:29733");
 		full_addrs.insert("185.134.22.134:29733");
+		full_addrs.insert("149.56.44.109:13310");
 	}
 	else if(nettype == cryptonote::STAGENET)
 	{
@@ -388,6 +389,7 @@ std::set<std::string> node_server<t_payload_net_handler>::get_seed_nodes(crypton
 	{
 		full_addrs.insert("212.8.248.8:19733");
 		full_addrs.insert("185.134.22.134:19733");
+		full_addrs.insert("149.56.44.109:12210");
 	}
 	return full_addrs;
 }
