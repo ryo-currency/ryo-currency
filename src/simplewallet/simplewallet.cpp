@@ -1638,7 +1638,7 @@ bool simple_wallet::save_known_rings(const std::vector<std::string> &args)
 
 bool simple_wallet::version(const std::vector<std::string> &args)
 {
-	message_writer() << "Ryo '" << RYO_RELEASE_NAME << "' (v" << RYO_VERSION_FULL << ")";
+	message_writer() << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")";
 	return true;
 }
 

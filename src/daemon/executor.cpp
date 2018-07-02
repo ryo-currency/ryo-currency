@@ -72,7 +72,7 @@ std::string const &t_executor::name()
 t_daemon t_executor::create_daemon(
 	boost::program_options::variables_map const &vm)
 {
-	LOG_PRINT_L0("Ryo '" << RYO_RELEASE_NAME << "' (v" << RYO_VERSION_FULL << ") Daemonised");
+	LOG_PRINT_L0("Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ") Daemonised");
 	return t_daemon{vm};
 }
 
