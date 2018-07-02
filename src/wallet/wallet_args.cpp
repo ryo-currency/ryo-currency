@@ -154,7 +154,7 @@ boost::optional<boost::program_options::variables_map> main(
 
 		if(command_line::get_arg(vm, command_line::arg_help))
 		{
-			Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (v" << RYO_VERSION_FULL << ")" << ENDL;
+			Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL;
 			Print(print) << wallet_args::tr("This is the command line ryo wallet. It needs to connect to a ryo daemon to work correctly.") << ENDL;
 			Print(print) << wallet_args::tr("Usage:") << ENDL << "  " << usage;
 			Print(print) << desc_all;
@@ -162,7 +162,7 @@ boost::optional<boost::program_options::variables_map> main(
 		}
 		else if(command_line::get_arg(vm, command_line::arg_version))
 		{
-			Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (v" << RYO_VERSION_FULL << ")";
+			Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")";
 			return false;
 		}
 
@@ -205,7 +205,7 @@ boost::optional<boost::program_options::variables_map> main(
 	if(!command_line::is_arg_defaulted(vm, arg_max_concurrency))
 		tools::set_max_concurrency(command_line::get_arg(vm, arg_max_concurrency));
 
-	Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (v" << RYO_VERSION_FULL << ")";
+	Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")";
 
 	if(!command_line::is_arg_defaulted(vm, arg_log_level))
 		MINFO("Setting log level = " << command_line::get_arg(vm, arg_log_level));
