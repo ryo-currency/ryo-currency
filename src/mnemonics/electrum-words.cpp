@@ -146,7 +146,7 @@ bool find_seed_language(const std::vector<std::string> &seed, Language::Base **l
 		Language::Base *inst;
 		size_t score;
 
-		inline bool operator<(const sort_pair &oth) { return score < oth.score; }
+		inline bool operator<(const sort_pair &oth) const { return score < oth.score; }
 	};
 
 	// If there's a new language added, add an instance of it here.

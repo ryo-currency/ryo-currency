@@ -123,6 +123,7 @@ endfunction ()
 
 include(Version)
 monero_add_library(version SOURCES ${CMAKE_BINARY_DIR}/version.cpp DEPENDS genversion)
+monero_add_library(ccnconfig SOURCES ${CMAKE_SOURCE_DIR}/src/cryptonote_config.cpp)
 
 add_subdirectory(common)
 add_subdirectory(crypto)
