@@ -290,10 +290,12 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 	case config<NETTYPE>::RYO_KURZ_ADDRESS_BASE58_PREFIX:
 		info.is_kurz = true;
 		break;
+/* Kurz subaddress are impossible to generate yet, so parsig them should error out
 	case config<NETTYPE>::RYO_KURZ_SUBADDRESS_BASE58_PREFIX:
 		info.is_subaddress = true;
 		info.is_kurz = true;
 		break;
+*/
 	default:
 		if(!silent)
 			LOG_PRINT_L1("Wrong address prefix: " << prefix);
