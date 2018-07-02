@@ -41,6 +41,7 @@ target_link_libraries(core_proxy
     cryptonote_protocol
     p2p
     version
+    ccnconfig
     epee
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBRARIES})

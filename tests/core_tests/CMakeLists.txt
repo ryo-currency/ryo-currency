@@ -69,6 +69,7 @@ target_link_libraries(core_tests
     cryptonote_core
     p2p
     version
+    ccnconfig
     epee
     device
     ${CMAKE_THREAD_LIBS_INIT}
