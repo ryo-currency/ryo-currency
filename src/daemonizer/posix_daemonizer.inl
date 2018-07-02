@@ -106,7 +106,7 @@ inline bool daemonize(
 	}
 	else
 	{
-		//LOG_PRINT_L0("Ryo '" << RYO_RELEASE_NAME << "' (v" << RYO_VERSION_FULL);
+		//LOG_PRINT_L0("Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL);
 		return executor.run_interactive(vm);
 	}
 }
