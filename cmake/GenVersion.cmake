@@ -40,8 +40,8 @@ if(RET)
 else()
 	message(STATUS "You are currently on commit ${COMMIT}")
 	
-	# Get all the tags
-	execute_process(COMMAND "${GIT}" rev-list --tags --max-count=1 --abbrev-commit RESULT_VARIABLE RET OUTPUT_VARIABLE TAGGEDCOMMIT OUTPUT_STRIP_TRAILING_WHITESPACE)
+    # Get all the tags
+    execute_process(COMMAND "${GIT}" rev-list --tags --max-count=1 --abbrev-commit RESULT_VARIABLE RET OUTPUT_VARIABLE TAGGEDCOMMIT OUTPUT_STRIP_TRAILING_WHITESPACE)
 	
     if(NOT TAGGEDCOMMIT)
         message(WARNING "Cannot determine most recent tag. Make sure that you are building either from a Git working tree or from a source archive.")
@@ -57,7 +57,15 @@ else()
             message(STATUS "You are ahead of or behind a tagged release")
             set(VERSIONTAG "${COMMIT}")
         endif()
-    endif()	    
+    endif()
 
+    # Get the current working branch
+    execute_process(
+      COMMAND "${GIT}" rev-parse --abbrev-ref HEAD
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      OUTPUT_VARIABLE GIT_BRANCH
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+	    
     configure_file("src/version.cpp.in" "${TO}")
 endif()
