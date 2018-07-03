@@ -118,6 +118,7 @@ target_link_libraries(blockchain_import
     blockchain_db
     p2p
     version
+    ccnconfig
     epee
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
@@ -145,6 +146,7 @@ target_link_libraries(blockchain_export
     blockchain_db
     p2p
     version
+    ccnconfig
     epee
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
@@ -168,6 +170,7 @@ target_link_libraries(blockchain_blackball
     blockchain_db
     p2p
     version
+    ccnconfig
     epee
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
@@ -191,6 +194,7 @@ target_link_libraries(blockchain_usage
     blockchain_db
     p2p
     version
+    ccnconfig
     epee
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}

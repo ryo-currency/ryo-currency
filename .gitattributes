@@ -1,2 +1,2 @@
 .git* export-ignore
-version.cmake export-subst
+src/version.cpp.in export-subst

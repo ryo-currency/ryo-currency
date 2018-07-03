@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
-		std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (v" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
+		std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
 		std::cout << desc_options << std::endl;
 		return 1;
 	}

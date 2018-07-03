@@ -38,7 +38,7 @@ if (WIN32 AND STATIC)
   add_definitions(-DMINIUPNP_STATICLIB)
 endif ()
 
-find_package(GTest)
+# find_package(GTest) This seems to break the build
 
 if (GTest_FOUND)
   include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})

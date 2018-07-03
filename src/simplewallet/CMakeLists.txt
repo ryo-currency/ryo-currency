@@ -67,6 +67,7 @@ target_link_libraries(simplewallet
     epee
     ${EPEE_READLINE}
     version
+    ccnconfig
     ${Boost_CHRONO_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}

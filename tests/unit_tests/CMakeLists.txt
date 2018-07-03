@@ -85,6 +85,7 @@ target_link_libraries(unit_tests
     wallet
     p2p
     version
+    ccnconfig
     epee
     ${Boost_CHRONO_LIBRARY}
     ${Boost_THREAD_LIBRARY}

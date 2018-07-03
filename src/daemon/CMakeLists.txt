@@ -111,6 +111,7 @@ target_link_libraries(daemon
     epee
     ${EPEE_READLINE}
     version
+    ccnconfig
     ${Boost_CHRONO_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
