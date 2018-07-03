@@ -43,6 +43,7 @@
 //
 
 #include "address_validator/address_validator.h"
+#include "string_tools.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
 
 #include <boost/program_options.hpp>
@@ -170,13 +171,15 @@ void address_validator::print()
 void address_validator::print(writer &out, const std::string &addr_str, const address_attributes &attr, const char separator)
 {
 	out << "  {\n";
-	out << "    valid : " << (attr.is_valid ? "true" : "false") << "," << separator;
-	out << "    input_address : \"" << addr_str << "\"," << separator;
+	out << "    \"valid\" : " << (attr.is_valid ? "true" : "false") << "," << separator;
+	out << "    \"input_address\" : \"" << addr_str << "\"," << separator;
 	std::string address_str = get_public_address_as_str(attr.nettype, attr.info.is_subaddress, attr.info.address);
-	out << "    address : \"" << (attr.is_valid ? address_str : "") << "\"," << separator;
-	out << "    is_subaddress : " << (attr.is_valid && attr.info.is_subaddress ? "true" : "false") << "," << separator;
-	out << "    is_kurz : " << (attr.is_valid && attr.info.is_kurz ? "true" : "false") << "," << separator;
-	out << "    network : \"" << attr.network << "\"" << separator;
+	out << "    \"address\" : \"" << (attr.is_valid ? address_str : "") << "\"," << separator;
+	out << "    \"is_subaddress\" : " << (attr.is_valid && attr.info.is_subaddress ? "true" : "false") << "," << separator;
+	out << "    \"is_kurz\" : " << (attr.is_valid && attr.info.is_kurz ? "true" : "false") << "," << separator;
+	out << "    \"is_integrated\" : " << (attr.is_valid && attr.info.has_payment_id ? "true" : "false") << "," << separator;
+	out << "    \"integrated_id\" : \"" << (attr.is_valid && attr.info.has_payment_id ? epee::string_tools::pod_to_hex(attr.info.payment_id) : "") << "\"," << separator;
+	out << "    \"network\" : \"" << attr.network << "\"" << separator;
 	out << "  }";
 }
 } // namespace cryptonote
