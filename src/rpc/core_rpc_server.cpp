@@ -1599,6 +1599,7 @@ bool core_rpc_server::on_get_info_json(const COMMAND_RPC_GET_INFO::request &req,
 	res.mainnet = m_nettype == MAINNET;
 	res.testnet = m_nettype == TESTNET;
 	res.stagenet = m_nettype == STAGENET;
+	res.is_ready = check_core_ready();
 	res.cumulative_difficulty = m_core.get_blockchain_storage().get_db().get_block_cumulative_difficulty(res.height - 1);
 	res.block_size_limit = m_core.get_blockchain_storage().get_current_cumulative_blocksize_limit();
 	res.block_size_median = m_core.get_blockchain_storage().get_current_cumulative_blocksize_median();
