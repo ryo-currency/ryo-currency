@@ -3391,7 +3391,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	crypto::secret_key_16 recovery_val;
 	try
 	{
-		recovery_val = m_wallet->generate_new(m_wallet_file, std::move(rc.second).password(), seed, seed_extra);
+		recovery_val = m_wallet->generate_new(m_wallet_file, std::move(rc.second).password(), seed, seed_extra, create_address_file);
 		message_writer(console_color_white, true) << tr("Generated new wallet: ")
 												  << m_wallet->get_account().get_public_address_str(m_wallet->nettype());
 		if(!m_wallet->get_account().is_kurz())
@@ -3464,7 +3464,7 @@ bool simple_wallet::restore_legacy_wallet(const boost::program_options::variable
 
 	try
 	{
-		m_wallet->generate_legacy(m_wallet_file, std::move(rc.second).password(), seed_legacy);
+		m_wallet->generate_legacy(m_wallet_file, std::move(rc.second).password(), seed_legacy, create_address_file);
 		message_writer(console_color_white, true) << tr("Restored wallet: ")
 												  << m_wallet->get_account().get_public_address_str(m_wallet->nettype());
 		std::cout << tr("View key: ") << string_tools::pod_to_hex(m_wallet->get_account().get_keys().m_view_secret_key) << ENDL;
