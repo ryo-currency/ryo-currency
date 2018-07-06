@@ -426,7 +426,7 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 	m_db->block_txn_stop();
 
 	uint64_t num_popped_blocks = 0;
-	while(true)
+	while(!m_db->is_read_only())
 	{
 		const uint64_t top_height = m_db->height() - 1;
 		const crypto::hash top_id = m_db->top_block_hash();
@@ -2710,10 +2710,6 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 	std::vector<std::vector<rct::ctkey>> pubkeys(tx.vin.size());
 	std::vector<uint64_t> results;
 	results.resize(tx.vin.size(), 0);
-
-	tools::threadpool &tpool = tools::threadpool::getInstance();
-	tools::threadpool::waiter waiter;
-	int threads = tpool.get_max_concurrency();
 
 	for(const auto &txin : tx.vin)
 	{
