@@ -2711,10 +2711,6 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 	std::vector<uint64_t> results;
 	results.resize(tx.vin.size(), 0);
 
-	tools::threadpool &tpool = tools::threadpool::getInstance();
-	tools::threadpool::waiter waiter;
-	int threads = tpool.get_max_concurrency();
-
 	for(const auto &txin : tx.vin)
 	{
 		// make sure output being spent is of type txin_to_key, rather than
