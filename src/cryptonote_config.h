@@ -166,7 +166,8 @@ enum hard_fork_feature
 	FORK_FIXED_FEE,
 	FORK_NO_TIMED_LOCK,
 	FORK_NEED_V3_TXES,
-	FORK_BULLETPROOFS
+	FORK_BULLETPROOFS,
+	FORK_STRICT_TX_SEMANTICS
 };
 
 struct hardfork_conf
@@ -185,6 +186,7 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_FIXED_FEE, 4, 4, 1},
 	{FORK_NO_TIMED_LOCK, 4, 4, 1},
 	{FORK_NEED_V3_TXES, 4, 4, 1},
+	{FORK_STRICT_TX_SEMANTICS, 5, 5, 1},
 	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1}};
 
 struct common_config
