@@ -3097,6 +3097,7 @@ crypto::secret_key_16 wallet2::generate_new(const std::string &wallet_, const ep
 	else
 	{
 		m_account.recover(*seed, extra);
+		recover = true;
 	}
 
 	m_account_public_address = m_account.get_keys().m_account_address;
