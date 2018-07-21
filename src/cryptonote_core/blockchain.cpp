@@ -56,6 +56,7 @@
 #include "common/perf_timer.h"
 #include "common/threadpool.h"
 #include "crypto/hash.h"
+#include "cryptonote_basic/tx_extra.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
 #include "cryptonote_basic/cryptonote_boost_serialization.h"
 #include "cryptonote_basic/difficulty.h"
@@ -2635,6 +2636,7 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 	crypto::hash tx_prefix_hash = get_transaction_prefix_hash(tx);
 
 	size_t lowest_mixin = std::numeric_limits<size_t>::max();
+	size_t highest_mixin = 0;
 	for(const auto &txin : tx.vin)
 	{
 		// non txin_to_key inputs will be rejected below
@@ -2646,6 +2648,8 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 
 		if(vin_mixin < lowest_mixin)
 			lowest_mixin = vin_mixin;
+		if(vin_mixin > highest_mixin)
+			highest_mixin = vin_mixin;
 
 		if(vin_mixin > MAX_MIXIN)
 		{
@@ -2660,6 +2664,54 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 		MERROR_VER("Tx " << get_transaction_hash(tx) << " has too low ring size (" << (lowest_mixin + 1) << ")");
 		tvc.m_low_mixin = true;
 		return false;
+	}
+
+	bool strict_tx_semantics = check_hard_fork_feature(FORK_STRICT_TX_SEMANTICS);
+	if(strict_tx_semantics && highest_mixin != lowest_mixin)
+	{
+		MERROR_VER("Tx " << get_transaction_hash(tx) << " has different input ring sizes min = " << lowest_mixin << ", max = " << highest_mixin);
+		tvc.m_verifivation_failed = true;
+		return false;
+	}
+
+	if(strict_tx_semantics)
+	{
+		std::vector<tx_extra_field> tx_extra_fields;
+		parse_tx_extra(tx.extra, tx_extra_fields);
+		
+		bool has_pubkey = false;
+		bool has_extrapubkeys = false;
+		for(const tx_extra_field &f : tx_extra_fields)
+		{
+			if(f.type() == typeid(tx_extra_pub_key))
+			{
+				if(has_pubkey)
+				{
+					MERROR_VER("Tx has a duplicate pub key.");
+					tvc.m_verifivation_failed = true;
+					return false;
+				}
+				has_pubkey = true;
+			}
+			else if(f.type() == typeid(tx_extra_additional_pub_keys))
+			{
+				if(has_extrapubkeys)
+				{
+					MERROR_VER("Tx has a duplicate exta pub keys field.");
+					tvc.m_verifivation_failed = true;
+					return false;
+				}
+				has_extrapubkeys = true;
+				
+				tx_extra_additional_pub_keys extrapubkeys = boost::get<tx_extra_additional_pub_keys>(f);
+				if(extrapubkeys.data.size() != tx.vout.size())
+				{
+					MERROR_VER("Extra pubkeys size mismatch! Extra pubkey count must equal output count.");
+					tvc.m_verifivation_failed = true;
+					return false;
+				}
+			}
+		}
 	}
 
 	// min/max tx version based on HF, and we accept v1 txes if having a non mixable
@@ -2679,25 +2731,24 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 		return false;
 	}
 
-// from v7, sorted ins
-#if 0
-    const crypto::key_image *last_key_image = NULL;
-    for (size_t n = 0; n < tx.vin.size(); ++n)
-    {
-      const txin_v &txin = tx.vin[n];
-      if (txin.type() == typeid(txin_to_key))
-      {
-        const txin_to_key& in_to_key = boost::get<txin_to_key>(txin);
-        if (last_key_image && memcmp(&in_to_key.k_image, last_key_image, sizeof(*last_key_image)) >= 0)
-        {
-          MERROR_VER("transaction has unsorted inputs");
-          tvc.m_verifivation_failed = true;
-          return false;
-        }
-        last_key_image = &in_to_key.k_image;
-      }
-    }
-#endif
+	if(strict_tx_semantics)
+	{
+		const crypto::key_image *last_key_image = nullptr;
+		for(const txin_v &txin : tx.vin)
+		{
+			if(txin.type() == typeid(txin_to_key))
+			{
+				const txin_to_key& in_to_key = boost::get<txin_to_key>(txin);
+				if(last_key_image != nullptr && memcmp(&in_to_key.k_image, last_key_image, sizeof(*last_key_image)) >= 0)
+				{
+					MERROR_VER("transaction has unsorted inputs");
+					tvc.m_verifivation_failed = true;
+					return false;
+				}
+				last_key_image = &in_to_key.k_image;
+			}
+		}
+	}
 
 	auto it = m_check_txin_table.find(tx_prefix_hash);
 	if(it == m_check_txin_table.end())
