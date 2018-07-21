@@ -8291,10 +8291,10 @@ uint64_t wallet2::get_daemon_blockchain_target_height(string &err)
 uint64_t wallet2::get_approximate_blockchain_height() const
 {
 	if (m_nettype == TESTNET) return 0;
-	// time of v3 fork
-	const time_t fork_time = 1522881180;
-	// v3 fork block
-	const uint64_t fork_block = 116520;
+	// time of v4 fork
+	const time_t fork_time = 1530990884;
+	// v4 fork block
+	const uint64_t fork_block = 150000;
 	
 	// Calculated blockchain height
 	time_t current_time = time(NULL);
