@@ -55,6 +55,8 @@
 #include <numeric>
 #include <random>
 #include <tuple>
+#include <regex>
+
 using namespace epee;
 
 #include "common/apply_permutation.h"
@@ -245,8 +247,16 @@ std::unique_ptr<tools::wallet2> make_basic(const boost::program_options::variabl
 		daemon_port = config_get_rpc_port(nettype);
 	}
 
-	if(daemon_address.empty())
+	if(!daemon_address.empty())
+	{
+		std::regex valid_address(".+:[0-9]{1,5}");
+		THROW_WALLET_EXCEPTION_IF(!std::regex_match(daemon_address, valid_address),
+							  tools::error::wallet_internal_error, tools::wallet2::tr("daemon-address needs to include port number, are you looking for daemon-host?"));
+	}
+	else
+	{
 		daemon_address = std::string("http://") + daemon_host + ":" + std::to_string(daemon_port);
+	}
 
 	std::unique_ptr<tools::wallet2> wallet(new tools::wallet2(nettype, restricted));
 	wallet->init(std::move(daemon_address), std::move(login));

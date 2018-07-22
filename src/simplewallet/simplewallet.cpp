@@ -3351,10 +3351,25 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	else
 		return restore_legacy_wallet(vm, seed_25);
 }
+
+std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> simple_wallet::make_new_wrapped(const boost::program_options::variables_map &vm, 
+																			const std::function<boost::optional<tools::password_container>(const char *, bool)> &password_prompter)
+{
+	try
+	{
+		return tools::wallet2::make_new(vm, password_prompter);
+	}
+	catch(const std::exception &e)
+	{
+		fail_msg_writer() << tr("Initialization error: ") << e.what();
+		return {nullptr, tools::password_container{}};
+	}
+}
+
 //----------------------------------------------------------------------------------------------------
 bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key_16 *seed, uint8_t seed_extra)
 {
-	auto rc = tools::wallet2::make_new(vm, password_prompter);
+	auto rc = make_new_wrapped(vm, password_prompter);
 	m_wallet = std::move(rc.first);
 	if(!m_wallet)
 	{
@@ -3428,7 +3443,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 
 bool simple_wallet::restore_legacy_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key &seed_legacy)
 {
-	auto rc = tools::wallet2::make_new(vm, password_prompter);
+	auto rc = make_new_wrapped(vm, password_prompter);
 	m_wallet = std::move(rc.first);
 	if(!m_wallet)
 	{
@@ -3497,7 +3512,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm,
 							   const cryptonote::account_public_address &address, const boost::optional<crypto::secret_key> &spendkey,
 							   const crypto::secret_key &viewkey)
 {
-	auto rc = tools::wallet2::make_new(vm, password_prompter);
+	auto rc = make_new_wrapped(vm, password_prompter);
 	m_wallet = std::move(rc.first);
 	if(!m_wallet)
 	{
@@ -3541,7 +3556,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm,
 //----------------------------------------------------------------------------------------------------
 bool simple_wallet::new_wallet_dev(const boost::program_options::variables_map &vm, const std::string &device_name)
 {
-	auto rc = tools::wallet2::make_new(vm, password_prompter);
+	auto rc = make_new_wrapped(vm, password_prompter);
 	m_wallet = std::move(rc.first);
 	if(!m_wallet)
 	{
