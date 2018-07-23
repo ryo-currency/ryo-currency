@@ -161,6 +161,7 @@ struct options
 	const command_line::arg_descriptor<std::string> daemon_login = {"daemon-login", tools::wallet2::tr("Specify username[:password] for daemon RPC client"), "", true};
 	const command_line::arg_descriptor<bool> testnet = {"testnet", tools::wallet2::tr("For testnet. Daemon must also be launched with --testnet flag"), false};
 	const command_line::arg_descriptor<bool> stagenet = {"stagenet", tools::wallet2::tr("For stagenet. Daemon must also be launched with --stagenet flag"), false};
+	const command_line::arg_descriptor<bool> force_network = {"force-network", tools::wallet2::tr("Disregard mainnet/testnet/stagenet network checks. Don't use this option."), false};
 	const command_line::arg_descriptor<bool> restricted = {"restricted-rpc", tools::wallet2::tr("Restricts to view-only commands"), false};
 	const command_line::arg_descriptor<std::string, false, true> shared_ringdb_dir = {
 		"shared-ringdb-dir", tools::wallet2::tr("Set shared ring database path"),
@@ -249,6 +250,10 @@ std::unique_ptr<tools::wallet2> make_basic(const boost::program_options::variabl
 		daemon_address = std::string("http://") + daemon_host + ":" + std::to_string(daemon_port);
 
 	std::unique_ptr<tools::wallet2> wallet(new tools::wallet2(nettype, restricted));
+
+	if(command_line::get_arg(vm, opts.force_network))
+		wallet->set_force_network();
+
 	wallet->init(std::move(daemon_address), std::move(login));
 	boost::filesystem::path ringdb_path = command_line::get_arg(vm, opts.shared_ringdb_dir);
 	wallet->set_ring_database(ringdb_path.string());
@@ -708,6 +713,7 @@ void wallet2::init_options(boost::program_options::options_description &desc_par
 	command_line::add_arg(desc_params, opts.daemon_login);
 	command_line::add_arg(desc_params, opts.testnet);
 	command_line::add_arg(desc_params, opts.stagenet);
+	command_line::add_arg(desc_params, opts.force_network);
 	command_line::add_arg(desc_params, opts.restricted);
 	command_line::add_arg(desc_params, opts.shared_ringdb_dir);
 }
@@ -2820,10 +2826,15 @@ bool wallet2::load_keys(const std::string &keys_file_name, const epee::wipeable_
 		m_confirm_export_overwrite = field_confirm_export_overwrite;
 		GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, auto_low_priority, int, Int, false, true);
 		m_auto_low_priority = field_auto_low_priority;
-		GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, nettype, uint8_t, Uint, false, static_cast<uint8_t>(m_nettype));
-		// The network type given in the program argument is inconsistent with the network type saved in the wallet
-		THROW_WALLET_EXCEPTION_IF(static_cast<uint8_t>(m_nettype) != field_nettype, error::wallet_internal_error,
-								  (boost::format("%s wallet cannot be opened as %s wallet") % (field_nettype == 0 ? "Mainnet" : field_nettype == 1 ? "Testnet" : "Stagenet") % (m_nettype == MAINNET ? "mainnet" : m_nettype == TESTNET ? "testnet" : "stagenet")).str());
+
+		if(!m_force_network)
+		{
+			GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, nettype, uint8_t, Uint, false, static_cast<uint8_t>(m_nettype));
+			// The network type given in the program argument is inconsistent with the network type saved in the wallet
+			THROW_WALLET_EXCEPTION_IF(static_cast<uint8_t>(m_nettype) != field_nettype, error::wallet_internal_error,
+								  (boost::format("%s wallet cannot be opened as %s wallet") % (field_nettype == 0 ? "Mainnet" : field_nettype == 1 ? "Testnet" : "Stagenet") % (m_nettype == MAINNET ? 						"mainnet" : m_nettype == TESTNET ? "testnet" : "stagenet")).str());
+		}
+
 		GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, segregate_pre_fork_outputs, int, Int, false, true);
 		m_segregate_pre_fork_outputs = field_segregate_pre_fork_outputs;
 		GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, key_reuse_mitigation2, int, Int, false, true);
@@ -3991,9 +4002,11 @@ void wallet2::trim_hashchain()
 //----------------------------------------------------------------------------------------------------
 void wallet2::check_genesis(const crypto::hash &genesis_hash) const
 {
-	std::string what("Genesis block mismatch. You probably use wallet without testnet (or stagenet) flag with blockchain from test (or stage) network or vice versa");
-
-	THROW_WALLET_EXCEPTION_IF(genesis_hash != m_blockchain.genesis(), error::wallet_internal_error, what);
+	if(!m_force_network)
+	{
+		THROW_WALLET_EXCEPTION_IF(genesis_hash != m_blockchain.genesis(), error::wallet_internal_error,
+						std::string("Genesis block mismatch. You probably use wallet without testnet (or stagenet) flag with blockchain from test (or stage) network or vice versa"));
+	}
 }
 //----------------------------------------------------------------------------------------------------
 std::string wallet2::path() const
