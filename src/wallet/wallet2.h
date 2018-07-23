@@ -673,6 +673,7 @@ class wallet2
 	void set_refresh_type(RefreshType refresh_type) { m_refresh_type = refresh_type; }
 	RefreshType get_refresh_type() const { return m_refresh_type; }
 
+	void set_force_network() { m_force_network = true; }
 	cryptonote::network_type nettype() const { return m_nettype; }
 	bool restricted() const { return m_restricted; }
 	bool watch_only() const { return m_watch_only; }
@@ -1173,6 +1174,7 @@ class wallet2
 	i_wallet2_callback *m_callback;
 	bool m_key_on_device;
 	cryptonote::network_type m_nettype;
+	bool m_force_network = false;
 	bool m_restricted;
 	std::string seed_language; /*!< Language of the mnemonics (seed). */
 	bool is_old_file_format;   /*!< Whether the wallet file is of an old file format */
