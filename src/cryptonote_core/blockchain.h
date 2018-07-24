@@ -964,6 +964,7 @@ class Blockchain
 
 	void cancel();
 
+	cryptonote::network_type get_nettype() const { return m_nettype; }
 	/**
      * @brief called when we see a tx originating from a block
      *

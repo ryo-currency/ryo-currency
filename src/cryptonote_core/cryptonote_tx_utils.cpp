@@ -90,7 +90,7 @@ void classify_addresses(const std::vector<tx_destination_entry> &destinations, c
 	LOG_PRINT_L2("destinations include " << num_stdaddresses << " standard addresses and " << num_subaddresses << " subaddresses");
 }
 //---------------------------------------------------------------
-bool construct_miner_tx(size_t height, size_t median_size, uint64_t already_generated_coins, size_t current_block_size, uint64_t fee, const account_public_address &miner_address, transaction &tx, const blobdata &extra_nonce)
+bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t median_size, uint64_t already_generated_coins, size_t current_block_size, uint64_t fee, const account_public_address &miner_address, transaction &tx, const blobdata &extra_nonce)
 {
 	tx.vin.clear();
 	tx.vout.clear();
@@ -103,7 +103,7 @@ bool construct_miner_tx(size_t height, size_t median_size, uint64_t already_gene
 			return false;
 
 	uint64_t block_reward;
-	if(!get_block_reward(median_size, current_block_size, already_generated_coins, block_reward, height))
+	if(!get_block_reward(nettype, median_size, current_block_size, already_generated_coins, block_reward, height))
 	{
 		LOG_PRINT_L0("Block is too big");
 		return false;
