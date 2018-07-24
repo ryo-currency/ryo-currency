@@ -108,12 +108,54 @@ size_t get_max_tx_size()
 	return common_config::TRANSACTION_SIZE_LIMIT;
 }
 //-----------------------------------------------------------------------------------------------
-bool get_block_reward(size_t median_size, size_t current_block_size, uint64_t already_generated_coins, uint64_t &reward, uint64_t height)
+template <network_type NETTYPE>
+bool get_dev_fund_amount(uint64_t height, uint64_t& amount)
+{
+	amount = 0;
+	if(height < config<NETTYPE>::DEV_FUND_START)
+		return false;
+
+	height -= config<NETTYPE>::DEV_FUND_START;
+
+	if(height / config<NETTYPE>::DEV_FUND_PERIOD >= config<NETTYPE>::DEV_FUND_LENGTH)
+		return false;
+
+	if(height % config<NETTYPE>::DEV_FUND_PERIOD != 0)
+		return false;
+
+	amount = config<NETTYPE>::DEV_FUND_AMOUNT / config<NETTYPE>::DEV_FUND_LENGTH;
+	return true;
+}
+
+template bool get_dev_fund_amount<MAINNET>(uint64_t height, uint64_t& amount);
+template bool get_dev_fund_amount<TESTNET>(uint64_t height, uint64_t& amount);
+template bool get_dev_fund_amount<STAGENET>(uint64_t height, uint64_t& amount);
+
+template <network_type NETTYPE>
+uint64_t get_dev_fund_cumulative(uint64_t height)
+{
+	if(height < config<NETTYPE>::DEV_FUND_START)
+		return 0;
+
+	height -= config<NETTYPE>::DEV_FUND_START;
+	size_t funds = std::min(height / config<NETTYPE>::DEV_FUND_LENGTH + 1, config<NETTYPE>::DEV_FUND_LENGTH);
+	size_t amount = config<NETTYPE>::DEV_FUND_AMOUNT / config<NETTYPE>::DEV_FUND_LENGTH;
+	return funds * amount;
+}
+
+template uint64_t get_dev_fund_cumulative<MAINNET>(uint64_t height);
+template uint64_t get_dev_fund_cumulative<TESTNET>(uint64_t height);
+template uint64_t get_dev_fund_cumulative<STAGENET>(uint64_t height);
+
+//-----------------------------------------------------------------------------------------------
+bool get_block_reward(network_type nettype, size_t median_size, size_t current_block_size, uint64_t already_generated_coins, uint64_t &reward, uint64_t height)
 {
 	uint64_t base_reward;
 	uint64_t round_factor = 10000000; // 1 * pow(10, 7)
 	if(height > 0)
 	{
+		already_generated_coins -= get_dev_fund_cumulative(nettype, height); // This hack is needed so dev fund does not affect emission
+
 		if(height < (PEAK_COIN_EMISSION_HEIGHT + COIN_EMISSION_HEIGHT_INTERVAL))
 		{
 			uint64_t interval_num = height / COIN_EMISSION_HEIGHT_INTERVAL;

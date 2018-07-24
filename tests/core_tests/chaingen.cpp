@@ -98,7 +98,7 @@ void test_generator::add_block(const cryptonote::block &blk, size_t tsx_size, st
 {
 	const size_t block_size = tsx_size + get_object_blobsize(blk.miner_tx);
 	uint64_t block_reward;
-	get_block_reward(misc_utils::median(block_sizes), block_size, already_generated_coins, block_reward, hf_version);
+	get_block_reward(MAINNET, misc_utils::median(block_sizes), block_size, already_generated_coins, block_reward, hf_version);
 	m_blocks_info[get_block_hash(blk)] = block_info(blk.prev_id, already_generated_coins + block_reward, block_size);
 }
 
@@ -134,7 +134,7 @@ bool test_generator::construct_block(cryptonote::block &blk, uint64_t height, co
 	size_t target_block_size = txs_size + get_object_blobsize(blk.miner_tx);
 	while(true)
 	{
-		if(!construct_miner_tx(height, misc_utils::median(block_sizes), already_generated_coins, target_block_size, total_fee, miner_acc.get_keys().m_account_address, blk.miner_tx, blobdata()))
+		if(!construct_miner_tx(MAINNET, height, misc_utils::median(block_sizes), already_generated_coins, target_block_size, total_fee, miner_acc.get_keys().m_account_address, blk.miner_tx, blobdata()))
 			return false;
 
 		size_t actual_block_size = txs_size + get_object_blobsize(blk.miner_tx);
@@ -237,7 +237,7 @@ bool test_generator::construct_block_manually(block &blk, const block &prev_bloc
 	{
 		size_t current_block_size = txs_sizes + get_object_blobsize(blk.miner_tx);
 		// TODO: This will work, until size of constructed block is less then CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE
-		if(!construct_miner_tx(height, misc_utils::median(block_sizes), already_generated_coins, current_block_size, 0, miner_acc.get_keys().m_account_address, blk.miner_tx, blobdata()))
+		if(!construct_miner_tx(MAINNET, height, misc_utils::median(block_sizes), already_generated_coins, current_block_size, 0, miner_acc.get_keys().m_account_address, blk.miner_tx, blobdata()))
 			return false;
 	}
 
@@ -548,7 +548,7 @@ bool construct_miner_tx_manually(size_t height, uint64_t already_generated_coins
 
 	// This will work, until size of constructed block is less then CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE
 	uint64_t block_reward;
-	if(!get_block_reward(0, 0, already_generated_coins, block_reward, 1))
+	if(!get_block_reward(MAINNET, 0, 0, already_generated_coins, block_reward, 1))
 	{
 		LOG_PRINT_L0("Block is too big");
 		return false;

@@ -65,7 +65,7 @@
 #define MONEY_SUPPLY ((uint64_t)88888888000000000)
 #define EMISSION_SPEED_FACTOR 19
 #define FINAL_SUBSIDY ((uint64_t)4000000000)			  // 4 * pow(10, 9)
-#define GENESIS_BLOCK_REWARD ((uint64_t)8800000000000000) // ~10% dev premine
+#define GENESIS_BLOCK_REWARD ((uint64_t)8800000000000000) // ~10% dev premine, now  mostly burned
 #define EMISSION_SPEED_FACTOR_PER_MINUTE (20)
 #define FINAL_SUBSIDY_PER_MINUTE ((uint64_t)300000000000) // 3 * pow(10, 11)
 
@@ -73,8 +73,6 @@
 
 #define CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE 600
 #define CRYPTONOTE_DISPLAY_DECIMAL_POINT 9
-// COIN - number of smallest units in one coin
-#define COIN ((uint64_t)1000000000) // pow(10, 9)
 
 #define CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V1 common_config::DIFFICULTY_TARGET *CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS
 #define CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V2 common_config::DIFFICULTY_TARGET *CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS
@@ -187,7 +185,11 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_NO_TIMED_LOCK, 4, 4, 1},
 	{FORK_NEED_V3_TXES, 4, 4, 1},
 	{FORK_STRICT_TX_SEMANTICS, 5, 5, 1},
-	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1}};
+	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1}
+};
+
+// COIN - number of smallest units in one coin
+inline constexpr uint64_t MK_COINS(uint64_t coins) { return coins * 1000000000ull; }  // pow(10, 9)
 
 struct common_config
 {
@@ -226,6 +228,14 @@ struct common_config
 	static constexpr uint64_t DYNAMIC_FEE_PER_KB_BASE_BLOCK_REWARD = 64000000000; // 64 * pow(10, 9)
 
 	static constexpr uint64_t CRYPTONOTE_MAX_BLOCK_NUMBER = 500000000;
+
+	///////////////// Dev fund constants
+	// 2 out of 3 multisig address held by fireice, mosu, and psychocrypt
+	static constexpr const char* DEV_FUND_ADDRESS = "RYoLshTYzNEaizPi9jWtRtNPtan5fAqc3TVbyzZDWghLY99eXivKD1XQMseVyJQ1kD5FXDvk4nHqpUXBTMCm5aqmQU8tHaN51Wc";
+	// 34d6b7155d99da44c3a73424c60ecb0da53d228ed8da026df00ed275ea54e803
+	static constexpr const char* DEV_FUND_VIEWKEY = "\x34\xd6\xb7\x15\x5d\x99\xda\x44\xc3\xa7\x34\x24\xc6\x0e\xcb\x0d\xa5\x3d\x22\x8e\xd8\xda\x02\x6d\xf0\x0e\xd2\x75\xea\x54\xe8\x03";
+	// Exact number of coins burned in the premine burn, in atomic units
+	static constexpr uint64_t PREMINE_BURN_AMOUNT = 8700051446427001;
 };
 
 template <network_type type>
@@ -261,6 +271,13 @@ struct config<MAINNET>
 	static constexpr const char *GENESIS_TX =
 		"023c01ff0001808098d0daf1d00f028be379aa57a70fa19c0ee5765fdc3d2aae0b1034158f4963e157d9042c24fbec21013402fc7071230f1f86f33099119105a7b1f64a898526060ab871e685059c223100";
 	static constexpr uint32_t GENESIS_NONCE = 10000;
+
+	////////////////////// Dev fund constants
+	// How ofen do we add the dev reward
+	static constexpr uint64_t DEV_FUND_PERIOD = 15 * 24 * 7; // 1 week
+	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
+	static constexpr uint64_t DEV_FUND_LENGTH = 52 * 6; // 6 years
+	static constexpr uint64_t DEV_FUND_START  = 158760;
 };
 
 template <>
@@ -285,6 +302,13 @@ struct config<TESTNET>
 	static constexpr const char *GENESIS_TX =
 		"023c01ff0001808098d0daf1d00f028be379aa57a70fa19c0ee5765fdc3d2aae0b1034158f4963e157d9042c24fbec21013402fc7071230f1f86f33099119105a7b1f64a898526060ab871e685059c223100";
 	static constexpr uint32_t GENESIS_NONCE = 10001;
+	
+	////////////////////// Dev fund constants
+	// How ofen do we add the dev reward
+	static constexpr uint64_t DEV_FUND_PERIOD = 15 * 24; // 1 day
+	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
+	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day pediod)
+	static constexpr uint64_t DEV_FUND_START  = 158760;
 };
 
 template <>
@@ -309,6 +333,13 @@ struct config<STAGENET>
 	static constexpr const char *GENESIS_TX =
 		"013c01ff0001ffffffffffff0302df5d56da0c7d643ddd1ce61901c7bdc5fb1738bfe39fbe69c28a3a7032729c0f2101168d0c4ca86fb55a4cf6a36d31431be1c53a3bd7411bb24e8832410289fa6f3b";
 	static constexpr uint32_t GENESIS_NONCE = 10002;
+	
+	////////////////////// Dev fund constants
+	// How ofen do we add the dev reward
+	static constexpr uint64_t DEV_FUND_PERIOD = 15 * 24; // 1 day
+	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
+	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day pediod)
+	static constexpr uint64_t DEV_FUND_START  = 158760;
 };
 
 extern template struct config<MAINNET>;
