@@ -3951,6 +3951,15 @@ void simple_wallet::on_new_block(uint64_t height, const cryptonote::block &block
 //----------------------------------------------------------------------------------------------------
 void simple_wallet::on_money_received(uint64_t height, const crypto::hash &txid, const cryptonote::transaction &tx, uint64_t amount, const cryptonote::subaddress_index &subaddr_index)
 {
+	if(m_wallet->get_refresh_from_block_height() > height)
+	{
+		fail_msg_writer() << "This wallet has an incorrect start height." <<
+			"Please recreate it from seed to avoid a case where a blockchain scan can miss a part of your balance.";
+		/* this update will not be stored in the key file but correct the balance until the user
+		 * calls again `rescan_bc` without adding a height.
+		 */
+		m_wallet->set_refresh_from_block_height(height);
+	}
 	message_writer(console_color_green, false) << "\r" << tr("Height ") << height << ", " << tr("txid ") << txid << ", " << print_money(amount) << ", " << tr("idx ") << subaddr_index;
 	if(m_auto_refresh_refreshing)
 		m_cmd_binder.print_prompt();
