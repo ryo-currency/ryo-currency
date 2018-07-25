@@ -131,22 +131,6 @@ template bool get_dev_fund_amount<MAINNET>(uint64_t height, uint64_t& amount);
 template bool get_dev_fund_amount<TESTNET>(uint64_t height, uint64_t& amount);
 template bool get_dev_fund_amount<STAGENET>(uint64_t height, uint64_t& amount);
 
-template <network_type NETTYPE>
-uint64_t get_dev_fund_cumulative(uint64_t height)
-{
-	if(height < config<NETTYPE>::DEV_FUND_START)
-		return 0;
-
-	height -= config<NETTYPE>::DEV_FUND_START;
-	size_t funds = std::min(height / config<NETTYPE>::DEV_FUND_LENGTH + 1, config<NETTYPE>::DEV_FUND_LENGTH);
-	size_t amount = config<NETTYPE>::DEV_FUND_AMOUNT / config<NETTYPE>::DEV_FUND_LENGTH;
-	return funds * amount;
-}
-
-template uint64_t get_dev_fund_cumulative<MAINNET>(uint64_t height);
-template uint64_t get_dev_fund_cumulative<TESTNET>(uint64_t height);
-template uint64_t get_dev_fund_cumulative<STAGENET>(uint64_t height);
-
 //-----------------------------------------------------------------------------------------------
 bool get_block_reward(network_type nettype, size_t median_size, size_t current_block_size, uint64_t already_generated_coins, uint64_t &reward, uint64_t height)
 {
