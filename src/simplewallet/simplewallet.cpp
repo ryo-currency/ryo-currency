@@ -1733,7 +1733,7 @@ bool simple_wallet::set_default_ring_size(const std::vector<std::string> &args /
 
 bool simple_wallet::set_default_priority(const std::vector<std::string> &args /* = std::vector<std::string>()*/)
 {
-	int priority = 0;
+	uint32_t priority = 0;
 	try
 	{
 		if(strchr(args[1].c_str(), '-'))
@@ -1743,12 +1743,12 @@ bool simple_wallet::set_default_priority(const std::vector<std::string> &args /*
 		}
 		if(args[1] == "0")
 		{
-			priority = 0;
+			priority = 0u;
 		}
 		else
 		{
-			priority = boost::lexical_cast<int>(args[1]);
-			if(priority < 1 || priority > 4)
+			priority = boost::lexical_cast<uint32_t>(args[1]);
+			if(priority < 1u || priority > 4u)
 			{
 				fail_msg_writer() << tr("priority must be 0, 1, 2, 3, or 4");
 				return true;
