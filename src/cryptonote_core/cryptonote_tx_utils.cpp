@@ -125,6 +125,23 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 
 	tx_out out = { block_reward, txout_to_key(out_eph_public_key) };
 	tx.vout.push_back(out);
+	
+	uint64_t dev_fund_amount;
+	if(get_dev_fund_amount(nettype, height, dev_fund_amount))
+	{
+		address_parse_info dev_addr;
+		r = get_account_address_from_str<MAINNET>(dev_addr, std::string(common_config::DEV_FUND_ADDRESS));
+		CHECK_AND_ASSERT_MES(r, false, "Failed to parse dev address");
+
+		r = crypto::generate_key_derivation(dev_addr.address.m_view_public_key, txkey.sec, derivation);
+		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" << dev_addr.address.m_view_public_key << ", " << txkey.sec << ")");
+		
+		r = crypto::derive_public_key(derivation, 0, dev_addr.address.m_spend_public_key, out_eph_public_key);
+		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", 0, " << dev_addr.address.m_spend_public_key << ")");
+		
+		out = { dev_fund_amount, txout_to_key(out_eph_public_key) };
+		tx.vout.push_back(out);
+	}
 
 	tx.version = 3;
 

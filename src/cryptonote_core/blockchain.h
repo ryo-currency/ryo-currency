@@ -1009,6 +1009,9 @@ class Blockchain
 	std::vector<crypto::hash> m_blocks_hash_check;
 	std::vector<crypto::hash> m_blocks_txs_check;
 
+	crypto::secret_key m_dev_view_key;
+	crypto::public_key m_dev_spend_key;
+
 	blockchain_db_sync_mode m_db_sync_mode;
 	bool m_fast_sync;
 	bool m_show_time_stats;
@@ -1215,7 +1218,7 @@ class Blockchain
      *
      * @return false if anything is found wrong with the miner transaction, otherwise true
      */
-	bool validate_miner_transaction(const block &b, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward);
+	bool validate_miner_transaction(const block &b, uint64_t height, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward);
 
 	/**
      * @brief reverts the blockchain to its previous state following a failed switch

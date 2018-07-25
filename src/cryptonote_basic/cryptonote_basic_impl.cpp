@@ -154,8 +154,6 @@ bool get_block_reward(network_type nettype, size_t median_size, size_t current_b
 	uint64_t round_factor = 10000000; // 1 * pow(10, 7)
 	if(height > 0)
 	{
-		already_generated_coins -= get_dev_fund_cumulative(nettype, height); // This hack is needed so dev fund does not affect emission
-
 		if(height < (PEAK_COIN_EMISSION_HEIGHT + COIN_EMISSION_HEIGHT_INTERVAL))
 		{
 			uint64_t interval_num = height / COIN_EMISSION_HEIGHT_INTERVAL;
