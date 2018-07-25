@@ -2079,6 +2079,7 @@ simple_wallet::simple_wallet()
 							 tr("Save the current blockchain data."));
 	m_cmd_binder.set_handler("refresh",
 							 boost::bind(&simple_wallet::refresh, this, _1),
+							 tr("refresh [start_height]"),
 							 tr("Synchronize the transactions and balance."));
 	m_cmd_binder.set_handler("balance",
 							 boost::bind(&simple_wallet::show_balance, this, _1),
@@ -2267,7 +2268,9 @@ simple_wallet::simple_wallet()
 							 tr("Show the unspent outputs of a specified address within an optional amount range."));
 	m_cmd_binder.set_handler("rescan_bc",
 							 boost::bind(&simple_wallet::rescan_blockchain, this, _1),
-							 tr("Rescan the blockchain from scratch."));
+							 tr("rescan_bc [start_height]"),
+							 tr("Rescan the blockchain from scratch.\n"
+								"If start_height is not set the scan will start from an optimized height."));
 	m_cmd_binder.set_handler("set_tx_note",
 							 boost::bind(&simple_wallet::set_tx_note, this, _1),
 							 tr("set_tx_note <txid> [free text note]"),
@@ -4000,7 +4003,7 @@ void simple_wallet::on_skip_transaction(uint64_t height, const crypto::hash &txi
 {
 }
 //----------------------------------------------------------------------------------------------------
-bool simple_wallet::refresh_main(uint64_t start_height, bool reset, bool is_init)
+bool simple_wallet::refresh_main(uint64_t start_height, bool reset, bool is_init, bool use_optimized_height)
 {
 	if(!try_connect_to_daemon())
 		return true;
@@ -4023,7 +4026,14 @@ bool simple_wallet::refresh_main(uint64_t start_height, bool reset, bool is_init
 	{
 		m_in_manual_refresh.store(true, std::memory_order_relaxed);
 		epee::misc_utils::auto_scope_leave_caller scope_exit_handler = epee::misc_utils::create_scope_leave_handler([&]() { m_in_manual_refresh.store(false, std::memory_order_relaxed); });
+
+		bool use_opt_height_old = m_wallet->explicit_refresh_from_block_height();
+		// force wallet to use explicit_refresh
+		m_wallet->explicit_refresh_from_block_height(use_optimized_height);
 		m_wallet->refresh(start_height, fetched_blocks);
+		// restore previous value
+		m_wallet->explicit_refresh_from_block_height(use_opt_height_old);
+
 		ok = true;
 		// Clear line "Height xxx of xxx"
 		std::cout << "\r                                                                \r";
@@ -4088,7 +4098,7 @@ bool simple_wallet::refresh(const std::vector<std::string> &args)
 			start_height = 0;
 		}
 	}
-	return refresh_main(start_height, false);
+	return refresh_main(start_height, false, false, args.empty());
 }
 //----------------------------------------------------------------------------------------------------
 bool simple_wallet::show_balance_unlocked(bool detailed)
@@ -6576,7 +6586,33 @@ bool simple_wallet::unspent_outputs(const std::vector<std::string> &args_)
 //----------------------------------------------------------------------------------------------------
 bool simple_wallet::rescan_blockchain(const std::vector<std::string> &args_)
 {
-	return refresh_main(0, true);
+	uint64_t start_height = 0u;
+	if(args_.size() >= 2u)
+	{
+		fail_msg_writer() << tr("Too much arguments passed - usage: rescan_bc [start_height]");
+		return true;
+	}
+	if(args_.size() == 1u)
+	{
+		try
+		{
+			start_height = boost::lexical_cast<uint64_t>(args_[0]);
+		}
+		catch(const boost::bad_lexical_cast &)
+		{
+			fail_msg_writer() << tr("bad rescan_br parameter:") << " " << args_[0];
+			return true;
+		}
+	}
+	if(!args_.empty() && start_height > m_wallet->get_refresh_from_block_height())
+	{
+		// a scan from a height greater than the wallets refresh_from_block_height can result into a wrong balance
+		fail_msg_writer() << tr("You can not start a rescan from a height after you wallet was created. 'start_height' must be lesser or equal to ") <<
+			m_wallet->get_refresh_from_block_height();
+		return true;
+	}
+
+	return refresh_main(start_height, true, false, args_.empty());
 }
 //----------------------------------------------------------------------------------------------------
 void simple_wallet::wallet_idle_thread()

@@ -1614,8 +1614,8 @@ void wallet2::process_new_blockchain_entry(const cryptonote::block &b, const cry
 
 	//handle transactions from new block
 
-	//optimization: seeking only for blocks that are not older then the wallet creation time plus 1 day. 1 day is for possible user incorrect time setup
-	if(b.timestamp + 60 * 60 * 24 > m_account.get_createtime() && height >= m_refresh_from_block_height)
+	//optimization if m_explicit_refresh_from_block_height is false: seeking only for blocks that are not older then the wallet creation time plus 1 day. 1 day is for possible user incorrect time setup
+	if(!m_explicit_refresh_from_block_height || (b.timestamp + 60 * 60 * 24 > m_account.get_createtime() && height >= m_refresh_from_block_height))
 	{
 		TIME_MEASURE_START(miner_tx_handle_time);
 		process_new_transaction(get_transaction_hash(b.miner_tx), b.miner_tx, o_indices.indices[txidx++].indices, height, b.timestamp, true, false, false);
@@ -2258,10 +2258,10 @@ void wallet2::refresh(uint64_t start_height, uint64_t &blocks_fetched, bool &rec
 	m_run.store(true, std::memory_order_relaxed);
 	if(start_height > m_blockchain.size() || m_refresh_from_block_height > m_blockchain.size())
 	{
-		if(!start_height)
-			start_height = m_refresh_from_block_height;
+		uint64_t stop_at_height = m_explicit_refresh_from_block_height ?
+			m_refresh_from_block_height : start_height;
 		// we can shortcut by only pulling hashes up to the start_height
-		fast_refresh(start_height, blocks_start_height, short_chain_history);
+		fast_refresh(stop_at_height, blocks_start_height, short_chain_history);
 		// regenerate the history now that we've got a full set of hashes
 		short_chain_history.clear();
 		get_short_chain_history(short_chain_history);
