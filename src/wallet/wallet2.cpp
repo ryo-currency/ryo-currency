@@ -2579,7 +2579,11 @@ bool wallet2::store_keys(const std::string &keys_file_name, const epee::wipeable
 	json.AddMember("refresh_type", value2, json.GetAllocator());
 
 	value2.SetUint64(m_refresh_from_block_height);
-	json.AddMember("refresh_height", value2, json.GetAllocator());
+	/* refresh_height was used until ryo version 0.2.0.2.
+	 * The new entry refresh_height2 avoids an refresh bug in older ryo versions
+	 * https://github.com/ryo-currency/ryo-currency/pull/48
+	 */
+	json.AddMember("refresh_height2", value2, json.GetAllocator());
 
 	value2.SetInt(m_confirm_missing_payment_id ? 1 : 0);
 	json.AddMember("confirm_missing_payment_id", value2, json.GetAllocator());
@@ -2797,7 +2801,10 @@ bool wallet2::load_keys(const std::string &keys_file_name, const epee::wipeable_
 				LOG_PRINT_L0("Unknown refresh-type value (" << field_refresh_type << "), using default");
 		}
 		GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, refresh_height, uint64_t, Uint64, false, 0);
-		m_refresh_from_block_height = field_refresh_height;
+		if(field_refresh_height_found)
+			LOG_PRINT_L0("Old wallet with field refresh_height =" << field_refresh_height << "found. Value will be ignored.");
+		GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, refresh_height2, uint64_t, Uint64, false, 0);
+		m_refresh_from_block_height = field_refresh_height2;
 		GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, confirm_missing_payment_id, int, Int, false, true);
 		m_confirm_missing_payment_id = field_confirm_missing_payment_id;
 		GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, confirm_non_default_ring_size, int, Int, false, true);
