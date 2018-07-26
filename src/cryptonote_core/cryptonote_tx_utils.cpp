@@ -90,7 +90,7 @@ void classify_addresses(const std::vector<tx_destination_entry> &destinations, c
 	LOG_PRINT_L2("destinations include " << num_stdaddresses << " standard addresses and " << num_subaddresses << " subaddresses");
 }
 //---------------------------------------------------------------
-bool construct_miner_tx(size_t height, size_t median_size, uint64_t already_generated_coins, size_t current_block_size, uint64_t fee, const account_public_address &miner_address, transaction &tx, const blobdata &extra_nonce, size_t max_outs, bool txv3)
+bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t median_size, uint64_t already_generated_coins, size_t current_block_size, uint64_t fee, const account_public_address &miner_address, transaction &tx, const blobdata &extra_nonce)
 {
 	tx.vin.clear();
 	tx.vout.clear();
@@ -102,11 +102,8 @@ bool construct_miner_tx(size_t height, size_t median_size, uint64_t already_gene
 		if(!add_extra_nonce_to_tx_extra(tx.extra, extra_nonce))
 			return false;
 
-	txin_gen in;
-	in.height = height;
-
 	uint64_t block_reward;
-	if(!get_block_reward(median_size, current_block_size, already_generated_coins, block_reward, height))
+	if(!get_block_reward(nettype, median_size, current_block_size, already_generated_coins, block_reward, height))
 	{
 		LOG_PRINT_L0("Block is too big");
 		return false;
@@ -117,48 +114,41 @@ bool construct_miner_tx(size_t height, size_t median_size, uint64_t already_gene
 #endif
 	block_reward += fee;
 
-	std::vector<uint64_t> out_amounts;
-	out_amounts.push_back(block_reward);
+	// Create miner's output
+	crypto::key_derivation derivation = AUTO_VAL_INIT(derivation);
+	crypto::public_key out_eph_public_key = AUTO_VAL_INIT(out_eph_public_key);
+	bool r = crypto::generate_key_derivation(miner_address.m_view_public_key, txkey.sec, derivation);
+	CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" << miner_address.m_view_public_key << ", " << txkey.sec << ")");
 
-	CHECK_AND_ASSERT_MES(1 <= max_outs, false, "max_out must be non-zero");
+	r = crypto::derive_public_key(derivation, 0, miner_address.m_spend_public_key, out_eph_public_key);
+	CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", 0, " << miner_address.m_spend_public_key << ")");
 
-	while(max_outs < out_amounts.size())
+	tx_out out = { block_reward, txout_to_key(out_eph_public_key) };
+	tx.vout.push_back(out);
+	
+	uint64_t dev_fund_amount;
+	if(get_dev_fund_amount(nettype, height, dev_fund_amount))
 	{
-		//out_amounts[out_amounts.size() - 2] += out_amounts.back();
-		//out_amounts.resize(out_amounts.size() - 1);
-		out_amounts[1] += out_amounts[0];
-		for(size_t n = 1; n < out_amounts.size(); ++n)
-			out_amounts[n - 1] = out_amounts[n];
-		out_amounts.resize(out_amounts.size() - 1);
-	}
+		address_parse_info dev_addr;
+		r = get_account_address_from_str<MAINNET>(dev_addr, std::string(common_config::DEV_FUND_ADDRESS));
+		CHECK_AND_ASSERT_MES(r, false, "Failed to parse dev address");
 
-	uint64_t summary_amounts = 0;
-	for(size_t no = 0; no < out_amounts.size(); no++)
-	{
-		crypto::key_derivation derivation = AUTO_VAL_INIT(derivation);
-		;
-		crypto::public_key out_eph_public_key = AUTO_VAL_INIT(out_eph_public_key);
-		bool r = crypto::generate_key_derivation(miner_address.m_view_public_key, txkey.sec, derivation);
-		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" << miner_address.m_view_public_key << ", " << txkey.sec << ")");
-
-		r = crypto::derive_public_key(derivation, no, miner_address.m_spend_public_key, out_eph_public_key);
-		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", " << no << ", " << miner_address.m_spend_public_key << ")");
-
-		txout_to_key tk;
-		tk.key = out_eph_public_key;
-
-		tx_out out;
-		summary_amounts += out.amount = out_amounts[no];
-		out.target = tk;
+		r = crypto::generate_key_derivation(dev_addr.address.m_view_public_key, txkey.sec, derivation);
+		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" << dev_addr.address.m_view_public_key << ", " << txkey.sec << ")");
+		
+		r = crypto::derive_public_key(derivation, 0, dev_addr.address.m_spend_public_key, out_eph_public_key);
+		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", 0, " << dev_addr.address.m_spend_public_key << ")");
+		
+		out = { dev_fund_amount, txout_to_key(out_eph_public_key) };
 		tx.vout.push_back(out);
 	}
 
-	CHECK_AND_ASSERT_MES(summary_amounts == block_reward, false, "Failed to construct miner tx, summary_amounts = " << summary_amounts << " not equal block_reward = " << block_reward);
-
-	tx.version = txv3 ? 3 : 2;
+	tx.version = 3;
 
 	//lock
 	tx.unlock_time = height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW;
+	txin_gen in;
+	in.height = height;
 	tx.vin.push_back(in);
 
 	tx.invalidate_hashes();
