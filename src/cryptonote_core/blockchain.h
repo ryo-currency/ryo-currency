@@ -1218,7 +1218,8 @@ class Blockchain
      *
      * @return false if anything is found wrong with the miner transaction, otherwise true
      */
-	bool validate_miner_transaction(const block &b, uint64_t height, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward);
+	bool validate_miner_transaction_v2(const block &b, uint64_t height, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward);
+	bool validate_miner_transaction_v1(const block &b, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward);
 
 	/**
      * @brief reverts the blockchain to its previous state following a failed switch
