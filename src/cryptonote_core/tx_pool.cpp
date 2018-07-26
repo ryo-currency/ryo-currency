@@ -1090,7 +1090,7 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 	fee = 0;
 
 	//baseline empty block
-	get_block_reward(median_size, total_size, already_generated_coins, best_coinbase, height);
+	get_block_reward(m_blockchain.get_nettype(), median_size, total_size, already_generated_coins, best_coinbase, height);
 
 	size_t max_total_size = (200 * median_size) / 100 - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
 	std::unordered_set<crypto::key_image> k_images;
@@ -1124,7 +1124,7 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 		// If we're getting lower coinbase tx,
 		// stop including more tx
 		uint64_t block_reward;
-		if(!get_block_reward(median_size, total_size + meta.blob_size + CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE, already_generated_coins, block_reward, height))
+		if(!get_block_reward(m_blockchain.get_nettype(), median_size, total_size + meta.blob_size + CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE, already_generated_coins, block_reward, height))
 		{
 			LOG_PRINT_L2("  would exceed maximum block size");
 			sorted_it++;

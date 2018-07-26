@@ -111,7 +111,9 @@ static const struct
 	{1, 1, 0, 1482806500},
 	{2, 21300, 0, 1497657600},
 	{3, MAINNET_HARDFORK_V3_HEIGHT, 0, 1522800000},
-	{4, 150000, 0, 1530967408}};
+	{4, 150000, 0, 1530967408},
+	{5, 160000, 0, 1533407730}
+};
 
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
 
@@ -125,7 +127,8 @@ static const struct
 	{1, 1, 0, 1482806500},
 	{2, 5150, 0, 1497181713},
 	{3, 103580, 0, 1522540800}, // April 01, 2018
-	{4, 123575, 0, 1529873000}
+	{4, 123575, 0, 1529873000},
+	{5, 129750, 0, 1532782050}
 };
 static const uint64_t testnet_hard_fork_version_1_till = (uint64_t)-1;
 
@@ -317,6 +320,23 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 	LOG_PRINT_L3("Blockchain::" << __func__);
 	CRITICAL_REGION_LOCAL(m_tx_pool);
 	CRITICAL_REGION_LOCAL1(m_blockchain_lock);
+
+	memcpy(m_dev_view_key.data, common_config::DEV_FUND_VIEWKEY, 32);
+	
+	address_parse_info dev_addr;
+	if(!get_account_address_from_str<MAINNET>(dev_addr, std::string(common_config::DEV_FUND_ADDRESS)))
+	{
+		LOG_ERROR("Failed to parse dev address");
+		return false;
+	}
+
+	m_dev_spend_key = dev_addr.address.m_spend_public_key;
+	crypto::public_key vk;
+	if(!secret_key_to_public_key(m_dev_view_key, vk) || vk != dev_addr.address.m_view_public_key)
+	{
+		LOG_ERROR("Dev private view key failed verification!");
+		return false;
+	}
 
 	if(db == nullptr)
 	{
@@ -1151,6 +1171,8 @@ bool Blockchain::prevalidate_miner_transaction(const block &b, uint64_t height)
 	LOG_PRINT_L3("Blockchain::" << __func__);
 	CHECK_AND_ASSERT_MES(b.miner_tx.vin.size() == 1, false, "coinbase transaction in the block has no inputs");
 	CHECK_AND_ASSERT_MES(b.miner_tx.vin[0].type() == typeid(txin_gen), false, "coinbase transaction in the block has the wrong type");
+	CHECK_AND_ASSERT_MES(b.miner_tx.rct_signatures.type != rct::RCTTypeNull, false, "V1 miner transactions are not allowed.");
+
 	if(boost::get<txin_gen>(b.miner_tx.vin[0]).height != height)
 	{
 		MWARNING("The miner transaction in block has invalid height: " << boost::get<txin_gen>(b.miner_tx.vin[0]).height << ", expected: " << height);
@@ -1173,7 +1195,74 @@ bool Blockchain::prevalidate_miner_transaction(const block &b, uint64_t height)
 }
 //------------------------------------------------------------------
 // This function validates the miner transaction reward
-bool Blockchain::validate_miner_transaction(const block &b, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward)
+bool Blockchain::validate_miner_transaction_v2(const block &b, uint64_t height, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward)
+{
+	LOG_PRINT_L3("Blockchain::" << __func__);
+	crypto::public_key tx_pub = get_tx_pub_key_from_extra(b.miner_tx);
+	crypto::key_derivation deriv;
+
+	if(tx_pub == null_pkey || !generate_key_derivation(tx_pub, m_dev_view_key, deriv))
+	{
+		MERROR_VER("Transaction public key is absent or invalid!");
+		return false;
+	}
+
+	//validate reward
+	uint64_t miner_money = 0;
+	uint64_t dev_money = 0;
+	for(size_t i=0; i < b.miner_tx.vout.size(); i++)
+	{
+		const tx_out& o = b.miner_tx.vout[i];
+		crypto::public_key pk;
+
+		CHECK_AND_ASSERT_MES(derive_public_key(deriv, i, m_dev_spend_key, pk), false, "Dev public key is invalid!");
+		CHECK_AND_ASSERT_MES(o.target.type() != typeid(txout_to_key), false, "Out needs to be txout_to_key!");
+		CHECK_AND_ASSERT_MES(o.amount == 0, false, "Non-plaintext output in a miner tx");
+
+		if(boost::get<txout_to_key>(b.miner_tx.vout[i].target).key == pk)
+			dev_money += o.amount;
+		else
+			miner_money += o.amount;
+	}
+
+	partial_block_reward = false;
+
+	std::vector<size_t> last_blocks_sizes;
+	get_last_n_blocks_sizes(last_blocks_sizes, CRYPTONOTE_REWARD_BLOCKS_WINDOW);
+
+	if(!get_block_reward(m_nettype, epee::misc_utils::median(last_blocks_sizes), cumulative_block_size, already_generated_coins, base_reward, m_db->height()))
+	{
+		MERROR_VER("block size " << cumulative_block_size << " is bigger than allowed for this blockchain");
+		return false;
+	}
+
+	if(base_reward + fee < miner_money)
+	{
+		MERROR_VER("coinbase transaction spend too much money (" << print_money(miner_money) << "). Block reward is " << print_money(base_reward + fee) << "(" << print_money(base_reward) << "+" << print_money(fee) << ")");
+		return false;
+	}
+
+	uint64_t dev_money_needed = 0;
+	get_dev_fund_amount(m_nettype, height, dev_money_needed);
+
+	if(dev_money_needed != dev_money)
+	{
+		MERROR_VER("Coinbase transaction generates wrong dev fund amount. Generated " << print_money(dev_money) << " nedded " << print_money(dev_money_needed));
+		return false;
+	}
+
+	// from hard fork 2, since a miner can claim less than the full block reward, we update the base_reward
+	// to show the amount of coins that were actually generated, the remainder will be pushed back for later
+	// emission. This modifies the emission curve very slightly.
+	CHECK_AND_ASSERT_MES(miner_money - fee <= base_reward, false, "base reward calculation bug");
+	if(base_reward + fee != miner_money)
+		partial_block_reward = true;
+	base_reward = miner_money - fee;
+
+	return true;
+}
+
+bool Blockchain::validate_miner_transaction_v1(const block &b, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward)
 {
 	LOG_PRINT_L3("Blockchain::" << __func__);
 	//validate reward
@@ -1185,7 +1274,7 @@ bool Blockchain::validate_miner_transaction(const block &b, size_t cumulative_bl
 	std::vector<size_t> last_blocks_sizes;
 	get_last_n_blocks_sizes(last_blocks_sizes, CRYPTONOTE_REWARD_BLOCKS_WINDOW);
 
-	if(!get_block_reward(epee::misc_utils::median(last_blocks_sizes), cumulative_block_size, already_generated_coins, base_reward, m_db->height()))
+	if(!get_block_reward(m_nettype, epee::misc_utils::median(last_blocks_sizes), cumulative_block_size, already_generated_coins, base_reward, m_db->height()))
 	{
 		MERROR_VER("block size " << cumulative_block_size << " is bigger than allowed for this blockchain");
 		return false;
@@ -1327,9 +1416,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
    block size, so first miner transaction generated with fake amount of money, and with phase we know think we know expected block size
    */
 	//make blocks coin-base tx looks close to real coinbase tx to get truthful blob size
-	size_t max_outs = 1;
-	bool v3_tx = check_hard_fork_feature(FORK_NEED_V3_TXES);
-	bool r = construct_miner_tx(height, median_size, already_generated_coins, txs_size, fee, miner_address, b.miner_tx, ex_nonce, max_outs, v3_tx);
+	bool r = construct_miner_tx(m_nettype, height, median_size, already_generated_coins, txs_size, fee, miner_address, b.miner_tx, ex_nonce);
 	CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, first chance");
 	size_t cumulative_size = txs_size + get_object_blobsize(b.miner_tx);
 #if defined(DEBUG_CREATE_BLOCK_TEMPLATE)
@@ -1337,7 +1424,7 @@ bool Blockchain::create_block_template(block &b, const account_public_address &m
 #endif
 	for(size_t try_count = 0; try_count != 10; ++try_count)
 	{
-		r = construct_miner_tx(height, median_size, already_generated_coins, cumulative_size, fee, miner_address, b.miner_tx, ex_nonce, max_outs, v3_tx);
+		r = construct_miner_tx(m_nettype, height, median_size, already_generated_coins, cumulative_size, fee, miner_address, b.miner_tx, ex_nonce);
 
 		CHECK_AND_ASSERT_MES(r, false, "Failed to construct miner tx, second chance");
 		size_t coinbase_blob_size = get_object_blobsize(b.miner_tx);
@@ -2994,7 +3081,7 @@ bool Blockchain::check_fee(size_t blob_size, uint64_t fee) const
 		uint64_t cal_height = height - height % COIN_EMISSION_HEIGHT_INTERVAL;
 		uint64_t cal_generated_coins = cal_height ? m_db->get_block_already_generated_coins(cal_height - 1) : 0;
 		uint64_t base_reward;
-		if(!get_block_reward(median, 1, cal_generated_coins, base_reward, height))
+		if(!get_block_reward(m_nettype, median, 1, cal_generated_coins, base_reward, height))
 			return false;
 		fee_per_kb = get_dynamic_per_kb_fee(base_reward, median);
 
@@ -3044,7 +3131,7 @@ uint64_t Blockchain::get_dynamic_per_kb_fee_estimate(uint64_t grace_blocks) cons
 	uint64_t cal_height = height - height % COIN_EMISSION_HEIGHT_INTERVAL;
 	uint64_t cal_generated_coins = cal_height ? m_db->get_block_already_generated_coins(cal_height - 1) : 0;
 	uint64_t base_reward;
-	if(!get_block_reward(median, 1, cal_generated_coins, base_reward, height))
+	if(!get_block_reward(m_nettype, median, 1, cal_generated_coins, base_reward, height))
 	{
 		MERROR("Failed to determine block reward, using placeholder " << print_money(BLOCK_REWARD_OVERESTIMATE) << " as a high bound");
 		base_reward = BLOCK_REWARD_OVERESTIMATE;
@@ -3529,12 +3616,25 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 	TIME_MEASURE_START(vmt);
 	uint64_t base_reward = 0;
 	uint64_t already_generated_coins = m_db->height() ? m_db->get_block_already_generated_coins(m_db->height() - 1) : 0;
-	if(!validate_miner_transaction(bl, cumulative_block_size, fee_summary, base_reward, already_generated_coins, bvc.m_partial_block_reward))
+	if(check_hard_fork_feature(FORK_DEV_FUND))
 	{
-		MERROR_VER("Block with id: " << id << " has incorrect miner transaction");
-		bvc.m_verifivation_failed = true;
-		return_tx_to_pool(txs);
-		goto leave;
+		if(!validate_miner_transaction_v2(bl, m_db->height(), cumulative_block_size, fee_summary, base_reward, already_generated_coins, bvc.m_partial_block_reward))
+		{
+			MERROR_VER("Block with id: " << id << " has incorrect miner transaction");
+			bvc.m_verifivation_failed = true;
+			return_tx_to_pool(txs);
+			goto leave;
+		}
+	}
+	else
+	{
+		if(!validate_miner_transaction_v1(bl, cumulative_block_size, fee_summary, base_reward, already_generated_coins, bvc.m_partial_block_reward))
+		{
+			MERROR_VER("Block with id: " << id << " has incorrect miner transaction");
+			bvc.m_verifivation_failed = true;
+			return_tx_to_pool(txs);
+			goto leave;
+		}
 	}
 
 	TIME_MEASURE_FINISH(vmt);
