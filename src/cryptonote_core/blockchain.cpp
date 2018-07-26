@@ -1171,7 +1171,7 @@ bool Blockchain::prevalidate_miner_transaction(const block &b, uint64_t height)
 	LOG_PRINT_L3("Blockchain::" << __func__);
 	CHECK_AND_ASSERT_MES(b.miner_tx.vin.size() == 1, false, "coinbase transaction in the block has no inputs");
 	CHECK_AND_ASSERT_MES(b.miner_tx.vin[0].type() == typeid(txin_gen), false, "coinbase transaction in the block has the wrong type");
-	CHECK_AND_ASSERT_MES(b.miner_tx.rct_signatures.type != rct::RCTTypeNull, false, "V1 miner transactions are not allowed.");
+	CHECK_AND_ASSERT_MES(b.miner_tx.rct_signatures.type == rct::RCTTypeNull, false, "V1 miner transactions are not allowed.");
 
 	if(boost::get<txin_gen>(b.miner_tx.vin[0]).height != height)
 	{
