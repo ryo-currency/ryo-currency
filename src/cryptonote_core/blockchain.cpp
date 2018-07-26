@@ -2677,6 +2677,7 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 
 	if(strict_tx_semantics)
 	{
+		// Check for one and only one tx pub key and one optional additional pubkey field with size equal to outputs
 		std::vector<tx_extra_field> tx_extra_fields;
 		parse_tx_extra(tx.extra, tx_extra_fields);
 		
@@ -2713,6 +2714,30 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 				}
 			}
 		}
+
+		if(!has_pubkey)
+		{
+			MERROR_VER("Transaction has no pub key.");
+			tvc.m_verifivation_failed = true;
+			return false;
+		}
+
+		// Check for sorted inputs
+		const crypto::key_image *last_key_image = nullptr;
+		for(const txin_v &txin : tx.vin)
+		{
+			if(txin.type() == typeid(txin_to_key))
+			{
+				const txin_to_key& in_to_key = boost::get<txin_to_key>(txin);
+				if(last_key_image != nullptr && memcmp(&in_to_key.k_image, last_key_image, sizeof(*last_key_image)) >= 0)
+				{
+					MERROR_VER("transaction has unsorted inputs");
+					tvc.m_verifivation_failed = true;
+					return false;
+				}
+				last_key_image = &in_to_key.k_image;
+			}
+		}
 	}
 
 	// min/max tx version based on HF, and we accept v1 txes if having a non mixable
@@ -2730,25 +2755,6 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 		MERROR_VER("transaction version " << (unsigned)tx.version << " is lower than min accepted version " << min_tx_version);
 		tvc.m_verifivation_failed = true;
 		return false;
-	}
-
-	if(strict_tx_semantics)
-	{
-		const crypto::key_image *last_key_image = nullptr;
-		for(const txin_v &txin : tx.vin)
-		{
-			if(txin.type() == typeid(txin_to_key))
-			{
-				const txin_to_key& in_to_key = boost::get<txin_to_key>(txin);
-				if(last_key_image != nullptr && memcmp(&in_to_key.k_image, last_key_image, sizeof(*last_key_image)) >= 0)
-				{
-					MERROR_VER("transaction has unsorted inputs");
-					tvc.m_verifivation_failed = true;
-					return false;
-				}
-				last_key_image = &in_to_key.k_image;
-			}
-		}
 	}
 
 	auto it = m_check_txin_table.find(tx_prefix_hash);
