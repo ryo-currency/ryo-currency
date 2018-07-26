@@ -165,7 +165,8 @@ enum hard_fork_feature
 	FORK_NO_TIMED_LOCK,
 	FORK_NEED_V3_TXES,
 	FORK_BULLETPROOFS,
-	FORK_STRICT_TX_SEMANTICS
+	FORK_STRICT_TX_SEMANTICS,
+	FORK_DEV_FUND
 };
 
 struct hardfork_conf
@@ -185,6 +186,7 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_NO_TIMED_LOCK, 4, 4, 1},
 	{FORK_NEED_V3_TXES, 4, 4, 1},
 	{FORK_STRICT_TX_SEMANTICS, 5, 5, 1},
+	{FORK_DEV_FUND, 5, 5, 1},
 	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1}
 };
 
@@ -277,7 +279,7 @@ struct config<MAINNET>
 	static constexpr uint64_t DEV_FUND_PERIOD = 15 * 24 * 7; // 1 week
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
 	static constexpr uint64_t DEV_FUND_LENGTH = 52 * 6; // 6 years
-	static constexpr uint64_t DEV_FUND_START  = 158760;
+	static constexpr uint64_t DEV_FUND_START  = 160000;
 };
 
 template <>
@@ -307,8 +309,8 @@ struct config<TESTNET>
 	// How ofen do we add the dev reward
 	static constexpr uint64_t DEV_FUND_PERIOD = 15 * 24; // 1 day
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
-	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day pediod)
-	static constexpr uint64_t DEV_FUND_START  = 158760;
+	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day period)
+	static constexpr uint64_t DEV_FUND_START  = 129750;
 };
 
 template <>
@@ -338,8 +340,8 @@ struct config<STAGENET>
 	// How ofen do we add the dev reward
 	static constexpr uint64_t DEV_FUND_PERIOD = 15 * 24; // 1 day
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
-	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day pediod)
-	static constexpr uint64_t DEV_FUND_START  = 158760;
+	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day period)
+	static constexpr uint64_t DEV_FUND_START  = 129750;
 };
 
 extern template struct config<MAINNET>;

@@ -113,15 +113,15 @@ bool get_dev_fund_amount(uint64_t height, uint64_t& amount)
 {
 	amount = 0;
 	if(height < config<NETTYPE>::DEV_FUND_START)
-		return false;
+		return false; // No dev fund output needed because the dev fund didn't start yet
 
 	height -= config<NETTYPE>::DEV_FUND_START;
 
 	if(height / config<NETTYPE>::DEV_FUND_PERIOD >= config<NETTYPE>::DEV_FUND_LENGTH)
-		return false;
+		return false; // No dev fund output needed because the dev fund has ended
 
 	if(height % config<NETTYPE>::DEV_FUND_PERIOD != 0)
-		return false;
+		return false;  // No dev fund output needed because it isn't on the period
 
 	amount = config<NETTYPE>::DEV_FUND_AMOUNT / config<NETTYPE>::DEV_FUND_LENGTH;
 	return true;
