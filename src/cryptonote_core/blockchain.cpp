@@ -1171,7 +1171,7 @@ bool Blockchain::prevalidate_miner_transaction(const block &b, uint64_t height)
 	LOG_PRINT_L3("Blockchain::" << __func__);
 	CHECK_AND_ASSERT_MES(b.miner_tx.vin.size() == 1, false, "coinbase transaction in the block has no inputs");
 	CHECK_AND_ASSERT_MES(b.miner_tx.vin[0].type() == typeid(txin_gen), false, "coinbase transaction in the block has the wrong type");
-	CHECK_AND_ASSERT_MES(b.miner_tx.rct_signatures.type != rct::RCTTypeNull, false, "V1 miner transactions are not allowed.");
+	CHECK_AND_ASSERT_MES(b.miner_tx.rct_signatures.type == rct::RCTTypeNull, false, "V1 miner transactions are not allowed.");
 
 	if(boost::get<txin_gen>(b.miner_tx.vin[0]).height != height)
 	{
@@ -3148,25 +3148,9 @@ uint64_t Blockchain::get_dynamic_per_kb_fee_estimate(uint64_t grace_blocks) cons
 bool Blockchain::is_tx_spendtime_unlocked(uint64_t unlock_time) const
 {
 	LOG_PRINT_L3("Blockchain::" << __func__);
-	if(unlock_time < common_config::CRYPTONOTE_MAX_BLOCK_NUMBER)
-	{
-		// ND: Instead of calling get_current_blockchain_height(), call m_db->height()
-		//    directly as get_current_blockchain_height() locks the recursive mutex.
-		if(m_db->height() - 1 + CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS >= unlock_time)
-			return true;
-		else
-			return false;
-	}
-	else
-	{
-		//interpret as time
-		uint64_t current_time = static_cast<uint64_t>(time(NULL));
-		if(current_time + (check_hard_fork_feature(FORK_V2_DIFFICULTY) ? CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V1 : CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V2) >= unlock_time)
-			return true;
-		else
-			return false;
-	}
-	return false;
+	// ND: Instead of calling get_current_blockchain_height(), call m_db->height()
+	//    directly as get_current_blockchain_height() locks the recursive mutex.
+	return m_db->height() - 1 + CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS >= unlock_time;
 }
 //------------------------------------------------------------------
 // This function locates all outputs associated with a given input (mixins)
