@@ -1216,8 +1216,8 @@ bool Blockchain::validate_miner_transaction_v2(const block &b, uint64_t height, 
 		crypto::public_key pk;
 
 		CHECK_AND_ASSERT_MES(derive_public_key(deriv, i, m_dev_spend_key, pk), false, "Dev public key is invalid!");
-		CHECK_AND_ASSERT_MES(o.target.type() != typeid(txout_to_key), false, "Out needs to be txout_to_key!");
-		CHECK_AND_ASSERT_MES(o.amount == 0, false, "Non-plaintext output in a miner tx");
+		CHECK_AND_ASSERT_MES(o.target.type() == typeid(txout_to_key), false, "Out needs to be txout_to_key!");
+		CHECK_AND_ASSERT_MES(o.amount != 0, false, "Non-plaintext output in a miner tx");
 
 		if(boost::get<txout_to_key>(b.miner_tx.vout[i].target).key == pk)
 			dev_money += o.amount;
