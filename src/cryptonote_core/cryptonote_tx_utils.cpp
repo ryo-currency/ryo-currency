@@ -136,8 +136,8 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 		r = crypto::generate_key_derivation(dev_addr.address.m_view_public_key, txkey.sec, derivation);
 		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" << dev_addr.address.m_view_public_key << ", " << txkey.sec << ")");
 		
-		r = crypto::derive_public_key(derivation, 0, dev_addr.address.m_spend_public_key, out_eph_public_key);
-		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", 0, " << dev_addr.address.m_spend_public_key << ")");
+		r = crypto::derive_public_key(derivation, 1, dev_addr.address.m_spend_public_key, out_eph_public_key);
+		CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" << derivation << ", 1, " << dev_addr.address.m_spend_public_key << ")");
 		
 		out = { dev_fund_amount, txout_to_key(out_eph_public_key) };
 		tx.vout.push_back(out);
