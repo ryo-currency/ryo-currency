@@ -785,15 +785,18 @@ bool simple_wallet::print_fee_info(const std::vector<std::string> &args /* = std
 		fail_msg_writer() << tr("Cannot connect to daemon");
 		return true;
 	}
-	const uint64_t per_kb_fee = m_wallet->get_per_kb_fee();
-	const uint64_t typical_size_kb = 13;
-	message_writer() << (boost::format(tr("Current fee is %s %s per kB")) % print_money(per_kb_fee) % cryptonote::get_unit(cryptonote::get_default_decimal_point())).str();
+
+	constexpr uint64_t typical_size_kb = 15;
+	message_writer() << (boost::format(tr("Current fee is %s %s per kB and %s %s per ring member.")) % 
+		print_money(cryptonote::common_config::FEE_PER_KB) % cryptonote::get_unit(cryptonote::get_default_decimal_point()) %
+		print_money(cryptonote::common_config::FEE_PER_RING_MEMBER) % cryptonote::get_unit(cryptonote::get_default_decimal_point()));
 
 	std::vector<uint64_t> fees;
 	for(uint32_t priority = 1; priority <= 4; ++priority)
 	{
+		constexpr uint64_t base_fee = (cryptonote::common_config::FEE_PER_KB * typical_size_kb + cryptonote::common_config::FEE_PER_RING_MEMBER * DEFAULT_MIXIN);
 		uint64_t mult = m_wallet->get_fee_multiplier(priority);
-		fees.push_back(per_kb_fee * typical_size_kb * mult);
+		fees.push_back(base_fee * mult);
 	}
 	std::vector<std::pair<uint64_t, uint64_t>> blocks;
 	try
