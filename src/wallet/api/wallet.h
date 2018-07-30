@@ -146,7 +146,6 @@ class WalletImpl : public Wallet
 										  PendingTransaction::Priority priority = PendingTransaction::Priority_Low,
 										  uint32_t subaddr_account = 0,
 										  std::set<uint32_t> subaddr_indices = {});
-	virtual PendingTransaction *createSweepUnmixableTransaction();
 	bool submitTransaction(const std::string &fileName);
 	virtual UnsignedTransaction *loadUnsignedTx(const std::string &unsigned_filename);
 	bool exportKeyImages(const std::string &filename);

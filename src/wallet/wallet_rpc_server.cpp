@@ -907,32 +907,6 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-bool wallet_rpc_server::on_sweep_dust(const wallet_rpc::COMMAND_RPC_SWEEP_DUST::request &req, wallet_rpc::COMMAND_RPC_SWEEP_DUST::response &res, epee::json_rpc::error &er)
-{
-	if(!m_wallet)
-		return not_open(er);
-	if(m_wallet->restricted())
-	{
-		er.code = WALLET_RPC_ERROR_CODE_DENIED;
-		er.message = "Command unavailable in restricted mode.";
-		return false;
-	}
-
-	try
-	{
-		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_unmixable_sweep_transactions(m_trusted_daemon);
-
-		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
-							 res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, er);
-	}
-	catch(const std::exception &e)
-	{
-		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_GENERIC_TRANSFER_ERROR);
-		return false;
-	}
-	return true;
-}
-//------------------------------------------------------------------------------------------------------------------------------
 bool wallet_rpc_server::on_sweep_all(const wallet_rpc::COMMAND_RPC_SWEEP_ALL::request &req, wallet_rpc::COMMAND_RPC_SWEEP_ALL::response &res, epee::json_rpc::error &er)
 {
 	std::vector<cryptonote::tx_destination_entry> dsts;

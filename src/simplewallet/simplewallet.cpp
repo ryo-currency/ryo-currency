@@ -2101,9 +2101,6 @@ simple_wallet::simple_wallet()
 							 boost::bind(&simple_wallet::locked_transfer, this, _1),
 							 tr("locked_transfer [index=<N1>[,<N2>,...]] [<priority>] [<ring_size>] <addr> <amount> <lockblocks> [<payment_id>]"),
 							 tr("Transfer <amount> to <address> and lock it for <lockblocks> (max. 1000000). If the parameter \"index=<N1>[,<N2>,...]\" is specified, the wallet uses outputs received by addresses of those indices. If omitted, the wallet randomly chooses address indices to be used. In any case, it tries its best not to combine outputs across multiple addresses. <priority> is the priority of the transaction. The higher the priority, the higher the transaction fee. Valid values in priority order (from lowest to highest) are: unimportant, normal, elevated, priority. If omitted, the default value (see the command \"set priority\") is used. <ring_size> is the number of inputs to include for untraceability. Multiple payments can be made at once by adding <address_2> <amount_2> etcetera (before the payment ID, if it's included)"));
-	m_cmd_binder.set_handler("sweep_unmixable",
-							 boost::bind(&simple_wallet::sweep_unmixable, this, _1),
-							 tr("Send all unmixable outputs to yourself with ring_size 1"));
 	m_cmd_binder.set_handler("sweep_all", boost::bind(&simple_wallet::sweep_all, this, _1),
 							 tr("sweep_all [index=<N1>[,<N2>,...]] [<priority>] [<ring_size>] <address> [<payment_id>]"),
 							 tr("Send all unlocked balance to an address. If the parameter \"index<N1>[,<N2>,...]\" is specified, the wallet sweeps outputs received by those address indices. If omitted, the wallet randomly chooses an address index to be used."));
@@ -4875,106 +4872,6 @@ bool simple_wallet::transfer_new(const std::vector<std::string> &args_)
 bool simple_wallet::locked_transfer(const std::vector<std::string> &args_)
 {
 	return transfer_main(TransferLocked, args_);
-}
-//----------------------------------------------------------------------------------------------------
-
-bool simple_wallet::sweep_unmixable(const std::vector<std::string> &args_)
-{
-	if(m_wallet->ask_password() && !get_and_verify_password())
-	{
-		return true;
-	}
-	if(!try_connect_to_daemon())
-		return true;
-
-	LOCK_IDLE_SCOPE();
-	try
-	{
-		// figure out what tx will be necessary
-		auto ptx_vector = m_wallet->create_unmixable_sweep_transactions(m_trusted_daemon);
-
-		if(ptx_vector.empty())
-		{
-			fail_msg_writer() << tr("No unmixable outputs found");
-			return true;
-		}
-
-		// give user total and fee, and prompt to confirm
-		uint64_t total_fee = 0, total_unmixable = 0;
-		for(size_t n = 0; n < ptx_vector.size(); ++n)
-		{
-			total_fee += ptx_vector[n].fee;
-			for(auto i : ptx_vector[n].selected_transfers)
-				total_unmixable += m_wallet->get_transfer_details(i).amount();
-		}
-
-		std::string prompt_str = tr("Sweeping ") + print_money(total_unmixable);
-		if(ptx_vector.size() > 1)
-		{
-			prompt_str = (boost::format(tr("Sweeping %s in %llu transactions for a total fee of %s.  Is this okay?  (Y/Yes/N/No): ")) %
-						  print_money(total_unmixable) %
-						  ((unsigned long long)ptx_vector.size()) %
-						  print_money(total_fee))
-							 .str();
-		}
-		else
-		{
-			prompt_str = (boost::format(tr("Sweeping %s for a total fee of %s.  Is this okay?  (Y/Yes/N/No): ")) %
-						  print_money(total_unmixable) %
-						  print_money(total_fee))
-							 .str();
-		}
-		std::string accepted = input_line(prompt_str);
-		if(std::cin.eof())
-			return true;
-		if(!command_line::is_yes(accepted))
-		{
-			fail_msg_writer() << tr("transaction cancelled.");
-
-			return true;
-		}
-
-		// actually commit the transactions
-		if(m_wallet->multisig())
-		{
-			bool r = m_wallet->save_multisig_tx(ptx_vector, "multisig_ryo_tx");
-			if(!r)
-			{
-				fail_msg_writer() << tr("Failed to write transaction(s) to file");
-			}
-			else
-			{
-				success_msg_writer(true) << tr("Unsigned transaction(s) successfully written to file: ") << "multisig_ryo_tx";
-			}
-		}
-		else if(m_wallet->watch_only())
-		{
-			bool r = m_wallet->save_tx(ptx_vector, "unsigned_ryo_tx");
-			if(!r)
-			{
-				fail_msg_writer() << tr("Failed to write transaction(s) to file");
-			}
-			else
-			{
-				success_msg_writer(true) << tr("Unsigned transaction(s) successfully written to file: ") << "unsigned_ryo_tx";
-			}
-		}
-		else
-		{
-			commit_or_save(ptx_vector, m_do_not_relay);
-		}
-	}
-	catch(const std::exception &e)
-	{
-		handle_transfer_exception(std::current_exception(), m_trusted_daemon);
-	}
-	catch(...)
-	{
-		LOG_ERROR("unknown error");
-		fail_msg_writer() << tr("unknown error");
-	}
-
-	return true;
 }
 //----------------------------------------------------------------------------------------------------
 bool simple_wallet::sweep_main(uint64_t below, const std::vector<std::string> &args_)
