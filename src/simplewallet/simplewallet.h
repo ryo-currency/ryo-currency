@@ -67,8 +67,6 @@
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "wallet.simplewallet"
-// Ryo donation address
-constexpr const char RYO_DONATION_ADDR[] = "RYoLshssqU9WvHMwAmt4j6dtpgRERDqwzSiHF4V9nEb5YWmQ5pLSkJC9QudNseKrxBacKtQuLWhpSQ6GLXgyDWjKAGjNXH72VDJ";
 
 /*!
  * \namespace cryptonote
