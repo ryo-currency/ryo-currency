@@ -7367,44 +7367,11 @@ const wallet2::transfer_details &wallet2::get_transfer_details(size_t idx) const
 	return m_transfers[idx];
 }
 //----------------------------------------------------------------------------------------------------
-std::vector<size_t> wallet2::select_available_unmixable_outputs(bool trusted_daemon)
-{
-	// request all outputs with less than 3 instances
-	const size_t min_mixin = DEFAULT_MIXIN;
-	return select_available_outputs_from_histogram(min_mixin + 1, false, true, false, trusted_daemon);
-}
-//----------------------------------------------------------------------------------------------------
 std::vector<size_t> wallet2::select_available_mixable_outputs(bool trusted_daemon)
 {
 	// request all outputs with at least 3 instances, so we can use mixin 2 with
 	const size_t min_mixin = DEFAULT_MIXIN;
 	return select_available_outputs_from_histogram(min_mixin + 1, true, true, true, trusted_daemon);
-}
-//----------------------------------------------------------------------------------------------------
-std::vector<wallet2::pending_tx> wallet2::create_unmixable_sweep_transactions(bool trusted_daemon)
-{
-	const uint64_t fee_per_kb = get_per_kb_fee();
-
-	// may throw
-	std::vector<size_t> unmixable_outputs = select_available_unmixable_outputs(trusted_daemon);
-	size_t num_dust_outputs = unmixable_outputs.size();
-
-	if(num_dust_outputs == 0)
-	{
-		return std::vector<wallet2::pending_tx>();
-	}
-
-	// split in "dust" and "non dust" to make it easier to select outputs
-	std::vector<size_t> unmixable_transfer_outputs, unmixable_dust_outputs;
-	for(auto n : unmixable_outputs)
-	{
-		if(m_transfers[n].amount() < fee_per_kb)
-			unmixable_dust_outputs.push_back(n);
-		else
-			unmixable_transfer_outputs.push_back(n);
-	}
-
-	return create_transactions_from(m_account_public_address, false, unmixable_transfer_outputs, unmixable_dust_outputs, 0 /*fake_outs_count */, 0 /* unlock_time */, 1 /*priority */, std::vector<uint8_t>(), trusted_daemon);
 }
 
 bool wallet2::get_tx_key(const crypto::hash &txid, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys) const
