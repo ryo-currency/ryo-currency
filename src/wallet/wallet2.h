@@ -1120,7 +1120,6 @@ class wallet2
 	void parse_block_round(const cryptonote::blobdata &blob, cryptonote::block &bl, crypto::hash &bl_id, bool &error) const;
 	uint64_t get_upper_transaction_size_limit() const;
 	std::vector<uint64_t> get_unspent_amounts_vector() const;
-	uint64_t get_dynamic_per_kb_fee_estimate() const;
 	float get_output_relatedness(const transfer_details &td0, const transfer_details &td1) const;
 	std::vector<size_t> pick_preferred_rct_inputs(uint64_t needed_money, uint32_t subaddr_account, const std::set<uint32_t> &subaddr_indices) const;
 	void set_spent(size_t idx, uint64_t height);
