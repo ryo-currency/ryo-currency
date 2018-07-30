@@ -1010,7 +1010,18 @@ class wallet2
 	std::vector<std::pair<uint64_t, uint64_t>> estimate_backlog(uint64_t min_blob_size, uint64_t max_blob_size, const std::vector<uint64_t> &fees);
 
 	uint64_t get_fee_multiplier(uint32_t priority) const;
-	uint64_t get_per_kb_fee() const;
+	
+	inline uint64_t calculate_fee(size_t ring_size, size_t bytes, uint64_t fee_multiplier) const
+	{
+		using namespace cryptonote;
+		uint64_t fee = ((bytes + 1023) / 1024) * common_config::FEE_PER_KB;
+	
+		if(use_fork_rules(FORK_FEE_V2, 10))
+			fee += ring_size * common_config::FEE_PER_RING_MEMBER;
+
+		return fee * fee_multiplier;
+	}
+
 	uint64_t adjust_mixin(uint64_t mixin) const;
 	uint32_t adjust_priority(uint32_t priority);
 

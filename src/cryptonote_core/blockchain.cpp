@@ -3070,10 +3070,25 @@ uint64_t Blockchain::get_dynamic_per_kb_fee(uint64_t block_reward, size_t median
 }
 
 //------------------------------------------------------------------
-bool Blockchain::check_fee(size_t blob_size, uint64_t fee) const
+bool Blockchain::check_fee(const transaction &tx, size_t blob_size, uint64_t fee) const
 {
-	uint64_t needed_fee;
-	if(!check_hard_fork_feature(FORK_FIXED_FEE))
+	uint64_t needed_fee = uint64_t(-1); // -1 is a safety mechanism
+
+	if(check_hard_fork_feature(FORK_FEE_V2))
+	{
+		needed_fee = 0;
+		if(tx.vin.size() > 0 && tx.vin[0].type() == typeid(txin_to_key))
+		{
+			uint64_t ring_size = boost::get<txin_to_key>(tx.vin[0]).key_offsets.size();
+			needed_fee += ring_size * common_config::FEE_PER_RING_MEMBER;
+		}
+		needed_fee += (uint64_t(blob_size) * common_config::FEE_PER_KB) / 1024ull;
+	}
+	else if(check_hard_fork_feature(FORK_FIXED_FEE))
+	{
+		needed_fee = (uint64_t(blob_size) * common_config::FEE_PER_KB) / 1024ull;
+	}
+	else
 	{
 		uint64_t fee_per_kb;
 		uint64_t median = m_current_block_cumul_sz_limit / 2;
@@ -3096,10 +3111,6 @@ bool Blockchain::check_fee(size_t blob_size, uint64_t fee) const
 			MERROR_VER("transaction fee is not enough: " << print_money(fee) << ", minimum fee: " << print_money(needed_fee));
 			return false;
 		}
-	}
-	else
-	{
-		needed_fee = (uint64_t(blob_size) * common_config::FEE_PER_KB) / 1024ull;
 	}
 
 	if(fee < needed_fee)

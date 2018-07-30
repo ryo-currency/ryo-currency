@@ -163,7 +163,8 @@ enum hard_fork_feature
 	FORK_NEED_V3_TXES,
 	FORK_BULLETPROOFS,
 	FORK_STRICT_TX_SEMANTICS,
-	FORK_DEV_FUND
+	FORK_DEV_FUND,
+	FORK_FEE_V2
 };
 
 struct hardfork_conf
@@ -183,6 +184,7 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_NEED_V3_TXES, 4, 4, 1},
 	{FORK_STRICT_TX_SEMANTICS, 5, 5, 1},
 	{FORK_DEV_FUND, 5, 5, 1},
+	{FORK_FEE_V2, 5, 6, 1},
 	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1}
 };
 
@@ -219,9 +221,10 @@ struct common_config
 
 	static constexpr uint64_t CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE = 240 * 1024; // 240 kB
 	static constexpr uint64_t BLOCK_SIZE_GROWTH_FAVORED_ZONE = CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE * 4;
-	static constexpr uint64_t TRANSACTION_SIZE_LIMIT = 300 * 1024;			// 256 kB
+	static constexpr uint64_t TRANSACTION_SIZE_LIMIT = 300 * 1024;			// 300 kB
 	static constexpr uint64_t BLOCK_SIZE_LIMIT_ABSOLUTE = 16 * 1024 * 1024; // 16 MB
 	static constexpr uint64_t FEE_PER_KB = 500000;
+	static constexpr uint64_t FEE_PER_RING_MEMBER = 500000;
 	static constexpr uint64_t DYNAMIC_FEE_PER_KB_BASE_FEE = 500000;				  // 0.0005 * pow(10, 9)
 	static constexpr uint64_t DYNAMIC_FEE_PER_KB_BASE_BLOCK_REWARD = 64000000000; // 64 * pow(10, 9)
 
@@ -244,11 +247,6 @@ struct config : public common_config
 template <>
 struct config<MAINNET>
 {
-	static constexpr uint64_t DEFAULT_FEE_ATOMIC_XMR_PER_KB = 500; // Just a placeholder!  Change me!
-	static constexpr uint8_t FEE_CALCULATION_MAX_RETRIES = 10;
-	static constexpr uint64_t DEFAULT_DUST_THRESHOLD = ((uint64_t)10000000);	// pow(10, 7)
-	static constexpr uint64_t BASE_REWARD_CLAMP_THRESHOLD = ((uint64_t)100000); // pow(10, 5)
-
 	static constexpr uint64_t LEGACY_LONG_ADDRESS_BASE58_PREFIX = 0x2bb39a;			   // Sumo
 	static constexpr uint64_t LEGACY_LONG_INTEGRATED_ADDRESS_BASE58_PREFIX = 0x29339a; //Sumi
 	static constexpr uint64_t LEGACY_LONG_SUBADDRESS_BASE58_PREFIX = 0x8319a;		   // Subo
