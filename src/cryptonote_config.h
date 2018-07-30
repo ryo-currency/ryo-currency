@@ -273,7 +273,7 @@ struct config<MAINNET>
 	static constexpr uint64_t DEV_FUND_PERIOD = 15 * 24 * 7; // 1 week
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
 	static constexpr uint64_t DEV_FUND_LENGTH = 52 * 6; // 6 years
-	static constexpr uint64_t DEV_FUND_START  = 160000;
+	static constexpr uint64_t DEV_FUND_START  = 161500;
 };
 
 template <>

@@ -112,7 +112,7 @@ static const struct
 	{2, 21300, 0, 1497657600},
 	{3, MAINNET_HARDFORK_V3_HEIGHT, 0, 1522800000},
 	{4, 150000, 0, 1530967408},
-	{5, 160000, 0, 1533407730}
+	{5, 161500, 0, 1533767730}
 };
 
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
@@ -128,7 +128,8 @@ static const struct
 	{2, 5150, 0, 1497181713},
 	{3, 103580, 0, 1522540800}, // April 01, 2018
 	{4, 123575, 0, 1529873000},
-	{5, 129750, 0, 1532782050}
+	{5, 129750, 0, 1532782050},
+	{6, 130425, 0, 1532868450}
 };
 static const uint64_t testnet_hard_fork_version_1_till = (uint64_t)-1;
 
