@@ -64,7 +64,6 @@ class NodeRPCProxy
 	void set_height(uint64_t h);
 	boost::optional<std::string> get_target_height(uint64_t &height) const;
 	boost::optional<std::string> get_earliest_height(uint8_t version, uint64_t &earliest_height) const;
-	boost::optional<std::string> get_dynamic_per_kb_fee_estimate(uint64_t grace_blocks, uint64_t &fee) const;
 
   private:
 	epee::net_utils::http::http_simple_client &m_http_client;

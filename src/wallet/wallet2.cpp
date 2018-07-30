@@ -5297,17 +5297,6 @@ uint64_t wallet2::get_fee_multiplier(uint32_t priority) const
 	THROW_WALLET_EXCEPTION_IF(false, error::invalid_priority);
 	return 1;
 }
-//----------------------------------------------------------------------------------------------------
-uint64_t wallet2::get_dynamic_per_kb_fee_estimate() const
-{
-	uint64_t fee;
-	boost::optional<std::string> result = m_node_rpc_proxy.get_dynamic_per_kb_fee_estimate(FEE_ESTIMATE_GRACE_BLOCKS, fee);
-	if(!result)
-		return fee;
-	LOG_PRINT_L1("Failed to query per kB fee, using " << print_money(common_config::FEE_PER_KB));
-	return common_config::FEE_PER_KB;
-}
-
 //------------------------------------------------------------------------------------------------------------------------------
 uint64_t wallet2::adjust_mixin(uint64_t mixin) const
 {

@@ -3122,38 +3122,6 @@ bool Blockchain::check_fee(const transaction &tx, size_t blob_size, uint64_t fee
 }
 
 //------------------------------------------------------------------
-uint64_t Blockchain::get_dynamic_per_kb_fee_estimate(uint64_t grace_blocks) const
-{
-	if(grace_blocks >= CRYPTONOTE_REWARD_BLOCKS_WINDOW)
-		grace_blocks = CRYPTONOTE_REWARD_BLOCKS_WINDOW - 1;
-
-	std::vector<size_t> sz;
-	get_last_n_blocks_sizes(sz, CRYPTONOTE_REWARD_BLOCKS_WINDOW - grace_blocks);
-	const uint64_t bfrz = common_config::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE;
-	for(size_t i = 0; i < grace_blocks; ++i)
-		sz.push_back(bfrz);
-
-	uint64_t median = epee::misc_utils::median(sz);
-	if(median <= bfrz)
-		median = bfrz;
-
-	//uint64_t already_generated_coins = m_db->height() ? m_db->get_block_already_generated_coins(m_db->height() - 1) : 0;
-	uint64_t height = m_db->height();
-	uint64_t cal_height = height - height % COIN_EMISSION_HEIGHT_INTERVAL;
-	uint64_t cal_generated_coins = cal_height ? m_db->get_block_already_generated_coins(cal_height - 1) : 0;
-	uint64_t base_reward;
-	if(!get_block_reward(m_nettype, median, 1, cal_generated_coins, base_reward, height))
-	{
-		MERROR("Failed to determine block reward, using placeholder " << print_money(BLOCK_REWARD_OVERESTIMATE) << " as a high bound");
-		base_reward = BLOCK_REWARD_OVERESTIMATE;
-	}
-
-	uint64_t fee = get_dynamic_per_kb_fee(base_reward, median);
-	MDEBUG("Estimating " << grace_blocks << "-block fee at " << print_money(fee) << "/kB");
-	return fee;
-}
-
-//------------------------------------------------------------------
 // This function checks to see if a tx is unlocked.  unlock_time is either
 // a block index or a unix time.
 bool Blockchain::is_tx_spendtime_unlocked(uint64_t unlock_time) const
