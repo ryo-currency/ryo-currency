@@ -84,7 +84,7 @@ TEST(AddressFromTXT, Failure)
 
 TEST(AddressFromURL, Success)
 {
-	const std::string addr = RYO_DONATION_ADDR;
+	const std::string addr = cryptonote::common_config::RYO_DONATION_ADDR;
 
 	bool dnssec_result = false;
 

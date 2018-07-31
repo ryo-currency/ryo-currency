@@ -237,6 +237,8 @@ struct common_config
 	static constexpr const char* DEV_FUND_VIEWKEY = "\x34\xd6\xb7\x15\x5d\x99\xda\x44\xc3\xa7\x34\x24\xc6\x0e\xcb\x0d\xa5\x3d\x22\x8e\xd8\xda\x02\x6d\xf0\x0e\xd2\x75\xea\x54\xe8\x03";
 	// Exact number of coins burned in the premine burn, in atomic units
 	static constexpr uint64_t PREMINE_BURN_AMOUNT = 8700051446427001;
+	// Ryo donation address
+	static constexpr const char* RYO_DONATION_ADDR = "RYoLshssqU9WvHMwAmt4j6dtpgRERDqwzSiHF4V9nEb5YWmQ5pLSkJC9QudNseKrxBacKtQuLWhpSQ6GLXgyDWjKAGjNXH72VDJ";
 };
 
 template <network_type type>
