@@ -5368,11 +5368,11 @@ bool simple_wallet::donate(const std::vector<std::string> &args_)
 	amount_str = local_args.back();
 	local_args.pop_back();
 	// push back address, amount, payment id
-	local_args.push_back(RYO_DONATION_ADDR);
+	local_args.emplace_back(common_config::RYO_DONATION_ADDR);
 	local_args.push_back(amount_str);
 	if(!payment_id_str.empty())
 		local_args.push_back(payment_id_str);
-	message_writer() << tr("Donating ") << amount_str << " to The Ryo Currency Project (" << RYO_DONATION_ADDR << ").";
+	message_writer() << tr("Donating ") << amount_str << " to The Ryo Currency Project (" << common_config::RYO_DONATION_ADDR << ").";
 	transfer_new(local_args);
 	return true;
 }
