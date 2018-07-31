@@ -169,7 +169,7 @@ bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_has
 
 	fee = tx.rct_signatures.txnFee;
 
-	if(!kept_by_block && !m_blockchain.check_fee(blob_size, fee))
+	if(!kept_by_block && !m_blockchain.check_fee(tx, blob_size, fee))
 	{
 		tvc.m_verifivation_failed = true;
 		tvc.m_fee_too_low = true;

@@ -112,7 +112,7 @@ static const struct
 	{2, 21300, 0, 1497657600},
 	{3, MAINNET_HARDFORK_V3_HEIGHT, 0, 1522800000},
 	{4, 150000, 0, 1530967408},
-	{5, 160000, 0, 1533407730}
+	{5, 161500, 0, 1533767730}
 };
 
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
@@ -128,7 +128,8 @@ static const struct
 	{2, 5150, 0, 1497181713},
 	{3, 103580, 0, 1522540800}, // April 01, 2018
 	{4, 123575, 0, 1529873000},
-	{5, 129750, 0, 1532782050}
+	{5, 129750, 0, 1532782050},
+	{6, 130425, 0, 1532868450}
 };
 static const uint64_t testnet_hard_fork_version_1_till = (uint64_t)-1;
 
@@ -3070,10 +3071,25 @@ uint64_t Blockchain::get_dynamic_per_kb_fee(uint64_t block_reward, size_t median
 }
 
 //------------------------------------------------------------------
-bool Blockchain::check_fee(size_t blob_size, uint64_t fee) const
+bool Blockchain::check_fee(const transaction &tx, size_t blob_size, uint64_t fee) const
 {
-	uint64_t needed_fee;
-	if(!check_hard_fork_feature(FORK_FIXED_FEE))
+	uint64_t needed_fee = uint64_t(-1); // -1 is a safety mechanism
+
+	if(check_hard_fork_feature(FORK_FEE_V2))
+	{
+		needed_fee = 0;
+		if(tx.vin.size() > 0 && tx.vin[0].type() == typeid(txin_to_key))
+		{
+			uint64_t ring_size = boost::get<txin_to_key>(tx.vin[0]).key_offsets.size();
+			needed_fee += ring_size * common_config::FEE_PER_RING_MEMBER;
+		}
+		needed_fee += (uint64_t(blob_size) * common_config::FEE_PER_KB) / 1024ull;
+	}
+	else if(check_hard_fork_feature(FORK_FIXED_FEE))
+	{
+		needed_fee = (uint64_t(blob_size) * common_config::FEE_PER_KB) / 1024ull;
+	}
+	else
 	{
 		uint64_t fee_per_kb;
 		uint64_t median = m_current_block_cumul_sz_limit / 2;
@@ -3097,10 +3113,6 @@ bool Blockchain::check_fee(size_t blob_size, uint64_t fee) const
 			return false;
 		}
 	}
-	else
-	{
-		needed_fee = (uint64_t(blob_size) * common_config::FEE_PER_KB) / 1024ull;
-	}
 
 	if(fee < needed_fee)
 	{
@@ -3108,38 +3120,6 @@ bool Blockchain::check_fee(size_t blob_size, uint64_t fee) const
 		return false;
 	}
 	return true;
-}
-
-//------------------------------------------------------------------
-uint64_t Blockchain::get_dynamic_per_kb_fee_estimate(uint64_t grace_blocks) const
-{
-	if(grace_blocks >= CRYPTONOTE_REWARD_BLOCKS_WINDOW)
-		grace_blocks = CRYPTONOTE_REWARD_BLOCKS_WINDOW - 1;
-
-	std::vector<size_t> sz;
-	get_last_n_blocks_sizes(sz, CRYPTONOTE_REWARD_BLOCKS_WINDOW - grace_blocks);
-	const uint64_t bfrz = common_config::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE;
-	for(size_t i = 0; i < grace_blocks; ++i)
-		sz.push_back(bfrz);
-
-	uint64_t median = epee::misc_utils::median(sz);
-	if(median <= bfrz)
-		median = bfrz;
-
-	//uint64_t already_generated_coins = m_db->height() ? m_db->get_block_already_generated_coins(m_db->height() - 1) : 0;
-	uint64_t height = m_db->height();
-	uint64_t cal_height = height - height % COIN_EMISSION_HEIGHT_INTERVAL;
-	uint64_t cal_generated_coins = cal_height ? m_db->get_block_already_generated_coins(cal_height - 1) : 0;
-	uint64_t base_reward;
-	if(!get_block_reward(m_nettype, median, 1, cal_generated_coins, base_reward, height))
-	{
-		MERROR("Failed to determine block reward, using placeholder " << print_money(BLOCK_REWARD_OVERESTIMATE) << " as a high bound");
-		base_reward = BLOCK_REWARD_OVERESTIMATE;
-	}
-
-	uint64_t fee = get_dynamic_per_kb_fee(base_reward, median);
-	MDEBUG("Estimating " << grace_blocks << "-block fee at " << print_money(fee) << "/kB");
-	return fee;
 }
 
 //------------------------------------------------------------------
