@@ -718,7 +718,6 @@ class wallet2
 	bool sign_multisig_tx_from_file(const std::string &filename, std::vector<crypto::hash> &txids, std::function<bool(const multisig_tx_set &)> accept_func);
 	bool sign_multisig_tx(multisig_tx_set &exported_txs, std::vector<crypto::hash> &txids);
 	bool sign_multisig_tx_to_file(multisig_tx_set &exported_txs, const std::string &filename, std::vector<crypto::hash> &txids);
-	std::vector<pending_tx> create_unmixable_sweep_transactions(bool trusted_daemon);
 	bool check_connection(uint32_t *version = NULL, uint32_t timeout = 200000);
 	void get_transfers(wallet2::transfer_container &incoming_transfers) const;
 	void get_payments(const crypto::hash &payment_id, std::list<wallet2::payment_details> &payments, uint64_t min_height = 0, const boost::optional<uint32_t> &subaddr_account = boost::none, const std::set<uint32_t> &subaddr_indices = {}) const;
@@ -947,7 +946,6 @@ class wallet2
 	uint64_t estimate_blockchain_height();
 	std::vector<size_t> select_available_outputs_from_histogram(uint64_t count, bool atleast, bool unlocked, bool allow_rct, bool trusted_daemon);
 	std::vector<size_t> select_available_outputs(const std::function<bool(const transfer_details &td)> &f) const;
-	std::vector<size_t> select_available_unmixable_outputs(bool trusted_daemon);
 	std::vector<size_t> select_available_mixable_outputs(bool trusted_daemon);
 
 	size_t pop_best_value_from(const transfer_container &transfers, std::vector<size_t> &unused_dust_indices, const std::vector<size_t> &selected_transfers, bool smallest = false) const;
@@ -1012,7 +1010,18 @@ class wallet2
 	std::vector<std::pair<uint64_t, uint64_t>> estimate_backlog(uint64_t min_blob_size, uint64_t max_blob_size, const std::vector<uint64_t> &fees);
 
 	uint64_t get_fee_multiplier(uint32_t priority) const;
-	uint64_t get_per_kb_fee() const;
+	
+	inline uint64_t calculate_fee(size_t ring_size, size_t bytes, uint64_t fee_multiplier) const
+	{
+		using namespace cryptonote;
+		uint64_t fee = ((bytes + 1023) / 1024) * common_config::FEE_PER_KB;
+	
+		if(use_fork_rules(FORK_FEE_V2, 10))
+			fee += ring_size * common_config::FEE_PER_RING_MEMBER;
+
+		return fee * fee_multiplier;
+	}
+
 	uint64_t adjust_mixin(uint64_t mixin) const;
 	uint32_t adjust_priority(uint32_t priority);
 
@@ -1111,7 +1120,6 @@ class wallet2
 	void parse_block_round(const cryptonote::blobdata &blob, cryptonote::block &bl, crypto::hash &bl_id, bool &error) const;
 	uint64_t get_upper_transaction_size_limit() const;
 	std::vector<uint64_t> get_unspent_amounts_vector() const;
-	uint64_t get_dynamic_per_kb_fee_estimate() const;
 	float get_output_relatedness(const transfer_details &td0, const transfer_details &td1) const;
 	std::vector<size_t> pick_preferred_rct_inputs(uint64_t needed_money, uint32_t subaddr_account, const std::set<uint32_t> &subaddr_indices) const;
 	void set_spent(size_t idx, uint64_t height);
