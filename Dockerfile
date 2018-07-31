@@ -86,6 +86,18 @@ RUN git clone https://github.com/jedisct1/libsodium.git -b ${SODIUM_VERSION} \
     && make check \
     && make install
 
+# ncurses 
+# Needed for readline find module in cmake. Why is it not documented?
+# WARNING: ncurses 6.1 is not working correctly with RYO so we stay with the common 5.X
+ARG NCURSES_VERSION=5.9
+ARG NCURSES_HASH=9046298fb440324c9d4135ecea7879ffed8546dd1b58e59430ea07a4633f563b
+RUN curl -s -O ftp://ftp.gnu.org/pub/gnu/ncurses/ncurses-${NCURSES_VERSION}.tar.gz \
+    && tar -xvf ncurses-${NCURSES_VERSION}.tar.gz \
+    && echo "${NCURSES_HASH} ncurses-${NCURSES_VERSION}.tar.gz" | sha256sum -c \
+    && cd ncurses-${NCURSES_VERSION} \
+    && CFLAGS="-fPIC" CXXFLAGS="-fPIC -P" CPPFLAGS="-P" ./configure \
+    && make install
+
 WORKDIR /src
 COPY . .
 
