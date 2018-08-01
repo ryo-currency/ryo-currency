@@ -588,7 +588,7 @@ bool core::handle_incoming_tx_pre(const blobdata &tx_blob, tx_verification_conte
 		return false;
 	}
 
-	if(m_blockchain_storage.check_hard_fork_feature(FORK_NO_TIMED_LOCK) && tx.unlock_time >= common_config::CRYPTONOTE_MAX_BLOCK_NUMBER)
+	if(tx.unlock_time >= common_config::CRYPTONOTE_MAX_BLOCK_NUMBER)
 	{
 		LOG_PRINT_L1("Transaction is time-locked and we only accept block number lock.");
 		tvc.m_verifivation_failed = true;
@@ -892,6 +892,9 @@ std::pair<uint64_t, uint64_t> core::get_coinbase_tx_sum(const uint64_t start_off
 												  return true;
 											  });
 	}
+
+	// Remove burned premine from emission
+	emission_amount -= common_config::PREMINE_BURN_AMOUNT;
 
 	return std::pair<uint64_t, uint64_t>(emission_amount, total_fee_amount);
 }

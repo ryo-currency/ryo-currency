@@ -67,8 +67,6 @@
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
 //#define RYO_DEFAULT_LOG_CATEGORY "wallet.simplewallet"
-// Ryo donation address
-constexpr const char RYO_DONATION_ADDR[] = "RYoLshssqU9WvHMwAmt4j6dtpgRERDqwzSiHF4V9nEb5YWmQ5pLSkJC9QudNseKrxBacKtQuLWhpSQ6GLXgyDWjKAGjNXH72VDJ";
 
 /*!
  * \namespace cryptonote
@@ -109,6 +107,9 @@ class simple_wallet : public tools::i_wallet2_callback
 	//! \return Prompts user for password and verifies against local file. Logs on error and returns `none`
 	boost::optional<tools::password_container> get_and_verify_password() const;
 
+	std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> make_new_wrapped(const boost::program_options::variables_map &vm, 
+																			const std::function<boost::optional<tools::password_container>(const char *, bool)> &password_prompter);
+	
 	bool new_wallet(const boost::program_options::variables_map &vm, std::string seed);
 	bool new_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key_16 *seed = nullptr, uint8_t seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS);
 	bool restore_legacy_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key &seed_legacy);
@@ -173,7 +174,6 @@ class simple_wallet : public tools::i_wallet2_callback
 	bool sweep_all(const std::vector<std::string> &args);
 	bool sweep_below(const std::vector<std::string> &args);
 	bool sweep_single(const std::vector<std::string> &args);
-	bool sweep_unmixable(const std::vector<std::string> &args);
 	bool donate(const std::vector<std::string> &args);
 	bool sign_transfer(const std::vector<std::string> &args);
 	bool submit_transfer(const std::vector<std::string> &args);
@@ -201,7 +201,16 @@ class simple_wallet : public tools::i_wallet2_callback
 	bool show_transfers(const std::vector<std::string> &args);
 	bool unspent_outputs(const std::vector<std::string> &args);
 	bool rescan_blockchain(const std::vector<std::string> &args);
-	bool refresh_main(uint64_t start_height, bool reset = false, bool is_init = false);
+	/** refresh the wallet
+	 *
+	 * Rebuild the internal block structure and recalculate the wallet amount.
+	 *
+	 * @param start_height the block height where the amount received payments is started
+	 * @param reset if true the internal data structures will be reset and rebuild from scratch
+	 * @param is_init prints a account overview e.g. the balance and unlocked balance
+	 * @param use_optimized_height if true the refresh process used a internal optimized start height and skip older blocks
+	 */
+	bool refresh_main(uint64_t start_height, bool reset = false, bool is_init = false, bool use_optimized_height = true);
 	bool set_tx_note(const std::vector<std::string> &args);
 	bool get_tx_note(const std::vector<std::string> &args);
 	bool set_description(const std::vector<std::string> &args);
