@@ -606,20 +606,6 @@ class Blockchain
 	static uint64_t get_dynamic_per_kb_fee(uint64_t block_reward, size_t median_block_size);
 
 	/**
-     * @brief get dynamic per kB fee estimate for the next few blocks
-     *
-     * The dynamic fee is based on the block size in a past window, and
-     * the current block reward. It is expressed by kB. This function
-     * calculates an estimate for a dynamic fee which will be valid for
-     * the next grace_blocks
-     *
-     * @param grace_blocks number of blocks we want the fee to be valid for
-     *
-     * @return the per kB fee estimate
-     */
-	uint64_t get_dynamic_per_kb_fee_estimate(uint64_t grace_blocks) const;
-
-	/**
      * @brief validate a transaction's fee
      *
      * This function validates the fee is enough for the transaction.
@@ -631,7 +617,7 @@ class Blockchain
      *
      * @return true if the fee is enough, false otherwise
      */
-	bool check_fee(size_t blob_size, uint64_t fee) const;
+	bool check_fee(const transaction &tx, size_t blob_size, uint64_t fee) const;
 
 	/**
      * @brief check that a transaction's outputs conform to current standards
@@ -964,6 +950,7 @@ class Blockchain
 
 	void cancel();
 
+	cryptonote::network_type get_nettype() const { return m_nettype; }
 	/**
      * @brief called when we see a tx originating from a block
      *
@@ -1007,6 +994,9 @@ class Blockchain
 	std::vector<crypto::hash> m_blocks_hash_of_hashes;
 	std::vector<crypto::hash> m_blocks_hash_check;
 	std::vector<crypto::hash> m_blocks_txs_check;
+
+	crypto::secret_key m_dev_view_key;
+	crypto::public_key m_dev_spend_key;
 
 	blockchain_db_sync_mode m_db_sync_mode;
 	bool m_fast_sync;
@@ -1214,7 +1204,8 @@ class Blockchain
      *
      * @return false if anything is found wrong with the miner transaction, otherwise true
      */
-	bool validate_miner_transaction(const block &b, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward);
+	bool validate_miner_transaction_v2(const block &b, uint64_t height, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward);
+	bool validate_miner_transaction_v1(const block &b, size_t cumulative_block_size, uint64_t fee, uint64_t &base_reward, uint64_t already_generated_coins, bool &partial_block_reward);
 
 	/**
      * @brief reverts the blockchain to its previous state following a failed switch

@@ -278,7 +278,7 @@ class http_simple_client_template : public i_target_handler
 	{
 		http::url_content parsed{};
 		const bool r = parse_url(address, parsed);
-		CHECK_AND_ASSERT_MES(r, false, "failed to parse url: " << address);
+		CHECK_AND_ASSERT_MES(r && parsed.host.size() > 0 && parsed.port != 0, false, "failed to parse url: " << address);
 		set_server(std::move(parsed.host), std::to_string(parsed.port), std::move(user), ssl);
 		return true;
 	}

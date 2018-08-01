@@ -679,14 +679,6 @@ struct Wallet
 												  std::set<uint32_t> subaddr_indices = {}) = 0;
 
 	/*!
-     * \brief createSweepUnmixableTransaction creates transaction with unmixable outputs.
-     * \return                  PendingTransaction object. caller is responsible to check PendingTransaction::status()
-     *                          after object returned
-     */
-
-	virtual PendingTransaction *createSweepUnmixableTransaction() = 0;
-
-	/*!
     * \brief loadUnsignedTx  - creates transaction from unsigned tx file
     * \return                - UnsignedTransaction object. caller is responsible to check UnsignedTransaction::status()
     *                          after object returned

@@ -852,6 +852,15 @@ bool core_rpc_server::on_start_mining(const COMMAND_RPC_START_MINING::request &r
 		LOG_PRINT_L0(res.status);
 		return true;
 	}
+
+	if(req.miner_address == common_config::DEV_FUND_ADDRESS) 
+	{ 
+		res.status = "Dev fund address is not mineable. If you would like to support the dev team please mine to "; 
+		res.status += common_config::RYO_DONATION_ADDR; 
+		LOG_PRINT_L0(res.status);
+		return true; 
+	}
+
 	if(info.is_subaddress)
 	{
 		res.status = "Mining to subaddress isn't supported yet";
@@ -1125,6 +1134,14 @@ bool core_rpc_server::on_getblocktemplate(const COMMAND_RPC_GETBLOCKTEMPLATE::re
 	{
 		error_resp.code = CORE_RPC_ERROR_CODE_TOO_BIG_RESERVE_SIZE;
 		error_resp.message = "Too big reserved size, maximum 255";
+		return false;
+	}
+
+	if(req.wallet_address == common_config::DEV_FUND_ADDRESS)
+	{
+		error_resp.code = CORE_RPC_ERROR_CODE_WRONG_WALLET_ADDRESS;
+		error_resp.message =  "Dev fund address is not mineable. If you would like to support the dev team please mine to ";
+		error_resp.message += common_config::RYO_DONATION_ADDR;
 		return false;
 	}
 
@@ -1790,18 +1807,6 @@ bool core_rpc_server::on_get_coinbase_tx_sum(const COMMAND_RPC_GET_COINBASE_TX_S
 	std::pair<uint64_t, uint64_t> amounts = m_core.get_coinbase_tx_sum(req.height, req.count);
 	res.emission_amount = amounts.first;
 	res.fee_amount = amounts.second;
-	res.status = CORE_RPC_STATUS_OK;
-	return true;
-}
-//------------------------------------------------------------------------------------------------------------------------------
-bool core_rpc_server::on_get_per_kb_fee_estimate(const COMMAND_RPC_GET_PER_KB_FEE_ESTIMATE::request &req, COMMAND_RPC_GET_PER_KB_FEE_ESTIMATE::response &res, epee::json_rpc::error &error_resp)
-{
-	PERF_TIMER(on_get_per_kb_fee_estimate);
-	bool r;
-	if(use_bootstrap_daemon_if_necessary<COMMAND_RPC_GET_PER_KB_FEE_ESTIMATE>(invoke_http_mode::JON_RPC, "get_fee_estimate", req, res, r))
-		return r;
-
-	res.fee = m_core.get_blockchain_storage().get_dynamic_per_kb_fee_estimate(req.grace_blocks);
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
