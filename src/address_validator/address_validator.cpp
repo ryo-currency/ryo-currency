@@ -49,6 +49,8 @@
 #include <boost/program_options.hpp>
 #include <boost/program_options/options_description.hpp>
 
+#include <fmt/format.h>
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -187,6 +189,7 @@ void address_validator::print(writer &out, const std::string &addr_str, const ad
 //----------------------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
+	fmt::print("Hello world! {}", !);
 	namespace po = boost::program_options;
 
 	po::options_description desc("Validate RYO/SUMOKOIN addresses and show properties\n\n"
