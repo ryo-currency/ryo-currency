@@ -58,7 +58,8 @@ monero_add_executable(address_validator
 target_link_libraries(address_validator
   PRIVATE
     cryptonote_basic
-    ${Boost_PROGRAM_OPTIONS_LIBRARY})
+    ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    fmt::fmt-header-only)
 set_property(TARGET address_validator
   PROPERTY
     OUTPUT_NAME "ryo-address-validator")
