@@ -460,7 +460,7 @@ std::string test_serialized_keys = MAKE_STR(
 	"\x22\x09\x39\x68\x9e\xdf\x1a\xbd\x5b\xc1\xd0\x31\xf7\x3e\xcd\x6c"
 	"\x99\x3a\xdd\x66\xd6\x80\x88\x70\x45\x6a\xfe\xb8\xe7\xee\xb6\x8d");
 // DON'T ever use this as a destination for funds, as the keys are right above this comment...
-std::string test_keys_addr_str = "4AzKEX4gXdJdNeM6dfiBFL7kqund3HYGvMBF3ttsNd9SfzgYB6L7ep1Yg1osYJzLdaKAYSLVh6e6jKnAuzj3bw1oGy9kXCb";
+std::string test_keys_addr_str = "RYoLsj4udtoKEGvfPzGH5qC5VHGnLmafaAhoMooPwRALNwm2oSyK3myTaFefvyg5bviMbBXUFWN8McswTRowHNYXfo34V6dvk8n";
 }
 
 TEST(get_account_address_as_str, works_correctly)
@@ -526,8 +526,20 @@ TEST(get_account_address_from_str, fails_on_invalid_address_view_key)
 	ASSERT_FALSE(cryptonote::get_account_address_from_str(cryptonote::MAINNET, info, addr_str));
 }
 
-TEST(get_account_address_from_str, parses_old_address_format)
+TEST(get_account_address_from_str, parses_sumo_address_format)
 {
 	cryptonote::address_parse_info info;
-	ASSERT_TRUE(cryptonote::get_account_address_from_str(cryptonote::MAINNET, info, "002391bbbb24dea6fd95232e97594a27769d0153d053d2102b789c498f57a2b00b69cd6f2f5c529c1660f2f4a2b50178d6640c20ce71fe26373041af97c5b10236fc"));
+	ASSERT_TRUE(cryptonote::get_account_address_from_str(cryptonote::MAINNET, info, "SumonzpPkFDCc3mEY4Nwp8QKxg16LJ28tSQYccVk8TUbJ85XV2x54j2HYQLattu2dYXWaXrgj7Rvocor3yfQAeATPTffxCg856i"));
+}
+
+TEST(get_account_address_from_str, parses_ryo_long_address_format)
+{
+	cryptonote::address_parse_info info;
+	ASSERT_TRUE(cryptonote::get_account_address_from_str(cryptonote::MAINNET, info, "RYoLshUR6VZQMfaBfcayp748y92gdm1wtRnDdFB6GHmrXP2JY517BCqdEvGno5e8rY3Ri9fLjWwkFCkKeiUhTik6aG3cb8weUfX"));
+}
+
+TEST(get_account_address_from_str, parses_ryo_kurz_address_format)
+{
+	cryptonote::address_parse_info info;
+	ASSERT_TRUE(cryptonote::get_account_address_from_str(cryptonote::MAINNET, info, "RYoKssBpGEthJvemTmoFwS6wbwp8xJFarXuLog1JNN8LZyB2137fQGp"));
 }
