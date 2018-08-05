@@ -319,14 +319,6 @@ bool WalletManagerImpl::stopMining()
 	return mres.status == CORE_RPC_STATUS_OK;
 }
 
-std::string WalletManagerImpl::resolveOpenAlias(const std::string &address, bool &dnssec_valid) const
-{
-	std::vector<std::string> addresses = tools::dns_utils::addresses_from_url(address, dnssec_valid);
-	if(addresses.empty())
-		return "";
-	return addresses.front();
-}
-
 std::tuple<bool, std::string, std::string, std::string, std::string> WalletManager::checkUpdates(const std::string &software, std::string subdir)
 {
 #ifdef BUILD_TAG
