@@ -376,10 +376,8 @@ bool get_account_address_from_str_or_url(
 {
 	if(get_account_address_from_str(nettype, info, str_or_url))
 		return true;
-	bool dnssec_valid;
-	std::string address_str = tools::dns_utils::get_account_address_as_str_from_url(str_or_url, dnssec_valid, dns_confirm);
-	return !address_str.empty() &&
-		   get_account_address_from_str(nettype, info, address_str);
+	else
+		return false;
 }
 //--------------------------------------------------------------------------------
 bool operator==(const cryptonote::transaction &a, const cryptonote::transaction &b)
