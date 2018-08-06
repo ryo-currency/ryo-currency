@@ -64,6 +64,7 @@ endif()
 set(common_headers)
 
 set(common_private_headers
+  gulps.hpp
   apply_permutation.h
   base58.h
   boost_serialization_helper.h
@@ -111,6 +112,7 @@ target_link_libraries(common
     ${OPENSSL_LIBRARIES}
     ${ICU_LIBRARIES}
     ${EXTRA_LIBRARIES})
+    fmt::fmt-header-only)
 
 #monero_install_headers(common
 #  ${common_headers})
