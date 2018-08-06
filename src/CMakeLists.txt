@@ -119,6 +119,8 @@ function (monero_add_library_with_deps)
   set_property(TARGET "${RYO_ADD_LIBRARY_NAME}" PROPERTY FOLDER "libs")
   target_compile_definitions(${objlib}
     PRIVATE $<TARGET_PROPERTY:${RYO_ADD_LIBRARY_NAME},INTERFACE_COMPILE_DEFINITIONS>)
+  target_include_directories(${objlib}
+    PRIVATE $<TARGET_PROPERTY:${RYO_ADD_LIBRARY_NAME},INTERFACE_INCLUDE_DIRECTORIES>)
 endfunction ()
 
 include(Version)
