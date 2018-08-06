@@ -47,6 +47,9 @@
 #include "include_base_utils.h"
 using namespace epee;
 
+#define GULPS_CAT_MAJOR "basic_util"
+#include "common/gulps.hpp"
+
 #include "common/base58.h"
 #include "common/dns_utils.h"
 #include "common/int-util.h"
@@ -284,14 +287,13 @@ bool is_coinbase(const transaction &tx)
 }
 //-----------------------------------------------------------------------
 template <network_type NETTYPE>
-bool get_account_address_from_str(address_parse_info &info, std::string const &str, const bool silent)
+bool get_account_address_from_str(address_parse_info &info, std::string const &str)
 {
 	blobdata data;
 	uint64_t prefix;
 	if(!tools::base58::decode_addr(str, prefix, data))
 	{
-		if(!silent)
-			LOG_PRINT_L2("Invalid address format");
+		GULPS_ERROR("Invalid address format");
 		return false;
 	}
 
@@ -321,8 +323,7 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 		break;
 */
 	default:
-		if(!silent)
-			LOG_PRINT_L1("Wrong address prefix: " << prefix);
+		GULPS_ERROR("Wrong address prefix: " << prefix);
 		return false;
 	}
 
@@ -331,8 +332,7 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 		integrated_address iadr;
 		if(!::serialization::parse_binary(data, iadr))
 		{
-			if(!silent)
-				LOG_PRINT_L1("Account public address keys can't be parsed");
+			GULPS_ERROR("Account public address keys can't be parsed");
 			return false;
 		}
 		info.address = iadr.adr;
@@ -343,8 +343,7 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 		kurz_address kadr;
 		if(!::serialization::parse_binary(data, kadr))
 		{
-			if(!silent)
-				LOG_PRINT_L1("Account public address keys can't be parsed");
+			GULPS_ERROR("Account public address keys can't be parsed");
 			return false;
 		}
 
@@ -355,16 +354,14 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 	{
 		if(!::serialization::parse_binary(data, info.address))
 		{
-			if(!silent)
-				LOG_PRINT_L1("Account public address keys can't be parsed");
+			GULPS_ERROR("Account public address keys can't be parsed");
 			return false;
 		}
 	}
 
 	if(!crypto::check_key(info.address.m_spend_public_key) || !crypto::check_key(info.address.m_view_public_key))
 	{
-		if(!silent)
-			LOG_PRINT_L1("Failed to validate address keys");
+		GULPS_ERROR("Failed to validate address keys");
 		return false;
 	}
 

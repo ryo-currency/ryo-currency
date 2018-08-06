@@ -42,6 +42,9 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+#define GULPS_CAT_MAJOR "addr_val"
+#include "common/gulps.hpp"
+
 #include "common/command_line.h"
 #include "address_validator/address_validator.h"
 #include "string_tools.h"
@@ -99,19 +102,19 @@ bool address_validator::evaluate_address_attributes(const std::string &net_type,
 	bool valid = false;
 	if(net_type == "mainnet")
 	{
-		valid = get_account_address_from_str<MAINNET>(attr.info, addr_str, true);
+		valid = get_account_address_from_str<MAINNET>(attr.info, addr_str);
 		attr.network = valid ? "mainnet" : "";
 		attr.nettype = MAINNET;
 	}
 	else if(net_type == "testnet")
 	{
-		valid = get_account_address_from_str<TESTNET>(attr.info, addr_str, true);
+		valid = get_account_address_from_str<TESTNET>(attr.info, addr_str);
 		attr.network = valid ? "testnet" : "";
 		attr.nettype = TESTNET;
 	}
 	else if(net_type == "stagenet")
 	{
-		valid = get_account_address_from_str<STAGENET>(attr.info, addr_str, true);
+		valid = get_account_address_from_str<STAGENET>(attr.info, addr_str);
 		attr.network = valid ? "stagenet" : "";
 		attr.nettype = STAGENET;
 	}
@@ -126,7 +129,11 @@ void address_validator::init_options(
 {
 	namespace po = boost::program_options;
 
-	desc.add_options()("network,n", po::value<std::string>(&m_network)->default_value("auto"), "network type (auto, mainnet, testnet, stagenet)")("filename,f", po::value<std::string>(&m_filename), "json file name, if not set result is printed to terminal")("human", po::value<bool>(&m_human)->zero_tokens()->default_value(false)->default_value(false), "human readable output")("address", po::value<std::vector<std::string>>(&m_address_strs), "ryo-currency address");
+	desc.add_options()
+		("network,n", po::value<std::string>(&m_network)->default_value("auto"), "network type (auto, mainnet, testnet, stagenet)")
+		("filename,f", po::value<std::string>(&m_filename), "json file name, if not set result is printed to terminal")
+		("human", po::value<bool>(&m_human)->zero_tokens()->default_value(false)->default_value(false), "human readable output")
+		("address", po::value<std::vector<std::string>>(&m_address_strs), "ryo-currency address");
 
 	pos_option.add("address", -1);
 }
@@ -135,14 +142,14 @@ bool address_validator::validate_options()
 {
 	if(m_address_strs.empty())
 	{
-		MERROR("No address given.");
+		GULPS_ERROR("No address given.");
 		return 1;
 	}
 
 	std::vector<std::string> networks = {"auto", "mainnet", "testnet", "stagenet"};
 	if(std::find(networks.begin(), networks.end(), m_network) == networks.end())
 	{
-		MERROR("Invalid/Unknown network type " << m_network);
+		GULPS_ERROR("Invalid/Unknown network type {}.", m_network);
 		return 2;
 	}
 	return 0;
@@ -203,10 +210,18 @@ int main(int argc, char *argv[])
 	po::options_description desc("Validate RYO/SUMOKOIN addresses and show properties\n\n"
 								 "ryo-address-validator [OPTIONS] WALLET_ADDRESS [WALLET_ADDRESS...]\n\n"
 								 "OPTIONS");
+
 	po::positional_options_description pos_option;
 
 	desc.add_options()("help,h", "print help message and exit");
 
+	gulps::inst().set_thread_tag("MAIN");
+
+	// We won't replace the custom output writer here, so just direct **our** errors to console
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(true, fmt::color:white));
+	out->add_filter([](const gulps::message& msg) -> bool { return msg.cat_major == GULPS_CAT_MAJOR && msg.lvl == gulps::LEVEL_ERROR; });
+	gulps::inst().add_output(std::move(out));
+ 
 	using namespace cryptonote;
 
 	address_validator validator{};
