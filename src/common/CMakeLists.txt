@@ -56,6 +56,7 @@ set(common_sources
   threadpool.cpp
   updates.cpp
   boost_locale.cpp)
+  string.cpp)
 
 if (STACK_TRACE)
   list(APPEND common_sources stack_trace.cpp)
@@ -65,6 +66,7 @@ set(common_headers)
 
 set(common_private_headers
   gulps.hpp
+  string.hpp
   apply_permutation.h
   base58.h
   boost_serialization_helper.h
