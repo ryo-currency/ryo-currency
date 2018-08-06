@@ -831,9 +831,6 @@ endif()
 
 list(APPEND EXTRA_LIBRARIES ${CMAKE_DL_LIBS})
 
-# fmt is shipped with ryo 
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/external/fmt")
-
 option(USE_READLINE "Build with GNU readline support." ON)
 if(USE_READLINE)
   find_package(Readline)
