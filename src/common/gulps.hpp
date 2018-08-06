@@ -50,6 +50,7 @@
 #include <list>
 #include <vector>
 #include "thdq.hpp"
+#include "string.hpp"
 #include <fmt/format.h>
 #include <fmt/time.h>
 

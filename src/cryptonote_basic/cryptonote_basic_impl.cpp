@@ -323,7 +323,7 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 		break;
 */
 	default:
-		GULPS_ERROR("Wrong address prefix: " << prefix);
+		GULPS_ERROR("Wrong address prefix: "_s + std::to_string(prefix));
 		return false;
 	}
 
