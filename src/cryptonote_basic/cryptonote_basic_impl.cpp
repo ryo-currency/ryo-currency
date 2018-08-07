@@ -370,15 +370,11 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 
 	return true;
 }
-//--------------------------------------------------------------------------------
-bool get_account_address_from_str_or_url(
-	address_parse_info &info, network_type nettype, const std::string &str_or_url, std::function<std::string(const std::string &, const std::vector<std::string> &, bool)> dns_confirm)
-{
-	if(get_account_address_from_str(nettype, info, str_or_url))
-		return true;
-	else
-		return false;
-}
+
+template bool get_account_address_from_str<MAINNET>(address_parse_info &, std::string const &, const bool);
+template bool get_account_address_from_str<TESTNET>(address_parse_info &, std::string const &, const bool);
+template bool get_account_address_from_str<STAGENET>(address_parse_info &, std::string const &, const bool);
+
 //--------------------------------------------------------------------------------
 bool operator==(const cryptonote::transaction &a, const cryptonote::transaction &b)
 {
