@@ -58,7 +58,7 @@ set(checkpoints_private_headers
 
 ryo_private_headers(checkpoints
   ${checkpoints_private_headers})
-monero_add_library(checkpoints
+ryo_add_library(checkpoints
   ${checkpoints_sources}
   ${checkpoints_headers}
   ${checkpoints_private_headers})

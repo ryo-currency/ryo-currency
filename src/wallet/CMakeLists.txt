@@ -64,7 +64,7 @@ set(wallet_private_headers
 
 ryo_private_headers(wallet
   ${wallet_private_headers})
-monero_add_library(wallet
+ryo_add_library(wallet
   ${wallet_sources}
   ${wallet_private_headers})
 target_link_libraries(wallet
