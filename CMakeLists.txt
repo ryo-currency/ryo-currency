@@ -178,8 +178,6 @@ if(PER_BLOCK_CHECKPOINT)
   add_definitions("-DPER_BLOCK_CHECKPOINT")
 endif()
 
-add_definitions(-DFMT_EXTENDED_COLORS)
-
 list(INSERT CMAKE_MODULE_PATH 0
   "${CMAKE_SOURCE_DIR}/cmake")
 
