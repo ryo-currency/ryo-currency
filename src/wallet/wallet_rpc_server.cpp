@@ -610,20 +610,7 @@ bool wallet_rpc_server::validate_transfer(const std::list<wallet_rpc::transfer_d
 		cryptonote::address_parse_info info;
 		cryptonote::tx_destination_entry de;
 		er.message = "";
-		if(!get_account_address_from_str_or_url(info, m_wallet->nettype(), it->address,
-												[&er](const std::string &url, const std::vector<std::string> &addresses, bool dnssec_valid) -> std::string {
-													if(!dnssec_valid)
-													{
-														er.message = std::string("Invalid DNSSEC for ") + url;
-														return {};
-													}
-													if(addresses.empty())
-													{
-														er.message = std::string("No Ryo address found at ") + url;
-														return {};
-													}
-													return addresses[0];
-												}))
+		if(!get_account_address_from_str(m_wallet->nettype(), info, it->address))
 		{
 			er.code = WALLET_RPC_ERROR_CODE_WRONG_ADDRESS;
 			if(er.message.empty())
@@ -1442,20 +1429,7 @@ bool wallet_rpc_server::on_verify(const wallet_rpc::COMMAND_RPC_VERIFY::request 
 
 	cryptonote::address_parse_info info;
 	er.message = "";
-	if(!get_account_address_from_str_or_url(info, m_wallet->nettype(), req.address,
-											[&er](const std::string &url, const std::vector<std::string> &addresses, bool dnssec_valid) -> std::string {
-												if(!dnssec_valid)
-												{
-													er.message = std::string("Invalid DNSSEC for ") + url;
-													return {};
-												}
-												if(addresses.empty())
-												{
-													er.message = std::string("No Ryo address found at ") + url;
-													return {};
-												}
-												return addresses[0];
-											}))
+	if(!get_account_address_from_str(m_wallet->nettype(), info, req.address))
 	{
 		er.code = WALLET_RPC_ERROR_CODE_WRONG_ADDRESS;
 		return false;
@@ -2176,20 +2150,7 @@ bool wallet_rpc_server::on_add_address_book(const wallet_rpc::COMMAND_RPC_ADD_AD
 	cryptonote::address_parse_info info;
 	crypto::hash payment_id = crypto::null_hash;
 	er.message = "";
-	if(!get_account_address_from_str_or_url(info, m_wallet->nettype(), req.address,
-											[&er](const std::string &url, const std::vector<std::string> &addresses, bool dnssec_valid) -> std::string {
-												if(!dnssec_valid)
-												{
-													er.message = std::string("Invalid DNSSEC for ") + url;
-													return {};
-												}
-												if(addresses.empty())
-												{
-													er.message = std::string("No Ryo address found at ") + url;
-													return {};
-												}
-												return addresses[0];
-											}))
+	if(!get_account_address_from_str(m_wallet->nettype(), info, req.address))
 	{
 		er.code = WALLET_RPC_ERROR_CODE_WRONG_ADDRESS;
 		if(er.message.empty())
