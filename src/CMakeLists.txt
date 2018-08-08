@@ -98,11 +98,11 @@ function (monero_add_executable name)
   enable_stack_trace("${name}")
 endfunction ()
 
-function (monero_add_library name)
-    monero_add_library_with_deps(NAME "${name}" SOURCES ${ARGN})
+function (ryo_add_library name)
+    ryo_add_library_with_deps(NAME "${name}" SOURCES ${ARGN})
 endfunction()
 
-function (monero_add_library_with_deps)
+function (ryo_add_library_with_deps)
   cmake_parse_arguments(RYO_ADD_LIBRARY "" "NAME" "DEPENDS;SOURCES" ${ARGN})
   source_group("${RYO_ADD_LIBRARY_NAME}" FILES ${RYO_ADD_LIBRARY_SOURCES})
 
@@ -124,8 +124,8 @@ function (monero_add_library_with_deps)
 endfunction ()
 
 include(Version)
-monero_add_library(version SOURCES ${CMAKE_BINARY_DIR}/version.cpp DEPENDS genversion)
-monero_add_library(ccnconfig SOURCES ${CMAKE_SOURCE_DIR}/src/cryptonote_config.cpp)
+ryo_add_library(version SOURCES ${CMAKE_BINARY_DIR}/version.cpp DEPENDS genversion)
+ryo_add_library(ccnconfig SOURCES ${CMAKE_SOURCE_DIR}/src/cryptonote_config.cpp)
 
 add_subdirectory(common)
 add_subdirectory(crypto)
