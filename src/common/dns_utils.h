@@ -173,11 +173,6 @@ class DNSResolver
 namespace dns_utils
 {
 
-std::string address_from_txt_record(const std::string &s);
-std::vector<std::string> addresses_from_url(const std::string &url, bool &dnssec_valid);
-
-std::string get_account_address_as_str_from_url(const std::string &url, bool &dnssec_valid, std::function<std::string(const std::string &, const std::vector<std::string> &, bool)> confirm_dns);
-
 bool load_txt_records_from_dns(std::vector<std::string> &records, const std::vector<std::string> &dns_urls);
 
 std::vector<std::string> parse_dns_public(const char *s);
