@@ -82,6 +82,13 @@ namespace Electrum
 void get_language_list(std::vector<std::string> &languages, bool english = false);
 
 /*!
+     * \brief Verify and standardise user's input
+     * \param input Whatever user gave us
+     * \return lanaguage list entry or empty if we fail to match
+     */
+std::string verify_language_input(std::string input);
+
+/*!
      * \brief Returns the name of a language in English
      * \param  name the name of the language in its own language
      * \return      the name of the language in English

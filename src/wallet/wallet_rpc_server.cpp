@@ -2316,19 +2316,14 @@ bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WA
 
 	namespace po = boost::program_options;
 	po::variables_map vm2;
-	const char *ptr = strchr(req.filename.c_str(), '/');
-#ifdef _WIN32
-	if(!ptr)
-		ptr = strchr(req.filename.c_str(), '\\');
-	if(!ptr)
-		ptr = strchr(req.filename.c_str(), ':');
-#endif
-	if(ptr)
+
+	if(req.filename.find_first_of("/<>:\"\\|?*") != std::string::npos)
 	{
 		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
-		er.message = "Invalid filename";
+		er.message = "Invalid characters in filename";
 		return false;
 	}
+
 	std::string wallet_file = m_wallet_dir + "/" + req.filename;
 	{
 		std::vector<std::string> languages;

@@ -691,7 +691,7 @@ bool simple_wallet::seed_set_language(const std::vector<std::string> &args /* = 
 	const auto pwd_container = get_and_verify_password();
 	if(pwd_container)
 	{
-		std::string mnemonic_language = get_mnemonic_language();
+		std::string mnemonic_language = get_mnemonic_language(true);
 		if(mnemonic_language.empty())
 			return true;
 
@@ -2614,7 +2614,6 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 			return false;
 
 		epee::wipeable_string seed_pass;
-		std::string old_language;
 		// check for recover flag.  if present, require electrum word list (only recovery option for now).
 		if(m_restore_deterministic_wallet || m_restore_multisig_wallet)
 		{
@@ -3029,7 +3028,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 			else
 			{
 				if(m_restore_multisig_wallet)
-					r = new_wallet_msig(vm, seed_pass, multisig_keys, old_language);
+					r = new_wallet_msig(vm, seed_pass, multisig_keys);
 				else
 					r = new_wallet(vm, m_electrum_seed);
 			}
@@ -3225,12 +3224,24 @@ bool simple_wallet::try_connect_to_daemon(bool silent, uint32_t *version)
  * 
  * \return The chosen language.
  */
-std::string simple_wallet::get_mnemonic_language()
+std::string simple_wallet::get_mnemonic_language(bool ignore_cmd_arg)
 {
 	std::vector<std::string> language_list;
 	std::string language_choice;
 	int language_number = -1;
 	crypto::Electrum::get_language_list(language_list, m_use_english_language_names);
+
+	if(!ignore_cmd_arg && !m_mnemonic_language.empty())
+	{
+		std::string ret = crypto::Electrum::verify_language_input(m_mnemonic_language);
+
+		//Don't return smelly user input here
+		if(!ret.empty())
+			return ret; 
+
+		fail_msg_writer() << boost::format(tr("Language '%s' is not in the language list. Please specify the language manually.\n")) % m_mnemonic_language.c_str();
+	}
+
 	std::cout << tr("List of available languages for your wallet's seed:") << std::endl;
 	std::cout << tr("If your display freezes, exit blind with ^C, then run again with --use-english-language-names") << std::endl;
 	int ii;
@@ -3310,7 +3321,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 		return false;
 	}
 
-	m_mnemonic_language = language;
+	m_wallet->set_seed_language(language);
 
 	if(decode_14)
 		return new_wallet(vm, &seed_14, seed_extra);
@@ -3349,23 +3360,12 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 		m_wallet->set_subaddress_lookahead(lookahead->first, lookahead->second);
 	}
 
-	std::string mnemonic_language;
-
-	std::vector<std::string> language_list;
-	crypto::Electrum::get_language_list(language_list);
-	if(mnemonic_language.empty() && std::find(language_list.begin(), language_list.end(), m_mnemonic_language) != language_list.end())
+	if(m_wallet->get_seed_language().empty())
 	{
-		mnemonic_language = m_mnemonic_language;
-	}
-
-	if(mnemonic_language.empty())
-	{
-		mnemonic_language = get_mnemonic_language();
-		if(mnemonic_language.empty())
+		m_wallet->set_seed_language(get_mnemonic_language(false));
+		if(m_wallet->get_seed_language().empty())
 			return false;
 	}
-
-	m_wallet->set_seed_language(mnemonic_language);
 
 	bool create_address_file = command_line::get_arg(vm, arg_create_address_file);
 
@@ -3387,9 +3387,9 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	// convert rng value to electrum-style word list
 	std::string electrum_words;
 	if(seed == nullptr)
-		crypto::Electrum14Words::bytes_to_words(recovery_val, seed_extra, electrum_words, mnemonic_language);
+		crypto::Electrum14Words::bytes_to_words(recovery_val, seed_extra, electrum_words, m_wallet->get_seed_language());
 	else
-		crypto::Electrum14Words::bytes_to_words(*seed, seed_extra, electrum_words, mnemonic_language);
+		crypto::Electrum14Words::bytes_to_words(*seed, seed_extra, electrum_words, m_wallet->get_seed_language());
 
 	success_msg_writer() << "**********************************************************************\n"
 						 << tr("Your wallet has been generated!\n"
@@ -3423,23 +3423,12 @@ bool simple_wallet::restore_legacy_wallet(const boost::program_options::variable
 		m_wallet->set_subaddress_lookahead(lookahead->first, lookahead->second);
 	}
 
-	std::string mnemonic_language;
-
-	std::vector<std::string> language_list;
-	crypto::Electrum::get_language_list(language_list);
-	if(mnemonic_language.empty() && std::find(language_list.begin(), language_list.end(), m_mnemonic_language) != language_list.end())
+	if(m_wallet->get_seed_language().empty())
 	{
-		mnemonic_language = m_mnemonic_language;
-	}
-
-	if(mnemonic_language.empty())
-	{
-		mnemonic_language = get_mnemonic_language();
-		if(mnemonic_language.empty())
+		m_wallet->set_seed_language(get_mnemonic_language(false));
+		if(m_wallet->get_seed_language().empty())
 			return false;
 	}
-
-	m_wallet->set_seed_language(mnemonic_language);
 
 	bool create_address_file = command_line::get_arg(vm, arg_create_address_file);
 
@@ -3457,7 +3446,7 @@ bool simple_wallet::restore_legacy_wallet(const boost::program_options::variable
 	}
 
 	std::string electrum_words;
-	crypto::Electrum25Words::bytes_to_words(seed_legacy, electrum_words, mnemonic_language);
+	crypto::Electrum25Words::bytes_to_words(seed_legacy, electrum_words, m_wallet->get_seed_language());
 
 	success_msg_writer() << "**********************************************************************\n"
 						 << tr("Your wallet has been restored!\n"
@@ -3554,8 +3543,7 @@ bool simple_wallet::new_wallet_dev(const boost::program_options::variables_map &
 	return true;
 }
 //----------------------------------------------------------------------------------------------------
-bool simple_wallet::new_wallet_msig(const boost::program_options::variables_map &vm, const epee::wipeable_string &pass,
-									std::string &multisig_keys, const std::string &old_language)
+bool simple_wallet::new_wallet_msig(const boost::program_options::variables_map &vm, const epee::wipeable_string &pass, std::string &multisig_keys)
 {
 	if(!pass.empty())
 	{
@@ -3580,16 +3568,7 @@ bool simple_wallet::new_wallet_msig(const boost::program_options::variables_map 
 		m_wallet->set_subaddress_lookahead(lookahead->first, lookahead->second);
 	}
 
-	std::string mnemonic_language = old_language;
-
-	std::vector<std::string> language_list;
-	crypto::Electrum::get_language_list(language_list);
-	if(mnemonic_language.empty() && std::find(language_list.begin(), language_list.end(), m_mnemonic_language) != language_list.end())
-	{
-		mnemonic_language = m_mnemonic_language;
-	}
-
-	m_wallet->set_seed_language(mnemonic_language);
+	m_wallet->set_seed_language("");
 
 	bool create_address_file = command_line::get_arg(vm, arg_create_address_file);
 
@@ -3647,33 +3626,6 @@ bool simple_wallet::open_wallet(const boost::program_options::variables_map &vm)
 		{
 			message_writer(console_color_white, true) << "Wallet is on device: " << m_wallet->get_account().get_device().get_name();
 		}
-		// If the wallet file is deprecated, we should ask for mnemonic language again and store
-		// everything in the new format.
-		// NOTE: this is_deprecated() refers to the wallet file format before becoming JSON. It does not refer to the "old english" seed words form of "deprecated" used elsewhere.
-		/* if (m_wallet->is_deprecated())
-    {
-      if (m_wallet->is_deterministic())
-      {
-        message_writer(console_color_green, false) << "\n" << tr("You had been using "
-          "a deprecated version of the wallet. Please proceed to upgrade your wallet.\n");
-        std::string mnemonic_language = get_mnemonic_language();
-        if (mnemonic_language.empty())
-          return false;
-        m_wallet->set_seed_language(mnemonic_language);
-        m_wallet->rewrite(m_wallet_file, password);
-
-        // Display the seed
-        std::string seed;
-        m_wallet->get_seed(seed);
-        print_seed(seed);
-      }
-      else
-      {
-        message_writer(console_color_green, false) << "\n" << tr("You had been using "
-          "a deprecated version of the wallet. Your wallet file format is being upgraded now.\n");
-        m_wallet->rewrite(m_wallet_file, password);
-      }
-    }*/
 	}
 	catch(const std::exception &e)
 	{
