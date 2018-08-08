@@ -73,7 +73,6 @@ target_link_libraries(simplewallet
     ${Boost_FILESYSTEM_LIBRARY}
     ${ICU_LIBRARIES}
     ${Boost_THREAD_LIBRARY}
-    ${Boost_LOCALE_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     ${GNU_READLINE_LIBRARY}
     ${EXTRA_LIBRARIES})
