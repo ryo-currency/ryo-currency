@@ -51,7 +51,7 @@ set(serialization_private_headers
 
 ryo_private_headers(serialization
   ${serialization_private_headers})
-monero_add_library(serialization
+ryo_add_library(serialization
   ${serialization_sources}
   ${serialization_headers}
   ${serialization_private_headers})
