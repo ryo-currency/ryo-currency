@@ -53,7 +53,7 @@ namespace Language
 class Russian : public Base
 {
   public:
-	Russian() : Base("русский язык", "Russian", std::vector<std::string>({"абажур",
+	Russian() : Base("Русский", "Russian", std::vector<std::string>({"абажур",
 																		  "абзац",
 																		  "абонент",
 																		  "абрикос",
