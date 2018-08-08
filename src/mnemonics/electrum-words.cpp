@@ -58,6 +58,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/crc.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/locale.hpp>
 #include "common/boost_locale.hpp"
 #include <cassert>
 #include <cstdint>
