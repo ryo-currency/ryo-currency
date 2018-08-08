@@ -3268,8 +3268,11 @@ std::string simple_wallet::get_mnemonic_language(bool ignore_cmd_arg)
 
 	if(!ignore_cmd_arg && !m_mnemonic_language.empty())
 	{
-		if(std::find(language_list.begin(), language_list.end(), m_mnemonic_language) != language_list.end())
-			return m_mnemonic_language;
+		std::string ret = crypto::Electrum::verify_language_input(m_mnemonic_language);
+
+		//Don't return smelly user input here
+		if(!ret.empty())
+			return ret; 
 
 		fail_msg_writer() << boost::format(tr("Language '%s' is not in the language list. Please specify the language manually.\n")) % m_mnemonic_language.c_str();
 	}
