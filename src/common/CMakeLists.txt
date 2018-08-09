@@ -55,7 +55,7 @@ set(common_sources
   perf_timer.cpp
   threadpool.cpp
   updates.cpp
-  boost_locale.cpp)
+  boost_locale.cpp
   string.cpp)
 
 if (STACK_TRACE)
@@ -114,7 +114,7 @@ target_link_libraries(common
     ${Boost_LOCALE_LIBRARY}
     ${OPENSSL_LIBRARIES}
     ${ICU_LIBRARIES}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
     fmt::fmt-header-only)
 
 # activate extended color output for fmt

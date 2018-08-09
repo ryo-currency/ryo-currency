@@ -368,9 +368,9 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 	return true;
 }
 
-template bool get_account_address_from_str<MAINNET>(address_parse_info &, std::string const &, const bool);
-template bool get_account_address_from_str<TESTNET>(address_parse_info &, std::string const &, const bool);
-template bool get_account_address_from_str<STAGENET>(address_parse_info &, std::string const &, const bool);
+template bool get_account_address_from_str<MAINNET>(address_parse_info &, std::string const &);
+template bool get_account_address_from_str<TESTNET>(address_parse_info &, std::string const &);
+template bool get_account_address_from_str<STAGENET>(address_parse_info &, std::string const &);
 
 //--------------------------------------------------------------------------------
 bool operator==(const cryptonote::transaction &a, const cryptonote::transaction &b)
