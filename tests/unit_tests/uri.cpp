@@ -29,9 +29,9 @@
 #include "wallet/wallet2.h"
 #include "gtest/gtest.h"
 
-#define TEST_ADDRESS "9tTLtauaEKSj7xoVXytVH32R1pLZBk4VV4mZFGEh4wkXhDWqw1soPyf3fGixf1kni31VznEZkWNEza9d5TvjWwq5PaohYHC"
-#define TEST_INTEGRATED_ADDRESS "A4A1uPj4qaxj7xoVXytVH32R1pLZBk4VV4mZFGEh4wkXhDWqw1soPyf3fGixf1kni31VznEZkWNEza9d5TvjWwq5acaPMJfMbn3ReTsBpp"
-// included payment id: <f612cac0b6cb1cda>
+#define TEST_ADDRESS "RYoTr1KP7tgJFQ4bTWto4MhM3qT4YA8gV3smuJyxucJgBDdCWehV4btgcyNb11MAUC7t9yPDUCwAoREVdyVNankWERkEddsUix3"
+// included payment id: <6f1aa052630b29fb>
+#define TEST_INTEGRATED_ADDRESS "RYoEu4oNLAYJFQ4bTWto4MhM3qT4YA8gV3smuJyxucJgBDdCWehV4btgcyNb11MAUC7t9yPDUCwAoREVdyVNankWERkEdaGY9UmHZr8a149Kqi"
 
 #define PARSE_URI(uri, expected)                                                                                      \
 	std::string address, payment_id, recipient_name, description, error;                                              \
