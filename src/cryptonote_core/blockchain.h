@@ -759,7 +759,12 @@ class Blockchain
      */
 	uint8_t get_current_hard_fork_version_num() const { return m_hardfork->get_current_version_num(); }
 
-	bool check_hard_fork_feature(hard_fork_feature ft) const { return m_hardfork->get_current_version_num() >= get_fork_v(m_nettype, ft); }
+	bool check_hard_fork_feature(hard_fork_feature ft) const 
+	{
+		if(get_fork_v(m_nettype, ft) == hardfork_conf::FORK_ID_DISABLED)
+			return false;
+		return m_hardfork->get_current_version_num() >= get_fork_v(m_nettype, ft); 
+	}
 
 	/**
      * @brief returns the newest hardfork version known to the blockchain

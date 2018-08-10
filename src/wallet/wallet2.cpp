@@ -7212,13 +7212,17 @@ void wallet2::get_hard_fork_info(uint8_t version, uint64_t &earliest_height) con
 bool wallet2::use_fork_rules(cryptonote::hard_fork_feature ft, int64_t early_blocks) const
 {
 	uint8_t version = cryptonote::get_fork_v(m_nettype, ft);
+
+	if(version == cryptonote::hardfork_conf::FORK_ID_DISABLED)
+		return false;
+
 	uint64_t height, earliest_height;
 	boost::optional<std::string> result = m_node_rpc_proxy.get_height(height);
 	throw_on_rpc_response_error(result, "get_info");
 	result = m_node_rpc_proxy.get_earliest_height(version, earliest_height);
 	throw_on_rpc_response_error(result, "get_hard_fork_info");
 
-	bool close_enough = height >= earliest_height - early_blocks && earliest_height != std::numeric_limits<uint64_t>::max(); // start using the rules that many blocks beforehand
+	bool close_enough = height >= earliest_height - early_blocks; // start using the rules that many blocks beforehand
 	if(close_enough)
 		LOG_PRINT_L2("Using v" << (unsigned)version << " rules");
 	else
