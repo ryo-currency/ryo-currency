@@ -9293,13 +9293,20 @@ std::string wallet2::make_uri(const std::string &address, const std::string &pay
 //----------------------------------------------------------------------------------------------------
 bool wallet2::parse_uri(const std::string &uri, std::string &address, std::string &payment_id, uint64_t &amount, std::string &tx_description, std::string &recipient_name, std::vector<std::string> &unknown_parameters, std::string &error)
 {
-	if(uri.substr(0, 7) != "ryo:")
+	const size_t separator_pos = uri.find(':');
+	if(separator_pos == std::string::npos || uri.substr(0, separator_pos) != "ryo")
 	{
 		error = std::string("URI has wrong scheme (expected \"ryo:\"): ") + uri;
 		return false;
 	}
-
-	std::string remainder = uri.substr(7);
+	// exclude separator
+	const size_t pos_behind_schema = separator_pos + 1;
+	if(pos_behind_schema >= uri.size())
+	{
+	    error = std::string("URI contains no address: ") + uri;
+		return false;
+	}
+	std::string remainder = uri.substr(pos_behind_schema);
 	const char *ptr = strchr(remainder.c_str(), '?');
 	address = ptr ? remainder.substr(0, ptr - remainder.c_str()) : remainder;
 
