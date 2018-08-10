@@ -213,9 +213,10 @@ class HardFork
 	uint8_t get_current_version_num() const;
 
 	/**
-     * @brief returns the earliest block a given version may activate
+     * @brief returns the earliest block a known version may activate
+     * @return height or uint64_t(-1) if the version is not known
      */
-	uint64_t get_earliest_ideal_height_for_version(uint8_t version) const;
+	uint64_t get_height_for_version(uint8_t version) const;
 
 	/**
      * @brief returns information about current voting state
