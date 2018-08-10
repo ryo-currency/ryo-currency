@@ -7212,6 +7212,10 @@ void wallet2::get_hard_fork_info(uint8_t version, uint64_t &earliest_height) con
 bool wallet2::use_fork_rules(cryptonote::hard_fork_feature ft, int64_t early_blocks) const
 {
 	uint8_t version = cryptonote::get_fork_v(m_nettype, ft);
+
+	if(version == cryptonote::hardfork_conf::FORK_ID_DISABLED)
+		return false;
+
 	uint64_t height, earliest_height;
 	boost::optional<std::string> result = m_node_rpc_proxy.get_height(height);
 	throw_on_rpc_response_error(result, "get_info");
