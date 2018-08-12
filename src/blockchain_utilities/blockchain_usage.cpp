@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 	{
 		std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
 		std::cout << desc_options << std::endl;
-		return 1;
+		return 0;
 	}
 
 	mlog_configure(mlog_get_default_log_path("ryo-blockchain-usage.log"), true);

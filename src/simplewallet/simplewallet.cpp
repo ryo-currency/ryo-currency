@@ -7605,6 +7605,7 @@ int main(int argc, char *argv[])
 	po::positional_options_description positional_options;
 	positional_options.add(arg_command.name, -1);
 
+	int vm_error_code = 1;
 	const auto vm = wallet_args::main(
 		argc, argv,
 		"ryo-wallet-cli [--wallet-file=<file>|--generate-new-wallet=<file>] [<COMMAND>]",
@@ -7612,11 +7613,12 @@ int main(int argc, char *argv[])
 		desc_params,
 		positional_options,
 		[](const std::string &s, bool emphasis) { tools::scoped_message_writer(emphasis ? epee::console_color_white : epee::console_color_default, true) << s; },
-		"ryo-wallet-cli.log");
+		"ryo-wallet-cli.log",
+		vm_error_code);
 
 	if(!vm)
 	{
-		return 1;
+		return vm_error_code;
 	}
 
 	cryptonote::simple_wallet w;

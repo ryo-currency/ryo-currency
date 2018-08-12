@@ -648,7 +648,7 @@ int main(int argc, char *argv[])
 	{
 		std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
 		std::cout << desc_options << std::endl;
-		return 1;
+		return 0;
 	}
 
 	if(!opt_batch && !command_line::is_arg_defaulted(vm, arg_batch_size))
