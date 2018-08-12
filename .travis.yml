@@ -4,86 +4,45 @@ sudo: required
 cache:
   apt: true
 
+os: linux
+
+addons:
+  apt:
+    update: true
+    sources:
+      - sourceline: 'ppa:mhier/libboost-latest'
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.8
+      - llvm-toolchain-trusty-5.0
+    packages:
+      - boost1.67
+      
 matrix:
   include:
-    - os: linux
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: 'ppa:mhier/libboost-latest'
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-4.9
-            - boost1.67
-      env:
-         - COMPILER="CC=gcc-4.9 && CXX=g++-4.9"
-
-    - os: linux
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: 'ppa:mhier/libboost-latest'
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - boost1.67
-      env:
-         - COMPILER="CC=gcc-5 && CXX=g++-5"
-
-    - os: linux
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: 'ppa:mhier/libboost-latest'
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - boost1.67
-      env:
-        - COMPILER="CC=gcc-6 && CXX=g++-6"
-
-    - os: linux
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: 'ppa:mhier/libboost-latest'
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - boost1.67
-      env:
-        - COMPILER="CC=gcc-7 && CXX=g++-7"
-
-    - os: linux
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: 'ppa:mhier/libboost-latest'
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-          packages:
-            - clang-3.8
-            - boost1.67
-      env:
-        - COMPILER="CC=clang-3.8 && CXX=clang++-3.8"
-
-    - os: linux
-      addons:
-        apt:
-          update: true
-          sources:
-            - sourceline: 'ppa:mhier/libboost-latest'
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - clang-5.0
-            - boost1.67
-      env:
-        - COMPILER="CC=clang-5.0 && CXX=clang++-5.0"
+    - name: g++-4.9 daemon
+      env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 COMPILE=main
+    - name: g++-4.9 test
+      env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 COMPILE=tests
+    - name: g++-5 daemon
+      env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 COMPILE=main
+    - name: g++-5 test
+      env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 COMPILE=tests
+    - name: g++-6 daemon
+      env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 COMPILE=main
+    - name: g++-6 test
+      env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 COMPILE=tests
+    - name: g++-7 daemon
+      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 COMPILE=main
+    - name: g++-7 test
+      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 COMPILE=tests
+    - name: clang-3.8 daemon
+      env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 COMPILE=main
+    - name: clang-3.8 test
+      env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 COMPILE=tests
+    - name: clang-5.0 daemon
+      env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 COMPILE=main
+    - name: clang-5.0 test
+      env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 COMPILE=tests
 
 install:
   - if [ $TRAVIS_OS_NAME = linux ]; then
@@ -94,14 +53,39 @@ install:
       sudo apt-get install -y --allow-unauthenticated libsodium-dev;
       sudo apt-get install -y libminiupnpc-dev libunwind8-dev liblzma-dev libreadline6-dev;
       sudo apt-get install -y libldns-dev;
+      sudo apt-get install -y libgtest-dev;
+      sudo apt-get install -y $CXX_COMPILER;
+      sudo apt-get install -y $C_COMPILER;
     fi
 
 script:
-  - eval "${COMPILER}"
   - cd $HOME
-  - mkdir linux-x64-build
-  - cd linux-x64-build
-  - cmake -DCMAKE_INSTALL_PREFIX=$HOME/ryo-linux-x64-release -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Debug -DBUILD_TAG="linux-x64-release" $TRAVIS_BUILD_DIR
-  - make
-  - make install
-
+  - |
+    if [ "$COMPILE" == "main" ] ; then
+        mkdir linux-x64-build
+        cd linux-x64-build
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/ryo-linux-x64-release -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Debug -DBUILD_TAG="linux-x64-release" $TRAVIS_BUILD_DIR
+        make
+        make install
+        cd bin
+        # runtime tests are currently disabled because the help is exiting with error code 1
+        #for prog in $(find . -type f -executable)
+        #do
+        #    echo "output of '$prog --help'"
+        #    $prog --help
+        #done
+    elif [ "$COMPILE" == "tests" ] ; then
+        # compile tests
+        cd $HOME
+        mkdir linux-x64-tests-build
+        cd linux-x64-tests-build
+        cmake -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug $TRAVIS_BUILD_DIR
+        # build all tests
+        make
+        # run unit tests
+        cd tests
+        ctest -V
+    else
+        echo "not supported compile option '$COMPILE'"
+        exit 1
+    fi
