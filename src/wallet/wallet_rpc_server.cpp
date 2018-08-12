@@ -2476,7 +2476,7 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 	}
 
 	namespace po = boost::program_options;
-	po::variables_map vm2;
+	po::variables_map vm;
 
 	{
 		po::options_description desc("dummy");
@@ -2487,12 +2487,18 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 		argv[1] = "--password";
 		argv[2] = req.password.c_str();
 		argv[3] = NULL;
-		vm2 = *m_vm;
+		vm = *m_vm;
 		command_line::add_arg(desc, arg_password);
-		po::store(po::parse_command_line(argc, argv, desc), vm2);
+		po::store(po::parse_command_line(argc, argv, desc), vm);
 	}
 
-	std::unique_ptr<tools::wallet2> wallet = tools::wallet2::make_new(vm2, nullptr).first;
+	std::unique_ptr<tools::wallet2> wallet = tools::wallet2::make_new(vm, nullptr).first;
+	if(!wallet)
+		{
+			er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+			er.message = "Failed to restore wallet";
+			return false;
+		}
 
 	wallet->set_subaddress_lookahead(0, 0);
 	wallet->set_seed_language(language);
@@ -2504,13 +2510,6 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 			wallet->generate_new(wallet_file, req.password, &seed_14, seed_extra, false);
 		else
 			wallet->generate_legacy(wallet_file, req.password, seed_25, false);
-
-		if(!wallet)
-		{
-			er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
-			er.message = "Failed to restore wallet";
-			return false;
-		}
 	}
 	catch(const std::exception &e)
 	{
@@ -2518,7 +2517,6 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 		return false;
 	}
 
-	
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
