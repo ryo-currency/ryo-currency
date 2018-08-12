@@ -1624,6 +1624,29 @@ struct COMMAND_RPC_CREATE_WALLET
 	};
 };
 
+struct COMMAND_RPC_RESTORE_WALLET
+{
+	struct request
+	{
+		std::string filename;
+		std::string password;
+		std::string seed;
+		uint64_t refresh_start_height;
+
+		BEGIN_KV_SERIALIZE_MAP()
+		KV_SERIALIZE(filename)
+		KV_SERIALIZE(password)
+		KV_SERIALIZE(seed)
+		KV_SERIALIZE(refresh_start_height)
+		END_KV_SERIALIZE_MAP()
+	};
+	struct response
+	{
+		BEGIN_KV_SERIALIZE_MAP()
+		END_KV_SERIALIZE_MAP()
+	};
+};
+
 struct COMMAND_RPC_OPEN_WALLET
 {
 	struct request
