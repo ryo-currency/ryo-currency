@@ -78,6 +78,6 @@ set_property(TARGET core_tests
   PROPERTY
     FOLDER "tests")
 
-add_test(
-  NAME    core_tests
-  COMMAND core_tests --generate_and_play_test_data)
+#add_test(
+#  NAME    core_tests
+#  COMMAND core_tests --generate_and_play_test_data)
