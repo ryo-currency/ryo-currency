@@ -42,6 +42,6 @@ set_property(TARGET difficulty-tests
   PROPERTY
     FOLDER "tests")
 
-add_test(
-  NAME    difficulty
-  COMMAND difficulty-tests "${CMAKE_CURRENT_SOURCE_DIR}/data.txt")
+#add_test(
+#  NAME    difficulty
+#  COMMAND difficulty-tests "${CMAKE_CURRENT_SOURCE_DIR}/data.txt")
