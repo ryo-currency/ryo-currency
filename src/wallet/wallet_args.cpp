@@ -112,6 +112,7 @@ boost::optional<boost::program_options::variables_map> main(
 	const boost::program_options::positional_options_description &positional_options,
 	const std::function<void(const std::string &, bool)> &print,
 	const char *default_log_name,
+	int &error_code,
 	bool log_to_console)
 
 {
@@ -120,6 +121,8 @@ boost::optional<boost::program_options::variables_map> main(
 #ifdef WIN32
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
+
+	error_code = 1;
 
 	const command_line::arg_descriptor<std::string> arg_log_level = {"log-level", "0-4 or categories", ""};
 	const command_line::arg_descriptor<std::size_t> arg_max_log_file_size = {"max-log-file-size", "Specify maximum log file size [B]", MAX_LOG_FILE_SIZE};
@@ -158,11 +161,13 @@ boost::optional<boost::program_options::variables_map> main(
 			Print(print) << wallet_args::tr("This is the command line ryo wallet. It needs to connect to a ryo daemon to work correctly.") << ENDL;
 			Print(print) << wallet_args::tr("Usage:") << ENDL << "  " << usage;
 			Print(print) << desc_all;
+			error_code = 0;
 			return false;
 		}
 		else if(command_line::get_arg(vm, command_line::arg_version))
 		{
 			Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")";
+			error_code = 0;
 			return false;
 		}
 
@@ -183,6 +188,7 @@ boost::optional<boost::program_options::variables_map> main(
 		}
 
 		po::notify(vm);
+		error_code = 0;
 		return true;
 	});
 	if(!r)
@@ -215,6 +221,7 @@ boost::optional<boost::program_options::variables_map> main(
 
 	Print(print) << boost::format(wallet_args::tr("Logging to %s")) % log_path;
 
+	error_code = 0;
 	return {std::move(vm)};
 }
 }

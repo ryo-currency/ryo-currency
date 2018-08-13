@@ -3011,6 +3011,7 @@ int main(int argc, char **argv)
 	command_line::add_arg(desc_params, arg_wallet_dir);
 	command_line::add_arg(desc_params, arg_prompt_for_password);
 
+	int vm_error_code = 1;
 	const auto vm = wallet_args::main(
 		argc, argv,
 		"ryo-wallet-rpc [--wallet-file=<file>|--generate-from-json=<file>|--wallet-dir=<directory>] [--rpc-bind-port=<port>]",
@@ -3019,10 +3020,11 @@ int main(int argc, char **argv)
 		po::positional_options_description(),
 		[](const std::string &s, bool emphasis) { epee::set_console_color(emphasis ? epee::console_color_white : epee::console_color_default, true); std::cout << s << std::endl; if (emphasis) epee::reset_console_color(); },
 		"ryo-wallet-rpc.log",
+		vm_error_code,
 		true);
 	if(!vm)
 	{
-		return 1;
+		return vm_error_code;
 	}
 
 	std::unique_ptr<tools::wallet2> wal;
