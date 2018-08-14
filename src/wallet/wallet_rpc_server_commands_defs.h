@@ -876,7 +876,9 @@ struct COMMAND_RPC_RESCAN_BLOCKCHAIN
 {
 	struct request
 	{
+		bool full_rescan;
 		BEGIN_KV_SERIALIZE_MAP()
+		KV_SERIALIZE_OPT(full_rescan, false)
 		END_KV_SERIALIZE_MAP()
 	};
 

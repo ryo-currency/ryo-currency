@@ -1391,7 +1391,10 @@ bool wallet_rpc_server::on_rescan_blockchain(const wallet_rpc::COMMAND_RPC_RESCA
 
 	try
 	{
+		bool old_val = m_wallet->explicit_refresh_from_block_height();
+		m_wallet->explicit_refresh_from_block_height(req.full_rescan);
 		m_wallet->rescan_blockchain();
+		m_wallet->explicit_refresh_from_block_height(old_val);
 	}
 	catch(const std::exception &e)
 	{
