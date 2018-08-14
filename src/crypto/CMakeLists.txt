@@ -56,7 +56,7 @@ set(crypto_sources
   hash.c
   jh.c
   keccak.c
-  random.c
+  random.cpp
   skein.c
   tree-hash.c
   cn_slow_hash_soft.cpp
@@ -75,10 +75,9 @@ set(crypto_private_headers
   groestl_tables.h
   hash-ops.h
   hash.h
-  initializer.h
   jh.h
   keccak.h
-  random.h
+  random.hpp
   skein.h
   skein_port.h
   cn_slow_hash.hpp)
