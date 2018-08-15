@@ -68,7 +68,9 @@ extern "C" void* memwipe(void *src, size_t n);
 
 struct prng_handle
 {
-#if defined(_WIN32)
+#if defined(CRYPTO_TEST_ONLY_FIXED_PRNG)
+	uint64_t count = 0;
+#elif defined(_WIN32)
 	HCRYPTPROV prov;
 #else
 	int fd;
@@ -99,7 +101,9 @@ prng::~prng()
 void prng::start()
 {
 	hnd = new prng_handle;
-#if defined(_WIN32)
+#if defined(CRYPTO_TEST_ONLY_FIXED_PRNG)
+	std::cerr << "WARNING!!! Fixed PRNG is active! This should be done in tests only!" << std::endl;
+#elif defined(_WIN32)
 	if(!CryptAcquireContext(&hnd->prov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
 	{
 		std::cerr << "CryptAcquireContext Failed " << std::endl;
@@ -152,7 +156,12 @@ void prng::generate_random(uint8_t* output, size_t size_bytes)
 
 void prng::generate_system_random_bytes(uint8_t* result, size_t n)
 {
-#if defined(_WIN32)  
+#if defined(CRYPTO_TEST_ONLY_FIXED_PRNG)
+	uint8_t buf[200];
+	keccak(reinterpret_cast<uint8_t*>(&hnd->count), sizeof(hnd->count), buf, 200);
+	memcpy(result, buf, n);
+	hnd->count++;
+#elif defined(_WIN32)
 	if(CryptGenRandom(hnd->prov, (DWORD)n, result))
 	{
 		std::cerr << "CryptGenRandom Failed " << std::endl;
