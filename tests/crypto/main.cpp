@@ -94,16 +94,6 @@ int main(int argc, char *argv[])
 				goto error;
 			}
 		}
-		else if(cmd == "random_scalar")
-		{
-			ec_scalar expected, actual;
-			get(input, expected);
-			random_scalar(actual);
-			if(expected != actual)
-			{
-				goto error;
-			}
-		}
 		else if(cmd == "hash_to_scalar")
 		{
 			vector<char> data;
