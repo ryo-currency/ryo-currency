@@ -52,8 +52,21 @@ public:
 	prng() {}
 	~prng();
 
+	/**
+	* @brief Generate cryptographic grade random numbers
+	*
+	* @param output output pointer
+	* @param size_bytes output size
+	*/
+
 	void generate_random(uint8_t* output, size_t size_bytes);
 	inline void generate_random(void* output, size_t size_bytes) { generate_random(reinterpret_cast<uint8_t*>(output), size_bytes); }
+
+	/**
+	* @brief Get singleton instance. One instance exists per thread.
+	* 
+	* @return Singleton reference
+	*/
 
 	inline static prng& inst()
 	{
