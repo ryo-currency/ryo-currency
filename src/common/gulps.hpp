@@ -49,73 +49,115 @@
 #include <thread>
 #include <list>
 #include <vector>
+#include <atomic>
 #include "thdq.hpp"
 #include "string.hpp"
 #include <fmt/format.h>
 #include <fmt/time.h>
+
+#if defined(WIN32)
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 class gulps
 {
 public:
 	enum level
 	{
-		LEVEL_OUTPUT_0,
-		LEVEL_OUTPUT_1,
-		LEVEL_OUTPUT_2,
+		LEVEL_PRINT,
 		LEVEL_ERROR,
 		LEVEL_WARN,
-		LEVEL_INFO,
-		LEVEL_DEBUG_0,
-		LEVEL_DEBUG_1,
-		LEVEL_DEBUG_2
+		LEVEL_INFO
 	};
-	
+
 	static inline const char* level_to_str(level lvl)
 	{
 		switch(lvl)
 		{
-		case LEVEL_OUTPUT_0: return "OUTPUT0";
-		case LEVEL_OUTPUT_1: return "OUTPUT1";
-		case LEVEL_OUTPUT_2: return "OUTPUT2";
+		case LEVEL_PRINT: return "PRINT";
 		case LEVEL_ERROR: return "ERROR";
 		case LEVEL_WARN: return "WARN";
 		case LEVEL_INFO: return "INFO";
-		case LEVEL_DEBUG_0: return "DEBUG0";
-		case LEVEL_DEBUG_1: return "DEBUG1";
-		case LEVEL_DEBUG_2: return "DEBUG2";
 		default: return "UNKNOWN";
 		}
 	}
+
+	enum output
+	{
+		OUT_USER_0,
+		OUT_USER_1,
+		OUT_USER_2,
+		OUT_DEBUG_0,
+		OUT_DEBUG_1,
+		OUT_DEBUG_2
+	};
 	
+	static inline const char* out_to_str(output out)
+	{
+		switch(out)
+		{
+		case OUT_USER_0: return "OUTPUT0";
+		case OUT_USER_1: return "OUTPUT1";
+		case OUT_USER_2: return "OUTPUT2";
+		case OUT_DEBUG_0: return "DEBUG0";
+		case OUT_DEBUG_1: return "DEBUG1";
+		case OUT_DEBUG_2: return "DEBUG2";
+		default: return "UNKNOWN";
+		}
+	}
+
+	enum color : uint64_t
+	{
+		COLOR_WHITE = 1,
+		COLOR_RED   = 2,
+		COLOR_GREEN = 3,
+		COLOR_BLUE  = 4,
+		COLOR_CYAN  = 5,
+		COLOR_MAGENTA = 6,
+		COLOR_YELLOW = 7,
+		COLOR_BOLD_WHITE = 9,
+		COLOR_BOLD_RED   = 10,
+		COLOR_BOLD_GREEN = 11,
+		COLOR_BOLD_BLUE  = 12,
+		COLOR_BOLD_CYAN  = 13,
+		COLOR_BOLD_MAGENTA = 14,
+		COLOR_BOLD_YELLOW = 15,
+		COLOR_MASK = 7, // Masks color from brightness
+		COLOR_BOLD = 8
+	};
+
 	//Object handling a single long message
 	class message
 	{
 	public:
 		std::time_t time;
 		level lvl;
+		output out;
 		std::string cat_major;
 		std::string cat_minor;
 		std::string src_path;
 		int64_t src_line;
 		std::string thread_id;
 		std::string text;
-		fmt::color clr;
+		color clr;
 
-		message(level lvl, const char* major, const char* minor, const char* path, int64_t line, std::string&& text, fmt::color clr = fmt::color::white) : 
-			time(std::time(nullptr)), lvl(lvl), cat_major(major), cat_minor(minor), src_path(path), src_line(line),
+		message(output out, level lvl, const char* major, const char* minor, const char* path, int64_t line, std::string&& text, color clr = COLOR_WHITE) : 
+			time(std::time(nullptr)), lvl(lvl), out(out), cat_major(major), cat_minor(minor), src_path(path), src_line(line),
 			thread_id(gulps::inst().get_thread_tag()), text(std::move(text)), clr(clr)
 		{
 		}
 
 		std::string print_message(bool inc_text = true) const
 		{
-			std::string out = fmt::format("{:%Y-%m-%d %H:%M:%S} {} [{}] {}.{} {}:{} ", fmt::localtime(time), 
-					level_to_str(lvl), thread_id, cat_major, cat_minor, src_path, src_line);
+			std::string sout = fmt::format("{:%Y-%m-%d %H:%M:%S} {}-{} [{}] {}.{} {}:{} ", fmt::localtime(time), 
+					level_to_str(lvl), out_to_str(out), thread_id, cat_major, cat_minor, src_path, src_line);
 
 			if(inc_text)
-				out += print_text();
+				sout += print_text();
 
-			return out;
+			return sout;
 		}
 
 		std::string print_text() const
@@ -176,18 +218,113 @@ public:
 	class gulps_print_output : public gulps_output
 	{
 	public:
-		gulps_print_output(bool text_only, fmt::color hdr_color) : text_only(text_only), hdr_color(hdr_color) {}
+		gulps_print_output(bool text_only, color hdr_color) : text_only(text_only), hdr_color(hdr_color) {}
 
 		void log_message(const message& msg) override
 		{
 			if(!text_only)
-				fmt::print(hdr_color, msg.print_message(false));
-			fmt::print(msg.clr, msg.print_text());
+				print(msg.print_message(false), hdr_color);
+			print(msg.print_text(), msg.clr);
 		}
 
+	private:
+		static void print(const std::string& txt, color clr)
+		{
+			set_console_color(clr);
+			std::fputs(txt.c_str(), stdout);
+			reset_console_color();
+		}
+		
+		static bool is_stdout_a_tty()
+		{
+#if defined(WIN32)
+			static std::atomic<bool> is_a_tty(_isatty(_fileno(stdout) != 0);
+#else
+			static std::atomic<bool> is_a_tty(isatty(fileno(stdout)) != 0);
+#endif
+			return is_a_tty;
+		}
+
+		static void set_console_color(color clr)
+		{
+			if(!is_stdout_a_tty())
+				return;
+
+#ifdef WIN32
+			WORD bright = (clr & COLOR_BOLD) ? FOREGROUND_INTENSITY : 0;
+#else
+			bool bright = (clr & COLOR_BOLD) != 0;
+#endif
+			switch(clr & COLOR_MASK)
+			{
+			default:
+			case COLOR_WHITE:
+#ifdef WIN32
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | bright);
+#else
+				std::cout << (bright ? "\033[1;97m" : "\033[0;97m");
+#endif
+				break;
+			case COLOR_RED:
+#ifdef WIN32
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | bright);
+#else
+				std::cout << (bright ? "\033[1;31m" : "\033[0;31m");
+#endif
+				break;
+			case COLOR_GREEN:
+#ifdef WIN32
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | bright);
+#else
+				std::cout << (bright ? "\033[1;32m" : "\033[0;32m");
+#endif
+				break;
+			case COLOR_BLUE:
+#ifdef WIN32
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | bright);
+#else
+				std::cout << (bright ? "\033[1;34m" : "\033[0;34m");
+#endif
+				break;
+			case COLOR_CYAN:
+#ifdef WIN32
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_BLUE | bright);
+#else
+				std::cout << (bright ? "\033[1;36m" : "\033[0;36m");
+#endif
+				break;
+			case COLOR_MAGENTA:
+#ifdef WIN32
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_RED | bright);
+#else
+				std::cout << (bright ? "\033[1;35m" : "\033[0;35m");
+#endif
+				break;
+			case COLOR_YELLOW:
+#ifdef WIN32
+				SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_BLUE | FOREGROUND_RED | bright);
+#else
+				std::cout << (bright ? "\033[1;33m" : "\033[0;33m");
+#endif
+				break;
+			}
+		}
+
+		static void reset_console_color()
+		{
+			if(!is_stdout_a_tty())
+				return;
+
+#ifdef WIN32
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+#else
+			std::cout << "\033[0m";
+			std::cout.flush();
+#endif
+		}
 	protected:
 		bool text_only;
-		fmt::color hdr_color;
+		color hdr_color;
 	};
 
 	//Class handling synchronous file logging.
@@ -206,7 +343,7 @@ public:
 	
 		~gulps_file_output()
 		{
-			log_message(message(LEVEL_DEBUG_2, "log_shutdown", fname.c_str(), __FILE__, __LINE__, "Log file shutting down."));
+			log_message(message(OUT_DEBUG_2, LEVEL_INFO, "log_shutdown", fname.c_str(), __FILE__, __LINE__, "Log file shutting down."));
 			output_file.close();
 		}
 
@@ -253,7 +390,7 @@ public:
 
 		~gulps_async_file_output()
 		{
-			log_message(message(LEVEL_DEBUG_2, "log_shutdown", fname.c_str(), __FILE__, __LINE__, "Log thread shutting down."));
+			log_message(message(OUT_DEBUG_2, LEVEL_INFO, "log_shutdown", fname.c_str(), __FILE__, __LINE__, "Log thread shutting down."));
 			if(thd.joinable())
 			{
 				msg_q.set_finish_flag();
@@ -316,15 +453,6 @@ private:
 	std::list<std::unique_ptr<gulps_output>> outputs;
 };
 
-#define GULPS_OUTPUT(lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(lvl, maj, min, __FILE__, __LINE__, fmt::format(__VA_ARGS__), clr))
-#define GULPS_CAT_ERROR(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_ERROR, maj, min, fmt::color::red, fstr, __VA_ARGS__)
-#define GULPS_CAT_WARN(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_WARN, maj, min, fmt::color::orange, fstr, __VA_ARGS__)
-#define GULPS_CAT_INFO(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_INFO, maj, min, fmt::color::white, fstr, __VA_ARGS__)
-#define GULPS_CAT_DEBUG0(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_0, maj, min, fmt::color::white, fstr, __VA_ARGS__)
-#define GULPS_CAT_DEBUG1(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_1, maj, min, fmt::color::white, fstr, __VA_ARGS__)
-#define GULPS_CAT_DEBUG2(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_2, maj, min, fmt::color::white, fstr, __VA_ARGS__)
-#define GULPS_CAT_PRINT(maj, min, clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, maj, min, clr, fstr, __VA_ARGS__)
-
 #ifndef GULPS_CAT_MAJOR
 #define GULPS_CAT_MAJOR "default"
 #endif
@@ -333,10 +461,26 @@ private:
 #define GULPS_CAT_MINOR ""
 #endif
 
+#define GULPS_OUTPUT(out, lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, maj, min, __FILE__, __LINE__, fmt::format(__VA_ARGS__), clr))
+
+#define GULPS_PRINT(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_ERROR(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPS_WARN(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
+#define GULPS_INFO(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_DEBUG(...) GULPS_OUTPUT(gulps::OUT_DEBUG_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+
+/*#define GULPS_CAT_ERROR(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_ERROR, maj, min, fmt::color::red, fstr, __VA_ARGS__)
+#define GULPS_CAT_WARN(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_WARN, maj, min, fmt::color::orange, fstr, __VA_ARGS__)
+#define GULPS_CAT_INFO(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_INFO, maj, min, fmt::color::white, fstr, __VA_ARGS__)
+#define GULPS_CAT_DEBUG0(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_0, maj, min, fmt::color::white, fstr, __VA_ARGS__)
+#define GULPS_CAT_DEBUG1(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_1, maj, min, fmt::color::white, fstr, __VA_ARGS__)
+#define GULPS_CAT_DEBUG2(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_2, maj, min, fmt::color::white, fstr, __VA_ARGS__)
+#define GULPS_CAT_PRINT(maj, min, clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, maj, min, clr, fstr, __VA_ARGS__)
+
 #define GULPS_ERROR(...) GULPS_OUTPUT(gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::red, __VA_ARGS__)
 #define GULPS_WARN(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_WARN, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::orange, fstr, __VA_ARGS__)
 #define GULPS_INFO(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_INFO, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::white, fstr, __VA_ARGS__)
 #define GULPS_DEBUG0(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::white, fstr, __VA_ARGS__)
 #define GULPS_DEBUG1(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_1, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::white, fstr, __VA_ARGS__)
 #define GULPS_DEBUG2(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, fmt::color::white, fstr, __VA_ARGS__)
-#define GULPS_PRINT(clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, fstr, __VA_ARGS__)
+#define GULPS_PRINT(clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, fstr, __VA_ARGS__)*/

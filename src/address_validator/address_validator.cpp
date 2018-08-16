@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
 	gulps::inst().set_thread_tag("MAIN");
 
 	// We won't replace the custom output writer here, so just direct **our** errors to console
-	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(true, fmt::color::white));
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(false, gulps::COLOR_WHITE));
 	out->add_filter([](const gulps::message& msg) -> bool { return msg.cat_major == GULPS_CAT_MAJOR && msg.lvl == gulps::LEVEL_ERROR; });
 	gulps::inst().add_output(std::move(out));
  
