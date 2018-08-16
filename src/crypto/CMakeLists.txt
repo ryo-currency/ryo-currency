@@ -95,4 +95,21 @@ target_link_libraries(cncrypto
   PRIVATE
     ${EXTRA_LIBRARIES})
 
-
+if(BUILD_TESTS)
+  # if tests are enabled than build a special crypto library with a deterministic
+  # random number generator, this lib is than used for the test `crypto`
+  ryo_add_library(cncrypto_for_test
+    ${crypto_sources}
+    ${crypto_headers}
+    ${crypto_private_headers})
+  target_link_libraries(cncrypto_for_test
+    PUBLIC
+      epee
+      ${Boost_SYSTEM_LIBRARY}
+    PRIVATE
+      ${EXTRA_LIBRARIES})
+  target_compile_definitions(cncrypto_for_test
+      PUBLIC
+      -DCRYPTO_TEST_ONLY_FIXED_PRNG
+  )
+endif()
