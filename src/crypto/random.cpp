@@ -68,7 +68,7 @@ extern "C" void* memwipe(void *src, size_t n);
 
 struct prng_handle
 {
-#if defined(CRYPTO_TEST_ONLY_FIXED_PRNG)
+#if defined( CRYPTO_TEST_ONLY_FIXED_PRNG)
 	uint64_t count = 0;
 #elif defined(_WIN32)
 	HCRYPTPROV prov;
@@ -82,18 +82,20 @@ prng::~prng()
 	if(hnd == nullptr)
 		return;
 
-#if defined(_WIN32)
+#if !defined(CRYPTO_TEST_ONLY_FIXED_PRNG)
+#	if defined(_WIN32)
 	if(!CryptReleaseContext(hnd->prov, 0))
 	{
 		std::cerr << "CryptReleaseContext" << std::endl;
 		std::abort();
 	}
-#else
+#	else
 	if(close(hnd->fd) < 0)
 	{
 		std::cerr << "Exit Failure :: close /dev/urandom " << std::endl; 
 		std::abort();
 	}
+#	endif
 #endif
 	delete hnd;
 }
