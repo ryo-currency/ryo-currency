@@ -171,11 +171,13 @@ void generate_wallet_secret(secret_key_16 &wallet_secret)
 
 void generate_wallet_keys(public_key &pub, secret_key &sec, const secret_key_16 &wallet_secret, uint32_t key_variant)
 {
+#pragma pack(push, 1)
 	struct hash_secret
 	{
 		uint32_t variant;
 		scalar_16 secret;
 	};
+#pragma pack(pop)
 
 	tools::scrubbed<hash_secret> hs;
 	unwrap(hs).secret = unwrap(wallet_secret);
