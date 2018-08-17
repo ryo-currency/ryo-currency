@@ -2748,7 +2748,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 				fail_msg_writer() << tr("failed to parse spend key secret key");
 				return false;
 			}
-			bool r = restore_legacy_wallet(vm, recovery_key);
+			bool r = restore_legacy_wallet(vm, get_mnemonic_language(false), recovery_key);
 			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 		}
 		else if(!m_generate_from_keys.empty())
@@ -3023,14 +3023,14 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 			if(m_electrum_seed.empty())
 			{
 				std::string kurz_addr = input_line(tr("Would you like to use a shorter address format without a viewkey?  (Y/Yes/N/No): "));
-				r = new_wallet(vm, nullptr, command_line::is_yes(kurz_addr) ? cryptonote::ACC_OPT_KURZ_ADDRESS : cryptonote::ACC_OPT_LONG_ADDRESS);
+				r = new_wallet(vm, get_mnemonic_language(false), nullptr, command_line::is_yes(kurz_addr) ? cryptonote::ACC_OPT_KURZ_ADDRESS : cryptonote::ACC_OPT_LONG_ADDRESS);
 			}
 			else
 			{
 				if(m_restore_multisig_wallet)
 					r = new_wallet_msig(vm, seed_pass, multisig_keys);
 				else
-					r = new_wallet(vm, m_electrum_seed);
+					r = new_wallet_from_seed(vm, m_electrum_seed);
 			}
 			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 		}
@@ -3286,7 +3286,7 @@ boost::optional<tools::password_container> simple_wallet::get_and_verify_passwor
 	return pwd_container;
 }
 //----------------------------------------------------------------------------------------------------
-bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, std::string seed)
+bool simple_wallet::new_wallet_from_seed(const boost::program_options::variables_map &vm, std::string seed)
 {
 	//Zap any stray newlines in the seed
 	std::replace(seed.begin(), seed.end(), '\n', ' ');
@@ -3304,6 +3304,15 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	if(wseed.size() == 12 || wseed.size() == 14)
 	{
 		decode_14 = crypto::Electrum14Words::words_to_bytes(seed, seed_14, seed_extra, language);
+
+		if(wseed.size() == 12)
+		{
+			std::string kurz_addr = input_line(tr("Was the wallet created as a kurz address?  (Y/Yes/N/No): "));
+			if(command_line::is_yes(kurz_addr))
+				seed_extra = cryptonote::ACC_OPT_KURZ_ADDRESS;
+			else
+				seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS;
+		}
 	}
 	else if(wseed.size() >= 24 && wseed.size() <= 26)
 	{
@@ -3321,12 +3330,10 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 		return false;
 	}
 
-	m_wallet->set_seed_language(language);
-
 	if(decode_14)
-		return new_wallet(vm, &seed_14, seed_extra);
+		return new_wallet(vm, language, &seed_14, seed_extra);
 	else
-		return restore_legacy_wallet(vm, seed_25);
+		return restore_legacy_wallet(vm, language, seed_25);
 }
 
 std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> simple_wallet::make_new_wrapped(const boost::program_options::variables_map &vm, 
@@ -3344,7 +3351,7 @@ std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> simple_wal
 }
 
 //----------------------------------------------------------------------------------------------------
-bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key_16 *seed, uint8_t seed_extra)
+bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key_16 *seed, uint8_t seed_extra)
 {
 	auto rc = make_new_wrapped(vm, password_prompter);
 	m_wallet = std::move(rc.first);
@@ -3360,12 +3367,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 		m_wallet->set_subaddress_lookahead(lookahead->first, lookahead->second);
 	}
 
-	if(m_wallet->get_seed_language().empty())
-	{
-		m_wallet->set_seed_language(get_mnemonic_language(false));
-		if(m_wallet->get_seed_language().empty())
-			return false;
-	}
+	m_wallet->set_seed_language(seed_lang);
 
 	bool create_address_file = command_line::get_arg(vm, arg_create_address_file);
 
@@ -3407,7 +3409,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	return true;
 }
 
-bool simple_wallet::restore_legacy_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key &seed_legacy)
+bool simple_wallet::restore_legacy_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key &seed_legacy)
 {
 	auto rc = make_new_wrapped(vm, password_prompter);
 	m_wallet = std::move(rc.first);
@@ -3423,12 +3425,7 @@ bool simple_wallet::restore_legacy_wallet(const boost::program_options::variable
 		m_wallet->set_subaddress_lookahead(lookahead->first, lookahead->second);
 	}
 
-	if(m_wallet->get_seed_language().empty())
-	{
-		m_wallet->set_seed_language(get_mnemonic_language(false));
-		if(m_wallet->get_seed_language().empty())
-			return false;
-	}
+	m_wallet->set_seed_language(seed_lang);
 
 	bool create_address_file = command_line::get_arg(vm, arg_create_address_file);
 

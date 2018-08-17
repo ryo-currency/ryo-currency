@@ -110,9 +110,9 @@ class simple_wallet : public tools::i_wallet2_callback
 	std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> make_new_wrapped(const boost::program_options::variables_map &vm, 
 																			const std::function<boost::optional<tools::password_container>(const char *, bool)> &password_prompter);
 	
-	bool new_wallet(const boost::program_options::variables_map &vm, std::string seed);
-	bool new_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key_16 *seed = nullptr, uint8_t seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS);
-	bool restore_legacy_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key &seed_legacy);
+	bool new_wallet_from_seed(const boost::program_options::variables_map &vm, std::string seed);
+	bool new_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key_16 *seed = nullptr, uint8_t seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS);
+	bool restore_legacy_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key &seed_legacy);
 
 	bool new_wallet(const boost::program_options::variables_map &vm, const cryptonote::account_public_address &address,
 					const boost::optional<crypto::secret_key> &spendkey, const crypto::secret_key &viewkey);
