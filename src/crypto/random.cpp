@@ -105,6 +105,7 @@ void prng::start()
 	hnd = new prng_handle;
 #if defined(CRYPTO_TEST_ONLY_FIXED_PRNG)
 	std::cerr << "WARNING!!! Fixed PRNG is active! This should be done in tests only!" << std::endl;
+	return;
 #elif defined(_WIN32)
 	if(!CryptAcquireContext(&hnd->prov, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
 	{
@@ -118,6 +119,14 @@ void prng::start()
 		std::abort();
 	}
 #endif
+	uint64_t test[2] = { 0 };
+	generate_system_random_bytes(reinterpret_cast<uint8_t*>(test), sizeof(test));
+
+	if(test[0] == 0 && test[1] == 0)
+	{
+		std::cerr << "PRNG self-check failed!" << std::endl;
+		std::abort();
+	}
 }
 
 void prng::generate_random(uint8_t* output, size_t size_bytes)
