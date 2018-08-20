@@ -55,10 +55,10 @@
 #include <vector>
 
 #include "crypto/generic-ops.h"
+#include "crypto/random.hpp"
 
 extern "C" {
 #include "crypto/keccak.h"
-#include "crypto/random.h"
 }
 #include "crypto/crypto.h"
 

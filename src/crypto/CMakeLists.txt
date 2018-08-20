@@ -56,7 +56,7 @@ set(crypto_sources
   hash.c
   jh.c
   keccak.c
-  random.c
+  random.cpp
   skein.c
   tree-hash.c
   cn_slow_hash_soft.cpp
@@ -75,10 +75,9 @@ set(crypto_private_headers
   groestl_tables.h
   hash-ops.h
   hash.h
-  initializer.h
   jh.h
   keccak.h
-  random.h
+  random.hpp
   skein.h
   skein_port.h
   cn_slow_hash.hpp)
@@ -96,4 +95,21 @@ target_link_libraries(cncrypto
   PRIVATE
     ${EXTRA_LIBRARIES})
 
-
+if(BUILD_TESTS)
+  # if tests are enabled than build a special crypto library with a deterministic
+  # random number generator, this lib is than used for the test `crypto`
+  ryo_add_library(cncrypto_for_test
+    ${crypto_sources}
+    ${crypto_headers}
+    ${crypto_private_headers})
+  target_link_libraries(cncrypto_for_test
+    PUBLIC
+      epee
+      ${Boost_SYSTEM_LIBRARY}
+    PRIVATE
+      ${EXTRA_LIBRARIES})
+  target_compile_definitions(cncrypto_for_test
+      PUBLIC
+      -DCRYPTO_TEST_ONLY_FIXED_PRNG
+  )
+endif()
