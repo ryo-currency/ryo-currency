@@ -563,7 +563,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::software_hash(const void *in, size_t l
 
 	implode_scratchpad_soft();
 
-	keccakf(spad.as_uqword(), 24);
+	keccakf(spad.as_uqword());
 
 	switch(spad.as_byte(0) & 3)
 	{
