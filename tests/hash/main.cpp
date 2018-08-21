@@ -66,7 +66,23 @@ static void cn_pow_hash_heavy(const void *data, size_t length, char *hash)
 	cn_pow_hash_v2 ctx;
 	ctx.hash(data, length, hash);
 }
+static void hash_extra_blake(const void *data, size_t, char *hash)
+{
+	blake256_hash((uint8_t*)data, (uint8_t*)hash);
 }
+static void hash_extra_groestl(const void *data, size_t, char *hash)
+{
+	groestl_hash((uint8_t*)data, (uint8_t*)hash);
+}
+static void hash_extra_jh(const void *data, size_t, char *hash)
+{
+	jh_hash((uint8_t*)data, (uint8_t*)hash);
+}
+static void hash_extra_skein(const void *data, size_t, char *hash)
+{
+	skein_hash((uint8_t*)data, (uint8_t*)hash);
+}
+} // extern "C"
 POP_WARNINGS
 
 extern "C" typedef void hash_f(const void *, size_t, char *);
@@ -74,7 +90,16 @@ struct hash_func
 {
 	const string name;
 	hash_f &f;
-} hashes[] = {{"fast", cn_fast_hash}, {"pow-original", cn_pow_hash_original}, {"tree", hash_tree}, /*{"extra-blake", hash_extra_blake}, {"extra-groestl", hash_extra_groestl}, {"extra-jh", hash_extra_jh}, {"extra-skein", hash_extra_skein},*/ {"pow-heavy", cn_pow_hash_heavy}};
+} hashes[] = {
+	{"fast", cn_fast_hash},
+	{"pow-original", cn_pow_hash_original},
+	{"tree", hash_tree},
+	{"extra-blake", hash_extra_blake},
+	{"extra-groestl", hash_extra_groestl},
+	{"extra-jh", hash_extra_jh},
+	{"extra-skein", hash_extra_skein},
+	{"pow-heavy", cn_pow_hash_heavy}
+};
 
 int main(int argc, char *argv[])
 {
