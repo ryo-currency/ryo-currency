@@ -173,7 +173,7 @@ void prng::generate_system_random_bytes(uint8_t* result, size_t n)
 	memcpy(result, buf, n);
 	hnd->count++;
 #elif defined(_WIN32)
-	if(CryptGenRandom(hnd->prov, (DWORD)n, result))
+	if(!CryptGenRandom(hnd->prov, (DWORD)n, result))
 	{
 		std::cerr << "CryptGenRandom Failed " << std::endl;
 		std::abort();
