@@ -37,6 +37,7 @@
 #include "../io.h"
 #include "crypto/cn_slow_hash.hpp"
 #include "crypto/hash.h"
+#include "crypto/aux_hash.h"
 #include "warnings.h"
 
 using namespace std;
@@ -73,7 +74,7 @@ struct hash_func
 {
 	const string name;
 	hash_f &f;
-} hashes[] = {{"fast", cn_fast_hash}, {"pow-original", cn_pow_hash_original}, {"tree", hash_tree}, {"extra-blake", hash_extra_blake}, {"extra-groestl", hash_extra_groestl}, {"extra-jh", hash_extra_jh}, {"extra-skein", hash_extra_skein}, {"pow-heavy", cn_pow_hash_heavy}};
+} hashes[] = {{"fast", cn_fast_hash}, {"pow-original", cn_pow_hash_original}, {"tree", hash_tree}, /*{"extra-blake", hash_extra_blake}, {"extra-groestl", hash_extra_groestl}, {"extra-jh", hash_extra_jh}, {"extra-skein", hash_extra_skein},*/ {"pow-heavy", cn_pow_hash_heavy}};
 
 int main(int argc, char *argv[])
 {
