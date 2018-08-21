@@ -48,6 +48,28 @@
 //
 // Optimisations made by https://github.com/BaseMax
 //
+/*
+ * Based on followig implementations:
+ * 
+ * BLAKE reference C implementation
+ *  Copyright (c) 2012 Jean-Philippe Aumasson <jeanphilippe.aumasson@gmail.com>
+ *  To the extent possible under law, the author(s) have dedicated all copyright
+ *  and related and neighboring rights to this software to the public domain
+ *  worldwide. This software is distributed without any warranty.
+ *
+ * Groestl ANSI C code optimised for 32-bit machines
+ * Author: Thomas Krinninger
+ *
+ *  This work is based on the implementation of
+ *          Soeren S. Thomsen and Krystian Matusiewicz
+ *
+ * JH implementation by Wu Hongjun
+ *
+ *
+ * Implementation of the Skein hash function.
+ * Source code author: Doug Whiting, 2008.
+ * This algorithm and source code is released to the public domain.
+ */
 
 #include <stdio.h>
 #include <stdint.h>
