@@ -84,7 +84,7 @@ inline boost::filesystem::path get_relative_path_base(
 
 template <typename T_executor>
 inline bool daemonize(
-	int argc, char const *argv[], T_executor &&executor // universal ref
+	int argc, char* argv[], T_executor &&executor // universal ref
 	,
 	boost::program_options::variables_map const &vm)
 {

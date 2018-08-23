@@ -72,11 +72,21 @@
 namespace po = boost::program_options;
 namespace bf = boost::filesystem;
 
-int main(int argc, char const *argv[])
+int main(int argc, char* argv[])
 {
+#ifdef WIN32
+	std::vector<std::string> args;
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(args, argptrs))
+	{
+		argc = args.size();
+		argv = argptrs.data();
+	}
+#endif
+
 	try
 	{
-
 		// TODO parse the debug options like set log level right here at start
 
 		tools::on_startup();
