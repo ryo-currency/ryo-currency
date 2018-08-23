@@ -2998,6 +2998,17 @@ bool wallet_rpc_server::on_submit_multisig(const wallet_rpc::COMMAND_RPC_SUBMIT_
 
 int main(int argc, char **argv)
 {
+#ifdef WIN32
+	std::vector<std::string> args;
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(args, argptrs))
+	{
+		argc = args.size();
+		argv = argptrs.data();
+	}
+#endif
+
 	namespace po = boost::program_options;
 
 	const auto arg_wallet_file = wallet_args::arg_wallet_file();

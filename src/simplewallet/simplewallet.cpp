@@ -7572,6 +7572,15 @@ int main(int argc, char *argv[])
 	// Activate UTF-8 support for Boost filesystem classes on Windows
 	std::locale::global(boost::locale::generator().generate(""));
 	boost::filesystem::path::imbue(std::locale());
+
+	std::vector<std::string> args;
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(args, argptrs))
+	{
+		argc = args.size();
+		argv = argptrs.data();
+	}
 #endif
 
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
