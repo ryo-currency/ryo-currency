@@ -182,7 +182,7 @@ void account_base::create_from_device(const std::string &device_name)
 void account_base::create_from_viewkey(const cryptonote::account_public_address &address, const crypto::secret_key &viewkey)
 {
 	crypto::secret_key fake;
-	memset(&fake, 0, sizeof(fake));
+	fake.scrub();
 	create_from_keys(address, fake, viewkey);
 }
 //-----------------------------------------------------------------

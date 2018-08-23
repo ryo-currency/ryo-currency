@@ -96,6 +96,26 @@ matrix:
       env:
         - COMPILERS="CC=gcc-7 CXX=g++-7"
         - COMPILE=tests
+    - name: g++-8 daemon
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - COMPILERS="CC=gcc-8 CXX=g++-8"
+        - COMPILE=main
+    - name: g++-8 test
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+        - COMPILERS="CC=gcc-8 CXX=g++-8"
+        - COMPILE=tests
     - name: clang-3.9 daemon
       addons:
         apt:
