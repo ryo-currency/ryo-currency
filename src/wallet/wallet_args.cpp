@@ -54,6 +54,8 @@
 
 #if defined(WIN32)
 #include <crtdbg.h>
+#include <windows.h>
+#include <shellapi.h>
 #endif
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
@@ -104,6 +106,28 @@ const char *tr(const char *str)
 	return i18n_translate(str, "wallet_args");
 }
 
+#ifdef WIN32
+bool get_windows_args(std::vector<std::string>& args, std::vector<char*>& argptrs)
+{
+	int nArgs = 0;
+	LPWSTR* szArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+
+	if(szArgs == nullptr)
+		return false;
+
+	for(int i=0; i < nArgs; i++)
+	{
+		int size_needed = WideCharToMultiByte(CP_UTF8, 0, szArgs[i], -1, NULL, 0, NULL, NULL);
+		args.emplace_back(size_needed, '\0');
+		std::string& str = args.back();
+		char* strptr = &str[0];
+		WideCharToMultiByte(CP_UTF8, 0, szArgs[i], -1, strptr, size_needed, NULL, NULL);
+		str.pop_back();
+		argptrs.emplace_back(strptr);
+	}
+}
+#endif
+
 boost::optional<boost::program_options::variables_map> main(
 	int argc, char **argv,
 	const char *const usage,
@@ -120,6 +144,14 @@ boost::optional<boost::program_options::variables_map> main(
 	namespace po = boost::program_options;
 #ifdef WIN32
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	
+	std::vector<std::string> args;
+	std::vector<char*> argptrs;
+	if(get_windows_args(args, argptrs))
+	{
+		argc = args.size();
+		argv = argptrs.data();
+	}
 #endif
 
 	error_code = 1;
