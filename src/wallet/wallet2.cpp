@@ -5338,7 +5338,8 @@ uint32_t wallet2::adjust_priority(uint32_t priority)
 			THROW_WALLET_EXCEPTION_IF(getinfo_res.status == CORE_RPC_STATUS_BUSY, error::daemon_busy, "get_info");
 			THROW_WALLET_EXCEPTION_IF(getinfo_res.status != CORE_RPC_STATUS_OK, error::get_tx_pool_error);
 			const uint64_t full_reward_zone = getinfo_res.block_size_limit / 2;
-
+			THROW_WALLET_EXCEPTION_IF(full_reward_zone == 0, error::wallet_internal_error, "Invalid block size limit from daemon");
+			
 			// get the last N block headers and sum the block sizes
 			const size_t N = 10;
 			if(m_blockchain.size() < N)
