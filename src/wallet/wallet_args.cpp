@@ -54,6 +54,7 @@
 
 #if defined(WIN32)
 #include <crtdbg.h>
+#include <boost/locale.hpp>
 #endif
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
@@ -120,6 +121,9 @@ boost::optional<boost::program_options::variables_map> main(
 	namespace po = boost::program_options;
 #ifdef WIN32
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	// Activate UTF-8 support for Boost filesystem classes on Windows
+	std::locale::global(boost::locale::generator().generate(""));
+	boost::filesystem::path::imbue(std::locale());
 #endif
 
 	error_code = 1;
