@@ -90,7 +90,6 @@ union hash_state {
 #pragma pack(pop)
 static_assert(sizeof(union hash_state) == 200, "Invalid structure size");
 
-void hash_permutation(union hash_state *state);
 void hash_process(union hash_state *state, const uint8_t *buf, size_t count);
 
 #endif
