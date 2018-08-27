@@ -1,5 +1,4 @@
 // Copyright (c) 2018, Ryo Currency Project
-// Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
@@ -40,16 +39,26 @@
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
-#include <stddef.h>
-#include <stdint.h>
+#pragma once
+#include <inttypes.h> 
 
-#include "blake256.h"
+extern "C" {
 
-void hash_extra_blake(const void *data, size_t length, char *hash)
-{
-	blake256_hash((uint8_t *)hash, data, length);
+/** auxiliary hashing functions
+ * 
+ * @warning Hash functions were optimized to handle only 200 bytes long input. As such they
+ * are not useable outside of PoW calculation.
+ *
+ * @param data 200byte input data
+ * @param hashval 32byte hashed data
+ * @{
+ */
+void blake256_hash(const uint8_t* data, uint8_t* hashval);
+void skein_hash(const uint8_t* data, uint8_t *hashval);
+void groestl_hash(const uint8_t* data, uint8_t* hashval);
+void jh_hash(const uint8_t* data, uint8_t* hashval);
+
+///@}
 }
