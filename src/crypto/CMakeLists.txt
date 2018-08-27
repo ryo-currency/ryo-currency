@@ -43,21 +43,14 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set(crypto_sources
-  blake256.c
+  aux_hash.c
   chacha.c
   crypto-ops-data.c
   crypto-ops.c
   crypto.cpp
-  groestl.c
-  hash-extra-blake.c
-  hash-extra-groestl.c
-  hash-extra-jh.c
-  hash-extra-skein.c
   hash.c
-  jh.c
   keccak.c
   random.cpp
-  skein.c
   tree-hash.c
   cn_slow_hash_soft.cpp
   cn_slow_hash_hard_intel.cpp
@@ -66,20 +59,15 @@ set(crypto_sources
 set(crypto_headers)
 
 set(crypto_private_headers
-  blake256.h
+  aux_hash.h
   chacha.h
   crypto-ops.h
   crypto.h
   generic-ops.h
-  groestl.h
-  groestl_tables.h
   hash-ops.h
   hash.h
-  jh.h
   keccak.h
   random.hpp
-  skein.h
-  skein_port.h
   cn_slow_hash.hpp)
 
 ryo_private_headers(cncrypto
