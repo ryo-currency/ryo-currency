@@ -83,6 +83,7 @@
 #include <thread>
 
 #ifdef WIN32
+#include <windows.h>
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>
 #endif
@@ -157,28 +158,6 @@ const command_line::arg_descriptor<bool> arg_use_english_language_names = {"use-
 
 const command_line::arg_descriptor<std::vector<std::string>> arg_command = {"command", ""};
 
-#ifdef WIN32
-// Translate from CP850 to UTF-8;
-// std::getline for a Windows console returns a string in CP437 or CP850; as simplewallet,
-// like all of Ryo, is assumed to work internally with UTF-8 throughout, even on Windows
-// (although only implemented partially), a translation to UTF-8 is needed for input.
-//
-// Note that if a program is started inside the MSYS2 shell somebody already translates
-// console input to UTF-8, but it's not clear how one could detect that in order to avoid
-// double-translation; this code here thus breaks UTF-8 input within a MSYS2 shell,
-// unfortunately.
-//
-// Note also that input for passwords is NOT translated, to remain compatible with any
-// passwords containing special characters that predate this switch to UTF-8 support.
-static std::string cp850_to_utf8(const std::string &cp850_str)
-{
-	boost::locale::generator gen;
-	gen.locale_cache_enabled(true);
-	std::locale loc = gen("en_US.CP850");
-	return boost::locale::conv::to_utf<char>(cp850_str, loc);
-}
-#endif
-
 std::string input_line(const std::string &prompt)
 {
 #ifdef HAVE_READLINE
@@ -186,10 +165,30 @@ std::string input_line(const std::string &prompt)
 #endif
 	std::cout << prompt;
 
+#ifdef WIN32
+	HANDLE hConIn = CreateFileW(L"CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+	DWORD oldMode;
+
+	FlushConsoleInputBuffer(hConIn);
+	GetConsoleMode(hConIn, &oldMode);
+	SetConsoleMode(hConIn, ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT);
+
+	wchar_t buffer[1024];
+	DWORD read;
+
+	ReadConsoleW(hConIn, buffer, sizeof(buffer)/sizeof(wchar_t)-1, &read, nullptr);
+	buffer[read] = 0;
+
+	SetConsoleMode(hConIn, oldMode);
+	CloseHandle(hConIn);
+ 
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, buffer, -1, NULL, 0, NULL, NULL);
+	std::string buf(size_needed, '\0');
+	WideCharToMultiByte(CP_UTF8, 0, buffer, -1, &buf[0], size_needed, NULL, NULL);
+	buf.pop_back(); //size_needed includes null that we needed to have space for
+#else
 	std::string buf;
 	std::getline(std::cin, buf);
-#ifdef WIN32
-	buf = cp850_to_utf8(buf);
 #endif
 
 	return epee::string_tools::trim(buf);
@@ -7573,6 +7572,15 @@ int main(int argc, char *argv[])
 	// Activate UTF-8 support for Boost filesystem classes on Windows
 	std::locale::global(boost::locale::generator().generate(""));
 	boost::filesystem::path::imbue(std::locale());
+
+	std::vector<std::string> args;
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(args, argptrs))
+	{
+		argc = args.size();
+		argv = argptrs.data();
+	}
 #endif
 
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
