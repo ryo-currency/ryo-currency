@@ -182,6 +182,17 @@ static bool generate_multisig(uint32_t threshold, uint32_t total, const std::str
 
 int main(int argc, char *argv[])
 {
+#ifdef WIN32
+	std::vector<std::string> args;
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(args, argptrs))
+	{
+		argc = args.size();
+		argv = argptrs.data();
+	}
+#endif
+
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
 	command_line::add_arg(desc_params, arg_filename_base);
 	command_line::add_arg(desc_params, arg_scheme);
