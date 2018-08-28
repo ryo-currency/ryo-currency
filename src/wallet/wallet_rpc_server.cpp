@@ -2538,6 +2538,20 @@ bool wallet_rpc_server::on_open_wallet(const wallet_rpc::COMMAND_RPC_OPEN_WALLET
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_close_wallet(const wallet_rpc::COMMAND_RPC_CLOSE_WALLET::request &req, wallet_rpc::COMMAND_RPC_CLOSE_WALLET::response &res, epee::json_rpc::error &er)
+{
+	if(m_wallet == nullptr)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "No open wallet";
+		return false;
+	}
+	
+	delete m_wallet;
+	m_wallet = nullptr;
+	return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------
 void wallet_rpc_server::handle_rpc_exception(const std::exception_ptr &e, epee::json_rpc::error &er, int default_error_code)
 {
 	try
