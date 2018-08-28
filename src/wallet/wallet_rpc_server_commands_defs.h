@@ -1668,6 +1668,20 @@ struct COMMAND_RPC_OPEN_WALLET
 	};
 };
 
+struct COMMAND_RPC_CLOSE_WALLET
+{
+	struct request
+	{
+		BEGIN_KV_SERIALIZE_MAP()
+		END_KV_SERIALIZE_MAP()
+	};
+	struct response
+	{
+		BEGIN_KV_SERIALIZE_MAP()
+		END_KV_SERIALIZE_MAP()
+	};
+};
+
 struct COMMAND_RPC_IS_MULTISIG
 {
 	struct request
