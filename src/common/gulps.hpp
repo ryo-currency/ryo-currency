@@ -47,7 +47,7 @@
 #include <fstream>
 #include <ctime>
 #include <thread>
-#include <list>
+#include <unordered_map>
 #include <vector>
 #include <atomic>
 #include "thdq.hpp"
@@ -327,6 +327,26 @@ public:
 		color hdr_color;
 	};
 
+	//Store messages to, for example, send them over the network
+	class gulps_mem_output : public gulps_output
+	{
+	public:
+		gulps_mem_output() {}
+		
+		void log_message(const message& msg) override
+		{
+			log.push_back(msg);
+		}
+
+		const std::vector<message>& get_log()
+		{
+			return log;
+		}
+
+	protected:
+		std::vector<message> log;
+	};
+
 	//Class handling synchronous file logging.
 	class gulps_file_output : public gulps_output
 	{
@@ -433,14 +453,21 @@ public:
 		return inst;
 	}
 
-	void add_output(std::unique_ptr<gulps_output> output) { outputs.push_back(std::move(output)); };
+	//Returned value is a handle unique to that output. It can be used to remove it.
+	uint64_t add_output(std::unique_ptr<gulps_output> output) 
+	{ 
+		outputs.insert(std::make_pair(next_handle, std::move(output))); 
+		return next_handle++; 
+	}
+
+	void remove_output(uint64_t handle) { outputs.erase(handle); }
 
 	void log(message&& in_msg)
 	{
 		message msg = std::move(in_msg);
 		
-		for(std::unique_ptr<gulps_output>& out : outputs)
-			out->log(msg);
+		for(const auto& it : outputs)
+			it.second->log(msg);
 	}
 
 private:
@@ -450,7 +477,8 @@ private:
 		return thread_tag;
 	}
 
-	std::list<std::unique_ptr<gulps_output>> outputs;
+	uint64_t next_handle = 0;
+	std::unordered_map<uint64_t, std::unique_ptr<gulps_output>> outputs;
 };
 
 #ifndef GULPS_CAT_MAJOR
