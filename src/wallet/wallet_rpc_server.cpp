@@ -2453,11 +2453,11 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 
 	std::unique_ptr<tools::wallet2> wallet = tools::wallet2::make_new(vm, nullptr).first;
 	if(!wallet)
-		{
-			er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
-			er.message = "Failed to restore wallet";
-			return false;
-		}
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Failed to restore wallet";
+		return false;
+	}
 
 	wallet->set_subaddress_lookahead(0, 0);
 	wallet->set_seed_language(language);
@@ -2475,7 +2475,9 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
 		return false;
 	}
-
+	if(m_wallet)
+		delete m_wallet;
+	m_wallet = wallet.release();
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
