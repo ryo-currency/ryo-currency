@@ -38,7 +38,8 @@ target_link_libraries(hash-tests
   PRIVATE
     common
     cncrypto
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 set_property(TARGET hash-tests
   PROPERTY
     FOLDER "tests")

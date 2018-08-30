@@ -75,6 +75,7 @@ target_link_libraries(mnemonics
     epee
     easylogging
     ${Boost_SYSTEM_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     common
     ${Boost_LOCALE_LIBRARY}

@@ -86,5 +86,6 @@ target_link_libraries(daemonizer
     ${Boost_CHRONO_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})

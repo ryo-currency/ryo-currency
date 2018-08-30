@@ -62,7 +62,8 @@ target_link_libraries(gen_multisig
     ${Boost_LOCALE_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     ${GNU_READLINE_LIBRARY}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 add_dependencies(gen_multisig
   version)
 set_property(TARGET gen_multisig

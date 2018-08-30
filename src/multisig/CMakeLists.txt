@@ -64,5 +64,6 @@ target_link_libraries(multisig
     cryptonote_basic
     common
     cncrypto
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})

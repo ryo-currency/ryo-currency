@@ -53,5 +53,6 @@ ryo_add_library(cryptonote_protocol ${CRYPTONOTE_PROTOCOL})
 target_link_libraries(cryptonote_protocol
   PUBLIC
     p2p
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})

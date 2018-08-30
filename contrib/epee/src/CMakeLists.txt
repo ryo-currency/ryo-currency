@@ -55,6 +55,7 @@ target_link_libraries(epee
   PUBLIC
     easylogging
     ${Boost_FILESYSTEM_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${OPENSSL_LIBRARIES}
     ${EXTRA_LIBRARIES})
@@ -63,6 +64,7 @@ if (USE_READLINE AND GNU_READLINE_FOUND)
   target_link_libraries(epee_readline
     PUBLIC
       easylogging
+      fmt::fmt-header-only
     PRIVATE
     ${GNU_READLINE_LIBRARY})
 endif()

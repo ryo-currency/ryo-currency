@@ -124,7 +124,8 @@ target_link_libraries(blockchain_import
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 
 if(ARCH_WIDTH)
   target_compile_definitions(blockchain_import
@@ -152,7 +153,8 @@ target_link_libraries(blockchain_export
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 
 set_property(TARGET blockchain_export
 	PROPERTY
@@ -177,7 +179,8 @@ target_link_libraries(blockchain_blackball
     ${Boost_THREAD_LIBRARY}
     ${Boost_LOCALE_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 
 set_property(TARGET blockchain_blackball
 	PROPERTY
@@ -201,7 +204,8 @@ target_link_libraries(blockchain_usage
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 
 set_property(TARGET blockchain_usage
 	PROPERTY

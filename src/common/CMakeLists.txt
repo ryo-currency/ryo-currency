@@ -114,8 +114,7 @@ target_link_libraries(common
     ${Boost_LOCALE_LIBRARY}
     ${OPENSSL_LIBRARIES}
     ${ICU_LIBRARIES}
-    ${EXTRA_LIBRARIES}
-    fmt::fmt-header-only)
+    ${EXTRA_LIBRARIES})
 
 # activate extended color output for fmt
 target_compile_definitions(common PUBLIC -DFMT_EXTENDED_COLORS)

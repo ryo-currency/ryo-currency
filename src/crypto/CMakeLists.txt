@@ -80,6 +80,7 @@ target_link_libraries(cncrypto
   PUBLIC
     epee
     ${Boost_SYSTEM_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})
 
@@ -94,6 +95,7 @@ if(BUILD_TESTS)
     PUBLIC
       epee
       ${Boost_SYSTEM_LIBRARY}
+      fmt::fmt-header-only
     PRIVATE
       ${EXTRA_LIBRARIES})
   target_compile_definitions(cncrypto_for_test
