@@ -149,7 +149,7 @@ bool address_validator::validate_options()
 	std::vector<std::string> networks = {"auto", "mainnet", "testnet", "stagenet"};
 	if(std::find(networks.begin(), networks.end(), m_network) == networks.end())
 	{
-		GULPS_ERROR("Invalid/Unknown network type {}.", m_network);
+		GULPS_ERRORF("Invalid/Unknown network type {}.", m_network);
 		return 2;
 	}
 	return 0;

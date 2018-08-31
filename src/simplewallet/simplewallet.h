@@ -121,6 +121,9 @@ class simple_wallet : public tools::i_wallet2_callback
 	bool open_wallet(const boost::program_options::variables_map &vm);
 	bool close_wallet();
 
+	typedef bool (simple_wallet::*wallet_cmd_fun)(const std::vector<std::string> &args);
+	bool check_simple_variable(const std::vector<std::string> &args, const char* name, wallet_cmd_fun fun, const char* help);
+
 	bool viewkey(const std::vector<std::string> &args = std::vector<std::string>());
 	bool spendkey(const std::vector<std::string> &args = std::vector<std::string>());
 	bool seed(const std::vector<std::string> &args = std::vector<std::string>());

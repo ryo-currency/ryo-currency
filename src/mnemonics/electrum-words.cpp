@@ -52,14 +52,15 @@
  * that method of "backing up" one's wallet keys.
  */
 
-#include "mnemonics/electrum-words.h"
-#include "crypto/crypto.h" // for declaration of crypto::secret_key
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/crc.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>
 #include "common/boost_locale.hpp"
+
+#include "mnemonics/electrum-words.h"
+#include "crypto/crypto.h" // for declaration of crypto::secret_key
 #include <cassert>
 #include <cstdint>
 #include <fstream>
