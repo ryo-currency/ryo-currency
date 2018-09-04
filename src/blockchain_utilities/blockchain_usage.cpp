@@ -100,12 +100,11 @@ struct reference
 int main(int argc, char *argv[])
 {
 #ifdef WIN32
-	std::vector<std::string> args;
 	std::vector<char*> argptrs;
 	command_line::set_console_utf8();
-	if(command_line::get_windows_args(args, argptrs))
+	if(command_line::get_windows_args(argptrs))
 	{
-		argc = args.size();
+		argc = argptrs.size();
 		argv = argptrs.data();
 	}
 #endif
