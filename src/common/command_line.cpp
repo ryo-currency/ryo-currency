@@ -96,23 +96,30 @@ bool is_no(const std::string &str)
 }
 
 #ifdef WIN32
-bool get_windows_args(std::vector<std::string>& args, std::vector<char*>& argptrs)
+bool get_windows_args(std::vector<char*>& argptrs)
 {
 	int nArgs = 0;
-	LPWSTR* szArgs = CommandLineToArgvW(GetCommandLineW(), &nArgs);
+	LPWSTR sCmdArgs = GetCommandLineW();
+	LPWSTR* szArgs = CommandLineToArgvW(sCmdArgs, &nArgs);
 
 	if(szArgs == nullptr)
 		return false;
 
+	size_t iSlen = wcslen(sCmdArgs) * 3 + nArgs; //Guarantees fit for all BMP  and SMP glyphs
+	char* strptr = new char[iSlen];
 	for(int i = 0; i < nArgs; i++)
 	{
-		int size_needed = WideCharToMultiByte(CP_UTF8, 0, szArgs[i], -1, NULL, 0, NULL, NULL);
-		args.emplace_back(size_needed, '\0');
-		std::string& str = args.back();
-		char* strptr = &str[0];
-		WideCharToMultiByte(CP_UTF8, 0, szArgs[i], -1, strptr, size_needed, NULL, NULL);
-		str.pop_back();
+		int ret = WideCharToMultiByte(CP_UTF8, 0, szArgs[i], -1, strptr, iSlen, NULL, NULL);
+		if(ret <= 0)
+		{
+			argptrs.clear();
+			delete[] strptr;
+			return false;
+		}
+
 		argptrs.emplace_back(strptr);
+		strptr += ret;
+		iSlen -= ret;
 	}
 
 	return true;
