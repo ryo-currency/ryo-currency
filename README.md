@@ -60,6 +60,12 @@ After this, you can safely transact Sumokoin, it's important to first move your 
 
 This is the core implementation of Ryo. It is open source and completely free to use without restrictions, except for those specified in the license agreement below. There are no restrictions on anyone creating an alternative implementation of Ryo that uses the protocol and network in a compatible manner.
 
+## Precompiled binaries
+
+Along with each release you can find our [precompiled binaries](https://github.com/ryo-currency/ryo-currency/releases).
+To verify that the downloaded binaries are created by one of our developer please verify the checksums.
+The authenticity of the checksums can by verified with the [PGP-key's](docs/pgp_keys.md).
+
 ## Compiling Ryo from source
 
 ### Dependencies
