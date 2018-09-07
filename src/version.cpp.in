@@ -1,4 +1,4 @@
-#define DEF_RYO_VERSION "0.3.0.0"
+#define DEF_RYO_VERSION "0.3.1.0"
 
 //! git will put "#define GIT_ARCHIVE 1" on the next line inside archives. $Format:%n#define GIT_ARCHIVE 1$
 #if defined(GIT_ARCHIVE)
