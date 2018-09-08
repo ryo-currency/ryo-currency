@@ -83,6 +83,7 @@
 #include <thread>
 
 #ifdef WIN32
+#include <windows.h>
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>
 #endif
@@ -157,28 +158,6 @@ const command_line::arg_descriptor<bool> arg_use_english_language_names = {"use-
 
 const command_line::arg_descriptor<std::vector<std::string>> arg_command = {"command", ""};
 
-#ifdef WIN32
-// Translate from CP850 to UTF-8;
-// std::getline for a Windows console returns a string in CP437 or CP850; as simplewallet,
-// like all of Ryo, is assumed to work internally with UTF-8 throughout, even on Windows
-// (although only implemented partially), a translation to UTF-8 is needed for input.
-//
-// Note that if a program is started inside the MSYS2 shell somebody already translates
-// console input to UTF-8, but it's not clear how one could detect that in order to avoid
-// double-translation; this code here thus breaks UTF-8 input within a MSYS2 shell,
-// unfortunately.
-//
-// Note also that input for passwords is NOT translated, to remain compatible with any
-// passwords containing special characters that predate this switch to UTF-8 support.
-static std::string cp850_to_utf8(const std::string &cp850_str)
-{
-	boost::locale::generator gen;
-	gen.locale_cache_enabled(true);
-	std::locale loc = gen("en_US.CP850");
-	return boost::locale::conv::to_utf<char>(cp850_str, loc);
-}
-#endif
-
 std::string input_line(const std::string &prompt)
 {
 #ifdef HAVE_READLINE
@@ -186,10 +165,30 @@ std::string input_line(const std::string &prompt)
 #endif
 	std::cout << prompt;
 
+#ifdef WIN32
+	HANDLE hConIn = CreateFileW(L"CONIN$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+	DWORD oldMode;
+
+	FlushConsoleInputBuffer(hConIn);
+	GetConsoleMode(hConIn, &oldMode);
+	SetConsoleMode(hConIn, ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT);
+
+	wchar_t buffer[1024];
+	DWORD read;
+
+	ReadConsoleW(hConIn, buffer, sizeof(buffer)/sizeof(wchar_t)-1, &read, nullptr);
+	buffer[read] = 0;
+
+	SetConsoleMode(hConIn, oldMode);
+	CloseHandle(hConIn);
+ 
+	int size_needed = WideCharToMultiByte(CP_UTF8, 0, buffer, -1, NULL, 0, NULL, NULL);
+	std::string buf(size_needed, '\0');
+	WideCharToMultiByte(CP_UTF8, 0, buffer, -1, &buf[0], size_needed, NULL, NULL);
+	buf.pop_back(); //size_needed includes null that we needed to have space for
+#else
 	std::string buf;
 	std::getline(std::cin, buf);
-#ifdef WIN32
-	buf = cp850_to_utf8(buf);
 #endif
 
 	return epee::string_tools::trim(buf);
@@ -333,41 +332,6 @@ std::string get_refresh_type_name(tools::wallet2::RefreshType type)
 std::string get_version_string(uint32_t version)
 {
 	return boost::lexical_cast<std::string>(version >> 16) + "." + boost::lexical_cast<std::string>(version & 0xffff);
-}
-
-std::string oa_prompter(const std::string &url, const std::vector<std::string> &addresses, bool dnssec_valid)
-{
-	if(addresses.empty())
-		return {};
-	// prompt user for confirmation.
-	// inform user of DNSSEC validation status as well.
-	std::string dnssec_str;
-	if(dnssec_valid)
-	{
-		dnssec_str = tr("DNSSEC validation passed");
-	}
-	else
-	{
-		dnssec_str = tr("WARNING: DNSSEC validation was unsuccessful, this address may not be correct!");
-	}
-	std::stringstream prompt;
-	prompt << tr("For URL: ") << url
-		   << ", " << dnssec_str << std::endl
-		   << tr(" Ryo Address = ") << addresses[0]
-		   << std::endl
-		   << tr("Is this OK? (Y/n) ");
-	// prompt the user for confirmation given the dns query and dnssec status
-	std::string confirm_dns_ok = input_line(prompt.str());
-	if(std::cin.eof())
-	{
-		return {};
-	}
-	if(!command_line::is_yes(confirm_dns_ok))
-	{
-		std::cout << tr("you have cancelled the transfer request") << std::endl;
-		return {};
-	}
-	return addresses[0];
 }
 
 bool parse_subaddress_indices(const std::string &arg, std::set<uint32_t> &subaddr_indices)
@@ -726,7 +690,7 @@ bool simple_wallet::seed_set_language(const std::vector<std::string> &args /* = 
 	const auto pwd_container = get_and_verify_password();
 	if(pwd_container)
 	{
-		std::string mnemonic_language = get_mnemonic_language();
+		std::string mnemonic_language = get_mnemonic_language(true);
 		if(mnemonic_language.empty())
 			return true;
 
@@ -2649,7 +2613,6 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 			return false;
 
 		epee::wipeable_string seed_pass;
-		std::string old_language;
 		// check for recover flag.  if present, require electrum word list (only recovery option for now).
 		if(m_restore_deterministic_wallet || m_restore_multisig_wallet)
 		{
@@ -2784,7 +2747,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 				fail_msg_writer() << tr("failed to parse spend key secret key");
 				return false;
 			}
-			bool r = restore_legacy_wallet(vm, recovery_key);
+			bool r = restore_legacy_wallet(vm, get_mnemonic_language(false), recovery_key);
 			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 		}
 		else if(!m_generate_from_keys.empty())
@@ -3059,14 +3022,14 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 			if(m_electrum_seed.empty())
 			{
 				std::string kurz_addr = input_line(tr("Would you like to use a shorter address format without a viewkey?  (Y/Yes/N/No): "));
-				r = new_wallet(vm, nullptr, command_line::is_yes(kurz_addr) ? cryptonote::ACC_OPT_KURZ_ADDRESS : cryptonote::ACC_OPT_LONG_ADDRESS);
+				r = new_wallet(vm, get_mnemonic_language(false), nullptr, command_line::is_yes(kurz_addr) ? cryptonote::ACC_OPT_KURZ_ADDRESS : cryptonote::ACC_OPT_LONG_ADDRESS);
 			}
 			else
 			{
 				if(m_restore_multisig_wallet)
-					r = new_wallet_msig(vm, seed_pass, multisig_keys, old_language);
+					r = new_wallet_msig(vm, seed_pass, multisig_keys);
 				else
-					r = new_wallet(vm, m_electrum_seed);
+					r = new_wallet_from_seed(vm, m_electrum_seed);
 			}
 			CHECK_AND_ASSERT_MES(r, false, tr("account creation failed"));
 		}
@@ -3260,12 +3223,24 @@ bool simple_wallet::try_connect_to_daemon(bool silent, uint32_t *version)
  * 
  * \return The chosen language.
  */
-std::string simple_wallet::get_mnemonic_language()
+std::string simple_wallet::get_mnemonic_language(bool ignore_cmd_arg)
 {
 	std::vector<std::string> language_list;
 	std::string language_choice;
 	int language_number = -1;
 	crypto::Electrum::get_language_list(language_list, m_use_english_language_names);
+
+	if(!ignore_cmd_arg && !m_mnemonic_language.empty())
+	{
+		std::string ret = crypto::Electrum::verify_language_input(m_mnemonic_language);
+
+		//Don't return smelly user input here
+		if(!ret.empty())
+			return ret; 
+
+		fail_msg_writer() << boost::format(tr("Language '%s' is not in the language list. Please specify the language manually.\n")) % m_mnemonic_language.c_str();
+	}
+
 	std::cout << tr("List of available languages for your wallet's seed:") << std::endl;
 	std::cout << tr("If your display freezes, exit blind with ^C, then run again with --use-english-language-names") << std::endl;
 	int ii;
@@ -3310,7 +3285,7 @@ boost::optional<tools::password_container> simple_wallet::get_and_verify_passwor
 	return pwd_container;
 }
 //----------------------------------------------------------------------------------------------------
-bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, std::string seed)
+bool simple_wallet::new_wallet_from_seed(const boost::program_options::variables_map &vm, std::string seed)
 {
 	//Zap any stray newlines in the seed
 	std::replace(seed.begin(), seed.end(), '\n', ' ');
@@ -3328,6 +3303,15 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	if(wseed.size() == 12 || wseed.size() == 14)
 	{
 		decode_14 = crypto::Electrum14Words::words_to_bytes(seed, seed_14, seed_extra, language);
+
+		if(wseed.size() == 12)
+		{
+			std::string kurz_addr = input_line(tr("Was the wallet created as a kurz address?  (Y/Yes/N/No): "));
+			if(command_line::is_yes(kurz_addr))
+				seed_extra = cryptonote::ACC_OPT_KURZ_ADDRESS;
+			else
+				seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS;
+		}
 	}
 	else if(wseed.size() >= 24 && wseed.size() <= 26)
 	{
@@ -3345,12 +3329,10 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 		return false;
 	}
 
-	m_mnemonic_language = language;
-
 	if(decode_14)
-		return new_wallet(vm, &seed_14, seed_extra);
+		return new_wallet(vm, language, &seed_14, seed_extra);
 	else
-		return restore_legacy_wallet(vm, seed_25);
+		return restore_legacy_wallet(vm, language, seed_25);
 }
 
 std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> simple_wallet::make_new_wrapped(const boost::program_options::variables_map &vm, 
@@ -3368,7 +3350,7 @@ std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> simple_wal
 }
 
 //----------------------------------------------------------------------------------------------------
-bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key_16 *seed, uint8_t seed_extra)
+bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key_16 *seed, uint8_t seed_extra)
 {
 	auto rc = make_new_wrapped(vm, password_prompter);
 	m_wallet = std::move(rc.first);
@@ -3384,23 +3366,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 		m_wallet->set_subaddress_lookahead(lookahead->first, lookahead->second);
 	}
 
-	std::string mnemonic_language;
-
-	std::vector<std::string> language_list;
-	crypto::Electrum::get_language_list(language_list);
-	if(mnemonic_language.empty() && std::find(language_list.begin(), language_list.end(), m_mnemonic_language) != language_list.end())
-	{
-		mnemonic_language = m_mnemonic_language;
-	}
-
-	if(mnemonic_language.empty())
-	{
-		mnemonic_language = get_mnemonic_language();
-		if(mnemonic_language.empty())
-			return false;
-	}
-
-	m_wallet->set_seed_language(mnemonic_language);
+	m_wallet->set_seed_language(seed_lang);
 
 	bool create_address_file = command_line::get_arg(vm, arg_create_address_file);
 
@@ -3422,9 +3388,9 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	// convert rng value to electrum-style word list
 	std::string electrum_words;
 	if(seed == nullptr)
-		crypto::Electrum14Words::bytes_to_words(recovery_val, seed_extra, electrum_words, mnemonic_language);
+		crypto::Electrum14Words::bytes_to_words(recovery_val, seed_extra, electrum_words, m_wallet->get_seed_language());
 	else
-		crypto::Electrum14Words::bytes_to_words(*seed, seed_extra, electrum_words, mnemonic_language);
+		crypto::Electrum14Words::bytes_to_words(*seed, seed_extra, electrum_words, m_wallet->get_seed_language());
 
 	success_msg_writer() << "**********************************************************************\n"
 						 << tr("Your wallet has been generated!\n"
@@ -3442,7 +3408,7 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	return true;
 }
 
-bool simple_wallet::restore_legacy_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key &seed_legacy)
+bool simple_wallet::restore_legacy_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key &seed_legacy)
 {
 	auto rc = make_new_wrapped(vm, password_prompter);
 	m_wallet = std::move(rc.first);
@@ -3458,23 +3424,7 @@ bool simple_wallet::restore_legacy_wallet(const boost::program_options::variable
 		m_wallet->set_subaddress_lookahead(lookahead->first, lookahead->second);
 	}
 
-	std::string mnemonic_language;
-
-	std::vector<std::string> language_list;
-	crypto::Electrum::get_language_list(language_list);
-	if(mnemonic_language.empty() && std::find(language_list.begin(), language_list.end(), m_mnemonic_language) != language_list.end())
-	{
-		mnemonic_language = m_mnemonic_language;
-	}
-
-	if(mnemonic_language.empty())
-	{
-		mnemonic_language = get_mnemonic_language();
-		if(mnemonic_language.empty())
-			return false;
-	}
-
-	m_wallet->set_seed_language(mnemonic_language);
+	m_wallet->set_seed_language(seed_lang);
 
 	bool create_address_file = command_line::get_arg(vm, arg_create_address_file);
 
@@ -3492,7 +3442,7 @@ bool simple_wallet::restore_legacy_wallet(const boost::program_options::variable
 	}
 
 	std::string electrum_words;
-	crypto::Electrum25Words::bytes_to_words(seed_legacy, electrum_words, mnemonic_language);
+	crypto::Electrum25Words::bytes_to_words(seed_legacy, electrum_words, m_wallet->get_seed_language());
 
 	success_msg_writer() << "**********************************************************************\n"
 						 << tr("Your wallet has been restored!\n"
@@ -3589,8 +3539,7 @@ bool simple_wallet::new_wallet_dev(const boost::program_options::variables_map &
 	return true;
 }
 //----------------------------------------------------------------------------------------------------
-bool simple_wallet::new_wallet_msig(const boost::program_options::variables_map &vm, const epee::wipeable_string &pass,
-									std::string &multisig_keys, const std::string &old_language)
+bool simple_wallet::new_wallet_msig(const boost::program_options::variables_map &vm, const epee::wipeable_string &pass, std::string &multisig_keys)
 {
 	if(!pass.empty())
 	{
@@ -3615,16 +3564,7 @@ bool simple_wallet::new_wallet_msig(const boost::program_options::variables_map 
 		m_wallet->set_subaddress_lookahead(lookahead->first, lookahead->second);
 	}
 
-	std::string mnemonic_language = old_language;
-
-	std::vector<std::string> language_list;
-	crypto::Electrum::get_language_list(language_list);
-	if(mnemonic_language.empty() && std::find(language_list.begin(), language_list.end(), m_mnemonic_language) != language_list.end())
-	{
-		mnemonic_language = m_mnemonic_language;
-	}
-
-	m_wallet->set_seed_language(mnemonic_language);
+	m_wallet->set_seed_language("");
 
 	bool create_address_file = command_line::get_arg(vm, arg_create_address_file);
 
@@ -3682,33 +3622,6 @@ bool simple_wallet::open_wallet(const boost::program_options::variables_map &vm)
 		{
 			message_writer(console_color_white, true) << "Wallet is on device: " << m_wallet->get_account().get_device().get_name();
 		}
-		// If the wallet file is deprecated, we should ask for mnemonic language again and store
-		// everything in the new format.
-		// NOTE: this is_deprecated() refers to the wallet file format before becoming JSON. It does not refer to the "old english" seed words form of "deprecated" used elsewhere.
-		/* if (m_wallet->is_deprecated())
-    {
-      if (m_wallet->is_deterministic())
-      {
-        message_writer(console_color_green, false) << "\n" << tr("You had been using "
-          "a deprecated version of the wallet. Please proceed to upgrade your wallet.\n");
-        std::string mnemonic_language = get_mnemonic_language();
-        if (mnemonic_language.empty())
-          return false;
-        m_wallet->set_seed_language(mnemonic_language);
-        m_wallet->rewrite(m_wallet_file, password);
-
-        // Display the seed
-        std::string seed;
-        m_wallet->get_seed(seed);
-        print_seed(seed);
-      }
-      else
-      {
-        message_writer(console_color_green, false) << "\n" << tr("You had been using "
-          "a deprecated version of the wallet. Your wallet file format is being upgraded now.\n");
-        m_wallet->rewrite(m_wallet_file, password);
-      }
-    }*/
 	}
 	catch(const std::exception &e)
 	{
@@ -4607,7 +4520,7 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 	{
 		cryptonote::address_parse_info info;
 		cryptonote::tx_destination_entry de;
-		if(!cryptonote::get_account_address_from_str_or_url(info, m_wallet->nettype(), local_args[i], oa_prompter))
+		if(!cryptonote::get_account_address_from_str(m_wallet->nettype(), info, local_args[i]))
 		{
 			fail_msg_writer() << tr("failed to parse address");
 			return true;
@@ -4975,7 +4888,7 @@ bool simple_wallet::sweep_main(uint64_t below, const std::vector<std::string> &a
 	}
 
 	cryptonote::address_parse_info info;
-	if(!cryptonote::get_account_address_from_str_or_url(info, m_wallet->nettype(), local_args[0], oa_prompter))
+	if(!cryptonote::get_account_address_from_str(m_wallet->nettype(), info, local_args[0]))
 	{
 		fail_msg_writer() << tr("failed to parse address");
 		return true;
@@ -5195,7 +5108,7 @@ bool simple_wallet::sweep_single(const std::vector<std::string> &args_)
 	}
 
 	cryptonote::address_parse_info info;
-	if(!cryptonote::get_account_address_from_str_or_url(info, m_wallet->nettype(), local_args[1], oa_prompter))
+	if(!cryptonote::get_account_address_from_str(m_wallet->nettype(), info, local_args[1]))
 	{
 		fail_msg_writer() << tr("failed to parse address");
 		return true;
@@ -5694,7 +5607,7 @@ bool simple_wallet::get_tx_proof(const std::vector<std::string> &args)
 	}
 
 	cryptonote::address_parse_info info;
-	if(!cryptonote::get_account_address_from_str_or_url(info, m_wallet->nettype(), args[1], oa_prompter))
+	if(!cryptonote::get_account_address_from_str(m_wallet->nettype(), info, args[1]))
 	{
 		fail_msg_writer() << tr("failed to parse address");
 		return true;
@@ -5766,7 +5679,7 @@ bool simple_wallet::check_tx_key(const std::vector<std::string> &args_)
 	}
 
 	cryptonote::address_parse_info info;
-	if(!cryptonote::get_account_address_from_str_or_url(info, m_wallet->nettype(), local_args[2], oa_prompter))
+	if(!cryptonote::get_account_address_from_str(m_wallet->nettype(), info, local_args[2]))
 	{
 		fail_msg_writer() << tr("failed to parse address");
 		return true;
@@ -5831,7 +5744,7 @@ bool simple_wallet::check_tx_proof(const std::vector<std::string> &args)
 
 	// parse address
 	cryptonote::address_parse_info info;
-	if(!cryptonote::get_account_address_from_str_or_url(info, m_wallet->nettype(), args[1], oa_prompter))
+	if(!cryptonote::get_account_address_from_str(m_wallet->nettype(), info, args[1]))
 	{
 		fail_msg_writer() << tr("failed to parse address");
 		return true;
@@ -6059,7 +5972,7 @@ bool simple_wallet::check_reserve_proof(const std::vector<std::string> &args)
 	}
 
 	cryptonote::address_parse_info info;
-	if(!cryptonote::get_account_address_from_str_or_url(info, m_wallet->nettype(), args[0], oa_prompter))
+	if(!cryptonote::get_account_address_from_str(m_wallet->nettype(), info, args[0]))
 	{
 		fail_msg_writer() << tr("failed to parse address");
 		return true;
@@ -6353,7 +6266,7 @@ bool simple_wallet::unspent_outputs(const std::vector<std::string> &args_)
 	auto local_args = args_;
 
 	std::set<uint32_t> subaddr_indices;
-	if(local_args.size() > 0 && local_args[0].substr(0, 6) != "index=")
+	if(local_args.size() > 0 && local_args[0].substr(0, 6) == "index=")
 	{
 		if(!parse_subaddress_indices(local_args[0], subaddr_indices))
 			return true;
@@ -6956,7 +6869,7 @@ bool simple_wallet::address_book(const std::vector<std::string> &args /* = std::
 	else if(args[0] == "add")
 	{
 		cryptonote::address_parse_info info;
-		if(!cryptonote::get_account_address_from_str_or_url(info, m_wallet->nettype(), args[1], oa_prompter))
+		if(!cryptonote::get_account_address_from_str(m_wallet->nettype(), info, args[1]))
 		{
 			fail_msg_writer() << tr("failed to parse address");
 			return true;
@@ -7216,7 +7129,7 @@ bool simple_wallet::verify(const std::vector<std::string> &args)
 	}
 
 	cryptonote::address_parse_info info;
-	if(!cryptonote::get_account_address_from_str_or_url(info, m_wallet->nettype(), address_string, oa_prompter))
+	if(!cryptonote::get_account_address_from_str(m_wallet->nettype(), info, address_string))
 	{
 		fail_msg_writer() << tr("failed to parse address");
 		return true;
@@ -7659,6 +7572,14 @@ int main(int argc, char *argv[])
 	// Activate UTF-8 support for Boost filesystem classes on Windows
 	std::locale::global(boost::locale::generator().generate(""));
 	boost::filesystem::path::imbue(std::locale());
+
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(argptrs))
+	{
+		argc = argptrs.size();
+		argv = argptrs.data();
+	}
 #endif
 
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
@@ -7688,6 +7609,7 @@ int main(int argc, char *argv[])
 	po::positional_options_description positional_options;
 	positional_options.add(arg_command.name, -1);
 
+	int vm_error_code = 1;
 	const auto vm = wallet_args::main(
 		argc, argv,
 		"ryo-wallet-cli [--wallet-file=<file>|--generate-new-wallet=<file>] [<COMMAND>]",
@@ -7695,11 +7617,12 @@ int main(int argc, char *argv[])
 		desc_params,
 		positional_options,
 		[](const std::string &s, bool emphasis) { tools::scoped_message_writer(emphasis ? epee::console_color_white : epee::console_color_default, true) << s; },
-		"ryo-wallet-cli.log");
+		"ryo-wallet-cli.log",
+		vm_error_code);
 
 	if(!vm)
 	{
-		return 1;
+		return vm_error_code;
 	}
 
 	cryptonote::simple_wallet w;

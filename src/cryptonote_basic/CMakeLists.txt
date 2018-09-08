@@ -75,7 +75,7 @@ set(cryptonote_basic_private_headers
 
 ryo_private_headers(cryptonote_basic
   ${cryptonote_basic_private_headers})
-monero_add_library(cryptonote_basic
+ryo_add_library(cryptonote_basic
   ${cryptonote_basic_sources}
   ${cryptonote_basic_headers}
   ${cryptonote_basic_private_headers})

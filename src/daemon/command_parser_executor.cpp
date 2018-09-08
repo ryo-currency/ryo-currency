@@ -302,28 +302,8 @@ bool t_command_parser_executor::start_mining(const std::vector<std::string> &arg
 		{
 			if(!cryptonote::get_account_address_from_str(cryptonote::STAGENET, info, args.front()))
 			{
-				bool dnssec_valid;
-				std::string address_str = tools::dns_utils::get_account_address_as_str_from_url(args.front(), dnssec_valid,
-																								[](const std::string &url, const std::vector<std::string> &addresses, bool dnssec_valid) { return addresses[0]; });
-				if(!cryptonote::get_account_address_from_str(cryptonote::MAINNET, info, address_str))
-				{
-					if(!cryptonote::get_account_address_from_str(cryptonote::TESTNET, info, address_str))
-					{
-						if(!cryptonote::get_account_address_from_str(cryptonote::STAGENET, info, address_str))
-						{
-							std::cout << "target account address has wrong format" << std::endl;
-							return true;
-						}
-						else
-						{
-							nettype = cryptonote::STAGENET;
-						}
-					}
-					else
-					{
-						nettype = cryptonote::TESTNET;
-					}
-				}
+				std::cout << "target account address has wrong format" << std::endl;
+				return true;
 			}
 			else
 			{

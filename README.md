@@ -60,6 +60,12 @@ After this, you can safely transact Sumokoin, it's important to first move your 
 
 This is the core implementation of Ryo. It is open source and completely free to use without restrictions, except for those specified in the license agreement below. There are no restrictions on anyone creating an alternative implementation of Ryo that uses the protocol and network in a compatible manner.
 
+## Precompiled binaries
+
+Along with each release you can find our [precompiled binaries](https://github.com/ryo-currency/ryo-currency/releases).
+To verify that the downloaded binaries are created by one of our developer please verify the checksums.
+The authenticity of the checksums can by verified with the [PGP-key's](docs/pgp_keys.md).
+
 ## Compiling Ryo from source
 
 ### Dependencies
@@ -169,12 +175,11 @@ Tested on a Raspberry Pi Zero with a clean install of minimal Raspbian Stretch (
 
 * Install the dependencies for Ryo from the 'Debian' column in the table above.
 
-* Increase the system swap size:
+* Enable zram:
 ```
-	sudo /etc/init.d/dphys-swapfile stop
-	sudo nano /etc/dphys-swapfile
-	CONF_SWAPSIZE=1024
-	sudo /etc/init.d/dphys-swapfile start
+	sudo zramctl --find --size=1024M # Note the device name
+	sudo mkswap <device name>
+	sudo swapon <device name>
 ```
 * Clone ryo and checkout most recent release version:
 ```
@@ -200,13 +205,12 @@ Tested on a Raspberry Pi Zero with a clean install of minimal Raspbian Stretch (
 
 If you are using the older Raspbian Jessie image, compiling Ryo is a bit more complicated. The version of Boost available in the Debian Jessie repositories is too old to use with Ryo, and thus you must compile a newer version yourself. The following explains the extra steps, and has been tested on a Raspberry Pi 2 with a clean install of minimal Raspbian Jessie.
 
-* As before, `apt-get update && apt-get upgrade` to install all of the latest software, and increase the system swap size
+* As before, `apt-get update && apt-get upgrade` to install all of the latest software, and enable zram
 
 ```
-	sudo /etc/init.d/dphys-swapfile stop
-	sudo nano /etc/dphys-swapfile
-	CONF_SWAPSIZE=1024
-	sudo /etc/init.d/dphys-swapfile start
+	sudo zramctl --find --size=1024M # Note the device name
+	sudo mkswap <device name>
+	sudo swapon <device name>
 ```
 
 * Then, install the dependencies for Ryo except `libunwind` and `libboost-all-dev`

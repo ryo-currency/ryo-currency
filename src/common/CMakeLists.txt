@@ -54,7 +54,8 @@ set(common_sources
   password.cpp
   perf_timer.cpp
   threadpool.cpp
-  updates.cpp)
+  updates.cpp
+  boost_locale.cpp)
 
 if (STACK_TRACE)
   list(APPEND common_sources stack_trace.cpp)
@@ -83,11 +84,12 @@ set(common_private_headers
   perf_timer.h
   stack_trace.h
   threadpool.h
-  updates.h)
+  updates.h
+  boost_locale.hpp)
 
 ryo_private_headers(common
   ${common_private_headers})
-monero_add_library(common
+ryo_add_library(common
   ${common_sources}
   ${common_headers}
   ${common_private_headers}
@@ -105,7 +107,9 @@ target_link_libraries(common
     ${Boost_REGEX_LIBRARY}
     ${Boost_CHRONO_LIBRARY}
   PRIVATE
+    ${Boost_LOCALE_LIBRARY}
     ${OPENSSL_LIBRARIES}
+    ${ICU_LIBRARIES}
     ${EXTRA_LIBRARIES})
 
 #monero_install_headers(common

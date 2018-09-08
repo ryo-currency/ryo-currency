@@ -28,11 +28,11 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#include "crypto/random.c"
+//#include "crypto/random.c"
 
 #include "crypto-tests.h"
 
 void setup_random(void)
 {
-	memset(&state, 42, sizeof(union hash_state));
+	//memset(&state, 42, sizeof(union hash_state));
 }

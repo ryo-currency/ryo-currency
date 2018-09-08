@@ -47,6 +47,7 @@
 
 #include "cn_slow_hash.hpp"
 #include "keccak.h"
+#include "aux_hash.h"
 
 #ifdef HAS_ARM_HW
 
@@ -314,11 +315,6 @@ inline uint64_t _umul128(uint64_t a, uint64_t b, uint64_t *hi)
 	return (uint64_t)r;
 }
 
-extern "C" void blake256_hash(uint8_t *, const uint8_t *, uint64_t);
-extern "C" void groestl(const unsigned char *, unsigned long long, unsigned char *);
-extern "C" size_t jh_hash(int, const unsigned char *, unsigned long long, unsigned char *);
-extern "C" size_t skein_hash(int, const unsigned char *, size_t, unsigned char *);
-
 inline uint8x16_t _mm_set_epi64x(const uint64_t a, const uint64_t b)
 {
 	return vreinterpretq_u8_u64(vcombine_u64(vcreate_u64(b), vcreate_u64(a)));
@@ -379,21 +375,21 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::hardware_hash(const void *in, size_t l
 
 	implode_scratchpad_hard();
 
-	keccakf(spad.as_uqword(), 24);
+	keccakf(spad.as_uqword());
 
 	switch(spad.as_byte(0) & 3)
 	{
 	case 0:
-		blake256_hash((uint8_t *)out, spad.as_byte(), 200);
+		blake256_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	case 1:
-		groestl(spad.as_byte(), 200 * 8, (uint8_t *)out);
+		groestl_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	case 2:
-		jh_hash(32 * 8, spad.as_byte(), 8 * 200, (uint8_t *)out);
+		jh_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	case 3:
-		skein_hash(8 * 32, spad.as_byte(), 8 * 200, (uint8_t *)out);
+		skein_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	}
 }

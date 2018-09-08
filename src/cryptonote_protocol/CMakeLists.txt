@@ -42,14 +42,14 @@
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.1.0)
 project (ryo CXX)
 
 file(GLOB CRYPTONOTE_PROTOCOL *)
 source_group(cryptonote_protocol FILES ${CRYPTONOTE_PROTOCOL})
 
 #ryo_private_headers(cryptonote_protocol ${CRYPTONOTE_PROTOCOL})
-monero_add_library(cryptonote_protocol ${CRYPTONOTE_PROTOCOL})
+ryo_add_library(cryptonote_protocol ${CRYPTONOTE_PROTOCOL})
 target_link_libraries(cryptonote_protocol
   PUBLIC
     p2p

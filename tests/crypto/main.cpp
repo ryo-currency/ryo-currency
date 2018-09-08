@@ -94,16 +94,6 @@ int main(int argc, char *argv[])
 				goto error;
 			}
 		}
-		else if(cmd == "random_scalar")
-		{
-			ec_scalar expected, actual;
-			get(input, expected);
-			random_scalar(actual);
-			if(expected != actual)
-			{
-				goto error;
-			}
-		}
 		else if(cmd == "hash_to_scalar")
 		{
 			vector<char> data;
@@ -117,6 +107,7 @@ int main(int argc, char *argv[])
 		}
 		else if(cmd == "generate_keys")
 		{
+			// this test uses a deterministic random number generator in the backend
 			public_key expected1, actual1;
 			secret_key expected2, actual2;
 			get(input, expected1, expected2);
@@ -203,6 +194,7 @@ int main(int argc, char *argv[])
 		}
 		else if(cmd == "generate_signature")
 		{
+			// this test uses a deterministic random number generator in the backend
 			chash prefix_hash;
 			public_key pub;
 			secret_key sec;
@@ -263,6 +255,7 @@ int main(int argc, char *argv[])
 		}
 		else if(cmd == "generate_ring_signature")
 		{
+			// this test uses a deterministic random number generator in the backend  
 			chash prefix_hash;
 			key_image image;
 			vector<public_key> vpubs;

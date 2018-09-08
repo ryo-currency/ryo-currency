@@ -1,5 +1,4 @@
 .DS_Store
-/doc
 /build
 /tags
 log/
@@ -110,3 +109,6 @@ local.properties
 .idea/
 
 /testnet
+
+# VS Code
+.vscode

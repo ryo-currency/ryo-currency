@@ -610,20 +610,7 @@ bool wallet_rpc_server::validate_transfer(const std::list<wallet_rpc::transfer_d
 		cryptonote::address_parse_info info;
 		cryptonote::tx_destination_entry de;
 		er.message = "";
-		if(!get_account_address_from_str_or_url(info, m_wallet->nettype(), it->address,
-												[&er](const std::string &url, const std::vector<std::string> &addresses, bool dnssec_valid) -> std::string {
-													if(!dnssec_valid)
-													{
-														er.message = std::string("Invalid DNSSEC for ") + url;
-														return {};
-													}
-													if(addresses.empty())
-													{
-														er.message = std::string("No Ryo address found at ") + url;
-														return {};
-													}
-													return addresses[0];
-												}))
+		if(!get_account_address_from_str(m_wallet->nettype(), info, it->address))
 		{
 			er.code = WALLET_RPC_ERROR_CODE_WRONG_ADDRESS;
 			if(er.message.empty())
@@ -1404,7 +1391,10 @@ bool wallet_rpc_server::on_rescan_blockchain(const wallet_rpc::COMMAND_RPC_RESCA
 
 	try
 	{
+		bool old_val = m_wallet->explicit_refresh_from_block_height();
+		m_wallet->explicit_refresh_from_block_height(req.full_rescan);
 		m_wallet->rescan_blockchain();
+		m_wallet->explicit_refresh_from_block_height(old_val);
 	}
 	catch(const std::exception &e)
 	{
@@ -1442,20 +1432,7 @@ bool wallet_rpc_server::on_verify(const wallet_rpc::COMMAND_RPC_VERIFY::request 
 
 	cryptonote::address_parse_info info;
 	er.message = "";
-	if(!get_account_address_from_str_or_url(info, m_wallet->nettype(), req.address,
-											[&er](const std::string &url, const std::vector<std::string> &addresses, bool dnssec_valid) -> std::string {
-												if(!dnssec_valid)
-												{
-													er.message = std::string("Invalid DNSSEC for ") + url;
-													return {};
-												}
-												if(addresses.empty())
-												{
-													er.message = std::string("No Ryo address found at ") + url;
-													return {};
-												}
-												return addresses[0];
-											}))
+	if(!get_account_address_from_str(m_wallet->nettype(), info, req.address))
 	{
 		er.code = WALLET_RPC_ERROR_CODE_WRONG_ADDRESS;
 		return false;
@@ -2176,20 +2153,7 @@ bool wallet_rpc_server::on_add_address_book(const wallet_rpc::COMMAND_RPC_ADD_AD
 	cryptonote::address_parse_info info;
 	crypto::hash payment_id = crypto::null_hash;
 	er.message = "";
-	if(!get_account_address_from_str_or_url(info, m_wallet->nettype(), req.address,
-											[&er](const std::string &url, const std::vector<std::string> &addresses, bool dnssec_valid) -> std::string {
-												if(!dnssec_valid)
-												{
-													er.message = std::string("Invalid DNSSEC for ") + url;
-													return {};
-												}
-												if(addresses.empty())
-												{
-													er.message = std::string("No Ryo address found at ") + url;
-													return {};
-												}
-												return addresses[0];
-											}))
+	if(!get_account_address_from_str(m_wallet->nettype(), info, req.address))
 	{
 		er.code = WALLET_RPC_ERROR_CODE_WRONG_ADDRESS;
 		if(er.message.empty())
@@ -2355,19 +2319,14 @@ bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WA
 
 	namespace po = boost::program_options;
 	po::variables_map vm2;
-	const char *ptr = strchr(req.filename.c_str(), '/');
-#ifdef _WIN32
-	if(!ptr)
-		ptr = strchr(req.filename.c_str(), '\\');
-	if(!ptr)
-		ptr = strchr(req.filename.c_str(), ':');
-#endif
-	if(ptr)
+
+	if(req.filename.find_first_of("/<>:\"\\|?*") != std::string::npos)
 	{
 		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
-		er.message = "Invalid filename";
+		er.message = "Invalid characters in filename";
 		return false;
 	}
+
 	std::string wallet_file = m_wallet_dir + "/" + req.filename;
 	{
 		std::vector<std::string> languages;
@@ -2431,6 +2390,96 @@ bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WA
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_WALLET::response &res, epee::json_rpc::error &er)
+{
+	if(m_wallet_dir.empty())
+	{
+		er.code = WALLET_RPC_ERROR_CODE_NO_WALLET_DIR;
+		er.message = "No wallet dir configured";
+		return false;
+	}
+
+	std::string wallet_file = m_wallet_dir + "/" + req.filename;
+
+	std::string seed = req.seed;
+
+	std::vector<std::string> wseed;
+	boost::algorithm::trim(seed);
+	boost::split(wseed, req.seed, boost::is_any_of(" "), boost::token_compress_on);
+
+	std::string language;
+	crypto::secret_key_16 seed_14;
+	uint8_t seed_extra;
+	crypto::secret_key seed_25;
+	bool decode_14 = false, decode_25 = false;
+	if(wseed.size() == 12 || wseed.size() == 14)
+	{
+		decode_14 = crypto::Electrum14Words::words_to_bytes(req.seed, seed_14, seed_extra, language);
+	}
+	else if(wseed.size() >= 24 && wseed.size() <= 26)
+	{
+		decode_25 = crypto::Electrum25Words::words_to_bytes(req.seed, seed_25, language);
+	}
+	else
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Unkown seed size " + std::to_string(wseed.size()) + " please enter 12, 14, 24, 25 or 26 words";
+		return false;
+	}
+
+	if(!decode_14 && !decode_25)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Electrum-style word list failed verification";
+		return false;
+	}
+
+	namespace po = boost::program_options;
+	po::variables_map vm;
+
+	{
+		po::options_description desc("dummy");
+		const command_line::arg_descriptor<std::string, true> arg_password = {"password", "password"};
+		const char *argv[4];
+		int argc = 3;
+		argv[0] = "wallet-rpc";
+		argv[1] = "--password";
+		argv[2] = req.password.c_str();
+		argv[3] = NULL;
+		vm = *m_vm;
+		command_line::add_arg(desc, arg_password);
+		po::store(po::parse_command_line(argc, argv, desc), vm);
+	}
+
+	std::unique_ptr<tools::wallet2> wallet = tools::wallet2::make_new(vm, nullptr).first;
+	if(!wallet)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Failed to restore wallet";
+		return false;
+	}
+
+	wallet->set_seed_language(language);
+	wallet->set_refresh_from_block_height(req.refresh_start_height);
+
+	try
+	{
+		if(decode_14)
+			wallet->generate_new(wallet_file, req.password, &seed_14, seed_extra, false);
+		else
+			wallet->generate_legacy(wallet_file, req.password, seed_25, false);
+	}
+	catch(const std::exception &e)
+	{
+		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
+		return false;
+	}
+	if(m_wallet)
+		delete m_wallet;
+	m_wallet = wallet.release();
+	return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------
 bool wallet_rpc_server::on_open_wallet(const wallet_rpc::COMMAND_RPC_OPEN_WALLET::request &req, wallet_rpc::COMMAND_RPC_OPEN_WALLET::response &res, epee::json_rpc::error &er)
 {
 	if(m_wallet_dir.empty())
@@ -2487,6 +2536,20 @@ bool wallet_rpc_server::on_open_wallet(const wallet_rpc::COMMAND_RPC_OPEN_WALLET
 	if(m_wallet)
 		delete m_wallet;
 	m_wallet = wal.release();
+	return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_close_wallet(const wallet_rpc::COMMAND_RPC_CLOSE_WALLET::request &req, wallet_rpc::COMMAND_RPC_CLOSE_WALLET::response &res, epee::json_rpc::error &er)
+{
+	if(m_wallet == nullptr)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "No open wallet";
+		return false;
+	}
+	
+	delete m_wallet;
+	m_wallet = nullptr;
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -2950,6 +3013,16 @@ bool wallet_rpc_server::on_submit_multisig(const wallet_rpc::COMMAND_RPC_SUBMIT_
 
 int main(int argc, char **argv)
 {
+#ifdef WIN32
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(argptrs))
+	{
+		argc = argptrs.size();
+		argv = argptrs.data();
+	}
+#endif
+
 	namespace po = boost::program_options;
 
 	const auto arg_wallet_file = wallet_args::arg_wallet_file();
@@ -2966,6 +3039,7 @@ int main(int argc, char **argv)
 	command_line::add_arg(desc_params, arg_wallet_dir);
 	command_line::add_arg(desc_params, arg_prompt_for_password);
 
+	int vm_error_code = 1;
 	const auto vm = wallet_args::main(
 		argc, argv,
 		"ryo-wallet-rpc [--wallet-file=<file>|--generate-from-json=<file>|--wallet-dir=<directory>] [--rpc-bind-port=<port>]",
@@ -2974,10 +3048,11 @@ int main(int argc, char **argv)
 		po::positional_options_description(),
 		[](const std::string &s, bool emphasis) { epee::set_console_color(emphasis ? epee::console_color_white : epee::console_color_default, true); std::cout << s << std::endl; if (emphasis) epee::reset_console_color(); },
 		"ryo-wallet-rpc.log",
+		vm_error_code,
 		true);
 	if(!vm)
 	{
-		return 1;
+		return vm_error_code;
 	}
 
 	std::unique_ptr<tools::wallet2> wal;

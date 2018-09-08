@@ -75,7 +75,7 @@ set(wallet_api_private_headers
 
 ryo_private_headers(wallet_api
   ${wallet_api_private_headers})
-monero_add_library(wallet_api
+ryo_add_library(wallet_api
   ${wallet_api_sources}
   ${wallet_api_headers}
   ${wallet_api_private_headers})

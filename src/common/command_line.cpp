@@ -52,6 +52,11 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <unordered_set>
 
+#if defined(WIN32)
+#include <windows.h>
+#include <shellapi.h>
+#endif
+
 namespace command_line
 {
 namespace
@@ -89,6 +94,42 @@ bool is_no(const std::string &str)
 
 	return false;
 }
+
+#ifdef WIN32
+bool get_windows_args(std::vector<char*>& argptrs)
+{
+	int nArgs = 0;
+	LPWSTR sCmdArgs = GetCommandLineW();
+	LPWSTR* szArgs = CommandLineToArgvW(sCmdArgs, &nArgs);
+
+	if(szArgs == nullptr)
+		return false;
+
+	size_t iSlen = wcslen(sCmdArgs) * 3 + nArgs; //Guarantees fit for all BMP  and SMP glyphs
+	char* strptr = new char[iSlen];
+	for(int i = 0; i < nArgs; i++)
+	{
+		int ret = WideCharToMultiByte(CP_UTF8, 0, szArgs[i], -1, strptr, iSlen, NULL, NULL);
+		if(ret <= 0)
+		{
+			argptrs.clear();
+			delete[] strptr;
+			return false;
+		}
+
+		argptrs.emplace_back(strptr);
+		strptr += ret;
+		iSlen -= ret;
+	}
+
+	return true;
+}
+
+void set_console_utf8()
+{
+	SetConsoleCP(CP_UTF8);
+}
+#endif
 
 const arg_descriptor<bool> arg_help = {"help", "Produce help message"};
 const arg_descriptor<bool> arg_version = {"version", "Output version information"};

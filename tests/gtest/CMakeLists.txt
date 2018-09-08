@@ -56,6 +56,8 @@ if (gtest_hide_internal_symbols)
   set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 endif()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Define helper functions and macros used by Google Test.
 include(cmake/internal_utils.cmake)
 

@@ -43,21 +43,14 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set(crypto_sources
-  blake256.c
+  aux_hash.c
   chacha.c
   crypto-ops-data.c
   crypto-ops.c
   crypto.cpp
-  groestl.c
-  hash-extra-blake.c
-  hash-extra-groestl.c
-  hash-extra-jh.c
-  hash-extra-skein.c
   hash.c
-  jh.c
   keccak.c
-  random.c
-  skein.c
+  random.cpp
   tree-hash.c
   cn_slow_hash_soft.cpp
   cn_slow_hash_hard_intel.cpp
@@ -66,26 +59,20 @@ set(crypto_sources
 set(crypto_headers)
 
 set(crypto_private_headers
-  blake256.h
+  aux_hash.h
   chacha.h
   crypto-ops.h
   crypto.h
   generic-ops.h
-  groestl.h
-  groestl_tables.h
   hash-ops.h
   hash.h
-  initializer.h
-  jh.h
   keccak.h
-  random.h
-  skein.h
-  skein_port.h
+  random.hpp
   cn_slow_hash.hpp)
 
 ryo_private_headers(cncrypto
   ${crypto_private_headers})
-monero_add_library(cncrypto
+ryo_add_library(cncrypto
   ${crypto_sources}
   ${crypto_headers}
   ${crypto_private_headers})
@@ -96,4 +83,21 @@ target_link_libraries(cncrypto
   PRIVATE
     ${EXTRA_LIBRARIES})
 
-
+if(BUILD_TESTS)
+  # if tests are enabled than build a special crypto library with a deterministic
+  # random number generator, this lib is than used for the test `crypto`
+  ryo_add_library(cncrypto_for_test
+    ${crypto_sources}
+    ${crypto_headers}
+    ${crypto_private_headers})
+  target_link_libraries(cncrypto_for_test
+    PUBLIC
+      epee
+      ${Boost_SYSTEM_LIBRARY}
+    PRIVATE
+      ${EXTRA_LIBRARIES})
+  target_compile_definitions(cncrypto_for_test
+      PUBLIC
+      -DCRYPTO_TEST_ONLY_FIXED_PRNG
+  )
+endif()
