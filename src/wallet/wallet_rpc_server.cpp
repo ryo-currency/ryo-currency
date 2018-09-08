@@ -2459,7 +2459,6 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 		return false;
 	}
 
-	wallet->set_subaddress_lookahead(0, 0);
 	wallet->set_seed_language(language);
 	wallet->set_refresh_from_block_height(req.refresh_start_height);
 
