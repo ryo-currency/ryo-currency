@@ -46,31 +46,19 @@ class block_reward_and_already_generated_coins : public ::testing::Test
 	uint64_t m_block_reward;
 };
 
-#define TEST_ALREADY_GENERATED_COINS(already_generated_coins, expected_reward)                                 \
-	m_block_not_too_big = get_block_reward(MAINNET, 0, current_block_size, already_generated_coins, m_block_reward, 1); \
-	ASSERT_TRUE(m_block_not_too_big);                                                                          \
-	ASSERT_EQ(m_block_reward, expected_reward);
+#define TEST_ALREADY_GENERATED_COINS(already_generated_coins, expected_reward, height)                                 \
+	m_block_not_too_big = get_block_reward(MAINNET, 0, current_block_size, already_generated_coins, m_block_reward, height); \
+    ASSERT_TRUE(m_block_not_too_big); \
+    ASSERT_EQ(m_block_reward, expected_reward)
 
 TEST_F(block_reward_and_already_generated_coins, handles_first_values)
 {
-	// 17592186044415 from neozaru, confirmed by fluffypony
-	TEST_ALREADY_GENERATED_COINS(0, UINT64_C(17592186044415));
-	TEST_ALREADY_GENERATED_COINS(m_block_reward, UINT64_C(17592169267200));
-	TEST_ALREADY_GENERATED_COINS(UINT64_C(2756434948434199641), UINT64_C(14963444829249));
-}
-
-TEST_F(block_reward_and_already_generated_coins, correctly_steps_from_2_to_1)
-{
-	TEST_ALREADY_GENERATED_COINS(MONEY_SUPPLY - ((2 << 20) + 1), FINAL_SUBSIDY_PER_MINUTE);
-	TEST_ALREADY_GENERATED_COINS(MONEY_SUPPLY - (2 << 20), FINAL_SUBSIDY_PER_MINUTE);
-	TEST_ALREADY_GENERATED_COINS(MONEY_SUPPLY - ((2 << 20) - 1), FINAL_SUBSIDY_PER_MINUTE);
-}
-
-TEST_F(block_reward_and_already_generated_coins, handles_max)
-{
-	TEST_ALREADY_GENERATED_COINS(MONEY_SUPPLY - ((1 << 20) + 1), FINAL_SUBSIDY_PER_MINUTE);
-	TEST_ALREADY_GENERATED_COINS(MONEY_SUPPLY - (1 << 20), FINAL_SUBSIDY_PER_MINUTE);
-	TEST_ALREADY_GENERATED_COINS(MONEY_SUPPLY - ((1 << 20) - 1), FINAL_SUBSIDY_PER_MINUTE);
+	TEST_ALREADY_GENERATED_COINS(0, UINT64_C(32000000000), 1);
+	TEST_ALREADY_GENERATED_COINS(m_block_reward, UINT64_C(32000000000), 1);
+	/* 42 is an arbitrary chosen value because the already emitted coins are not
+	 * taken in account if the reward is higher than 4 RYO and PEAK_COIN_EMISSION_HEIGHT is not reached
+	 */
+	TEST_ALREADY_GENERATED_COINS(UINT64_C(42), UINT64_C(41970000000), 150000); //ryo v4 fork height
 }
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -112,7 +100,10 @@ TEST_F(block_reward_and_current_block_size, handles_block_size_eq_relevance_leve
 
 TEST_F(block_reward_and_current_block_size, handles_block_size_gt_relevance_level)
 {
-	do_test(0, common_config::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE + 1);
+	/* a block size smaller than BLOCK_SIZE_GROWTH_FAVORED_ZONE can grow 10% without
+	 * a reward penalty. Emulate 10% + 1 byte increase
+	 */
+	do_test(0, common_config::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE * 110 / 100 + 1);
 	ASSERT_TRUE(m_block_not_too_big);
 	ASSERT_LT(m_block_reward, m_standard_block_reward);
 }

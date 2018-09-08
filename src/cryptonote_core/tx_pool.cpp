@@ -1099,25 +1099,20 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 
 	LockedTXN lock(m_blockchain);
 
-	auto sorted_it = m_txs_by_fee_and_receive_time.begin();
-	while(sorted_it != m_txs_by_fee_and_receive_time.end())
+	for(auto& tx_hash : m_txs_by_fee_and_receive_time)
 	{
 		txpool_tx_meta_t meta;
-		if(!m_blockchain.get_txpool_tx_meta(sorted_it->second, meta))
+		if(!m_blockchain.get_txpool_tx_meta(tx_hash.second, meta))
 		{
 			MERROR("  failed to find tx meta");
 			continue;
 		}
-		LOG_PRINT_L2("Considering " << sorted_it->second << ", size " << meta.blob_size << ", current block size " << total_size << "/" << max_total_size << ", current coinbase " << print_money(best_coinbase));
-
-		// auto tx_it = m_transactions.find(sorted_it->second);
-		// LOG_PRINT_L2("Considering " << tx_it->first << ", size " << tx_it->second.blob_size << ", current block size " << total_size << "/" << max_total_size << ", current coinbase " << print_money(best_coinbase));
+		LOG_PRINT_L2("Considering " << tx_hash.second << ", size " << meta.blob_size << ", current block size " << total_size << "/" << max_total_size << ", current coinbase " << print_money(best_coinbase));
 
 		// Can not exceed maximum block size
 		if(max_total_size < total_size + meta.blob_size)
 		{
 			LOG_PRINT_L2("  would exceed maximum block size");
-			sorted_it++;
 			continue;
 		}
 
@@ -1127,23 +1122,20 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 		if(!get_block_reward(m_blockchain.get_nettype(), median_size, total_size + meta.blob_size + CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE, already_generated_coins, block_reward, height))
 		{
 			LOG_PRINT_L2("  would exceed maximum block size");
-			sorted_it++;
 			continue;
 		}
 		uint64_t coinbase = block_reward + fee + meta.fee;
 		if(coinbase < template_accept_threshold(best_coinbase))
 		{
 			LOG_PRINT_L2("  would decrease coinbase to " << print_money(coinbase));
-			sorted_it++;
 			continue;
 		}
 
-		cryptonote::blobdata txblob = m_blockchain.get_txpool_tx_blob(sorted_it->second);
+		cryptonote::blobdata txblob = m_blockchain.get_txpool_tx_blob(tx_hash.second);
 		cryptonote::transaction tx;
 		if(!parse_and_validate_tx_from_blob(txblob, tx))
 		{
 			MERROR("Failed to parse tx from txpool");
-			sorted_it++;
 			continue;
 		}
 
@@ -1156,7 +1148,7 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 		{
 			try
 			{
-				m_blockchain.update_txpool_tx(sorted_it->second, meta);
+				m_blockchain.update_txpool_tx(tx_hash.second, meta);
 			}
 			catch(const std::exception &e)
 			{
@@ -1167,22 +1159,19 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 		if(!ready)
 		{
 			LOG_PRINT_L2("  not ready to go");
-			sorted_it++;
 			continue;
 		}
 		if(have_key_images(k_images, tx))
 		{
 			LOG_PRINT_L2("  key images already seen");
-			sorted_it++;
 			continue;
 		}
 
-		bl.tx_hashes.push_back(sorted_it->second);
+		bl.tx_hashes.push_back(tx_hash.second);
 		total_size += meta.blob_size;
 		fee += meta.fee;
 		best_coinbase = coinbase;
 		append_key_images(k_images, tx);
-		sorted_it++;
 		LOG_PRINT_L2("  added, new block size " << total_size << "/" << max_total_size << ", coinbase " << print_money(best_coinbase));
 	}
 

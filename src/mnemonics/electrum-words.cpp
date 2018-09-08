@@ -58,6 +58,8 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/crc.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/locale.hpp>
+#include "common/boost_locale.hpp"
 #include <cassert>
 #include <cstdint>
 #include <fstream>
@@ -246,6 +248,22 @@ std::string get_english_name_for(const std::string &name)
 			return (*it)->get_english_language_name();
 	}
 	return "<language not found>";
+}
+
+std::string verify_language_input(std::string input)
+{
+	boost_locale_init();
+	input = boost::locale::to_title(input);
+
+	for(const Language::Base* lng : get_language_list())
+	{
+		if(lng->get_language_name() == input)
+			return lng->get_language_name();
+		
+		if(lng->get_english_language_name() == input)
+			return lng->get_language_name();
+	}
+	return "";
 }
 }
 

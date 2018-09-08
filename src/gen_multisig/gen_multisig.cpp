@@ -182,6 +182,16 @@ static bool generate_multisig(uint32_t threshold, uint32_t total, const std::str
 
 int main(int argc, char *argv[])
 {
+#ifdef WIN32
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(argptrs))
+	{
+		argc = argptrs.size();
+		argv = argptrs.data();
+	}
+#endif
+
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
 	command_line::add_arg(desc_params, arg_filename_base);
 	command_line::add_arg(desc_params, arg_scheme);
@@ -191,6 +201,7 @@ int main(int argc, char *argv[])
 	command_line::add_arg(desc_params, arg_stagenet);
 	command_line::add_arg(desc_params, arg_create_address_file);
 
+	int vm_error_code = 1;
 	const auto vm = wallet_args::main(
 		argc, argv,
 		"ryo-gen-multisig [(--testnet|--stagenet)] [--filename-base=<filename>] [--scheme=M/N] [--threshold=M] [--participants=N]",
@@ -198,9 +209,10 @@ int main(int argc, char *argv[])
 		desc_params,
 		boost::program_options::positional_options_description(),
 		[](const std::string &s, bool emphasis) { tools::scoped_message_writer(emphasis ? epee::console_color_white : epee::console_color_default, true) << s; },
-		"ryo-gen-multisig.log");
+		"ryo-gen-multisig.log",
+		vm_error_code);
 	if(!vm)
-		return 1;
+		return vm_error_code;
 
 	bool testnet, stagenet;
 	uint32_t threshold = 0, total = 0;

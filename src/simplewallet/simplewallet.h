@@ -110,13 +110,13 @@ class simple_wallet : public tools::i_wallet2_callback
 	std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> make_new_wrapped(const boost::program_options::variables_map &vm, 
 																			const std::function<boost::optional<tools::password_container>(const char *, bool)> &password_prompter);
 	
-	bool new_wallet(const boost::program_options::variables_map &vm, std::string seed);
-	bool new_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key_16 *seed = nullptr, uint8_t seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS);
-	bool restore_legacy_wallet(const boost::program_options::variables_map &vm, const crypto::secret_key &seed_legacy);
+	bool new_wallet_from_seed(const boost::program_options::variables_map &vm, std::string seed);
+	bool new_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key_16 *seed = nullptr, uint8_t seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS);
+	bool restore_legacy_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key &seed_legacy);
 
 	bool new_wallet(const boost::program_options::variables_map &vm, const cryptonote::account_public_address &address,
 					const boost::optional<crypto::secret_key> &spendkey, const crypto::secret_key &viewkey);
-	bool new_wallet_msig(const boost::program_options::variables_map &vm, const epee::wipeable_string &pass, std::string &multisig_keys, const std::string &old_language);
+	bool new_wallet_msig(const boost::program_options::variables_map &vm, const epee::wipeable_string &pass, std::string &multisig_keys);
 	bool new_wallet_dev(const boost::program_options::variables_map &vm, const std::string &device_name);
 	bool open_wallet(const boost::program_options::variables_map &vm);
 	bool close_wallet();
@@ -268,7 +268,7 @@ class simple_wallet : public tools::i_wallet2_callback
      * 
      * \return The chosen language.
      */
-	std::string get_mnemonic_language();
+	std::string get_mnemonic_language(bool ignore_cmd_arg);
 
 	/*!
      * \brief When --do-not-relay option is specified, save the raw tx hex blob to a file instead of calling m_wallet->commit_tx(ptx).

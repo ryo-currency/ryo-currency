@@ -42,6 +42,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+#include "common/command_line.h"
 #include "address_validator/address_validator.h"
 #include "string_tools.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
@@ -187,6 +188,16 @@ void address_validator::print(writer &out, const std::string &addr_str, const ad
 //----------------------------------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
+#ifdef WIN32
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(argptrs))
+	{
+		argc = argptrs.size();
+		argv = argptrs.data();
+	}
+#endif
+
 	namespace po = boost::program_options;
 
 	po::options_description desc("Validate RYO/SUMOKOIN addresses and show properties\n\n"

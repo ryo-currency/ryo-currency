@@ -90,7 +90,6 @@ union hash_state {
 #pragma pack(pop)
 static_assert(sizeof(union hash_state) == 200, "Invalid structure size");
 
-void hash_permutation(union hash_state *state);
 void hash_process(union hash_state *state, const uint8_t *buf, size_t count);
 
 #endif
@@ -103,8 +102,3 @@ enum
 
 void cn_fast_hash(const void *data, size_t length, char *hash);
 void tree_hash(const char (*hashes)[HASH_SIZE], size_t count, char *root_hash);
-
-void hash_extra_blake(const void *data, size_t length, char *hash);
-void hash_extra_groestl(const void *data, size_t length, char *hash);
-void hash_extra_jh(const void *data, size_t length, char *hash);
-void hash_extra_skein(const void *data, size_t length, char *hash);

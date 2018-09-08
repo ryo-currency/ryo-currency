@@ -5338,7 +5338,8 @@ uint32_t wallet2::adjust_priority(uint32_t priority)
 			THROW_WALLET_EXCEPTION_IF(getinfo_res.status == CORE_RPC_STATUS_BUSY, error::daemon_busy, "get_info");
 			THROW_WALLET_EXCEPTION_IF(getinfo_res.status != CORE_RPC_STATUS_OK, error::get_tx_pool_error);
 			const uint64_t full_reward_zone = getinfo_res.block_size_limit / 2;
-
+			THROW_WALLET_EXCEPTION_IF(full_reward_zone == 0, error::wallet_internal_error, "Invalid block size limit from daemon");
+			
 			// get the last N block headers and sum the block sizes
 			const size_t N = 10;
 			if(m_blockchain.size() < N)
@@ -7212,13 +7213,17 @@ void wallet2::get_hard_fork_info(uint8_t version, uint64_t &earliest_height) con
 bool wallet2::use_fork_rules(cryptonote::hard_fork_feature ft, int64_t early_blocks) const
 {
 	uint8_t version = cryptonote::get_fork_v(m_nettype, ft);
+
+	if(version == cryptonote::hardfork_conf::FORK_ID_DISABLED)
+		return false;
+
 	uint64_t height, earliest_height;
 	boost::optional<std::string> result = m_node_rpc_proxy.get_height(height);
 	throw_on_rpc_response_error(result, "get_info");
 	result = m_node_rpc_proxy.get_earliest_height(version, earliest_height);
 	throw_on_rpc_response_error(result, "get_hard_fork_info");
 
-	bool close_enough = height >= earliest_height - early_blocks && earliest_height != std::numeric_limits<uint64_t>::max(); // start using the rules that many blocks beforehand
+	bool close_enough = height >= earliest_height - early_blocks; // start using the rules that many blocks beforehand
 	if(close_enough)
 		LOG_PRINT_L2("Using v" << (unsigned)version << " rules");
 	else
@@ -8622,7 +8627,7 @@ uint64_t wallet2::import_key_images(const std::vector<std::pair<crypto::key_imag
 	std::unordered_set<crypto::hash> spent_txids; // For each spent key image, search for a tx in m_transfers that uses it as input.
 	std::vector<size_t> swept_transfers;		  // If such a spending tx wasn't found in m_transfers, this means the spending tx
 												  // was created by sweep_all, so we can't know the spent height and other detailed info.
-	for(size_t i = 0; i < m_transfers.size(); ++i)
+	for(size_t i = 0; i < signed_key_images.size(); ++i)
 	{
 		transfer_details &td = m_transfers[i];
 		uint64_t amount = td.amount();
@@ -9293,13 +9298,20 @@ std::string wallet2::make_uri(const std::string &address, const std::string &pay
 //----------------------------------------------------------------------------------------------------
 bool wallet2::parse_uri(const std::string &uri, std::string &address, std::string &payment_id, uint64_t &amount, std::string &tx_description, std::string &recipient_name, std::vector<std::string> &unknown_parameters, std::string &error)
 {
-	if(uri.substr(0, 7) != "ryo:")
+	const size_t separator_pos = uri.find(':');
+	if(separator_pos == std::string::npos || uri.substr(0, separator_pos) != "ryo")
 	{
 		error = std::string("URI has wrong scheme (expected \"ryo:\"): ") + uri;
 		return false;
 	}
-
-	std::string remainder = uri.substr(7);
+	// exclude separator
+	const size_t pos_behind_schema = separator_pos + 1;
+	if(pos_behind_schema >= uri.size())
+	{
+	    error = std::string("URI contains no address: ") + uri;
+		return false;
+	}
+	std::string remainder = uri.substr(pos_behind_schema);
 	const char *ptr = strchr(remainder.c_str(), '?');
 	address = ptr ? remainder.substr(0, ptr - remainder.c_str()) : remainder;
 

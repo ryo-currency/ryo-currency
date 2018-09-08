@@ -64,7 +64,7 @@ set(wallet_private_headers
 
 ryo_private_headers(wallet
   ${wallet_private_headers})
-monero_add_library(wallet
+ryo_add_library(wallet
   ${wallet_sources}
   ${wallet_private_headers})
 target_link_libraries(wallet
@@ -111,6 +111,8 @@ target_link_libraries(wallet_rpc_server
     ${Boost_CHRONO_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_LOCALE_LIBRARY}
+    ${ICU_LIBRARIES}
     ${Boost_THREAD_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBRARIES})

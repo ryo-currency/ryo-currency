@@ -60,7 +60,8 @@ const char *tr(const char *str);
   concurrency. Log file and concurrency arguments are handled, along with basic
   global init for the wallet process.
 
-  \return The list of parsed options, iff there are no errors.*/
+  \param error_code error code of the parsing process: zero means no errors, else non zero
+  \return The list of parsed options, if there are no errors.*/
 boost::optional<boost::program_options::variables_map> main(
 	int argc, char **argv,
 	const char *const usage,
@@ -68,5 +69,5 @@ boost::optional<boost::program_options::variables_map> main(
 	boost::program_options::options_description desc_params,
 	const boost::program_options::positional_options_description &positional_options,
 	const std::function<void(const std::string &, bool)> &print,
-	const char *default_log_name, bool log_to_console = false);
+	const char *default_log_name, int &error_code, bool log_to_console = false);
 }

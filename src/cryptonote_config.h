@@ -67,7 +67,6 @@
 #define FINAL_SUBSIDY ((uint64_t)4000000000)			  // 4 * pow(10, 9)
 #define GENESIS_BLOCK_REWARD ((uint64_t)8800000000000000) // ~10% dev premine, now  mostly burned
 #define EMISSION_SPEED_FACTOR_PER_MINUTE (20)
-#define FINAL_SUBSIDY_PER_MINUTE ((uint64_t)300000000000) // 3 * pow(10, 11)
 
 #define CRYPTONOTE_REWARD_BLOCKS_WINDOW 60
 

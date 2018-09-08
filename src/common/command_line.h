@@ -311,6 +311,11 @@ inline bool has_arg(const boost::program_options::variables_map &vm, const arg_d
 	return get_arg(vm, arg);
 }
 
+#ifdef WIN32
+bool get_windows_args(std::vector<char*>& argptrs);
+void set_console_utf8();
+#endif
+
 extern const arg_descriptor<bool> arg_help;
 extern const arg_descriptor<bool> arg_version;
 }

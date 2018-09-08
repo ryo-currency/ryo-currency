@@ -59,11 +59,11 @@ TEST(DNSResolver, IPv4Failure)
 
 	bool avail, valid;
 
-	auto ips = resolver.get_ipv4("example.invalid", avail, valid);
+	auto ips = resolver.get_ipv4("example-ryo.local", avail, valid);
 
 	ASSERT_EQ(0, ips.size());
 
-	ips = tools::DNSResolver::instance().get_ipv4("example.invalid", avail, valid);
+	ips = tools::DNSResolver::instance().get_ipv4("example-ryo.local", avail, valid);
 
 	ASSERT_EQ(0, ips.size());
 }

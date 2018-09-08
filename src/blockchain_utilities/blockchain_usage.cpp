@@ -99,6 +99,16 @@ struct reference
 
 int main(int argc, char *argv[])
 {
+#ifdef WIN32
+	std::vector<char*> argptrs;
+	command_line::set_console_utf8();
+	if(command_line::get_windows_args(argptrs))
+	{
+		argc = argptrs.size();
+		argv = argptrs.data();
+	}
+#endif
+
 	TRY_ENTRY();
 
 	epee::string_tools::set_module_name_and_folder(argv[0]);
@@ -150,7 +160,7 @@ int main(int argc, char *argv[])
 	{
 		std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
 		std::cout << desc_options << std::endl;
-		return 1;
+		return 0;
 	}
 
 	mlog_configure(mlog_get_default_log_path("ryo-blockchain-usage.log"), true);

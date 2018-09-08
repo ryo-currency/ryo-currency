@@ -79,3 +79,7 @@ endif()
 
 add_subdirectory(db_drivers)
 add_subdirectory(easylogging++)
+# fmt is shipped as subtree
+add_subdirectory(fmt)
+# activate extended color output for fmt
+add_definitions(-DFMT_EXTENDED_COLORS)
