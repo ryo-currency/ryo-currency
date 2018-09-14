@@ -100,19 +100,13 @@ const char *wallet_rpc_server::tr(const char *str)
 }
 
 //------------------------------------------------------------------------------------------------------------------------------
-wallet_rpc_server::wallet_rpc_server() : m_wallet(NULL), rpc_login_file(), m_stop(false), m_trusted_daemon(false), m_vm(NULL)
+wallet_rpc_server::wallet_rpc_server() : m_wallet(nullptr), rpc_login_file(), m_stop(false), m_trusted_daemon(false), m_vm(NULL)
 {
 }
 //------------------------------------------------------------------------------------------------------------------------------
 wallet_rpc_server::~wallet_rpc_server()
 {
-	if(m_wallet)
-		delete m_wallet;
-}
-//------------------------------------------------------------------------------------------------------------------------------
-void wallet_rpc_server::set_wallet(wallet2 *cr)
-{
-	m_wallet = cr;
+	stop_wallet_backend();
 }
 //------------------------------------------------------------------------------------------------------------------------------
 bool wallet_rpc_server::run()
@@ -143,16 +137,6 @@ bool wallet_rpc_server::run()
 
 	//DO NOT START THIS SERVER IN MORE THEN 1 THREADS WITHOUT REFACTORING
 	return epee::http_server_impl_base<wallet_rpc_server, connection_context>::run(1, true);
-}
-//------------------------------------------------------------------------------------------------------------------------------
-void wallet_rpc_server::stop()
-{
-	if(m_wallet)
-	{
-		m_wallet->store();
-		delete m_wallet;
-		m_wallet = NULL;
-	}
 }
 //------------------------------------------------------------------------------------------------------------------------------
 bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
@@ -2363,30 +2347,33 @@ bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WA
 		er.message = "Failed to create wallet";
 		return false;
 	}
+
 	wal->set_seed_language(req.language);
+
 	cryptonote::COMMAND_RPC_GET_HEIGHT::request hreq;
 	cryptonote::COMMAND_RPC_GET_HEIGHT::response hres;
 	hres.height = 0;
-	bool r = wal->invoke_http_json("/getheight", hreq, hres);
+	wal->invoke_http_json("/getheight", hreq, hres);
 	wal->set_refresh_from_block_height(hres.height);
+
 	try
 	{
 		wal->generate_new(wallet_file, req.password, nullptr, req.short_address ? cryptonote::ACC_OPT_KURZ_ADDRESS : cryptonote::ACC_OPT_LONG_ADDRESS);
+
+		if(!wal)
+		{
+			er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+			er.message = "Failed to generate wallet";
+			return false;
+		}
+
+		start_wallet_backend(std::move(wal));
 	}
 	catch(const std::exception &e)
 	{
 		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
 		return false;
 	}
-	if(!wal)
-	{
-		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
-		er.message = "Failed to generate wallet";
-		return false;
-	}
-	if(m_wallet)
-		delete m_wallet;
-	m_wallet = wal.release();
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -2468,15 +2455,13 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 			wallet->generate_new(wallet_file, req.password, &seed_14, seed_extra, false);
 		else
 			wallet->generate_legacy(wallet_file, req.password, seed_25, false);
+		start_wallet_backend(std::move(wallet));
 	}
 	catch(const std::exception &e)
 	{
 		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
 		return false;
 	}
-	if(m_wallet)
-		delete m_wallet;
-	m_wallet = wallet.release();
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -2522,20 +2507,20 @@ bool wallet_rpc_server::on_open_wallet(const wallet_rpc::COMMAND_RPC_OPEN_WALLET
 	try
 	{
 		wal = tools::wallet2::make_from_file(vm2, wallet_file, nullptr).first;
+		if(!wal)
+		{
+			er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+			er.message = "Failed to open wallet";
+			return false;
+		}
+
+		start_wallet_backend(std::move(wal));
 	}
 	catch(const std::exception &e)
 	{
 		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
-	}
-	if(!wal)
-	{
-		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
-		er.message = "Failed to open wallet";
 		return false;
 	}
-	if(m_wallet)
-		delete m_wallet;
-	m_wallet = wal.release();
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -2547,9 +2532,17 @@ bool wallet_rpc_server::on_close_wallet(const wallet_rpc::COMMAND_RPC_CLOSE_WALL
 		er.message = "No open wallet";
 		return false;
 	}
-	
-	delete m_wallet;
-	m_wallet = nullptr;
+
+	try
+	{
+		stop_wallet_backend();
+	}
+	catch(const std::exception &e)
+	{
+		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
+		return false;
+	}
+
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -3138,7 +3131,7 @@ int main(int argc, char **argv)
 just_dir:
 	tools::wallet_rpc_server wrpc;
 	if(wal)
-		wrpc.set_wallet(wal.release());
+		wrpc.start_wallet_backend(std::move(wal));
 	bool r = wrpc.init(&(vm.get()));
 	CHECK_AND_ASSERT_MES(r, 1, tools::wallet_rpc_server::tr("Failed to initialize wallet RPC server"));
 	tools::signal_handler::install([&wrpc](int) {
@@ -3158,7 +3151,7 @@ just_dir:
 	try
 	{
 		LOG_PRINT_L0(tools::wallet_rpc_server::tr("Saving wallet..."));
-		wrpc.stop();
+		wrpc.stop_wallet_backend();
 		LOG_PRINT_L0(tools::wallet_rpc_server::tr("Successfully saved"));
 	}
 	catch(const std::exception &e)
