@@ -186,6 +186,8 @@ public:
 		std::string thread_id;
 		std::string text;
 		color clr;
+		bool printed = false;
+		bool logged = false;
 
 		message(output out, level lvl, uint32_t priority, const char* major, const char* minor, const char* path, int64_t line, std::string&& txt, color clr = COLOR_WHITE, bool add_newline = true) : 
 			time(std::time(nullptr)), lvl(lvl), out(out), priority(priority), cat_major(major), cat_minor(minor), src_path(path), src_line(line),
@@ -214,22 +216,31 @@ public:
 
 	// Function pointers are mariginally more efficient than functors here
 	// NB Lambdas must not capture to be convertible to a function ptr
-	typedef bool (*filter_fun)(const message&);
+	typedef bool (*filter_fun)(const message&, bool printed, bool logged);
 
 	class gulps_output
 	{
+	protected:
+		enum output_stream
+		{
+			STREAM_PRINT,
+			STREAM_FILE,
+			STREAM_NONE
+		};
+
 	public:
 		gulps_output() = default;
 		virtual ~gulps_output() = default;
 		virtual void log_message(const message& msg) = 0;
+		virtual output_stream get_stream() = 0;
 
 		// This is filtered call
-		bool log(const message& msg)
+		bool log(const message& msg, bool& printed, bool& logged)
 		{
 			bool result = false;
 			for(filter_fun filter : filters)
 			{
-				if(filter(msg))
+				if(filter(msg, printed, logged))
 				{
 					result = true;
 					break;
@@ -237,7 +248,21 @@ public:
 			}
 
 			if(result)
+			{
 				log_message(msg);
+
+				switch(get_stream())
+				{
+				case STREAM_PRINT:
+					printed = true;
+					break;
+				case STREAM_FILE:
+					logged = true;
+					break;
+				default:
+					break;
+				}
+			}
 
 			return result;
 		}
@@ -257,6 +282,8 @@ public:
 	{
 	public:
 		gulps_print_output(bool text_only, color hdr_color) : text_only(text_only), hdr_color(hdr_color) {}
+
+		output_stream get_stream() override { return STREAM_PRINT; }
 
 		void log_message(const message& msg) override
 		{
@@ -370,7 +397,9 @@ public:
 	{
 	public:
 		gulps_mem_output() {}
-		
+
+		output_stream get_stream() override { return STREAM_NONE; }
+
 		void log_message(const message& msg) override
 		{
 			log.push_back(msg);
@@ -393,6 +422,8 @@ public:
 		{
 			output_file.open(fname, std::ios::out | std::ios::app | std::ios::binary); // may throw
 		}
+
+		output_stream get_stream() override { return STREAM_FILE; }
 
 		void log_message(const message& msg) override
 		{
@@ -503,9 +534,10 @@ public:
 	void log(message&& in_msg)
 	{
 		message msg = std::move(in_msg);
-		
+		bool printed = false, logged = false;
+
 		for(const auto& it : outputs)
-			it.second->log(msg);
+			it.second->log(msg, printed, logged);
 	}
 
 private:
@@ -538,6 +570,7 @@ private:
 
 #define GULPS_DEBUG_PRINT(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_LOG_ERROR(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_WARN(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_WARN, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_LOG_L0(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_LOG_L1(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L1, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_LOG_L2(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
@@ -550,11 +583,11 @@ private:
 #define GULPS_INFOF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 
 #define GULPS_DEBUG_PRINTF(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_ERROR(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L0(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L1(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L1, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L2(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L3(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L3, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_ERROR(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_L0(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_L1(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L1, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_L2(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_L3(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L3, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 
 
 /*#define GULPS_CAT_ERROR(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_ERROR, maj, min, fmt::color::red, fstr, __VA_ARGS__)

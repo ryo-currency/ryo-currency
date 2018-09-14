@@ -7574,12 +7574,12 @@ int main(int argc, char *argv[])
 
 	//Secret output (never log to disk)
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
-	out->add_filter([](const gulps::message& msg) -> bool { return msg.out == gulps::OUT_USER_1; });
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.out == gulps::OUT_USER_1; });
 	gulps::inst().add_output(std::move(out));
 
 	//Ordinary output
 	out.reset(new gulps::gulps_print_output(true, gulps::COLOR_WHITE));
-	out->add_filter([](const gulps::message& msg) -> bool { return msg.out == gulps::OUT_USER_0; });
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.out == gulps::OUT_USER_0; });
 	gulps::inst().add_output(std::move(out));
 
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
