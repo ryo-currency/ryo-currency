@@ -479,6 +479,13 @@ class wallet2
 		crypto::signature shared_secret_sig;
 		crypto::signature key_image_sig;
 	};
+	
+	struct tx_cache_data
+    	{
+      		std::vector<cryptonote::tx_extra_field> tx_extra_fields;
+      		std::vector<is_out_data> primary;
+      		std::vector<is_out_data> additional;
+    	};
 
 	typedef std::tuple<uint64_t, crypto::public_key, rct::key> get_outs_entry;
 
@@ -1095,8 +1102,8 @@ class wallet2
      * \param password       Password of wallet file
      */
 	bool load_keys(const std::string &keys_file_name, const epee::wipeable_string &password);
-	void process_new_transaction(const crypto::hash &txid, const cryptonote::transaction &tx, const std::vector<uint64_t> &o_indices, uint64_t height, uint64_t ts, bool miner_tx, bool pool, bool double_spend_seen);
-	void process_new_blockchain_entry(const cryptonote::block &b, const cryptonote::block_complete_entry &bche, const crypto::hash &bl_id, uint64_t height, const cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices &o_indices);
+	void process_new_transaction(const crypto::hash &txid, const cryptonote::transaction &tx, const std::vector<uint64_t> &o_indices, uint64_t height, uint64_t ts, bool miner_tx, bool pool, bool double_spend_seen, const tx_cache_data &tx_cache_data);
+	void process_new_blockchain_entry(const cryptonote::block &b, const cryptonote::block_complete_entry &bche, const crypto::hash &bl_id, uint64_t height, const std::vector<tx_cache_data> &tx_cache_data, size_t tx_cache_data_offset, const cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices &o_indices);
 	void detach_blockchain(uint64_t height);
 	void get_short_chain_history(std::list<crypto::hash> &ids) const;
 	bool is_tx_spendtime_unlocked(uint64_t unlock_time, uint64_t block_height) const;
@@ -1144,6 +1151,8 @@ class wallet2
 	bool get_output_distribution(uint64_t &start_height, std::vector<uint64_t> &distribution);
 
 	uint64_t get_segregation_fork_height() const;
+	
+	void cache_tx_data(const cryptonote::transaction& tx, const crypto::hash &txid, tx_cache_data &tx_cache_data) const;
 
 	cryptonote::account_base m_account;
 	boost::optional<epee::net_utils::http::login> m_daemon_login;
