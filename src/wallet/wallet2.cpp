@@ -1151,27 +1151,32 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 				m_callback->on_skip_transaction(height, txid, tx);
 			break;
 		}
-
+		if (!tx_cache_data.primary.empty())
+    		{
+      		  THROW_WALLET_EXCEPTION_IF(pub_key_field.pub_key != tx_cache_data.primary[pk_index - 1].pkey || tx_cache_data.primary.size() < pk_index, error::wallet_internal_error, "transaction_cache_data is out of sync");
+    		}
 		int num_vouts_received = 0;
 		tx_pub_key = pub_key_field.pub_key;
 		tools::threadpool &tpool = tools::threadpool::getInstance();
 		tools::threadpool::waiter waiter;
 		const cryptonote::account_keys &keys = m_account.get_keys();
 		crypto::key_derivation derivation;
-
-		hwdev_lock.lock();
-		hwdev.set_mode(hw::device::TRANSACTION_PARSE);
-		if(!hwdev.generate_key_derivation(tx_pub_key, keys.m_view_secret_key, derivation))
-		{
+		
+		std::vector<crypto::key_derivation> additional_derivations;
+    		tx_extra_additional_pub_keys additional_tx_pub_keys;
+    		const wallet2::is_out_data *is_out_data_ptr = NULL;
+    		if (tx_cache_data.primary.empty()){
+		   hwdev_lock.lock();
+		   hwdev.set_mode(hw::device::TRANSACTION_PARSE);
+		   if(!hwdev.generate_key_derivation(tx_pub_key, keys.m_view_secret_key, derivation))
+		   {
 			MWARNING("Failed to generate key derivation from tx pubkey, skipping");
 			static_assert(sizeof(derivation) == sizeof(rct::key), "Mismatched sizes of key_derivation and rct::key");
 			memcpy(&derivation, rct::identity().bytes, sizeof(derivation));
-		}
+		   }
 
-		std::vector<crypto::public_key> additional_tx_pub_keys;
-		std::vector<crypto::key_derivation> additional_derivations;
-		if(pk_index == 1)
-		{
+		  if(pk_index == 1)
+		  {
 			// additional tx pubkeys and derivations for multi-destination transfers involving one or more subaddresses
 			additional_tx_pub_keys = get_additional_tx_pub_keys_from_extra(tx);
 
@@ -1185,7 +1190,18 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 				}
 			}
 		}
-		hwdev_lock.unlock();
+		else
+    		{
+      		   THROW_WALLET_EXCEPTION_IF(pk_index - 1 >= tx_cache_data.primary.size(), error::wallet_internal_error, "pk_index out of range of tx_cache_data");
+      		   is_out_data_ptr = &tx_cache_data.primary[pk_index - 1];
+                   derivation = tx_cache_data.primary[pk_index - 1].derivation;
+      		   if (pk_index == 1){
+        		for (size_t n = 0; n < tx_cache_data.additional.size(); ++n){
+          		    additional_tx_pub_keys.data.push_back(tx_cache_data.additional[n].pkey);
+          		    additional_derivations.push_back(tx_cache_data.additional[n].derivation);
+        		}
+      	           }
+    		}
 
 		if(miner_tx && m_refresh_type == RefreshNoCoinbase)
 		{
