@@ -1106,7 +1106,7 @@ void wallet2::scan_output(const cryptonote::transaction &tx, const crypto::publi
 	++num_vouts_received;
 }
 //----------------------------------------------------------------------------------------------------
-void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote::transaction &tx, const std::vector<uint64_t> &o_indices, uint64_t height, uint64_t ts, bool miner_tx, bool pool, bool double_spend_seen)
+void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote::transaction &tx, const std::vector<uint64_t> &o_indices, uint64_t height, uint64_t ts, bool miner_tx, bool pool, bool double_spend_seen, const tx_cache_data &tx_cache_data)
 {
 	//ensure device is let in NONE mode in any case
 	hw::device &hwdev = m_account.get_device();
