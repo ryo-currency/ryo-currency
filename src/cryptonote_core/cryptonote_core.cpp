@@ -893,8 +893,12 @@ std::pair<uint64_t, uint64_t> core::get_coinbase_tx_sum(const uint64_t start_off
 											  });
 	}
 
-	// Remove burned premine from emission
-	emission_amount -= common_config::PREMINE_BURN_AMOUNT;
+	/* Remove burned premine from emission
+	 * The full amount was created in the first block, therefore only remove
+	 * it from the emission amount if block zero is included
+	 */
+	if(start_offset == 0)
+		emission_amount -= common_config::PREMINE_BURN_AMOUNT;
 
 	return std::pair<uint64_t, uint64_t>(emission_amount, total_fee_amount);
 }
