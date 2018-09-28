@@ -74,8 +74,20 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 
 	bool init(const boost::program_options::variables_map *vm);
 	bool run();
-	void stop();
-	void set_wallet(wallet2 *cr);
+
+	inline void stop_wallet_backend() 
+	{ 
+		if(m_wallet == nullptr) return;
+		m_wallet->store();
+		delete m_wallet;
+		m_wallet = nullptr;
+	}
+
+	inline void start_wallet_backend(std::unique_ptr<wallet2>&& cr)
+	{ 
+		stop_wallet_backend();
+		m_wallet = cr.release();
+	};
 
   private:
 	CHAIN_HTTP_TO_MAP2(connection_context); //forward http requests to uri map
