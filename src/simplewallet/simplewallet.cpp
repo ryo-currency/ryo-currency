@@ -7616,7 +7616,6 @@ int main(int argc, char *argv[])
 		sw::tr("This is the command line ryo wallet. It needs to connect to a ryo daemon to work correctly."),
 		desc_params,
 		positional_options,
-		[](const std::string &s, bool emphasis) { emphasis ? GULPS_PRINT_BOLD(s) : GULPS_PRINT_OK(s); },
 		"ryo-wallet-cli.log",
 		vm_error_code);
 

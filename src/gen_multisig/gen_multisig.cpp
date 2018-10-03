@@ -208,7 +208,8 @@ int main(int argc, char *argv[])
 		genms::tr("This program generates a set of multisig wallets - use this simpler scheme only if all the participants trust each other"),
 		desc_params,
 		boost::program_options::positional_options_description(),
-		[](const std::string &s, bool emphasis) { tools::scoped_message_writer(emphasis ? epee::console_color_white : epee::console_color_default, true) << s; },
+		/*[](const std::string &s, bool emphasis) { tools::scoped_message_writer(emphasis ? epee::console_color_white : epee::console_color_default, true) << s; },
+		 * \todo-gulps*/
 		"ryo-gen-multisig.log",
 		vm_error_code);
 	if(!vm)

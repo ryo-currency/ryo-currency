@@ -41,6 +41,8 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "wallet_args"
+
 #include "wallet/wallet_args.h"
 
 #include "common/i18n.h"
@@ -57,8 +59,9 @@
 #include <boost/locale.hpp>
 #endif
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.wallet2"
+#include "common/gulps.hpp"
+
+#define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
 
 // workaround for a suspected bug in pthread/kernel on MacOS X
 #ifdef __APPLE__
@@ -66,27 +69,6 @@
 #else
 #define DEFAULT_MAX_CONCURRENCY 0
 #endif
-
-namespace
-{
-class Print
-{
-  public:
-	Print(const std::function<void(const std::string &, bool)> &p, bool em = false) : print(p), emphasis(em) {}
-	~Print() { print(ss.str(), emphasis); }
-	template <typename T>
-	std::ostream &operator<<(const T &t)
-	{
-		ss << t;
-		return ss;
-	}
-
-  private:
-	const std::function<void(const std::string &, bool)> &print;
-	std::stringstream ss;
-	bool emphasis;
-};
-}
 
 namespace wallet_args
 {
@@ -111,7 +93,6 @@ boost::optional<boost::program_options::variables_map> main(
 	const char *const notice,
 	boost::program_options::options_description desc_params,
 	const boost::program_options::positional_options_description &positional_options,
-	const std::function<void(const std::string &, bool)> &print,
 	const char *default_log_name,
 	int &error_code,
 	bool log_to_console)
@@ -161,16 +142,16 @@ boost::optional<boost::program_options::variables_map> main(
 
 		if(command_line::get_arg(vm, command_line::arg_help))
 		{
-			Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL;
-			Print(print) << wallet_args::tr("This is the command line ryo wallet. It needs to connect to a ryo daemon to work correctly.") << ENDL;
-			Print(print) << wallet_args::tr("Usage:") << ENDL << "  " << usage;
-			Print(print) << desc_all;
+			GULPS_PRINT_OK("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")");
+			GULPS_PRINT_OK(wallet_args::tr("This is the command line ryo wallet. It needs to connect to a ryo daemon to work correctly."));
+			GULPS_PRINT_OK(wallet_args::tr("Usage:"), "\n  ", usage);
+			GULPS_PRINT_OK(desc_all);
 			error_code = 0;
 			return false;
 		}
 		else if(command_line::get_arg(vm, command_line::arg_version))
 		{
-			Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")";
+			GULPS_PRINT_OK("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")");
 			error_code = 0;
 			return false;
 		}
@@ -186,7 +167,7 @@ boost::optional<boost::program_options::variables_map> main(
 			}
 			else
 			{
-				MERROR(wallet_args::tr("Can't find config file ") << config);
+				GULPS_ERROR(wallet_args::tr("Can't find config file "), config);
 				return false;
 			}
 		}
@@ -210,20 +191,19 @@ boost::optional<boost::program_options::variables_map> main(
 	}
 
 	if(notice)
-		Print(print) << notice << ENDL;
+		GULPS_PRINT_OK(notice);
 
 	if(!command_line::is_arg_defaulted(vm, arg_max_concurrency))
 		tools::set_max_concurrency(command_line::get_arg(vm, arg_max_concurrency));
 
-	Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")";
+	GULPS_PRINT_OK("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")");
 
 	if(!command_line::is_arg_defaulted(vm, arg_log_level))
-		MINFO("Setting log level = " << command_line::get_arg(vm, arg_log_level));
+		GULPS_PRINT_OK("Setting log level = ", command_line::get_arg(vm, arg_log_level));
 	else
-		MINFO("Setting log levels = " << getenv("RYO_LOGS"));
-	MINFO(wallet_args::tr("Logging to: ") << log_path);
+		GULPS_PRINT_OK("Setting log levels = ", getenv("RYO_LOGS"));
 
-	Print(print) << boost::format(wallet_args::tr("Logging to %s")) % log_path;
+	GULPS_PRINT_OK(wallet_args::tr("Logging to"), log_path);
 
 	error_code = 0;
 	return {std::move(vm)};

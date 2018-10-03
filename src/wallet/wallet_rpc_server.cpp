@@ -3037,7 +3037,9 @@ int main(int argc, char **argv)
 		tools::wallet_rpc_server::tr("This is the RPC ryo wallet. It needs to connect to a ryo daemon to work correctly."),
 		desc_params,
 		po::positional_options_description(),
-		[](const std::string &s, bool emphasis) { epee::set_console_color(emphasis ? epee::console_color_white : epee::console_color_default, true); std::cout << s << std::endl; if (emphasis) epee::reset_console_color(); },
+		/*[](const std::string &s, bool emphasis) { epee::set_console_color(emphasis ? epee::console_color_white : epee::console_color_default, true); std::cout << s << std::endl; if (emphasis) epee::reset_console_color(); },
+		 * \todo-gulps
+		 */
 		"ryo-wallet-rpc.log",
 		vm_error_code,
 		true);

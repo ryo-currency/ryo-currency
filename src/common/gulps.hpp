@@ -525,14 +525,20 @@ public:
 	//Returned value is a handle unique to that output. It can be used to remove it.
 	uint64_t add_output(std::unique_ptr<gulps_output> output) 
 	{ 
+		std::unique_lock<std::mutex> lck(gulps_global);
 		outputs.insert(std::make_pair(next_handle, std::move(output))); 
 		return next_handle++; 
 	}
 
-	void remove_output(uint64_t handle) { outputs.erase(handle); }
+	void remove_output(uint64_t handle)
+	{ 
+		std::unique_lock<std::mutex> lck(gulps_global);
+		outputs.erase(handle);
+	}
 
 	void log(message&& in_msg)
 	{
+		std::unique_lock<std::mutex> lck(gulps_global);
 		message msg = std::move(in_msg);
 		bool printed = false, logged = false;
 
@@ -548,6 +554,7 @@ private:
 	}
 
 	uint64_t next_handle = 0;
+	std::mutex gulps_global;
 	std::unordered_map<uint64_t, std::unique_ptr<gulps_output>> outputs;
 };
 
