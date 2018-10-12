@@ -49,6 +49,7 @@
 #include <ctime>
 #include <thread>
 #include <unordered_map>
+#include <map>
 #include <sstream>
 #include <vector>
 #include <atomic>
@@ -56,6 +57,7 @@
 #include "string.hpp"
 #include <fmt/format.h>
 #include <fmt/time.h>
+#include <boost/algorithm/string.hpp>
 
 #if defined(WIN32)
 #include <windows.h>
@@ -100,10 +102,13 @@ class gulps
 public:
 	enum level : uint32_t
 	{
-		LEVEL_PRINT,
+		LEVEL_PRINT = 0,
 		LEVEL_ERROR,
 		LEVEL_WARN,
 		LEVEL_INFO,
+		LEVEL_DEBUG,
+		LEVEL_TRACE,
+		LEVEL_TRACE2
 	};
 
 	static inline const char* level_to_str(level lvl)
@@ -114,6 +119,9 @@ public:
 		case LEVEL_ERROR: return "ERROR";
 		case LEVEL_WARN: return "WARN";
 		case LEVEL_INFO: return "INFO";
+		case LEVEL_DEBUG: return "DEBUG";
+		case LEVEL_TRACE: return "TRACE";
+		case LEVEL_TRACE2: return "TRACE2";
 		default: return "UNKNOWN";
 		}
 	}
@@ -166,11 +174,6 @@ public:
 		COLOR_BOLD = 8
 	};
 
-	constexpr static uint32_t MSG_PRIO_L0 = 0;
-	constexpr static uint32_t MSG_PRIO_L1 = 1;
-	constexpr static uint32_t MSG_PRIO_L2 = 2;
-	constexpr static uint32_t MSG_PRIO_L3 = 3;
-	
 	//Object handling a single long message
 	class message
 	{
@@ -178,7 +181,6 @@ public:
 		std::time_t time;
 		level lvl;
 		output out;
-		uint32_t priority;
 		std::string cat_major;
 		std::string cat_minor;
 		std::string src_path;
@@ -189,8 +191,8 @@ public:
 		bool printed = false;
 		bool logged = false;
 
-		message(output out, level lvl, uint32_t priority, const char* major, const char* minor, const char* path, int64_t line, std::string&& txt, color clr = COLOR_WHITE, bool add_newline = true) : 
-			time(std::time(nullptr)), lvl(lvl), out(out), priority(priority), cat_major(major), cat_minor(minor), src_path(path), src_line(line),
+		message(output out, level lvl, const char* major, const char* minor, const char* path, int64_t line, std::string&& txt, color clr = COLOR_WHITE, bool add_newline = true) : 
+			time(std::time(nullptr)), lvl(lvl), out(out), cat_major(major), cat_minor(minor), src_path(path), src_line(line),
 			thread_id(gulps::inst().get_thread_tag()), text(std::move(txt)), clr(clr)
 		{
 			if(add_newline && text.back() != '\n')
@@ -420,6 +422,7 @@ public:
 	public:
 		gulps_file_output(const std::string& name) : fname(name)
 		{
+			output_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 			output_file.open(fname, std::ios::out | std::ios::app | std::ios::binary); // may throw
 		}
 
@@ -432,7 +435,7 @@ public:
 	
 		~gulps_file_output()
 		{
-			log_message(message(OUT_LOG_2, LEVEL_INFO, MSG_PRIO_L3, "log_shutdown", fname.c_str(), __FILE__, __LINE__, "Log file shutting down."));
+			log_message(message(OUT_LOG_2, LEVEL_TRACE, "log_shutdown", fname.c_str(), __FILE__, __LINE__, "Log file shutting down."));
 			output_file.close();
 		}
 
@@ -479,7 +482,7 @@ public:
 
 		~gulps_async_file_output()
 		{
-			log_message(message(OUT_LOG_2, LEVEL_INFO, MSG_PRIO_L3, "log_shutdown", fname.c_str(), __FILE__, __LINE__, "Log thread shutting down."));
+			log_message(message(OUT_LOG_2, LEVEL_TRACE, "log_shutdown", fname.c_str(), __FILE__, __LINE__, "Log thread shutting down."));
 			if(thd.joinable())
 			{
 				msg_q.set_finish_flag();
@@ -555,7 +558,95 @@ private:
 
 	uint64_t next_handle = 0;
 	std::mutex gulps_global;
-	std::unordered_map<uint64_t, std::unique_ptr<gulps_output>> outputs;
+	std::map<uint64_t, std::unique_ptr<gulps_output>> outputs;
+};
+
+class gulps_log_level
+{
+private:
+	struct cat_pair
+	{
+		cat_pair(std::string&& cat, gulps::level lvl) : cat(std::move(cat)), level(lvl) {}
+
+		cat_pair(cat_pair&& ) = default;
+		cat_pair& operator=(cat_pair&& ) = default;
+		cat_pair(const cat_pair& ) = default;
+		cat_pair& operator=(const cat_pair& ) = default;
+
+		std::string cat;
+		gulps::level level;
+	};
+
+	std::vector<cat_pair> log_cats;
+	gulps::level wildcard_level;
+	bool active = false;
+
+public:
+	gulps_log_level() {}
+
+	bool parse_cat_string(const char* str)
+	{
+		static const std::unordered_map<std::string, gulps::level> str_to_level = {
+			{"PRINT", gulps::LEVEL_PRINT},
+			{"ERROR", gulps::LEVEL_ERROR},
+			{"WARN", gulps::LEVEL_WARN},
+			{"INFO", gulps::LEVEL_INFO},
+			{"DEBUG", gulps::LEVEL_DEBUG},
+			{"TRACE", gulps::LEVEL_TRACE},
+			{"TRACE2", gulps::LEVEL_TRACE2}
+		};
+		
+		static const std::unordered_map<std::string, std::string> aliased_levels = { 
+			{"0", "*:PRINT"},
+			{"1", "*:WARN"},
+			{"2", "*:INFO"},
+			{"3", "*:DEBUG"},
+			{"4", "*:TRACE2"}
+		};
+
+		std::vector<std::string> vcats, vcat;
+		boost::split(vcats, str, boost::is_any_of(","), boost::token_compress_on);
+
+		for(const std::string& scat : vcats)
+		{
+			vcat.clear();
+
+			auto it1 = aliased_levels.find(scat);
+			if(it1 != aliased_levels.end())
+				boost::split(vcat, it1->second, boost::is_any_of(":"), boost::token_compress_on);
+			else
+				boost::split(vcat, scat, boost::is_any_of(":"), boost::token_compress_on);
+
+			if(vcat.size() != 2)
+				return false;
+
+			auto it = str_to_level.find(vcat[1]);
+			if(it == str_to_level.end())
+				return false;
+
+			gulps::level level = it->second;
+			if(vcat[0] != "*")
+				log_cats.emplace_back(std::move(vcat[0]), level);
+			else
+				wildcard_level = level;
+		}
+
+		active = true;
+		return true;
+	}
+
+	bool is_active() const { return active; }
+
+	bool match_msg(const gulps::message& msg) const 
+	{
+		for(const cat_pair& p : log_cats)
+		{
+			if(msg.cat_minor == p.cat || msg.cat_major == p.cat)
+				return msg.lvl <= p.level;
+		}
+
+		return msg.lvl <= wildcard_level;
+	}
 };
 
 #ifndef GULPS_CAT_MAJOR
@@ -566,35 +657,35 @@ private:
 #define GULPS_CAT_MINOR ""
 #endif
 
-#define GULPS_OUTPUT(out, lvl, prio, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, prio, maj, min, __FILE__, __LINE__, stream_writer::write(__VA_ARGS__), clr))
-#define GULPS_OUTPUTF(out, lvl, prio, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, prio, maj, min, __FILE__, __LINE__, fmt::format(__VA_ARGS__), clr))
+#define GULPS_OUTPUT(out, lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, maj, min, __FILE__, __LINE__, stream_writer::write(__VA_ARGS__), clr))
+#define GULPS_OUTPUTF(out, lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, maj, min, __FILE__, __LINE__, fmt::format(__VA_ARGS__), clr))
 
-#define GULPS_PRINT(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_PRINT_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, __VA_ARGS__)
-#define GULPS_ERROR(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_RED, __VA_ARGS__)
-#define GULPS_WARN(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
-#define GULPS_INFO(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINT(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINT_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, __VA_ARGS__)
+#define GULPS_ERROR(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPS_WARN(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
+#define GULPS_INFO(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 
-#define GULPS_DEBUG_PRINT(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_ERROR(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_WARN(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_WARN, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_L0(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_L1(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L1, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_L2(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_L3(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L3, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_DEBUG_PRINT(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_ERROR(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_WARN(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_WARN, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_L0(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_L1(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_L2(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_L3(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 
-#define GULPS_PRINTF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_PRINTF_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, __VA_ARGS__)
-#define GULPS_ERRORF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR,  gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_RED, __VA_ARGS__)
-#define GULPS_WARNF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
-#define GULPS_INFOF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINTF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINTF_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, __VA_ARGS__)
+#define GULPS_ERRORF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR,  GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPS_WARNF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_WARN, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
+#define GULPS_INFOF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 
-#define GULPS_DEBUG_PRINTF(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_ERROR(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L0(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L1(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L1, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L2(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L3(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps::MSG_PRIO_L3, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_DEBUG_PRINTF(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_ERROR(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_L0(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_L1(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_L2(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOGF_L3(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
 
 
 /*#define GULPS_CAT_ERROR(maj, min, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_ERROR, maj, min, fmt::color::red, fstr, __VA_ARGS__)

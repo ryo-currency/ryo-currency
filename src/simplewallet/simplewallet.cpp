@@ -92,7 +92,7 @@
 #define GULPS_PRINT_BOLD(...) GULPS_PRINT_CLR(gulps::COLOR_BOLD_WHITE, __VA_ARGS__)
 #define GULPS_PRINT_GREEN(...) GULPS_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
 #define GULPS_PRINTF_GREEN(...) GULPS_PRINTF_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
-#define GULPS_PRINT_SECRET(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, "secret", gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINT_SECRET(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, "secret", gulps::COLOR_WHITE, __VA_ARGS__)
 
 #ifdef WIN32
 #include <windows.h>
@@ -172,7 +172,7 @@ std::string input_line(const std::string &prompt)
 {
 	PAUSE_READLINE();
 
-	gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps::MSG_PRIO_L0, GULPS_CAT_MAJOR, "input_line",  __FILE__, __LINE__, 
+	gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, "input_line",  __FILE__, __LINE__, 
 									 std::string(prompt), gulps::COLOR_WHITE, false));
 
 #ifdef WIN32
