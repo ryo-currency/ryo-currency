@@ -2159,7 +2159,7 @@ simple_wallet::simple_wallet()
 								"  Set the fee too default/unimportant/normal/elevated/priority.\n "
 								"confirm-missing-payment-id <1|0>\n "
 								"ask-password <1|0>\n "
-								"unit <ryo|milliryo|microryo|nanoryo|picoryo>\n "
+								"unit <ryo|milliryo|microryo|nanoryo>\n "
 								"  Set the default ryo (sub-)unit.\n "
 								"min-outputs-count [n]\n "
 								"  Try to keep at least that many outputs of value at least min-outputs-value.\n "
