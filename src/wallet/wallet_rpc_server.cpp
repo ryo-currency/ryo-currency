@@ -2390,6 +2390,52 @@ bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WA
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_restore_view_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_VIEW_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_VIEW_WALLET::response &res, epee::json_rpc::error &er)
+{
+	if(!wallet_path_helper(req.filename, er))
+		return false;
+
+	cryptonote::address_parse_info info;
+	if(!get_account_address_from_str(m_nettype,  info, req.address) || info.is_subaddress || info.is_kurz)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Invalid wallet address";
+		return false;
+	}
+
+	crypto::secret_key viewkey;
+	if(req.viewkey.size() != 64 || !epee::string_tools::hex_to_pod(req.viewkey, viewkey))
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Invalid viewkey - expected 64 hex chars";
+		return false;
+	}
+
+	std::string wallet_file = m_wallet_dir + "/" + req.filename;
+	boost::program_options::variables_map vm = wallet_password_helper(req.password.c_str());
+	std::unique_ptr<tools::wallet2> wallet = tools::wallet2::make_new(vm, nullptr).first;
+
+	if(!wallet)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Failed to restore wallet";
+		return false;
+	}
+
+	wallet->set_refresh_from_block_height(req.refresh_start_height);
+	try
+	{
+		wallet->generate(wallet_file, req.password, info.address, viewkey, false);
+		start_wallet_backend(std::move(wallet));
+	}
+	catch(const std::exception &e)
+	{
+		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
+		return false;
+	}
+	return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------
 bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_WALLET::response &res, epee::json_rpc::error &er)
 {
 	if(!wallet_path_helper(req.filename, er))
