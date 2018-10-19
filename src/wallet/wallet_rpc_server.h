@@ -50,6 +50,7 @@
 #include "net/http_server_impl_base.h"
 #include "wallet2.h"
 #include "wallet_rpc_server_commands_defs.h"
+#include "cryptonote_config.h"
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <string>
@@ -69,7 +70,7 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 
 	static const char *tr(const char *str);
 
-	wallet_rpc_server();
+	wallet_rpc_server(cryptonote::network_type nettype);
 	~wallet_rpc_server();
 
 	bool init(const boost::program_options::variables_map *vm);
@@ -248,11 +249,15 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 					   bool get_tx_key, Ts &tx_key, Tu &amount, Tu &fee, std::string &multisig_txset, bool do_not_relay,
 					   Ts &tx_hash, bool get_tx_hex, Ts &tx_blob, bool get_tx_metadata, Ts &tx_metadata, epee::json_rpc::error &er);
 
+	boost::program_options::variables_map wallet_password_helper(const char* rpc_pwd);
+	bool wallet_path_helper(const std::string& filename, epee::json_rpc::error &er);
+
 	wallet2 *m_wallet;
 	std::string m_wallet_dir;
 	tools::private_file rpc_login_file;
 	std::atomic<bool> m_stop;
 	bool m_trusted_daemon;
 	const boost::program_options::variables_map *m_vm;
+	cryptonote::network_type m_nettype;
 };
 }
