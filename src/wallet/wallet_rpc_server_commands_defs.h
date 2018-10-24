@@ -1338,50 +1338,28 @@ struct COMMAND_RPC_EXPORT_KEY_IMAGES
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
-		END_KV_SERIALIZE_MAP()
-	};
-
-	struct signed_key_image
-	{
-		std::string key_image;
-		std::string signature;
+		std::string filename;
 
 		BEGIN_KV_SERIALIZE_MAP()
-		KV_SERIALIZE(key_image);
-		KV_SERIALIZE(signature);
+		KV_SERIALIZE(filename);
 		END_KV_SERIALIZE_MAP()
 	};
 
 	struct response
 	{
-		std::vector<signed_key_image> signed_key_images;
-
 		BEGIN_KV_SERIALIZE_MAP()
-		KV_SERIALIZE(signed_key_images);
 		END_KV_SERIALIZE_MAP()
 	};
 };
 
 struct COMMAND_RPC_IMPORT_KEY_IMAGES
 {
-	struct signed_key_image
-	{
-		std::string key_image;
-		std::string signature;
-
-		BEGIN_KV_SERIALIZE_MAP()
-		KV_SERIALIZE(key_image);
-		KV_SERIALIZE(signature);
-		END_KV_SERIALIZE_MAP()
-	};
-
 	struct request
 	{
-		std::vector<signed_key_image> signed_key_images;
+		std::string filename;
 
 		BEGIN_KV_SERIALIZE_MAP()
-		KV_SERIALIZE(signed_key_images);
+		KV_SERIALIZE(filename);
 		END_KV_SERIALIZE_MAP()
 	};
 
