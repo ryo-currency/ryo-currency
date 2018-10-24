@@ -1681,7 +1681,7 @@ If the &quot;tag_description&quot; argument is specified, the tag &lt;tag_name&g
    Set the fee too default/unimportant/normal/elevated/priority.
  confirm-missing-payment-id &lt;1|0&gt;
  ask-password &lt;1|0&gt;
- unit &lt;ryo|millinero|micronero|nanonero|piconero&gt;
+ unit &lt;ryo|milliRyo|micoRyo|nanoRyo&gt;
    Set the default ryo (sub-)unit.
  min-outputs-count [n]
    Try to keep at least that many outputs of value at least min-outputs-value.
@@ -2539,7 +2539,7 @@ Warning: Some input keys being spent are from </source>
     </message>
     <message>
         <location filename="../src/simplewallet/simplewallet.cpp" line="1923"/>
-        <source>ryo, millinero, micronero, nanonero, piconero</source>
+        <source>ryo, milliRyo, microRyo, nanoRyo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
