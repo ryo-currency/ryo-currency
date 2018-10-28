@@ -50,7 +50,6 @@
 #include <iostream>
 #include <stddef.h>
 
-#include "common/pod-class.h"
 #include "generic-ops.h"
 #include "hex.h"
 #include "span.h"
@@ -63,11 +62,11 @@ extern "C" {
 }
 
 #pragma pack(push, 1)
-POD_CLASS hash
+struct hash
 {
 	char data[HASH_SIZE];
 };
-POD_CLASS hash8
+struct hash8
 {
 	char data[8];
 };
