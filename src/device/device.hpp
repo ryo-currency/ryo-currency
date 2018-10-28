@@ -194,6 +194,8 @@ class device
 		return encrypt_payment_id(payment_id, public_key, secret_key);
 	}
 
+	virtual bool encrypt_payment_id(crypto::uniform_payment_id &payment_id, const crypto::public_key &public_key, const crypto::secret_key &secret_key) = 0;
+	
 	virtual bool ecdhEncode(rct::ecdhTuple &unmasked, const rct::key &sharedSec) = 0;
 	virtual bool ecdhDecode(rct::ecdhTuple &masked, const rct::key &sharedSec) = 0;
 
