@@ -73,7 +73,6 @@ set(common_private_headers
   download.h
   http_connection.h
   int-util.h
-  pod-class.h
   rpc_client.h
   scoped_message_writer.h
   unordered_containers_boost_serialization.h
