@@ -54,6 +54,7 @@
 #define TX_EXTRA_NONCE 0x02
 #define TX_EXTRA_MERGE_MINING_TAG 0x03
 #define TX_EXTRA_TAG_ADDITIONAL_PUBKEYS 0x04
+#define TX_EXTRA_UNIFORM_PAYMENT_ID 0x05
 #define TX_EXTRA_MYSTERIOUS_MINERGATE_TAG 0xDE
 
 #define TX_EXTRA_NONCE_PAYMENT_ID 0x00
@@ -183,6 +184,15 @@ struct tx_extra_additional_pub_keys
 
 	BEGIN_SERIALIZE()
 	FIELD(data)
+	END_SERIALIZE()
+};
+
+struct tx_extra_uniform_payment_id
+{
+	crypto::uniform_payment_id pid;
+
+	BEGIN_SERIALIZE()
+	FIELD(pid)
 	END_SERIALIZE()
 };
 
