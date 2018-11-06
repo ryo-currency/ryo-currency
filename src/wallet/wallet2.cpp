@@ -5577,8 +5577,8 @@ bool wallet2::find_and_save_rings(bool force)
 	get_payments_out(payments, 0, std::numeric_limits<uint64_t>::max(), boost::none, std::set<uint32_t>());
 	for(const std::pair<crypto::hash, wallet2::confirmed_transfer_details> &entry : payments)
 	{
-		const crypto::hash &txid = entry.first;
-		txs_hashes.push_back(txid);
+		if(entry.second.m_change != uint64_t(-1))
+			txs_hashes.push_back(entry.first);
 	}
 
 	MDEBUG("Found " << std::to_string(txs_hashes.size()) << " transactions");
@@ -8660,8 +8660,21 @@ uint64_t wallet2::import_key_images(const std::vector<std::pair<crypto::key_imag
 	spent = 0;
 	unspent = 0;
 	std::unordered_set<crypto::hash> spent_txids; // For each spent key image, search for a tx in m_transfers that uses it as input.
-	std::vector<size_t> swept_transfers;		  // If such a spending tx wasn't found in m_transfers, this means the spending tx
+	std::vector<uint64_t> swept_transfers;		  // If such a spending tx wasn't found in m_transfers, this means the spending tx
 												  // was created by sweep_all, so we can't know the spent height and other detailed info.
+	std::unordered_map<crypto::key_image, size_t> out_kimg_map;
+	out_kimg_map.reserve(m_transfers.size() * 4); //Rough guide only
+
+	for(size_t i=0; i < m_transfers.size(); i++)
+	{
+		// Collect all key images from inputs to our outputs (we will look for change)
+		for(const cryptonote::txin_v &in : m_transfers[i].m_tx.vin)
+		{
+			if(in.type() == typeid(cryptonote::txin_to_key))
+				out_kimg_map.insert({ boost::get<cryptonote::txin_to_key>(in).k_image, i });
+		}
+	}
+
 	for(size_t i = 0; i < signed_key_images.size(); ++i)
 	{
 		transfer_details &td = m_transfers[i];
@@ -8670,36 +8683,21 @@ uint64_t wallet2::import_key_images(const std::vector<std::pair<crypto::key_imag
 			spent += amount;
 		else
 			unspent += amount;
+
 		LOG_PRINT_L2("Transfer " << i << ": " << print_money(amount) << " (" << td.m_global_output_index << "): "
 								 << (td.m_spent ? "spent" : "unspent") << " (key image " << req.key_images[i] << ")");
 
-		if(i < daemon_resp.spent_status.size() && daemon_resp.spent_status[i] == COMMAND_RPC_IS_KEY_IMAGE_SPENT::SPENT_IN_BLOCKCHAIN)
+		if(daemon_resp.spent_status[i] == COMMAND_RPC_IS_KEY_IMAGE_SPENT::SPENT_IN_BLOCKCHAIN)
 		{
-			bool is_spent_tx_found = false;
-			for(auto it = m_transfers.rbegin(); &(*it) != &td; ++it)
-			{
-				bool is_spent_tx = false;
-				for(const cryptonote::txin_v &in : it->m_tx.vin)
-				{
-					if(in.type() == typeid(cryptonote::txin_to_key) && td.m_key_image == boost::get<cryptonote::txin_to_key>(in).k_image)
-					{
-						is_spent_tx = true;
-						break;
-					}
-				}
-				if(is_spent_tx)
-				{
-					is_spent_tx_found = true;
-					spent_txids.insert(it->m_txid);
-					break;
-				}
-			}
-
-			if(!is_spent_tx_found)
+			auto v = out_kimg_map.find(m_transfers[i].m_key_image);
+			if(v != out_kimg_map.end())
+				spent_txids.insert(m_transfers[v->second].m_txid);
+			else
 				swept_transfers.push_back(i);
 		}
 	}
-	MDEBUG("Total: " << print_money(spent) << " spent, " << print_money(unspent) << " unspent");
+
+	MDEBUG("Total: " << print_money(spent) << " spent, " << print_money(unspent) << " unspent, swept outputs " << swept_transfers.size());
 
 	if(check_spent)
 	{
@@ -8815,7 +8813,7 @@ uint64_t wallet2::import_key_images(const std::vector<std::pair<crypto::key_imag
 			++spent_txid;
 		}
 
-		for(size_t n : swept_transfers)
+		for(uint64_t n : swept_transfers)
 		{
 			const transfer_details &td = m_transfers[n];
 			confirmed_transfer_details pd;
@@ -8823,7 +8821,9 @@ uint64_t wallet2::import_key_images(const std::vector<std::pair<crypto::key_imag
 			pd.m_amount_in = pd.m_amount_out = td.amount(); // fee is unknown
 			std::string err;
 			pd.m_block_height = get_daemon_blockchain_height(err);  // spent block height is unknown, so hypothetically set to the highest
-			crypto::hash spent_txid = crypto::rand<crypto::hash>(); // spent txid is unknown, so hypothetically set to random
+
+			crypto::hash spent_txid = crypto::null_hash; // spent txid is unknown
+			memcpy(&spent_txid, &n, sizeof(uint64_t));
 			m_confirmed_txs.insert(std::make_pair(spent_txid, pd));
 		}
 	}
