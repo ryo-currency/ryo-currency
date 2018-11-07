@@ -100,7 +100,7 @@ const char *wallet_rpc_server::tr(const char *str)
 }
 
 //------------------------------------------------------------------------------------------------------------------------------
-wallet_rpc_server::wallet_rpc_server() : m_wallet(nullptr), rpc_login_file(), m_stop(false), m_trusted_daemon(false), m_vm(NULL)
+wallet_rpc_server::wallet_rpc_server(cryptonote::network_type nettype) : m_wallet(nullptr), rpc_login_file(), m_stop(false), m_trusted_daemon(false), m_vm(NULL), m_nettype(nettype)
 {
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -1990,17 +1990,11 @@ bool wallet_rpc_server::on_export_key_images(const wallet_rpc::COMMAND_RPC_EXPOR
 {
 	if(!m_wallet)
 		return not_open(er);
+
 	try
 	{
-		std::vector<std::pair<crypto::key_image, crypto::signature>> ski = m_wallet->export_key_images();
-		res.signed_key_images.resize(ski.size());
-		for(size_t n = 0; n < ski.size(); ++n)
-		{
-			res.signed_key_images[n].key_image = epee::string_tools::pod_to_hex(ski[n].first);
-			res.signed_key_images[n].signature = epee::string_tools::pod_to_hex(ski[n].second);
-		}
+		m_wallet->export_key_images(req.filename);
 	}
-
 	catch(const std::exception &e)
 	{
 		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
@@ -2014,44 +2008,33 @@ bool wallet_rpc_server::on_import_key_images(const wallet_rpc::COMMAND_RPC_IMPOR
 {
 	if(!m_wallet)
 		return not_open(er);
+
 	if(m_wallet->restricted())
 	{
 		er.code = WALLET_RPC_ERROR_CODE_DENIED;
 		er.message = "Command unavailable in restricted mode.";
 		return false;
 	}
+
 	if(!m_trusted_daemon)
 	{
 		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
 		er.message = "This command requires a trusted daemon.";
 		return false;
 	}
+
 	try
 	{
-		std::vector<std::pair<crypto::key_image, crypto::signature>> ski;
-		ski.resize(req.signed_key_images.size());
-		for(size_t n = 0; n < ski.size(); ++n)
-		{
-			cryptonote::blobdata bd;
-
-			if(!epee::string_tools::parse_hexstr_to_binbuff(req.signed_key_images[n].key_image, bd) || bd.size() != sizeof(crypto::key_image))
-			{
-				er.code = WALLET_RPC_ERROR_CODE_WRONG_KEY_IMAGE;
-				er.message = "failed to parse key image";
-				return false;
-			}
-			ski[n].first = *reinterpret_cast<const crypto::key_image *>(bd.data());
-
-			if(!epee::string_tools::parse_hexstr_to_binbuff(req.signed_key_images[n].signature, bd) || bd.size() != sizeof(crypto::signature))
-			{
-				er.code = WALLET_RPC_ERROR_CODE_WRONG_SIGNATURE;
-				er.message = "failed to parse signature";
-				return false;
-			}
-			ski[n].second = *reinterpret_cast<const crypto::signature *>(bd.data());
-		}
 		uint64_t spent = 0, unspent = 0;
-		uint64_t height = m_wallet->import_key_images(ski, spent, unspent);
+		uint64_t height = m_wallet->import_key_images(req.filename, spent, unspent);
+
+		if(height == 0)
+		{
+			er.code = WALLET_RPC_ERROR_CODE_WRONG_KEY_IMAGE;
+			er.message = "Failed to import key images";
+			return false;
+		}
+
 		res.spent = spent;
 		res.unspent = unspent;
 		res.height = height;
@@ -2292,7 +2275,26 @@ bool wallet_rpc_server::on_get_languages(const wallet_rpc::COMMAND_RPC_GET_LANGU
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WALLET::request &req, wallet_rpc::COMMAND_RPC_CREATE_WALLET::response &res, epee::json_rpc::error &er)
+// Pick the password from the RPC call or from command line - used by wallet open / create
+boost::program_options::variables_map wallet_rpc_server::wallet_password_helper(const char* rpc_pwd)
+{
+	boost::program_options::options_description desc("dummy");
+	const command_line::arg_descriptor<std::string, true> arg_password = {"password", "password"};
+	const char *argv[4];
+	int argc = 3;
+	argv[0] = "wallet-rpc";
+	argv[1] = "--password";
+	argv[2] = rpc_pwd;
+	argv[3] = NULL;
+
+	boost::program_options::variables_map vm(m_vm);
+	command_line::add_arg(desc, arg_password);
+	boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
+	return vm;
+}
+//------------------------------------------------------------------------------------------------------------------------------
+// Check basic stuff to do with paths and filenames - used by wallet open / create
+bool wallet_rpc_server::wallet_path_helper(const std::string& filename, epee::json_rpc::error &er)
 {
 	if(m_wallet_dir.empty())
 	{
@@ -2301,15 +2303,27 @@ bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WA
 		return false;
 	}
 
-	namespace po = boost::program_options;
-	po::variables_map vm2;
-
-	if(req.filename.find_first_of("/<>:\"\\|?*") != std::string::npos)
+	if(filename.find_first_of("<>:\"|?*~") != std::string::npos)
 	{
 		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
 		er.message = "Invalid characters in filename";
 		return false;
 	}
+
+	if(filename.find("..") != std::string::npos)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Invalid characters in filename";
+		return false;
+	}
+
+	return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WALLET::request &req, wallet_rpc::COMMAND_RPC_CREATE_WALLET::response &res, epee::json_rpc::error &er)
+{
+	if(!wallet_path_helper(req.filename, er))
+		return false;
 
 	std::string wallet_file = m_wallet_dir + "/" + req.filename;
 	{
@@ -2327,20 +2341,9 @@ bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WA
 			return false;
 		}
 	}
-	{
-		po::options_description desc("dummy");
-		const command_line::arg_descriptor<std::string, true> arg_password = {"password", "password"};
-		const char *argv[4];
-		int argc = 3;
-		argv[0] = "wallet-rpc";
-		argv[1] = "--password";
-		argv[2] = req.password.c_str();
-		argv[3] = NULL;
-		vm2 = *m_vm;
-		command_line::add_arg(desc, arg_password);
-		po::store(po::parse_command_line(argc, argv, desc), vm2);
-	}
-	std::unique_ptr<tools::wallet2> wal = tools::wallet2::make_new(vm2, nullptr).first;
+
+	boost::program_options::variables_map vm = wallet_password_helper(req.password.c_str());
+	std::unique_ptr<tools::wallet2> wal = tools::wallet2::make_new(vm, nullptr).first;
 	if(!wal)
 	{
 		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
@@ -2377,17 +2380,58 @@ bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WA
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_WALLET::response &res, epee::json_rpc::error &er)
+bool wallet_rpc_server::on_restore_view_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_VIEW_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_VIEW_WALLET::response &res, epee::json_rpc::error &er)
 {
-	if(m_wallet_dir.empty())
+	if(!wallet_path_helper(req.filename, er))
+		return false;
+
+	cryptonote::address_parse_info info;
+	if(!get_account_address_from_str(m_nettype,  info, req.address) || info.is_subaddress || info.is_kurz)
 	{
-		er.code = WALLET_RPC_ERROR_CODE_NO_WALLET_DIR;
-		er.message = "No wallet dir configured";
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Invalid wallet address";
+		return false;
+	}
+
+	crypto::secret_key viewkey;
+	if(req.viewkey.size() != 64 || !epee::string_tools::hex_to_pod(req.viewkey, viewkey))
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Invalid viewkey - expected 64 hex chars";
 		return false;
 	}
 
 	std::string wallet_file = m_wallet_dir + "/" + req.filename;
+	boost::program_options::variables_map vm = wallet_password_helper(req.password.c_str());
+	std::unique_ptr<tools::wallet2> wallet = tools::wallet2::make_new(vm, nullptr).first;
 
+	if(!wallet)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
+		er.message = "Failed to restore wallet";
+		return false;
+	}
+
+	wallet->set_refresh_from_block_height(req.refresh_start_height);
+	try
+	{
+		wallet->generate(wallet_file, req.password, info.address, viewkey, false);
+		start_wallet_backend(std::move(wallet));
+	}
+	catch(const std::exception &e)
+	{
+		handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
+		return false;
+	}
+	return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_WALLET::response &res, epee::json_rpc::error &er)
+{
+	if(!wallet_path_helper(req.filename, er))
+		return false;
+
+	std::string wallet_file = m_wallet_dir + "/" + req.filename;
 	std::string seed = req.seed;
 
 	std::vector<std::string> wseed;
@@ -2421,23 +2465,7 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 		return false;
 	}
 
-	namespace po = boost::program_options;
-	po::variables_map vm;
-
-	{
-		po::options_description desc("dummy");
-		const command_line::arg_descriptor<std::string, true> arg_password = {"password", "password"};
-		const char *argv[4];
-		int argc = 3;
-		argv[0] = "wallet-rpc";
-		argv[1] = "--password";
-		argv[2] = req.password.c_str();
-		argv[3] = NULL;
-		vm = *m_vm;
-		command_line::add_arg(desc, arg_password);
-		po::store(po::parse_command_line(argc, argv, desc), vm);
-	}
-
+	boost::program_options::variables_map vm = wallet_password_helper(req.password.c_str());
 	std::unique_ptr<tools::wallet2> wallet = tools::wallet2::make_new(vm, nullptr).first;
 	if(!wallet)
 	{
@@ -2467,46 +2495,16 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 //------------------------------------------------------------------------------------------------------------------------------
 bool wallet_rpc_server::on_open_wallet(const wallet_rpc::COMMAND_RPC_OPEN_WALLET::request &req, wallet_rpc::COMMAND_RPC_OPEN_WALLET::response &res, epee::json_rpc::error &er)
 {
-	if(m_wallet_dir.empty())
-	{
-		er.code = WALLET_RPC_ERROR_CODE_NO_WALLET_DIR;
-		er.message = "No wallet dir configured";
+	if(!wallet_path_helper(req.filename, er))
 		return false;
-	}
 
-	namespace po = boost::program_options;
-	po::variables_map vm2;
-	const char *ptr = strchr(req.filename.c_str(), '/');
-#ifdef _WIN32
-	if(!ptr)
-		ptr = strchr(req.filename.c_str(), '\\');
-	if(!ptr)
-		ptr = strchr(req.filename.c_str(), ':');
-#endif
-	if(ptr)
-	{
-		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
-		er.message = "Invalid filename";
-		return false;
-	}
 	std::string wallet_file = m_wallet_dir + "/" + req.filename;
-	{
-		po::options_description desc("dummy");
-		const command_line::arg_descriptor<std::string, true> arg_password = {"password", "password"};
-		const char *argv[4];
-		int argc = 3;
-		argv[0] = "wallet-rpc";
-		argv[1] = "--password";
-		argv[2] = req.password.c_str();
-		argv[3] = NULL;
-		vm2 = *m_vm;
-		command_line::add_arg(desc, arg_password);
-		po::store(po::parse_command_line(argc, argv, desc), vm2);
-	}
+	boost::program_options::variables_map vm = wallet_password_helper(req.password.c_str());
 	std::unique_ptr<tools::wallet2> wal = nullptr;
+
 	try
 	{
-		wal = tools::wallet2::make_from_file(vm2, wallet_file, nullptr).first;
+		wal = tools::wallet2::make_from_file(vm, wallet_file, nullptr).first;
 		if(!wal)
 		{
 			er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
@@ -2543,6 +2541,39 @@ bool wallet_rpc_server::on_close_wallet(const wallet_rpc::COMMAND_RPC_CLOSE_WALL
 		return false;
 	}
 
+	return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_change_wallet_password(const wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::request& req, wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::response& res, epee::json_rpc::error& er)
+{
+	if(!m_wallet)
+		return not_open(er);
+	if(m_wallet->restricted())
+	{
+		er.code = WALLET_RPC_ERROR_CODE_DENIED;
+		er.message = "Command unavailable in restricted mode.";
+		return false;
+	}
+	if(m_wallet->verify_password(req.old_password))
+	{
+		try
+		{
+			m_wallet->rewrite(m_wallet->get_wallet_file(), req.new_password);
+			m_wallet->store();
+			LOG_PRINT_L0("Wallet password changed.");
+		}
+		catch(const std::exception& e)
+		{
+			handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
+			return false;
+		}
+	}
+	else
+	{
+		er.code = WALLET_RPC_ERROR_CODE_INVALID_PASSWORD;
+		er.message = "Invalid original password.";
+		return false;
+	}
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -3048,6 +3079,7 @@ int main(int argc, char **argv)
 		return vm_error_code;
 	}
 
+	cryptonote::network_type net_type = cryptonote::UNDEFINED;
 	std::unique_ptr<tools::wallet2> wal;
 	try
 	{
@@ -3058,6 +3090,13 @@ int main(int argc, char **argv)
 			MERROR(tools::wallet_rpc_server::tr("Can't specify more than one of --testnet and --stagenet"));
 			return 1;
 		}
+		
+		if(testnet)
+			net_type = cryptonote::TESTNET;
+		else if(stagenet)
+			net_type = cryptonote::STAGENET;
+		else
+			net_type = cryptonote::MAINNET;
 
 		const auto wallet_file = command_line::get_arg(*vm, arg_wallet_file);
 		const auto from_json = command_line::get_arg(*vm, arg_from_json);
@@ -3129,7 +3168,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 just_dir:
-	tools::wallet_rpc_server wrpc;
+	tools::wallet_rpc_server wrpc(net_type);
 	if(wal)
 		wrpc.start_wallet_backend(std::move(wal));
 	bool r = wrpc.init(&(vm.get()));

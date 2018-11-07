@@ -50,6 +50,7 @@
 #include "net/http_server_impl_base.h"
 #include "wallet2.h"
 #include "wallet_rpc_server_commands_defs.h"
+#include "cryptonote_config.h"
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <string>
@@ -69,7 +70,7 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 
 	static const char *tr(const char *str);
 
-	wallet_rpc_server();
+	wallet_rpc_server(cryptonote::network_type nettype);
 	~wallet_rpc_server();
 
 	bool init(const boost::program_options::variables_map *vm);
@@ -152,7 +153,9 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 	MAP_JON_RPC_WE("get_languages", on_get_languages, wallet_rpc::COMMAND_RPC_GET_LANGUAGES)
 	MAP_JON_RPC_WE("create_wallet", on_create_wallet, wallet_rpc::COMMAND_RPC_CREATE_WALLET)
 	MAP_JON_RPC_WE("restore_wallet", on_restore_wallet, wallet_rpc::COMMAND_RPC_RESTORE_WALLET)
+	MAP_JON_RPC_WE("restore_view_wallet", on_restore_view_wallet, wallet_rpc::COMMAND_RPC_RESTORE_VIEW_WALLET)
 	MAP_JON_RPC_WE("open_wallet", on_open_wallet, wallet_rpc::COMMAND_RPC_OPEN_WALLET)
+	MAP_JON_RPC_WE("change_wallet_password", on_change_wallet_password, wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD)
 	MAP_JON_RPC_WE("close_wallet", on_close_wallet, wallet_rpc::COMMAND_RPC_CLOSE_WALLET)
 	MAP_JON_RPC_WE("is_multisig", on_is_multisig, wallet_rpc::COMMAND_RPC_IS_MULTISIG)
 	MAP_JON_RPC_WE("prepare_multisig", on_prepare_multisig, wallet_rpc::COMMAND_RPC_PREPARE_MULTISIG)
@@ -221,7 +224,9 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 	bool on_get_languages(const wallet_rpc::COMMAND_RPC_GET_LANGUAGES::request &req, wallet_rpc::COMMAND_RPC_GET_LANGUAGES::response &res, epee::json_rpc::error &er);
 	bool on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WALLET::request &req, wallet_rpc::COMMAND_RPC_CREATE_WALLET::response &res, epee::json_rpc::error &er);
 	bool on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_WALLET::response &res, epee::json_rpc::error &er);
+	bool on_restore_view_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_VIEW_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_VIEW_WALLET::response &res, epee::json_rpc::error &er);
 	bool on_open_wallet(const wallet_rpc::COMMAND_RPC_OPEN_WALLET::request &req, wallet_rpc::COMMAND_RPC_OPEN_WALLET::response &res, epee::json_rpc::error &er);
+	bool on_change_wallet_password(const wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::request& req, wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::response& res, epee::json_rpc::error& er);
 	bool on_close_wallet(const wallet_rpc::COMMAND_RPC_CLOSE_WALLET::request &req, wallet_rpc::COMMAND_RPC_CLOSE_WALLET::response &res, epee::json_rpc::error &er);
 	bool on_is_multisig(const wallet_rpc::COMMAND_RPC_IS_MULTISIG::request &req, wallet_rpc::COMMAND_RPC_IS_MULTISIG::response &res, epee::json_rpc::error &er);
 	bool on_prepare_multisig(const wallet_rpc::COMMAND_RPC_PREPARE_MULTISIG::request &req, wallet_rpc::COMMAND_RPC_PREPARE_MULTISIG::response &res, epee::json_rpc::error &er);
@@ -248,11 +253,15 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 					   bool get_tx_key, Ts &tx_key, Tu &amount, Tu &fee, std::string &multisig_txset, bool do_not_relay,
 					   Ts &tx_hash, bool get_tx_hex, Ts &tx_blob, bool get_tx_metadata, Ts &tx_metadata, epee::json_rpc::error &er);
 
+	boost::program_options::variables_map wallet_password_helper(const char* rpc_pwd);
+	bool wallet_path_helper(const std::string& filename, epee::json_rpc::error &er);
+
 	wallet2 *m_wallet;
 	std::string m_wallet_dir;
 	tools::private_file rpc_login_file;
 	std::atomic<bool> m_stop;
 	bool m_trusted_daemon;
 	const boost::program_options::variables_map *m_vm;
+	cryptonote::network_type m_nettype;
 };
 }

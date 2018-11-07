@@ -1702,7 +1702,7 @@ Si l&apos;argument &quot;tag_description&quot; est spécifié, le texte arbitrai
    Set the fee too default/unimportant/normal/elevated/priority.
  confirm-missing-payment-id &lt;1|0&gt;
  ask-password &lt;1|0&gt;
- unit &lt;ryo|millinero|micronero|nanonero|piconero&gt;
+ unit &lt;ryo|milliRyo|micoRyo|nanoRyo&gt;
    Set the default ryo (sub-)unit.
  min-outputs-count [n]
    Try to keep at least that many outputs of value at least min-outputs-value.
@@ -1737,7 +1737,7 @@ Si l&apos;argument &quot;tag_description&quot; est spécifié, le texte arbitrai
    Utiliser les frais pour la priorité par défaut/peu importante/normale/élevée/prioritaire.
  confirm-missing-payment-id &lt;1|0&gt;
  ask-password &lt;1|0&gt;
- unit &lt;ryo|millinero|micronero|nanonero|piconero&gt;
+ unit &lt;ryo|milliRyo|microRyo|nanoRyo&gt;
    Définir la (sous-)unité ryo par défaut.
  min-outputs-count [n]
    Essayer de garder au moins ce nombre de sorties d&apos;une valeur d&apos;au moins min-outputs-value.
@@ -2610,8 +2610,8 @@ Attention : Certaines clés d&apos;entrées étant dépensées sont issues de <
     </message>
     <message>
         <location filename="../src/simplewallet/simplewallet.cpp" line="1923"/>
-        <source>ryo, millinero, micronero, nanonero, piconero</source>
-        <translation>ryo, millinero, micronero, nanonero, piconero</translation>
+        <source>ryo, milliRyo, microRyo, nanoRyo</source>
+        <translation>ryo, milliRyo, microRyo, nanoRyo</translation>
     </message>
     <message>
         <location filename="../src/simplewallet/simplewallet.cpp" line="1975"/>

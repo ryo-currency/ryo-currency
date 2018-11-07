@@ -1338,50 +1338,28 @@ struct COMMAND_RPC_EXPORT_KEY_IMAGES
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
-		END_KV_SERIALIZE_MAP()
-	};
-
-	struct signed_key_image
-	{
-		std::string key_image;
-		std::string signature;
+		std::string filename;
 
 		BEGIN_KV_SERIALIZE_MAP()
-		KV_SERIALIZE(key_image);
-		KV_SERIALIZE(signature);
+		KV_SERIALIZE(filename);
 		END_KV_SERIALIZE_MAP()
 	};
 
 	struct response
 	{
-		std::vector<signed_key_image> signed_key_images;
-
 		BEGIN_KV_SERIALIZE_MAP()
-		KV_SERIALIZE(signed_key_images);
 		END_KV_SERIALIZE_MAP()
 	};
 };
 
 struct COMMAND_RPC_IMPORT_KEY_IMAGES
 {
-	struct signed_key_image
-	{
-		std::string key_image;
-		std::string signature;
-
-		BEGIN_KV_SERIALIZE_MAP()
-		KV_SERIALIZE(key_image);
-		KV_SERIALIZE(signature);
-		END_KV_SERIALIZE_MAP()
-	};
-
 	struct request
 	{
-		std::vector<signed_key_image> signed_key_images;
+		std::string filename;
 
 		BEGIN_KV_SERIALIZE_MAP()
-		KV_SERIALIZE(signed_key_images);
+		KV_SERIALIZE(filename);
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1649,6 +1627,31 @@ struct COMMAND_RPC_RESTORE_WALLET
 	};
 };
 
+struct COMMAND_RPC_RESTORE_VIEW_WALLET
+{
+	struct request
+	{
+		std::string filename;
+		std::string password;
+		std::string address;
+		std::string viewkey;
+		uint64_t refresh_start_height;
+
+		BEGIN_KV_SERIALIZE_MAP()
+		KV_SERIALIZE(filename)
+		KV_SERIALIZE(password)
+		KV_SERIALIZE(address)
+		KV_SERIALIZE(viewkey)
+		KV_SERIALIZE(refresh_start_height)
+		END_KV_SERIALIZE_MAP()
+	};
+	struct response
+	{
+		BEGIN_KV_SERIALIZE_MAP()
+		END_KV_SERIALIZE_MAP()
+	};
+};
+
 struct COMMAND_RPC_OPEN_WALLET
 {
 	struct request
@@ -1659,6 +1662,25 @@ struct COMMAND_RPC_OPEN_WALLET
 		BEGIN_KV_SERIALIZE_MAP()
 		KV_SERIALIZE(filename)
 		KV_SERIALIZE(password)
+		END_KV_SERIALIZE_MAP()
+	};
+	struct response
+	{
+		BEGIN_KV_SERIALIZE_MAP()
+		END_KV_SERIALIZE_MAP()
+	};
+};
+
+struct COMMAND_RPC_CHANGE_WALLET_PASSWORD
+{
+	struct request
+	{
+		std::string old_password;
+		std::string new_password;
+
+		BEGIN_KV_SERIALIZE_MAP()
+		KV_SERIALIZE(old_password)
+		KV_SERIALIZE(new_password)
 		END_KV_SERIALIZE_MAP()
 	};
 	struct response
