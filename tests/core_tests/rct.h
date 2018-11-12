@@ -326,6 +326,7 @@ struct get_test_options<gen_rct_tx_rct_add_vout> : public get_test_options<gen_r
 {
 };
 
+#if 0
 // extra
 struct gen_rct_tx_pre_rct_altered_extra : public gen_rct_tx_validation_base
 {
@@ -344,3 +345,4 @@ template <>
 struct get_test_options<gen_rct_tx_rct_altered_extra> : public get_test_options<gen_rct_tx_validation_base>
 {
 };
+#endif

@@ -88,7 +88,11 @@ inline void serialize(Archive &a, crypto::key_image &x, const boost::serializati
 {
 	a &reinterpret_cast<char(&)[sizeof(crypto::key_image)]>(x);
 }
-
+template <class Archive>
+inline void serialize(Archive &a, crypto::uniform_payment_id &x, const boost::serialization::version_type ver)
+{
+	a &reinterpret_cast<char(&)[sizeof(crypto::uniform_payment_id)]>(x);
+}
 template <class Archive>
 inline void serialize(Archive &a, crypto::signature &x, const boost::serialization::version_type ver)
 {

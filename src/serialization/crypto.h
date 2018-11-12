@@ -105,6 +105,7 @@ BLOB_SERIALIZER(crypto::secret_key);
 BLOB_SERIALIZER(crypto::key_derivation);
 BLOB_SERIALIZER(crypto::key_image);
 BLOB_SERIALIZER(crypto::signature);
+BLOB_SERIALIZER(crypto::uniform_payment_id);
 VARIANT_TAG(debug_archive, crypto::hash, "hash");
 VARIANT_TAG(debug_archive, crypto::hash8, "hash8");
 VARIANT_TAG(debug_archive, crypto::public_key, "public_key");

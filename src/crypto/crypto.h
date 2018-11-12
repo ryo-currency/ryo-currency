@@ -128,7 +128,7 @@ struct signature
 struct uniform_payment_id
 {
 	uint64_t zero = 0;
-	crypto::hash payment_id;
+	hash payment_id = null_hash;
 };
 #pragma pack(pop)
 
@@ -187,6 +187,20 @@ class crypto_ops
 	friend bool check_ring_signature(const hash &, const key_image &,
 									 const public_key *const *, std::size_t, const signature *);
 };
+
+inline uniform_payment_id make_paymenet_id(const hash& long_id)
+{
+	uniform_payment_id id;
+	id.payment_id = long_id;
+	return id;
+}
+
+inline uniform_payment_id make_paymenet_id(const hash8& short_id)
+{
+	uniform_payment_id id;
+	memcpy(&id.payment_id.data, &short_id.data, sizeof(hash8));
+	return id;
+}
 
 /* Generate N random bytes
    */

@@ -585,9 +585,9 @@ bool wallet_rpc_server::on_getheight(const wallet_rpc::COMMAND_RPC_GET_HEIGHT::r
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-bool wallet_rpc_server::validate_transfer(const std::list<wallet_rpc::transfer_destination> &destinations, const std::string &payment_id, std::vector<cryptonote::tx_destination_entry> &dsts, std::vector<uint8_t> &extra, bool at_least_one_destination, epee::json_rpc::error &er)
+bool wallet_rpc_server::validate_transfer(const std::list<wallet_rpc::transfer_destination> &destinations, const std::string &s_payment_id, std::vector<cryptonote::tx_destination_entry> &dsts,  crypto::uniform_payment_id& payment_id, bool at_least_one_destination, epee::json_rpc::error &er)
 {
-	crypto::hash8 integrated_payment_id = crypto::null_hash8;
+	payment_id.zero = (-1); // lack of id
 	std::string extra_nonce;
 	for(auto it = destinations.begin(); it != destinations.end(); it++)
 	{
@@ -609,22 +609,14 @@ bool wallet_rpc_server::validate_transfer(const std::list<wallet_rpc::transfer_d
 
 		if(info.has_payment_id)
 		{
-			if(!payment_id.empty() || integrated_payment_id != crypto::null_hash8)
+			if(!s_payment_id.empty() || payment_id.zero == 0)
 			{
 				er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
 				er.message = "A single payment id is allowed per transaction";
 				return false;
 			}
-			integrated_payment_id = info.payment_id;
-			cryptonote::set_encrypted_payment_id_to_tx_extra_nonce(extra_nonce, integrated_payment_id);
 
-			/* Append Payment ID data into extra */
-			if(!cryptonote::add_extra_nonce_to_tx_extra(extra, extra_nonce))
-			{
-				er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
-				er.message = "Something went wrong with integrated payment_id.";
-				return false;
-			}
+			payment_id = make_paymenet_id(info.payment_id);
 		}
 	}
 
@@ -635,40 +627,17 @@ bool wallet_rpc_server::validate_transfer(const std::list<wallet_rpc::transfer_d
 		return false;
 	}
 
-	if(!payment_id.empty())
+	if(!s_payment_id.empty())
 	{
-
-		/* Just to clarify */
-		const std::string &payment_id_str = payment_id;
-
-		crypto::hash long_payment_id;
-		crypto::hash8 short_payment_id;
-
 		/* Parse payment ID */
-		if(wallet2::parse_long_payment_id(payment_id_str, long_payment_id))
-		{
-			cryptonote::set_payment_id_to_tx_extra_nonce(extra_nonce, long_payment_id);
-		}
-		/* or short payment ID */
-		else if(wallet2::parse_short_payment_id(payment_id_str, short_payment_id))
-		{
-			cryptonote::set_encrypted_payment_id_to_tx_extra_nonce(extra_nonce, short_payment_id);
-		}
-		else
+		if(!wallet2::parse_payment_id(s_payment_id, payment_id))
 		{
 			er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
-			er.message = "Payment id has invalid format: \"" + payment_id_str + "\", expected 16 or 64 character string";
-			return false;
-		}
-
-		/* Append Payment ID data into extra */
-		if(!cryptonote::add_extra_nonce_to_tx_extra(extra, extra_nonce))
-		{
-			er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
-			er.message = "Something went wrong with payment_id. Please check its format: \"" + payment_id_str + "\", expected 64-character string";
+			er.message = "Payment id has invalid format: \"" + s_payment_id + "\", expected 16 or 64 character string";
 			return false;
 		}
 	}
+
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -768,11 +737,13 @@ bool wallet_rpc_server::fill_response(std::vector<tools::wallet2::pending_tx> &p
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
+inline crypto::uniform_payment_id* check_pid(crypto::uniform_payment_id& pid)
+{
+	return pid.zero == 0 ? &pid : nullptr;
+}
 bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::request &req, wallet_rpc::COMMAND_RPC_TRANSFER::response &res, epee::json_rpc::error &er)
 {
-
 	std::vector<cryptonote::tx_destination_entry> dsts;
-	std::vector<uint8_t> extra;
 
 	LOG_PRINT_L3("on_transfer starts");
 	if(!m_wallet)
@@ -785,7 +756,8 @@ bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::requ
 	}
 
 	// validate the transfer requested and populate dsts & extra
-	if(!validate_transfer(req.destinations, req.payment_id, dsts, extra, true, er))
+	crypto::uniform_payment_id pid;
+	if(!validate_transfer(req.destinations, req.payment_id, dsts, pid, true, er))
 	{
 		return false;
 	}
@@ -802,8 +774,8 @@ bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::requ
 			mixin = m_wallet->adjust_mixin(req.mixin);
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
-		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, extra, req.account_index, req.subaddr_indices, m_trusted_daemon);
-
+		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, check_pid(pid), 
+				req.account_index, req.subaddr_indices, m_trusted_daemon);
 		if(ptx_vector.empty())
 		{
 			er.code = WALLET_RPC_ERROR_CODE_TX_NOT_POSSIBLE;
@@ -832,9 +804,7 @@ bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::requ
 //------------------------------------------------------------------------------------------------------------------------------
 bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER_SPLIT::request &req, wallet_rpc::COMMAND_RPC_TRANSFER_SPLIT::response &res, epee::json_rpc::error &er)
 {
-
 	std::vector<cryptonote::tx_destination_entry> dsts;
-	std::vector<uint8_t> extra;
 
 	if(!m_wallet)
 		return not_open(er);
@@ -846,7 +816,8 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 	}
 
 	// validate the transfer requested and populate dsts & extra; RPC_TRANSFER::request and RPC_TRANSFER_SPLIT::request are identical types.
-	if(!validate_transfer(req.destinations, req.payment_id, dsts, extra, true, er))
+	crypto::uniform_payment_id pid;
+	if(!validate_transfer(req.destinations, req.payment_id, dsts, pid, true, er))
 	{
 		return false;
 	}
@@ -864,7 +835,8 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
 		LOG_PRINT_L2("on_transfer_split calling create_transactions_2");
-		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, extra, req.account_index, req.subaddr_indices, m_trusted_daemon);
+		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, check_pid(pid),
+				req.account_index, req.subaddr_indices, m_trusted_daemon);
 		LOG_PRINT_L2("on_transfer_split called create_transactions_2");
 
 		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
@@ -881,7 +853,6 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 bool wallet_rpc_server::on_sweep_all(const wallet_rpc::COMMAND_RPC_SWEEP_ALL::request &req, wallet_rpc::COMMAND_RPC_SWEEP_ALL::response &res, epee::json_rpc::error &er)
 {
 	std::vector<cryptonote::tx_destination_entry> dsts;
-	std::vector<uint8_t> extra;
 
 	if(!m_wallet)
 		return not_open(er);
@@ -897,7 +868,8 @@ bool wallet_rpc_server::on_sweep_all(const wallet_rpc::COMMAND_RPC_SWEEP_ALL::re
 	destination.push_back(wallet_rpc::transfer_destination());
 	destination.back().amount = 0;
 	destination.back().address = req.address;
-	if(!validate_transfer(destination, req.payment_id, dsts, extra, true, er))
+	crypto::uniform_payment_id pid;
+	if(!validate_transfer(destination, req.payment_id, dsts, pid, true, er))
 	{
 		return false;
 	}
@@ -914,7 +886,8 @@ bool wallet_rpc_server::on_sweep_all(const wallet_rpc::COMMAND_RPC_SWEEP_ALL::re
 			mixin = m_wallet->adjust_mixin(req.mixin);
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
-		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_all(req.below_amount, dsts[0].addr, dsts[0].is_subaddress, mixin, req.unlock_time, priority, extra, req.account_index, req.subaddr_indices, m_trusted_daemon);
+		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_all(req.below_amount, dsts[0].addr, dsts[0].is_subaddress, 
+				mixin, req.unlock_time, priority, check_pid(pid), req.account_index, req.subaddr_indices, m_trusted_daemon);
 
 		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
 							 res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, er);
@@ -930,7 +903,6 @@ bool wallet_rpc_server::on_sweep_all(const wallet_rpc::COMMAND_RPC_SWEEP_ALL::re
 bool wallet_rpc_server::on_sweep_single(const wallet_rpc::COMMAND_RPC_SWEEP_SINGLE::request &req, wallet_rpc::COMMAND_RPC_SWEEP_SINGLE::response &res, epee::json_rpc::error &er)
 {
 	std::vector<cryptonote::tx_destination_entry> dsts;
-	std::vector<uint8_t> extra;
 
 	if(!m_wallet)
 		return not_open(er);
@@ -946,7 +918,8 @@ bool wallet_rpc_server::on_sweep_single(const wallet_rpc::COMMAND_RPC_SWEEP_SING
 	destination.push_back(wallet_rpc::transfer_destination());
 	destination.back().amount = 0;
 	destination.back().address = req.address;
-	if(!validate_transfer(destination, req.payment_id, dsts, extra, true, er))
+	crypto::uniform_payment_id pid;
+	if(!validate_transfer(destination, req.payment_id, dsts, pid, true, er))
 	{
 		return false;
 	}
@@ -971,7 +944,7 @@ bool wallet_rpc_server::on_sweep_single(const wallet_rpc::COMMAND_RPC_SWEEP_SING
 			mixin = m_wallet->adjust_mixin(req.mixin);
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
-		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_single(ki, dsts[0].addr, dsts[0].is_subaddress, mixin, req.unlock_time, priority, extra, m_trusted_daemon);
+		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_single(ki, dsts[0].addr, dsts[0].is_subaddress, mixin, req.unlock_time, priority, check_pid(pid), m_trusted_daemon);
 
 		if(ptx_vector.empty())
 		{
@@ -1066,12 +1039,14 @@ bool wallet_rpc_server::on_make_integrated_address(const wallet_rpc::COMMAND_RPC
 		}
 		else
 		{
-			if(!tools::wallet2::parse_short_payment_id(req.payment_id, payment_id))
+			cryptonote::blobdata payment_id_data;
+			if(!epee::string_tools::parse_hexstr_to_binbuff(req.payment_id, payment_id_data) || payment_id_data.size() != sizeof(crypto::hash8))
 			{
 				er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
 				er.message = "Invalid payment ID";
 				return false;
 			}
+			memcpy(&payment_id, payment_id_data.data(), sizeof(crypto::hash8));
 		}
 
 		res.integrated_address = m_wallet->get_integrated_address_as_str(payment_id);
@@ -1145,30 +1120,12 @@ bool wallet_rpc_server::on_get_payments(const wallet_rpc::COMMAND_RPC_GET_PAYMEN
 {
 	if(!m_wallet)
 		return not_open(er);
-	crypto::hash payment_id;
-	crypto::hash8 payment_id8;
-	cryptonote::blobdata payment_id_blob;
-	if(!epee::string_tools::parse_hexstr_to_binbuff(req.payment_id, payment_id_blob))
+
+	crypto::uniform_payment_id payment_id;
+	if(!wallet2::parse_payment_id(req.payment_id, payment_id))
 	{
 		er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
 		er.message = "Payment ID has invalid format";
-		return false;
-	}
-
-	if(sizeof(payment_id) == payment_id_blob.size())
-	{
-		payment_id = *reinterpret_cast<const crypto::hash *>(payment_id_blob.data());
-	}
-	else if(sizeof(payment_id8) == payment_id_blob.size())
-	{
-		payment_id8 = *reinterpret_cast<const crypto::hash8 *>(payment_id_blob.data());
-		memcpy(payment_id.data, payment_id8.data, 8);
-		memset(payment_id.data + 8, 0, 24);
-	}
-	else
-	{
-		er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
-		er.message = "Payment ID has invalid size: " + req.payment_id;
 		return false;
 	}
 
@@ -1221,33 +1178,11 @@ bool wallet_rpc_server::on_get_bulk_payments(const wallet_rpc::COMMAND_RPC_GET_B
 
 	for(auto &payment_id_str : req.payment_ids)
 	{
-		crypto::hash payment_id;
-		crypto::hash8 payment_id8;
-		cryptonote::blobdata payment_id_blob;
-
-		// TODO - should the whole thing fail because of one bad id?
-
-		if(!epee::string_tools::parse_hexstr_to_binbuff(payment_id_str, payment_id_blob))
+		crypto::uniform_payment_id payment_id;
+		if(!wallet2::parse_payment_id(payment_id_str, payment_id))
 		{
 			er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
 			er.message = "Payment ID has invalid format: " + payment_id_str;
-			return false;
-		}
-
-		if(sizeof(payment_id) == payment_id_blob.size())
-		{
-			payment_id = *reinterpret_cast<const crypto::hash *>(payment_id_blob.data());
-		}
-		else if(sizeof(payment_id8) == payment_id_blob.size())
-		{
-			payment_id8 = *reinterpret_cast<const crypto::hash8 *>(payment_id_blob.data());
-			memcpy(payment_id.data, payment_id8.data, 8);
-			memset(payment_id.data + 8, 0, 24);
-		}
-		else
-		{
-			er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
-			er.message = "Payment ID has invalid size: " + payment_id_str;
 			return false;
 		}
 
@@ -2118,20 +2053,17 @@ bool wallet_rpc_server::on_add_address_book(const wallet_rpc::COMMAND_RPC_ADD_AD
 	}
 
 	cryptonote::address_parse_info info;
-	crypto::hash payment_id = crypto::null_hash;
-	er.message = "";
+	crypto::uniform_payment_id payment_id;
 	if(!get_account_address_from_str(m_wallet->nettype(), info, req.address))
 	{
 		er.code = WALLET_RPC_ERROR_CODE_WRONG_ADDRESS;
-		if(er.message.empty())
-			er.message = std::string("WALLET_RPC_ERROR_CODE_WRONG_ADDRESS: ") + req.address;
+		er.message = std::string("WALLET_RPC_ERROR_CODE_WRONG_ADDRESS: ") + req.address;
 		return false;
 	}
+
 	if(info.has_payment_id)
-	{
-		memcpy(payment_id.data, info.payment_id.data, 8);
-		memset(payment_id.data + 8, 0, 24);
-	}
+		payment_id = crypto::make_paymenet_id(info.payment_id);
+
 	if(!req.payment_id.empty())
 	{
 		if(info.has_payment_id)
@@ -2141,24 +2073,14 @@ bool wallet_rpc_server::on_add_address_book(const wallet_rpc::COMMAND_RPC_ADD_AD
 			return false;
 		}
 
-		crypto::hash long_payment_id;
-		crypto::hash8 short_payment_id;
-
-		if(!wallet2::parse_long_payment_id(req.payment_id, payment_id))
+		if(!wallet2::parse_payment_id(req.payment_id, payment_id))
 		{
-			if(!wallet2::parse_short_payment_id(req.payment_id, info.payment_id))
-			{
-				er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
-				er.message = "Payment id has invalid format: \"" + req.payment_id + "\", expected 16 or 64 character string";
-				return false;
-			}
-			else
-			{
-				memcpy(payment_id.data, info.payment_id.data, 8);
-				memset(payment_id.data + 8, 0, 24);
-			}
+			er.code = WALLET_RPC_ERROR_CODE_WRONG_PAYMENT_ID;
+			er.message = "Payment id has invalid format: \"" + req.payment_id + "\", expected 16 or 64 character string";
+			return false;
 		}
 	}
+
 	if(!m_wallet->add_address_book_row(info.address, payment_id, req.description, info.is_subaddress))
 	{
 		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
