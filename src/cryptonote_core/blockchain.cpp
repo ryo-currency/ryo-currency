@@ -129,7 +129,8 @@ static const struct
 	{3, 103580, 0, 1522540800}, // April 01, 2018
 	{4, 123575, 0, 1529873000},
 	{5, 129750, 0, 1532782050},
-	{6, 130425, 0, 1532868450}
+	{6, 130425, 0, 1532868450},
+	{7, 159180, 0, 1542300607}
 };
 static const uint64_t testnet_hard_fork_version_1_till = (uint64_t)-1;
 
@@ -2768,9 +2769,11 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 		// Check for one and only one tx pub key and one optional additional pubkey field with size equal to outputs
 		std::vector<tx_extra_field> tx_extra_fields;
 		parse_tx_extra(tx.extra, tx_extra_fields);
-		
+
+		bool uids_required = check_hard_fork_feature(FORK_UNIFORM_IDS_REQ);
 		bool has_pubkey = false;
 		bool has_extrapubkeys = false;
+		bool has_uniform_pid = false;
 		for(const tx_extra_field &f : tx_extra_fields)
 		{
 			if(f.type() == typeid(tx_extra_pub_key))
@@ -2801,6 +2804,23 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 					return false;
 				}
 			}
+			else if(f.type() == typeid(tx_extra_uniform_payment_id) && uids_required)
+			{
+				if(has_uniform_pid)
+				{
+					MERROR_VER("Tx has a duplicate uniform pid field.");
+					tvc.m_verifivation_failed = true;
+					return false;
+				}
+				has_uniform_pid = true;
+			}
+		}
+
+		if(uids_required && !has_uniform_pid)
+		{
+			MERROR_VER("Transaction has no uniform pid field.");
+			tvc.m_verifivation_failed = true;
+			return false;
 		}
 
 		if(!has_pubkey)

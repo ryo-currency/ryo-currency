@@ -164,7 +164,7 @@ enum hard_fork_feature
 	FORK_STRICT_TX_SEMANTICS,
 	FORK_DEV_FUND,
 	FORK_FEE_V2,
-	FORK_UNIFORM_IDS_ENABLE,
+	FORK_UNIFORM_IDS,
 	FORK_UNIFORM_IDS_REQ
 };
 
@@ -187,8 +187,8 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_DEV_FUND, 5, 5, 1},
 	{FORK_FEE_V2, 5, 6, 1},
 	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1},
-	{FORK_UNIFORM_IDS_ENABLE, hardfork_conf::FORK_ID_DISABLED, 7, 1},
-	{FORK_UNIFORM_IDS_REQ, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1}
+	{FORK_UNIFORM_IDS, hardfork_conf::FORK_ID_DISABLED, 7, 1},
+	{FORK_UNIFORM_IDS_REQ, hardfork_conf::FORK_ID_DISABLED, 8, 1}
 };
 
 // COIN - number of smallest units in one coin

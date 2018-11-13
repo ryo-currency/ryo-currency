@@ -4460,7 +4460,6 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 	}
 	
 	crypto::uniform_payment_id payment_id;
-	payment_id.zero = (-1);
 	bool expect_even = (transfer_type == TransferLocked);
 	if((expect_even ? 0 : 1) == local_args.size() % 2)
 	{
@@ -4824,7 +4823,6 @@ bool simple_wallet::sweep_main(uint64_t below, const std::vector<std::string> &a
 	}
 
 	crypto::uniform_payment_id pid;
-	pid.zero = (-1);
 	if(2 >= local_args.size())
 	{
 		if(!tools::wallet2::parse_payment_id(local_args.back(), pid) && local_args.size() == 3)
@@ -5007,7 +5005,6 @@ bool simple_wallet::sweep_single(const std::vector<std::string> &args_)
 	}
 
 	crypto::uniform_payment_id pid;
-	pid.zero = (-1);
 	if(local_args.size() == 3)
 	{
 		if(!tools::wallet2::parse_payment_id(local_args.back(), pid))

@@ -3753,7 +3753,10 @@ bool wallet2::parse_payment_id(const std::string &payment_id_str, crypto::unifor
 {
 	cryptonote::blobdata payment_id_data;
 	if(!epee::string_tools::parse_hexstr_to_binbuff(payment_id_str, payment_id_data))
+	{
+		MERROR("parse_payment_id: invalid hex: " << payment_id_str);
 		return false;
+	}
 
 	if(payment_id_data.size() == sizeof(crypto::hash))
 	{
@@ -3768,6 +3771,8 @@ bool wallet2::parse_payment_id(const std::string &payment_id_str, crypto::unifor
 		memcpy(&payment_id.payment_id, payment_id_data.data(), sizeof(crypto::hash8));
 		return true;
 	}
+	else
+		MERROR("parse_payment_id: invalid size: " << payment_id_data.size());
 
 	return false;
 }
@@ -4553,8 +4558,29 @@ crypto::hash wallet2::get_payment_id(const pending_tx &ptx) const
 	std::vector<tx_extra_field> tx_extra_fields;
 	parse_tx_extra(ptx.tx.extra, tx_extra_fields); // ok if partially parsed
 	tx_extra_nonce extra_nonce;
+	tx_extra_uniform_payment_id uni_pid;
 	crypto::hash payment_id = null_hash;
-	if(find_tx_extra_field_by_type(tx_extra_fields, extra_nonce))
+	if(find_tx_extra_field_by_type(tx_extra_fields, uni_pid))
+	{
+		if(ptx.dests.empty())
+		{
+			MWARNING("Encrypted payment id found, but no destinations public key, cannot decrypt");
+			return crypto::null_hash;
+		}
+
+		for(size_t i=0; i < ptx.dests.size(); i++)
+		{
+			crypto::uniform_payment_id pid = uni_pid.pid;
+			if(m_account.get_device().decrypt_payment_id(pid, ptx.dests[i].addr.m_view_public_key, ptx.tx_key))
+			{
+				if(pid.zero == 0)
+					return pid.payment_id;
+			}
+		}
+
+		return crypto::null_hash;
+	}
+	else if(find_tx_extra_field_by_type(tx_extra_fields, extra_nonce))
 	{
 		crypto::hash8 payment_id8 = null_hash8;
 		if(get_encrypted_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id8))
@@ -4785,7 +4811,8 @@ bool wallet2::sign_tx(unsigned_tx_set &exported_txs, const std::string &signed_f
 		rct::multisig_out msout;
 
 		bool r = cryptonote::construct_tx_and_get_tx_key(m_account.get_keys(), m_subaddresses, sd.sources, sd.splitted_dsts, sd.change_dts.addr, 
-				sd.payment_id.zero == 0 ? &sd.payment_id : nullptr, ptx.tx, sd.unlock_time, tx_key, additional_tx_keys, bulletproof, m_multisig ? &msout : NULL);
+				sd.payment_id.zero == 0 ? &sd.payment_id : nullptr, ptx.tx, sd.unlock_time, tx_key, additional_tx_keys, bulletproof, m_multisig ? &msout : NULL,
+				use_fork_rules(FORK_UNIFORM_IDS, 0));
 
 		THROW_WALLET_EXCEPTION_IF(!r, error::tx_not_constructed, sd.sources, sd.splitted_dsts, sd.unlock_time, m_nettype);
 		// we don't test tx size, because we don't know the current limit, due to not having a blockchain,
@@ -5168,7 +5195,8 @@ bool wallet2::sign_multisig_tx(multisig_tx_set &exported_txs, std::vector<crypto
 		const bool bulletproof = (ptx.tx.rct_signatures.type == rct::RCTTypeFullBulletproof || ptx.tx.rct_signatures.type == rct::RCTTypeSimpleBulletproof);
 	
 		bool r = cryptonote::construct_tx_with_tx_key(m_account.get_keys(), m_subaddresses, sources, sd.splitted_dsts, ptx.change_dts.addr, 
-				sd.payment_id.zero == 0 ? &sd.payment_id : nullptr, tx, sd.unlock_time, ptx.tx_key, ptx.additional_tx_keys, bulletproof, &msout);
+				sd.payment_id.zero == 0 ? &sd.payment_id : nullptr, tx, sd.unlock_time, ptx.tx_key, ptx.additional_tx_keys, bulletproof, &msout,
+				use_fork_rules(FORK_UNIFORM_IDS, 0));
 
 		THROW_WALLET_EXCEPTION_IF(!r, error::tx_not_constructed, sd.sources, sd.splitted_dsts, sd.unlock_time, m_nettype);
 
@@ -6106,7 +6134,7 @@ void wallet2::get_outs(std::vector<std::vector<tools::wallet2::get_outs_entry>> 
 
 void wallet2::transfer_selected_rct(std::vector<cryptonote::tx_destination_entry> dsts, const std::vector<size_t> &selected_transfers, size_t fake_outputs_count,
 									std::vector<std::vector<tools::wallet2::get_outs_entry>> &outs, uint64_t unlock_time, uint64_t fee,
-									const crypto::uniform_payment_id* payment_id, cryptonote::transaction &tx, pending_tx &ptx, bool bulletproof)
+									const crypto::uniform_payment_id* payment_id, cryptonote::transaction &tx, pending_tx &ptx, bool bulletproof, bool uniform_pids)
 {
 	using namespace cryptonote;
 	// throw if attempting a transaction with no destinations
@@ -6261,7 +6289,8 @@ void wallet2::transfer_selected_rct(std::vector<cryptonote::tx_destination_entry
 	rct::multisig_out msout;
 	LOG_PRINT_L2("constructing tx");
 	auto sources_copy = sources;
-	bool r = cryptonote::construct_tx_and_get_tx_key(m_account.get_keys(), m_subaddresses, sources, splitted_dsts, change_dts.addr, payment_id, tx, unlock_time, tx_key, additional_tx_keys, bulletproof, m_multisig ? &msout : NULL);
+	bool r = cryptonote::construct_tx_and_get_tx_key(m_account.get_keys(), m_subaddresses, sources, splitted_dsts, change_dts.addr, payment_id, tx, unlock_time, tx_key, additional_tx_keys, 
+		bulletproof, m_multisig ? &msout : NULL, uniform_pids);
 	LOG_PRINT_L2("constructed tx, r=" << r);
 	THROW_WALLET_EXCEPTION_IF(!r, error::tx_not_constructed, sources, dsts, unlock_time, m_nettype);
 	THROW_WALLET_EXCEPTION_IF(upper_transaction_size_limit <= get_object_blobsize(tx), error::tx_too_big, tx, upper_transaction_size_limit);
@@ -6306,7 +6335,7 @@ void wallet2::transfer_selected_rct(std::vector<cryptonote::tx_destination_entry
 				LOG_PRINT_L2("Creating supplementary multisig transaction");
 				cryptonote::transaction ms_tx;
 				auto sources_copy_copy = sources_copy;
-				bool r = cryptonote::construct_tx_with_tx_key(m_account.get_keys(), m_subaddresses, sources_copy_copy, splitted_dsts, change_dts.addr, payment_id, ms_tx, unlock_time, tx_key, additional_tx_keys, bulletproof, &msout);
+				bool r = cryptonote::construct_tx_with_tx_key(m_account.get_keys(), m_subaddresses, sources_copy_copy, splitted_dsts, change_dts.addr, payment_id, ms_tx, unlock_time, tx_key, additional_tx_keys, bulletproof, &msout, use_fork_rules(FORK_UNIFORM_IDS, 0));
 				LOG_PRINT_L2("constructed tx, r=" << r);
 				THROW_WALLET_EXCEPTION_IF(!r, error::tx_not_constructed, sources, splitted_dsts, unlock_time, m_nettype);
 				THROW_WALLET_EXCEPTION_IF(upper_transaction_size_limit <= get_object_blobsize(tx), error::tx_too_big, tx, upper_transaction_size_limit);
@@ -6541,6 +6570,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 	uint64_t needed_fee, available_for_fee = 0;
 	uint64_t upper_transaction_size_limit = get_upper_transaction_size_limit();
 	const bool bulletproof = use_fork_rules(FORK_BULLETPROOFS, 0);
+	bool uniform_pid = use_fork_rules(FORK_UNIFORM_IDS, 0);
 
 	const uint64_t fee_multiplier = get_fee_multiplier(priority);
 
@@ -6848,7 +6878,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 
 			LOG_PRINT_L2("Trying to create a tx now, with " << tx.dsts.size() << " outputs and " << tx.selected_transfers.size() << " inputs");
 
-			transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, outs, unlock_time, needed_fee, payment_id, test_tx, test_ptx, bulletproof);
+			transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, outs, unlock_time, needed_fee, payment_id, test_tx, test_ptx, bulletproof, uniform_pid);
 			auto txBlob = t_serializable_object_to_blob(test_ptx.tx);
 			needed_fee = calculate_fee(fake_outs_count+1, txBlob.size(), fee_multiplier);
 			available_for_fee = test_ptx.fee + test_ptx.change_dts.amount + (!test_ptx.dust_added_to_fee ? test_ptx.dust : 0);
@@ -6884,7 +6914,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 				LOG_PRINT_L2("We made a tx, adjusting fee and saving it, we need " << print_money(needed_fee) << " and we have " << print_money(test_ptx.fee));
 				while(needed_fee > test_ptx.fee)
 				{
-					transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, outs, unlock_time, needed_fee, payment_id, test_tx, test_ptx, bulletproof);
+					transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, outs, unlock_time, needed_fee, payment_id, test_tx, test_ptx, bulletproof, uniform_pid);
 					txBlob = t_serializable_object_to_blob(test_ptx.tx);
 					needed_fee = calculate_fee(fake_outs_count+1, txBlob.size(), fee_multiplier);
 					LOG_PRINT_L2("Made an attempt at a  final " << get_size_string(txBlob) << " tx, with " << print_money(test_ptx.fee) << " fee  and " << print_money(test_ptx.change_dts.amount) << " change");
@@ -6949,7 +6979,8 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 							  payment_id,			 /* const crypto::uniform_payment_id* */
 							  test_tx,				 /* OUT   cryptonote::transaction& tx, */
 							  test_ptx,				 /* OUT   cryptonote::transaction& tx, */
-							  bulletproof);
+							  bulletproof,
+							  uniform_pid);
 		auto txBlob = t_serializable_object_to_blob(test_ptx.tx);
 		tx.tx = test_tx;
 		tx.ptx = test_ptx;
@@ -7068,6 +7099,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 	std::vector<std::vector<get_outs_entry>> outs;
 
 	const bool bulletproof = use_fork_rules(FORK_BULLETPROOFS, 0);
+	bool uniform_pid = use_fork_rules(FORK_UNIFORM_IDS, 0);
 	const uint64_t fee_multiplier = get_fee_multiplier(priority);
 
 	LOG_PRINT_L2("Starting with " << unused_transfers_indices.size() << " non-dust outputs and " << unused_dust_indices.size() << " dust outputs");
@@ -7130,7 +7162,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 
 			LOG_PRINT_L2("Trying to create a tx now, with " << tx.dsts.size() << " destinations and " << tx.selected_transfers.size() << " outputs");
 			transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, outs, unlock_time, needed_fee, payment_id,
-								  test_tx, test_ptx, bulletproof);
+								  test_tx, test_ptx, bulletproof, uniform_pid);
 			auto txBlob = t_serializable_object_to_blob(test_ptx.tx);
 			needed_fee = calculate_fee(fake_outs_count+1, txBlob.size(), fee_multiplier);
 			available_for_fee = test_ptx.fee + test_ptx.dests[0].amount + test_ptx.change_dts.amount;
@@ -7143,7 +7175,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 				LOG_PRINT_L2("We made a tx, adjusting fee and saving it");
 				tx.dsts[0].amount = available_for_fee - needed_fee;
 				transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, outs, unlock_time, needed_fee, payment_id,
-									  test_tx, test_ptx, bulletproof);
+									  test_tx, test_ptx, bulletproof, uniform_pid);
 				txBlob = t_serializable_object_to_blob(test_ptx.tx);
 				needed_fee = calculate_fee(fake_outs_count+1, txBlob.size(), fee_multiplier);
 				LOG_PRINT_L2("Made an attempt at a final " << get_size_string(txBlob) << " tx, with " << print_money(test_ptx.fee) << " fee  and " << print_money(test_ptx.change_dts.amount) << " change");
@@ -7174,7 +7206,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 		cryptonote::transaction test_tx;
 		pending_tx test_ptx;
 		transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, tx.outs, unlock_time, needed_fee, payment_id,
-							  test_tx, test_ptx, bulletproof);
+							  test_tx, test_ptx, bulletproof, uniform_pid);
 		auto txBlob = t_serializable_object_to_blob(test_ptx.tx);
 		tx.tx = test_tx;
 		tx.ptx = test_ptx;
@@ -9356,7 +9388,7 @@ bool wallet2::parse_uri(const std::string &uri, std::string &address, std::strin
 			}
 			
 			crypto::uniform_payment_id pid;
-			if(!wallet2::parse_payment_id(payment_id, pid))
+			if(!wallet2::parse_payment_id(kv[1], pid))
 			{
 				error = "Invalid payment id: " + kv[1];
 				return false;
