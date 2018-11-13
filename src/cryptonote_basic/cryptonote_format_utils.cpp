@@ -522,7 +522,7 @@ bool add_payment_id_to_tx_extra(std::vector<uint8_t> &tx_extra, const tx_extra_u
 
 	if(pid != nullptr)
 	{
-		if(!pid->is_encrypted) //failsafe
+		if(pid->pid.zero == 0) //failsafe, don't add unencrypted data
 			return false;
 		memcpy(&tx_extra[pos+1], &pid->pid, sizeof(crypto::uniform_payment_id));
 	}
@@ -543,11 +543,7 @@ bool get_payment_id_from_tx_extra(const std::vector<uint8_t> &tx_extra, tx_extra
 //---------------------------------------------------------------
 bool get_payment_id_from_tx_extra(const std::vector<tx_extra_field> &tx_extra_fields, tx_extra_uniform_payment_id& pid)
 {
-	if(!find_tx_extra_field_by_type(tx_extra_fields, pid))
-		return false;
-
-	pid.is_encrypted = true;
-	return true;
+	return find_tx_extra_field_by_type(tx_extra_fields, pid);
 }
 //---------------------------------------------------------------
 void set_payment_id_to_tx_extra_nonce(blobdata &extra_nonce, const crypto::hash &payment_id)

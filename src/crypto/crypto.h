@@ -125,9 +125,10 @@ struct signature
 	friend class crypto_ops;
 };
 
+// New payment id system
 struct uniform_payment_id
 {
-	uint64_t zero = 0;
+	uint64_t zero = (-1); // Zero field needs to equal zero for the structure to be valid
 	hash payment_id = null_hash;
 };
 #pragma pack(pop)
@@ -191,6 +192,7 @@ class crypto_ops
 inline uniform_payment_id make_paymenet_id(const hash& long_id)
 {
 	uniform_payment_id id;
+	id.zero = 0;
 	id.payment_id = long_id;
 	return id;
 }
@@ -198,6 +200,7 @@ inline uniform_payment_id make_paymenet_id(const hash& long_id)
 inline uniform_payment_id make_paymenet_id(const hash8& short_id)
 {
 	uniform_payment_id id;
+	id.zero = 0;
 	memcpy(&id.payment_id.data, &short_id.data, sizeof(hash8));
 	return id;
 }

@@ -190,7 +190,6 @@ struct tx_extra_additional_pub_keys
 struct tx_extra_uniform_payment_id
 {
 	crypto::uniform_payment_id pid;
-	bool is_encrypted = false;
 
 	BEGIN_SERIALIZE()
 	FIELD(pid)

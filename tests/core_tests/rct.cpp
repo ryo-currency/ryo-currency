@@ -492,31 +492,3 @@ bool gen_rct_tx_rct_add_vout::generate(std::vector<test_event_entry> &events) co
 						 NULL, [](transaction &tx) { tx.vout.push_back(tx.vout.back()); });
 }
 
-#if 0
-bool gen_rct_tx_pre_rct_altered_extra::generate(std::vector<test_event_entry> &events) const
-{
-	const int mixin = 2;
-	const int out_idx[] = {0, -1};
-	const uint64_t amount_paid = 10000;
-	bool failed = false;
-	return generate_with(events, out_idx, mixin, amount_paid, false,
-						 NULL, [&failed](transaction &tx) {
-							 std::string extra_nonce; 
-							 crypto::hash pid = crypto::null_hash; 
-							 set_payment_id_to_tx_extra_nonce(extra_nonce, pid);
-							 if (!add_extra_nonce_to_tx_extra(tx.extra, extra_nonce)) 
-								 failed = true; 
-						}) && !failed;
-}
-
-bool gen_rct_tx_rct_altered_extra::generate(std::vector<test_event_entry> &events) const
-{
-	const int mixin = 2;
-	const int out_idx[] = {1, -1};
-	const uint64_t amount_paid = 10000;
-	bool failed = false;
-	return generate_with(events, out_idx, mixin, amount_paid, false,
-						 NULL, [&failed](transaction &tx) {std::string extra_nonce; crypto::hash pid = crypto::null_hash; set_payment_id_to_tx_extra_nonce(extra_nonce, pid); if (!add_extra_nonce_to_tx_extra(tx.extra, extra_nonce)) failed = true; }) &&
-		   !failed;
-}
-#endif
