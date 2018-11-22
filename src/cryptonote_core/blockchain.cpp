@@ -811,7 +811,9 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
 		return (difficulty_type)480000000;
 
 	size_t block_count;
-	if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
+	if(check_hard_fork_feature(FORK_V4_DIFFICULTY))
+		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V4;
+	else if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
 		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V3;
 	else if(check_hard_fork_feature(FORK_V2_DIFFICULTY))
 		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V2;
@@ -857,7 +859,9 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
 		m_difficulties = difficulties;
 	}
 
-	if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
+	if(check_hard_fork_feature(FORK_V4_DIFFICULTY))
+		return next_difficulty_v4(timestamps, difficulties);
+	else if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
 		return next_difficulty_v3(timestamps, difficulties);
 	else if(check_hard_fork_feature(FORK_V2_DIFFICULTY))
 		return next_difficulty_v2(timestamps, difficulties, common_config::DIFFICULTY_TARGET);
@@ -954,18 +958,21 @@ bool Blockchain::switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::
 		uint64_t high_timestamp = alt_chain.back()->second.bl.timestamp;
 		crypto::hash low_block = alt_chain.front()->second.bl.prev_id;
 
-		//Make sure that the high_timestamp is really highest
-		for(const blocks_ext_by_hash::iterator &it : alt_chain)
+		if(!check_hard_fork_feature(FORK_V4_DIFFICULTY))
 		{
-			if(high_timestamp < it->second.bl.timestamp)
-				high_timestamp = it->second.bl.timestamp;
+			//Make sure that the high_timestamp is really highest
+			for(const blocks_ext_by_hash::iterator &it : alt_chain)
+			{
+				if(high_timestamp < it->second.bl.timestamp)
+					high_timestamp = it->second.bl.timestamp;
+			}
 		}
 
-		uint64_t block_ftl = check_hard_fork_feature(FORK_V3_DIFFICULTY) ? common_config::BLOCK_FUTURE_TIME_LIMIT_V3 : common_config::BLOCK_FUTURE_TIME_LIMIT_V2;
 		// This would fail later anyway
-		if(high_timestamp > get_adjusted_time() + block_ftl)
+		if(high_timestamp > get_adjusted_time() + common_config::BLOCK_FUTURE_TIME_LIMIT_V3)
 		{
-			LOG_ERROR("Attempting to move to an alternate chain, but it failed FTL check! timestamp: " << high_timestamp << " limit: " << get_adjusted_time() + block_ftl);
+			LOG_ERROR("Attempting to move to an alternate chain, but it failed FTL check! timestamp: " << high_timestamp << 
+				" limit: " << get_adjusted_time() + common_config::BLOCK_FUTURE_TIME_LIMIT_V3);
 			return false;
 		}
 
@@ -1093,7 +1100,9 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
 	std::vector<difficulty_type> cumulative_difficulties;
 
 	size_t block_count;
-	if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
+	if(check_hard_fork_feature(FORK_V4_DIFFICULTY))
+		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V4;
+	else if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
 		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V3;
 	else if(check_hard_fork_feature(FORK_V2_DIFFICULTY))
 		block_count = common_config::DIFFICULTY_BLOCKS_COUNT_V2;
@@ -1154,9 +1163,9 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
 		}
 	}
 
-	// FIXME: This will fail if fork activation heights are subject to voting
-
-	if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
+	if(check_hard_fork_feature(FORK_V4_DIFFICULTY))
+		return next_difficulty_v4(timestamps, cumulative_difficulties);
+	else if(check_hard_fork_feature(FORK_V3_DIFFICULTY))
 		return next_difficulty_v3(timestamps, cumulative_difficulties);
 	else if(check_hard_fork_feature(FORK_V2_DIFFICULTY))
 		return next_difficulty_v2(timestamps, cumulative_difficulties, common_config::DIFFICULTY_TARGET);
