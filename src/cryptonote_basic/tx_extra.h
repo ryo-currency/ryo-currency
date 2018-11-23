@@ -54,6 +54,7 @@
 #define TX_EXTRA_NONCE 0x02
 #define TX_EXTRA_MERGE_MINING_TAG 0x03
 #define TX_EXTRA_TAG_ADDITIONAL_PUBKEYS 0x04
+#define TX_EXTRA_UNIFORM_PAYMENT_ID 0x05
 #define TX_EXTRA_MYSTERIOUS_MINERGATE_TAG 0xDE
 
 #define TX_EXTRA_NONCE_PAYMENT_ID 0x00
@@ -186,6 +187,15 @@ struct tx_extra_additional_pub_keys
 	END_SERIALIZE()
 };
 
+struct tx_extra_uniform_payment_id
+{
+	crypto::uniform_payment_id pid;
+
+	BEGIN_SERIALIZE()
+	FIELD(pid)
+	END_SERIALIZE()
+};
+
 struct tx_extra_mysterious_minergate
 {
 	std::string data;
@@ -199,7 +209,8 @@ struct tx_extra_mysterious_minergate
 //   varint tag;
 //   varint size;
 //   varint data[];
-typedef boost::variant<tx_extra_padding, tx_extra_pub_key, tx_extra_nonce, tx_extra_merge_mining_tag, tx_extra_additional_pub_keys, tx_extra_mysterious_minergate> tx_extra_field;
+typedef boost::variant<tx_extra_padding, tx_extra_pub_key, tx_extra_nonce, tx_extra_merge_mining_tag, 
+	tx_extra_additional_pub_keys, tx_extra_uniform_payment_id, tx_extra_mysterious_minergate> tx_extra_field;
 }
 
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_padding, TX_EXTRA_TAG_PADDING);
@@ -207,4 +218,5 @@ VARIANT_TAG(binary_archive, cryptonote::tx_extra_pub_key, TX_EXTRA_TAG_PUBKEY);
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_nonce, TX_EXTRA_NONCE);
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_merge_mining_tag, TX_EXTRA_MERGE_MINING_TAG);
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_additional_pub_keys, TX_EXTRA_TAG_ADDITIONAL_PUBKEYS);
+VARIANT_TAG(binary_archive, cryptonote::tx_extra_uniform_payment_id, TX_EXTRA_UNIFORM_PAYMENT_ID);
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_mysterious_minergate, TX_EXTRA_MYSTERIOUS_MINERGATE_TAG);

@@ -378,7 +378,10 @@ bool parse_tx_extra(const std::vector<uint8_t> &tx_extra, std::vector<tx_extra_f
 	{
 		tx_extra_field field;
 		bool r = ::do_serialize(ar, field);
-		CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field. extra = " << string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+
+		CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field! n= " << tx_extra_fields.size() << " extra = " << 
+			string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+
 		tx_extra_fields.push_back(field);
 
 		std::ios_base::iostate state = iss.rdstate();
@@ -509,6 +512,38 @@ bool remove_field_from_tx_extra(std::vector<uint8_t> &tx_extra, const std::type_
 	tx_extra.reserve(s.size());
 	std::copy(s.begin(), s.end(), std::back_inserter(tx_extra));
 	return true;
+}
+//---------------------------------------------------------------
+bool add_payment_id_to_tx_extra(std::vector<uint8_t> &tx_extra, const tx_extra_uniform_payment_id* pid)
+{
+	size_t pos = tx_extra.size();
+	tx_extra.resize(pos + 1 + sizeof(crypto::uniform_payment_id));
+	tx_extra[pos] = TX_EXTRA_UNIFORM_PAYMENT_ID;
+
+	if(pid != nullptr)
+	{
+		if(pid->pid.zero == 0) //failsafe, don't add unencrypted data
+			return false;
+		memcpy(&tx_extra[pos+1], &pid->pid, sizeof(crypto::uniform_payment_id));
+	}
+	else
+	{
+		rand(sizeof(crypto::uniform_payment_id), &tx_extra[pos+1]);
+	}
+
+	return true;
+}
+//---------------------------------------------------------------
+bool get_payment_id_from_tx_extra(const std::vector<uint8_t> &tx_extra, tx_extra_uniform_payment_id& pid)
+{
+	std::vector<tx_extra_field> tx_extra_fields;
+	parse_tx_extra(tx_extra, tx_extra_fields);
+	return get_payment_id_from_tx_extra(tx_extra_fields, pid);
+}
+//---------------------------------------------------------------
+bool get_payment_id_from_tx_extra(const std::vector<tx_extra_field> &tx_extra_fields, tx_extra_uniform_payment_id& pid)
+{
+	return find_tx_extra_field_by_type(tx_extra_fields, pid);
 }
 //---------------------------------------------------------------
 void set_payment_id_to_tx_extra_nonce(blobdata &extra_nonce, const crypto::hash &payment_id)
