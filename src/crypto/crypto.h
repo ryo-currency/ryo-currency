@@ -55,7 +55,6 @@
 #include <type_traits>
 #include <vector>
 
-#include "common/pod-class.h"
 #include "common/util.h"
 #include "generic-ops.h"
 #include "hash.h"
@@ -68,22 +67,22 @@ namespace crypto
 {
 
 #pragma pack(push, 1)
-POD_CLASS ec_point
+struct ec_point
 {
 	char data[32];
 };
 
-POD_CLASS ec_scalar
+struct ec_scalar
 {
 	char data[32];
 };
 
-POD_CLASS public_key : ec_point
+struct public_key : ec_point
 {
 	friend class crypto_ops;
 };
 
-POD_CLASS scalar_16
+struct scalar_16
 {
 	uint8_t data[16];
 };
@@ -91,39 +90,46 @@ POD_CLASS scalar_16
 using secret_key_16 = tools::scrubbed<scalar_16>;
 using secret_key = tools::scrubbed<ec_scalar>;
 
-POD_CLASS public_keyV
+struct public_keyV
 {
 	std::vector<public_key> keys;
 	int rows;
 };
 
-POD_CLASS secret_keyV
+struct secret_keyV
 {
 	std::vector<secret_key> keys;
 	int rows;
 };
 
-POD_CLASS public_keyM
+struct public_keyM
 {
 	int cols;
 	int rows;
 	std::vector<secret_keyV> column_vectors;
 };
 
-POD_CLASS key_derivation : ec_point
+struct key_derivation : ec_point
 {
 	friend class crypto_ops;
 };
 
-POD_CLASS key_image : ec_point
+struct key_image : ec_point
 {
 	friend class crypto_ops;
 };
 
-POD_CLASS signature
+struct signature
 {
 	ec_scalar c, r;
 	friend class crypto_ops;
+};
+
+// New payment id system
+struct uniform_payment_id
+{
+	uint64_t zero = (-1); // Zero field needs to equal zero for the structure to be valid
+	hash payment_id = null_hash;
 };
 #pragma pack(pop)
 
@@ -132,7 +138,7 @@ void hash_to_scalar(const void *data, size_t length, ec_scalar &res);
 static_assert(sizeof(ec_point) == 32 && sizeof(ec_scalar) == 32 &&
 				  sizeof(public_key) == 32 && sizeof(secret_key) == 32 &&
 				  sizeof(key_derivation) == 32 && sizeof(key_image) == 32 &&
-				  sizeof(signature) == 64,
+				  sizeof(signature) == 64 && sizeof(uniform_payment_id) == 40,
 			  "Invalid structure size");
 
 static constexpr uint32_t KEY_VARIANT_KURZ = 0;
@@ -182,6 +188,22 @@ class crypto_ops
 	friend bool check_ring_signature(const hash &, const key_image &,
 									 const public_key *const *, std::size_t, const signature *);
 };
+
+inline uniform_payment_id make_paymenet_id(const hash& long_id)
+{
+	uniform_payment_id id;
+	id.zero = 0;
+	id.payment_id = long_id;
+	return id;
+}
+
+inline uniform_payment_id make_paymenet_id(const hash8& short_id)
+{
+	uniform_payment_id id;
+	id.zero = 0;
+	memcpy(&id.payment_id.data, &short_id.data, sizeof(hash8));
+	return id;
+}
 
 /* Generate N random bytes
    */

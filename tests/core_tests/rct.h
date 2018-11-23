@@ -326,21 +326,3 @@ struct get_test_options<gen_rct_tx_rct_add_vout> : public get_test_options<gen_r
 {
 };
 
-// extra
-struct gen_rct_tx_pre_rct_altered_extra : public gen_rct_tx_validation_base
-{
-	bool generate(std::vector<test_event_entry> &events) const;
-};
-template <>
-struct get_test_options<gen_rct_tx_pre_rct_altered_extra> : public get_test_options<gen_rct_tx_validation_base>
-{
-};
-
-struct gen_rct_tx_rct_altered_extra : public gen_rct_tx_validation_base
-{
-	bool generate(std::vector<test_event_entry> &events) const;
-};
-template <>
-struct get_test_options<gen_rct_tx_rct_altered_extra> : public get_test_options<gen_rct_tx_validation_base>
-{
-};

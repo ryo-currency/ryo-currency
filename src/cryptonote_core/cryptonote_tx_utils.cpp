@@ -180,19 +180,13 @@ crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination
 	return addr.m_view_public_key;
 }
 //---------------------------------------------------------------
-bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, std::vector<uint8_t> extra, transaction &tx, uint64_t unlock_time, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, bool rct, bool bulletproof, rct::multisig_out *msout, bool shuffle_outs)
+bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout, bool use_uniform_pids)
 {
 	hw::device &hwdev = sender_account_keys.get_device();
 
 	if(sources.empty())
 	{
 		LOG_ERROR("Empty sources");
-		return false;
-	}
-
-	if(!rct)
-	{
-		LOG_ERROR("Non-rct txes are not supported");
 		return false;
 	}
 
@@ -213,51 +207,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	}
 
 	tx.unlock_time = unlock_time;
-
-	tx.extra = extra;
 	crypto::public_key txkey_pub;
-
-	// if we have a stealth payment id, find it and encrypt it with the tx key now
-	std::vector<tx_extra_field> tx_extra_fields;
-	if(parse_tx_extra(tx.extra, tx_extra_fields))
-	{
-		tx_extra_nonce extra_nonce;
-		if(find_tx_extra_field_by_type(tx_extra_fields, extra_nonce))
-		{
-			crypto::hash8 payment_id = null_hash8;
-			if(get_encrypted_payment_id_from_tx_extra_nonce(extra_nonce.nonce, payment_id))
-			{
-				LOG_PRINT_L2("Encrypting payment id " << payment_id);
-				crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
-				if(view_key_pub == null_pkey)
-				{
-					LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
-					return false;
-				}
-
-				if(!hwdev.encrypt_payment_id(payment_id, view_key_pub, tx_key))
-				{
-					LOG_ERROR("Failed to encrypt payment id");
-					return false;
-				}
-
-				std::string extra_nonce;
-				set_encrypted_payment_id_to_tx_extra_nonce(extra_nonce, payment_id);
-				remove_field_from_tx_extra(tx.extra, typeid(tx_extra_nonce));
-				if(!add_extra_nonce_to_tx_extra(tx.extra, extra_nonce))
-				{
-					LOG_ERROR("Failed to add encrypted payment id to tx extra");
-					return false;
-				}
-				LOG_PRINT_L1("Encrypted payment ID: " << payment_id);
-			}
-		}
-	}
-	else
-	{
-		LOG_ERROR("Failed to parse tx extra");
-		return false;
-	}
 
 	struct input_generation_context_data
 	{
@@ -313,11 +263,6 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		tx.vin.push_back(input_to_key);
 	}
 
-	if(shuffle_outs)
-	{
-		std::shuffle(destinations.begin(), destinations.end(), std::default_random_engine(crypto::rand<unsigned int>()));
-	}
-
 	// sort ins by their key image
 	std::vector<size_t> ins_order(sources.size());
 	for(size_t n = 0; n < sources.size(); ++n)
@@ -348,7 +293,6 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	{
 		txkey_pub = rct::rct2pk(hwdev.scalarmultBase(rct::sk2rct(tx_key)));
 	}
-	remove_field_from_tx_extra(tx.extra, typeid(tx_extra_pub_key));
 	add_tx_pub_key_to_extra(tx, txkey_pub);
 
 	std::vector<crypto::public_key> additional_tx_public_keys;
@@ -419,8 +363,6 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	}
 	CHECK_AND_ASSERT_MES(additional_tx_public_keys.size() == additional_tx_keys.size(), false, "Internal error creating additional public keys");
 
-	remove_field_from_tx_extra(tx.extra, typeid(tx_extra_additional_pub_keys));
-
 	LOG_PRINT_L2("tx pubkey: " << txkey_pub);
 	if(need_additional_txkeys)
 	{
@@ -428,6 +370,83 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		for(size_t i = 0; i < additional_tx_public_keys.size(); ++i)
 			LOG_PRINT_L2(additional_tx_public_keys[i]);
 		add_additional_tx_pub_keys_to_extra(tx.extra, additional_tx_public_keys);
+	}
+
+	if(use_uniform_pids)
+	{
+		//Add payment id after pubkeys
+		if(payment_id != nullptr)
+		{
+			if(payment_id->zero != 0)
+			{
+				LOG_ERROR("Internal error. Invalid payment id.");
+				return false;
+			}
+
+			LOG_PRINT_L2("Encrypting payment id " << payment_id->payment_id);
+
+			crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
+			if(view_key_pub == null_pkey)
+			{
+				LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
+				return false;
+			}
+
+			tx_extra_uniform_payment_id pid;
+			pid.pid = *payment_id;
+
+			if(!hwdev.encrypt_payment_id(pid.pid, view_key_pub, tx_key))
+			{
+				LOG_ERROR("Failed to encrypt payment id");
+				return false;
+			}
+
+			if(!add_payment_id_to_tx_extra(tx.extra, &pid))
+			{
+				LOG_ERROR("Failed to add encrypted payment id to tx extra");
+				return false;
+			}
+
+			LOG_PRINT_L1("Encrypted payment ID: " << pid.pid.payment_id);
+		}
+		else
+		{
+			add_payment_id_to_tx_extra(tx.extra, nullptr);
+		}
+	}
+	else if(payment_id != nullptr)
+	{
+		blobdata extra_nonce;
+		const uint64_t* split_id = reinterpret_cast<const uint64_t*>(&payment_id->payment_id);
+		if(split_id[1] == 0 && split_id[2] ==  0 && split_id[3] == 0)
+		{
+			crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
+			if(view_key_pub == null_pkey)
+			{
+				LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
+				return false;
+			}
+
+			crypto::hash8 legacy_enc_pid;
+			memcpy(&legacy_enc_pid, &payment_id->payment_id, sizeof(crypto::hash8));
+			if(!hwdev.encrypt_payment_id(legacy_enc_pid, view_key_pub, tx_key))
+			{
+				LOG_ERROR("Failed to encrypt payment id");
+				return false;
+			}
+
+			set_encrypted_payment_id_to_tx_extra_nonce(extra_nonce, legacy_enc_pid);
+		}
+		else
+		{
+			set_payment_id_to_tx_extra_nonce(extra_nonce, payment_id->payment_id);
+		}
+
+		if(!add_extra_nonce_to_tx_extra(tx.extra, extra_nonce))
+		{
+			LOG_ERROR("Failed to add extra_nonce");
+			return false;
+		}
 	}
 
 	//check money
@@ -561,10 +580,12 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	return true;
 }
 //---------------------------------------------------------------
-bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, std::vector<uint8_t> extra, transaction &tx, uint64_t unlock_time, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys, bool rct, bool bulletproof, rct::multisig_out *msout)
+bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout, bool use_uniform_pids)
 {
 	hw::device &hwdev = sender_account_keys.get_device();
 	hwdev.open_tx(tx_key);
+
+	std::shuffle(destinations.begin(), destinations.end(), std::default_random_engine(crypto::rand<unsigned int>()));
 
 	// figure out if we need to make additional tx pubkeys
 	size_t num_stdaddresses = 0;
@@ -579,19 +600,21 @@ bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const 
 			additional_tx_keys.push_back(keypair::generate(sender_account_keys.get_device()).sec);
 	}
 
-	bool r = construct_tx_with_tx_key(sender_account_keys, subaddresses, sources, destinations, change_addr, extra, tx, unlock_time, tx_key, additional_tx_keys, rct, bulletproof, msout);
+	bool r = construct_tx_with_tx_key(sender_account_keys, subaddresses, sources, destinations, change_addr, 
+		payment_id, tx, unlock_time, tx_key, additional_tx_keys, bulletproof, msout, use_uniform_pids);
+
 	hwdev.close_tx();
 	return r;
 }
 //---------------------------------------------------------------
-bool construct_tx(const account_keys &sender_account_keys, std::vector<tx_source_entry> &sources, const std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, std::vector<uint8_t> extra, transaction &tx, uint64_t unlock_time)
+bool construct_tx(const account_keys &sender_account_keys, std::vector<tx_source_entry> &sources, const std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time)
 {
 	std::unordered_map<crypto::public_key, cryptonote::subaddress_index> subaddresses;
 	subaddresses[sender_account_keys.m_account_address.m_spend_public_key] = {0, 0};
 	crypto::secret_key tx_key;
 	std::vector<crypto::secret_key> additional_tx_keys;
 	std::vector<tx_destination_entry> destinations_copy = destinations;
-	return construct_tx_and_get_tx_key(sender_account_keys, subaddresses, sources, destinations_copy, change_addr, extra, tx, unlock_time, tx_key, additional_tx_keys, false, false, NULL);
+	return construct_tx_and_get_tx_key(sender_account_keys, subaddresses, sources, destinations_copy, change_addr, payment_id, tx, unlock_time, tx_key, additional_tx_keys, false, NULL);
 }
 //---------------------------------------------------------------
 bool generate_genesis_block(block &bl, std::string const &genesis_tx, uint32_t nonce)
