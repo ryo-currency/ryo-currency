@@ -104,10 +104,6 @@ typedef cryptonote::simple_wallet sw;
 
 #define EXTENDED_LOGS_FILE "wallet_details.log"
 
-#define DEFAULT_MIX DEFAULT_MIXIN
-
-#define MIN_RING_SIZE 12 // Used to inform user about min ring size -- does not track actual protocol
-
 #define OUTPUT_EXPORT_FILE_MAGIC_LEGACY "Sumokoin output export\002"
 #define OUTPUT_EXPORT_FILE_MAGIC "Ryo output export\003"
 
@@ -750,15 +746,17 @@ bool simple_wallet::print_fee_info(const std::vector<std::string> &args /* = std
 		return true;
 	}
 
+	using namespace cryptonote;
 	constexpr uint64_t typical_size_kb = 15;
 	message_writer() << (boost::format(tr("Current fee is %s %s per kB and %s %s per ring member.")) % 
-		print_money(cryptonote::common_config::FEE_PER_KB) % cryptonote::get_unit(cryptonote::get_default_decimal_point()) %
-		print_money(cryptonote::common_config::FEE_PER_RING_MEMBER) % cryptonote::get_unit(cryptonote::get_default_decimal_point()));
+		print_money(common_config::FEE_PER_KB) % get_unit(get_default_decimal_point()) %
+		print_money(common_config::FEE_PER_RING_MEMBER) % get_unit(get_default_decimal_point()));
 
 	std::vector<uint64_t> fees;
 	for(uint32_t priority = 1; priority <= 4; ++priority)
 	{
-		constexpr uint64_t base_fee = (cryptonote::common_config::FEE_PER_KB * typical_size_kb + cryptonote::common_config::FEE_PER_RING_MEMBER * DEFAULT_MIXIN);
+		size_t min_mixin = m_wallet->use_fork_rules(FORK_RINGSIZE_INC) ? common_config::MIN_MIXIN_V2 : common_config::MIN_MIXIN_V1;
+		uint64_t base_fee = (common_config::FEE_PER_KB * typical_size_kb + common_config::FEE_PER_RING_MEMBER * min_mixin);
 		uint64_t mult = m_wallet->get_fee_multiplier(priority);
 		fees.push_back(base_fee * mult);
 	}
@@ -1661,21 +1659,22 @@ bool simple_wallet::set_default_ring_size(const std::vector<std::string> &args /
 		fail_msg_writer() << tr("wallet is watch-only and cannot transfer");
 		return true;
 	}
+
 	try
 	{
 		if(strchr(args[1].c_str(), '-'))
 		{
-			fail_msg_writer() << tr("ring size must be an integer >= ") << MIN_RING_SIZE;
+			fail_msg_writer() << tr("ring size must be an integer >= ") << get_min_ring_size();
 			return true;
 		}
 		uint32_t ring_size = boost::lexical_cast<uint32_t>(args[1]);
-		if(ring_size < MIN_RING_SIZE && ring_size != 0)
+		if(ring_size < get_min_ring_size() && ring_size != 0)
 		{
-			fail_msg_writer() << tr("ring size must be an integer >= ") << MIN_RING_SIZE;
+			fail_msg_writer() << tr("ring size must be an integer >= ") << get_min_ring_size();
 			return true;
 		}
 
-		if(ring_size != 0 && ring_size != DEFAULT_MIX + 1)
+		if(ring_size != 0 && ring_size != get_min_ring_size())
 			message_writer() << tr("WARNING: this is a non default ring size, which may harm your privacy. Default is recommended.");
 
 		const auto pwd_container = get_and_verify_password();
@@ -1688,7 +1687,7 @@ bool simple_wallet::set_default_ring_size(const std::vector<std::string> &args /
 	}
 	catch(const boost::bad_lexical_cast &)
 	{
-		fail_msg_writer() << tr("ring size must be an integer >= ") << MIN_RING_SIZE;
+		fail_msg_writer() << tr("ring size must be an integer >= ") << get_min_ring_size();
 		return true;
 	}
 	catch(...)
@@ -2423,7 +2422,7 @@ bool simple_wallet::set_variable(const std::vector<std::string> &args)
 		CHECK_SIMPLE_VARIABLE("always-confirm-transfers", set_always_confirm_transfers, tr("0 or 1"));
 		CHECK_SIMPLE_VARIABLE("print-ring-members", set_print_ring_members, tr("0 or 1"));
 		CHECK_SIMPLE_VARIABLE("store-tx-info", set_store_tx_info, tr("0 or 1"));
-		CHECK_SIMPLE_VARIABLE("default-ring-size", set_default_ring_size, tr("integer >= ") << MIN_RING_SIZE);
+		CHECK_SIMPLE_VARIABLE("default-ring-size", set_default_ring_size, tr("integer >= ") << get_min_ring_size());
 		CHECK_SIMPLE_VARIABLE("auto-refresh", set_auto_refresh, tr("0 or 1"));
 		CHECK_SIMPLE_VARIABLE("refresh-type", set_refresh_type, tr("full (slowest, no assumptions); optimize-coinbase (fast, assumes the whole coinbase is paid to a single address); no-coinbase (fastest, assumes we receive no coinbase transaction), default (same as optimize-coinbase)"));
 		CHECK_SIMPLE_VARIABLE("priority", set_default_priority, tr("0, 1, 2, 3, or 4"));
@@ -4432,7 +4431,7 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 		{
 			fake_outs_count = m_wallet->default_mixin();
 			if(fake_outs_count == 0)
-				fake_outs_count = DEFAULT_MIX;
+				fake_outs_count = get_min_ring_size() - 1;
 		}
 		else if(ring_size == 0)
 		{
@@ -4687,7 +4686,7 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 					if(vin.type() == typeid(txin_to_key))
 					{
 						const txin_to_key &in_to_key = boost::get<txin_to_key>(vin);
-						if(in_to_key.key_offsets.size() != DEFAULT_MIX + 1)
+						if(in_to_key.key_offsets.size() != get_min_ring_size())
 							default_ring_size = false;
 					}
 				}
@@ -4802,7 +4801,7 @@ bool simple_wallet::sweep_main(uint64_t below, const std::vector<std::string> &a
 		{
 			fake_outs_count = m_wallet->default_mixin();
 			if(fake_outs_count == 0)
-				fake_outs_count = DEFAULT_MIX;
+				fake_outs_count = get_min_ring_size() - 1;
 		}
 		else if(ring_size == 0)
 		{
@@ -4995,7 +4994,7 @@ bool simple_wallet::sweep_single(const std::vector<std::string> &args_)
 		{
 			fake_outs_count = m_wallet->default_mixin();
 			if(fake_outs_count == 0)
-				fake_outs_count = DEFAULT_MIX;
+				fake_outs_count = get_min_ring_size() - 1;
 		}
 		else
 		{
