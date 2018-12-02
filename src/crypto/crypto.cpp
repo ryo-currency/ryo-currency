@@ -108,13 +108,55 @@ static inline const unsigned char *operator&(const ec_scalar &scalar)
 	return &reinterpret_cast<const unsigned char &>(scalar);
 }
 
+static inline bool scalar_ok(const unsigned char *k)
+{
+	// l = 2^252 + 27742317777372353535851937790883648493
+	// l15 = 15*l
+	//unsigned char l15[32] = { 
+	//	0xe3, 0x6a, 0x67, 0x72, 0x8b, 0xce, 0x13, 0x29, 0x8f, 0x30, 0x82, 0x8c, 0x0b, 0xa4, 0x10, 0x39, 
+	//	0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0 
+	//};
+	// Scalar above in little-endian words
+	constexpr uint64_t lw3 = 0xf000000000000000ull;
+	constexpr uint64_t lw2 = 0x0000000000000001ull;
+	constexpr uint64_t lw1 = 0x3910a40b8c82308full;
+	constexpr uint64_t lw0 = 0x2913ce8b72676ae3ull;
+
+	const uint64_t* k64 = reinterpret_cast<const uint64_t*>(k);
+	if(k64[0] == 0 && k64[1] == 0 && k64[2] == 0 && k64[3] == 0)
+		return false;
+
+	if(k64[3] < lw3)
+		return true;
+	if(k64[3] > lw3)
+		return false;
+	if(k64[2] < lw2)
+		return true;
+	if(k64[2] > lw2)
+		return false;
+	if(k64[1] < lw1)
+		return true;
+	if(k64[1] > lw1)
+		return false;
+	if(k64[0] < lw0)
+		return true;
+	return false;
+}
+
+void random_scalar(unsigned char* v32)
+{
+	do
+	{
+		prng::inst().generate_random(v32, 32);
+	}
+	while(!scalar_ok(v32));
+	sc_reduce32(v32);
+}
+
 /* generate a random 32-byte (256-bit) integer and copy it to res */
 static inline void random_scalar(ec_scalar &res)
 {
-	unsigned char tmp[64];
-	prng::inst().generate_random(tmp, 64);
-	sc_reduce(tmp);
-	memcpy(&res, tmp, 32);
+	random_scalar(reinterpret_cast<unsigned char*>(res.data));
 }
 
 static inline void random_scalar(scalar_16 &res)
