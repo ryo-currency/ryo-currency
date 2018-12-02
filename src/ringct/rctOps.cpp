@@ -85,15 +85,14 @@ keyM keyMInit(size_t rows, size_t cols)
 //generates a random scalar which can be used as a secret key or mask
 void skGen(key &sk)
 {
-	sk = crypto::rand<key>();
-	sc_reduce32(sk.bytes);
+	random_scalar(sk.bytes);
 }
 
 //generates a random scalar which can be used as a secret key or mask
 key skGen()
 {
-	key sk = crypto::rand<key>();
-	sc_reduce32(sk.bytes);
+	key sk;
+	skGen(sk);
 	return sk;
 }
 
@@ -103,12 +102,8 @@ keyV skvGen(size_t rows)
 {
 	CHECK_AND_ASSERT_THROW_MES(rows > 0, "0 keys requested");
 	keyV rv(rows);
-	size_t i = 0;
-	crypto::rand(rows * sizeof(key), (uint8_t *)&rv[0]);
-	for(i = 0; i < rows; i++)
-	{
-		sc_reduce32(rv[i].bytes);
-	}
+	for(size_t i = 0; i < rows; i++)
+		skGen(rv[i]);
 	return rv;
 }
 
@@ -166,12 +161,9 @@ tuple<ctkey, ctkey> ctskpkGen(const key &bH)
 
 key zeroCommit(xmr_amount amount)
 {
-	key mask = identity();
-	mask = scalarmultBase(mask);
 	key am = d2h(amount);
 	key bH = scalarmultH(am);
-	addKeys(mask, mask, bH);
-	return mask;
+	return addKeys(G, bH);
 }
 
 key commit(xmr_amount amount, const key &mask)
