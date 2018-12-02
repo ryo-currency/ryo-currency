@@ -155,9 +155,9 @@ if(ARCH_ID STREQUAL "ppc64le")
 endif()
 
 if(WIN32 OR ARM)
-  set(OPT_FLAGS_RELEASE "-O2")
+  add_compile_options("$<$<CONFIG:RELEASE>:-O2>")
 else()
-  set(OPT_FLAGS_RELEASE "-Ofast")
+  add_compile_options("$<$<CONFIG:RELEASE>:-O3>")
 endif()
 
 # BUILD_TAG is used to select the build type to check for a new version
@@ -167,9 +167,6 @@ if(BUILD_TAG)
 else()
   message(STATUS "Building without build tag")
 endif()
-
-set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 
 # set this to 0 if per-block checkpoint needs to be disabled
 set(PER_BLOCK_CHECKPOINT 0)
