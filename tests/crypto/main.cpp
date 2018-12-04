@@ -1,20 +1,35 @@
-// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, Ryo Currency Project
 //
+// Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
 //
-// Redistribution and use in source and binary forms, with or without modification, are
-// permitted provided that the following conditions are met:
+// Authors and copyright holders give permission for following:
 //
-// 1. Redistributions of source code must retain the above copyright notice, this list of
-//    conditions and the following disclaimer.
+// 1. Redistribution and use in source and binary forms WITHOUT modification.
 //
-// 2. Redistributions in binary form must reproduce the above copyright notice, this list
-//    of conditions and the following disclaimer in the documentation and/or other
-//    materials provided with the distribution.
+// 2. Modification of the source form for your own personal use.
 //
-// 3. Neither the name of the copyright holder nor the names of its contributors may be
+// As long as the following conditions are met:
+//
+// 3. You must not distribute modified copies of the work to third parties. This includes
+//    posting the work online, or hosting copies of the modified work for download.
+//
+// 4. Any derivative version of this work is also covered by this license, including point 8.
+//
+// 5. Neither the name of the copyright holders nor the names of the authors may be
 //    used to endorse or promote products derived from this software without specific
 //    prior written permission.
+//
+// 6. You agree that this licence is governed by and shall be construed in accordance
+//    with the laws of England and Wales.
+//
+// 7. You agree to submit all disputes arising out of or in connection with this licence
+//    to the exclusive jurisdiction of the Courts of England and Wales.
+//
+// Authors and copyright holders agree that:
+//
+// 8. This licence expires and the work covered by it is released into the
+//    public domain on 1st of February 2019
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -25,7 +40,8 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
+
+// Parts of this file are originally copyright (c) 2014-2018, The Monero Project
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
 #include <cstddef>
@@ -34,6 +50,7 @@
 #include <string>
 #include <vector>
 
+#include "string_tools.h"
 #include "../io.h"
 #include "crypto-tests.h"
 #include "crypto/crypto.h"
@@ -59,6 +76,119 @@ bool operator!=(const key_derivation &a, const key_derivation &b)
 	return 0 != memcmp(&a, &b, sizeof(key_derivation));
 }
 
+template<typename T>
+inline std::string get_strval(const T& val)
+{
+	return epee::string_tools::pod_to_hex(val);
+}
+
+template<>
+inline std::string get_strval<long unsigned int>(const long unsigned int& val)
+{
+	return std::to_string(val);
+}
+
+template<>
+inline std::string get_strval<bool>(const bool& val)
+{
+	return val ? "true" : "false";
+}
+
+template<>
+inline std::string get_strval<string>(const string& val)
+{
+	return val;
+}
+
+template<>
+inline std::string get_strval<secret_key>(const secret_key& val)
+{
+	return epee::string_tools::pod_to_hex(val.data);
+}
+
+template<>
+inline std::string get_strval<public_key>(const public_key& val)
+{
+	return epee::string_tools::pod_to_hex(val.data);
+}
+
+template<>
+inline std::string get_strval<vector<char>>(const vector<char>& val)
+{
+	return epee::to_hex::string(epee::to_byte_span(epee::to_span(val)));
+}
+
+template<>
+inline std::string get_strval<vector<public_key>>(const vector<public_key>& val)
+{
+	std::string ret;
+	ret.reserve(val.size()*33);
+
+	for(const public_key& s : val)
+	{
+		ret += epee::string_tools::pod_to_hex(s.data);
+		ret += " ";
+	}
+	ret.pop_back();
+
+	return ret;
+}
+
+template<>
+inline std::string get_strval<vector<signature>>(const vector<signature>& val)
+{
+	std::string ret;
+	ret.reserve(val.size()*64);
+
+	for(const signature& s : val)
+		ret += epee::string_tools::pod_to_hex(s);
+
+	return ret;
+}
+
+bool error = false;
+template<typename T>
+inline bool report_result(const std::string& cmd, size_t test_id, const T& actual, const T& expected, size_t sub_test = 0)
+{
+	if(actual != expected)
+	{
+		if(sub_test == 0)
+			cerr << "Wrong result for test " << cmd << " : " << test_id << endl;
+		else
+			cerr << "Wrong result for test " << cmd << " : " << test_id << " (" << sub_test << ")" << endl;
+
+		cerr << "Expected " << get_strval(expected) << " got " << get_strval(actual);
+		error = true;
+		return false;
+	}
+	return true;
+}
+
+template <typename T>
+struct has_iterator
+{
+    template <typename U>
+    static char test(typename U::iterator* x);
+ 
+    template <typename U>
+    static long test(U* x);
+ 
+    static const bool value = sizeof(test<T>(0)) == 1;
+};
+
+inline void print_result() {}
+
+template <typename T, typename... TT> 
+inline void print_result(T &res, TT &... resres)
+{
+	cout << get_strval(res);
+	if(sizeof...(TT) > 0)
+		cout << " ";
+	else
+		cout << endl;
+	print_result(resres...);
+}
+
 DISABLE_GCC_WARNING(maybe-uninitialized)
 
 int main(int argc, char *argv[])
@@ -66,13 +196,16 @@ int main(int argc, char *argv[])
 	fstream input;
 	string cmd;
 	size_t test = 0;
-	bool error = false;
-	setup_random();
-	if(argc != 2)
+	if(argc < 2 || argc > 3)
 	{
 		cerr << "invalid arguments" << endl;
 		return 1;
 	}
+
+	bool regerate = false;
+	if(argc == 3 && strcmp(argv[2], "regen") == 0)
+		regerate = true;
+
 	input.open(argv[1], ios_base::in);
 	for(;;)
 	{
@@ -86,13 +219,13 @@ int main(int argc, char *argv[])
 		if(cmd == "check_scalar")
 		{
 			ec_scalar scalar;
-			bool expected, actual;
+			bool expected = false, actual;
 			get(input, scalar, expected);
 			actual = check_scalar(scalar);
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, scalar, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "hash_to_scalar")
 		{
@@ -100,10 +233,10 @@ int main(int argc, char *argv[])
 			ec_scalar expected, actual;
 			get(input, data, expected);
 			crypto::hash_to_scalar(data.data(), data.size(), actual);
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, data, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "generate_keys")
 		{
@@ -112,9 +245,14 @@ int main(int argc, char *argv[])
 			secret_key expected2, actual2;
 			get(input, expected1, expected2);
 			generate_legacy_keys(actual1, actual2);
-			if(expected1 != actual1 || expected2 != actual2)
+			if(regerate)
 			{
-				goto error;
+				print_result(cmd, actual1, actual2);
+			}
+			else
+			{
+				report_result(cmd, test, actual1, expected1, 1);
+				report_result(cmd, test, actual2, expected2, 2);
 			}
 		}
 		else if(cmd == "check_key")
@@ -123,10 +261,10 @@ int main(int argc, char *argv[])
 			bool expected, actual;
 			get(input, key, expected);
 			actual = check_key(key);
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, key, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "secret_key_to_public_key")
 		{
@@ -139,9 +277,18 @@ int main(int argc, char *argv[])
 				get(input, expected2);
 			}
 			actual1 = secret_key_to_public_key(sec, actual2);
-			if(expected1 != actual1 || (expected1 && expected2 != actual2))
+			if(regerate)
 			{
-				goto error;
+				if(actual1)
+					print_result(cmd, sec, actual1, actual2);
+				else
+					print_result(cmd, sec, actual1);
+			}
+			else
+			{
+				report_result(cmd, test, actual1, expected1, 1);
+				if(expected1)
+					report_result(cmd, test, actual2, expected2, 2);
 			}
 		}
 		else if(cmd == "generate_key_derivation")
@@ -156,9 +303,18 @@ int main(int argc, char *argv[])
 				get(input, expected2);
 			}
 			actual1 = generate_key_derivation(key1, key2, actual2);
-			if(expected1 != actual1 || (expected1 && expected2 != actual2))
+			if(regerate)
 			{
-				goto error;
+				if(actual1)
+					print_result(cmd, key1, key2, actual1, actual2);
+				else
+					print_result(cmd, key1, key2, actual1);
+			}
+			else
+			{
+				report_result(cmd, test, actual1, expected1, 1);
+				if(expected1)
+					report_result(cmd, test, actual2, expected2, 2);
 			}
 		}
 		else if(cmd == "derive_public_key")
@@ -174,9 +330,18 @@ int main(int argc, char *argv[])
 				get(input, expected2);
 			}
 			actual1 = derive_public_key(derivation, output_index, base, actual2);
-			if(expected1 != actual1 || (expected1 && expected2 != actual2))
+			if(regerate)
 			{
-				goto error;
+				if(actual1)
+					print_result(cmd, derivation, output_index, base, actual1, actual2);
+				else
+					print_result(cmd, derivation, output_index, base, actual1);
+			}
+			else
+			{
+				report_result(cmd, test, actual1, expected1, 1);
+				if(expected1)
+					report_result(cmd, test, actual2, expected2, 2);
 			}
 		}
 		else if(cmd == "derive_secret_key")
@@ -187,10 +352,10 @@ int main(int argc, char *argv[])
 			secret_key expected, actual;
 			get(input, derivation, output_index, base, expected);
 			derive_secret_key(derivation, output_index, base, actual);
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, derivation, output_index, base, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "generate_signature")
 		{
@@ -201,10 +366,10 @@ int main(int argc, char *argv[])
 			signature expected, actual;
 			get(input, prefix_hash, pub, sec, expected);
 			generate_signature(prefix_hash, pub, sec, actual);
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, prefix_hash, pub, sec, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "check_signature")
 		{
@@ -214,10 +379,10 @@ int main(int argc, char *argv[])
 			bool expected, actual;
 			get(input, prefix_hash, pub, sig, expected);
 			actual = check_signature(prefix_hash, pub, sig);
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, prefix_hash, pub, sig, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "hash_to_point")
 		{
@@ -225,10 +390,10 @@ int main(int argc, char *argv[])
 			ec_point expected, actual;
 			get(input, h, expected);
 			hash_to_point(h, actual);
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, h, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "hash_to_ec")
 		{
@@ -236,10 +401,10 @@ int main(int argc, char *argv[])
 			ec_point expected, actual;
 			get(input, key, expected);
 			hash_to_ec(key, actual);
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, key, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "generate_key_image")
 		{
@@ -248,10 +413,10 @@ int main(int argc, char *argv[])
 			key_image expected, actual;
 			get(input, pub, sec, expected);
 			generate_key_image(pub, sec, actual);
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, pub, sec, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "generate_ring_signature")
 		{
@@ -278,10 +443,10 @@ int main(int argc, char *argv[])
 			getvar(input, pubs_count * sizeof(signature), expected.data());
 			actual.resize(pubs_count);
 			generate_ring_signature(prefix_hash, image, pubs.data(), pubs_count, sec, sec_index, actual.data());
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, prefix_hash, image, pubs_count, vpubs, sec, sec_index, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else if(cmd == "check_ring_signature")
 		{
@@ -305,19 +470,16 @@ int main(int argc, char *argv[])
 			getvar(input, pubs_count * sizeof(signature), sigs.data());
 			get(input, expected);
 			actual = check_ring_signature(prefix_hash, image, pubs.data(), pubs_count, sigs.data());
-			if(expected != actual)
-			{
-				goto error;
-			}
+			if(regerate)
+				print_result(cmd, prefix_hash, image, pubs_count, vpubs, sigs, actual);
+			else
+				report_result(cmd, test, actual, expected);
 		}
 		else
 		{
 			throw ios_base::failure("Unknown function: " + cmd);
 		}
 		continue;
-	error:
-		cerr << "Wrong result on test " << test << endl;
-		error = true;
 	}
 	return error ? 1 : 0;
 }
