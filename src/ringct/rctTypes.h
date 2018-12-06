@@ -535,16 +535,16 @@ void b2h(key &amountdh, bits amountb2);
 //int[64] to uint long long
 xmr_amount b2d(bits amountb);
 
-static inline const rct::key pk2rct(const crypto::public_key &pk) { return (const rct::key &)pk; }
-static inline const rct::key sk2rct(const crypto::secret_key &sk) { return (const rct::key &)sk; }
-static inline const rct::key ki2rct(const crypto::key_image &ki) { return (const rct::key &)ki; }
-static inline const rct::key hash2rct(const crypto::hash &h) { return (const rct::key &)h; }
-static inline const crypto::public_key rct2pk(const rct::key &k) { return (const crypto::public_key &)k; }
-static inline const crypto::secret_key rct2sk(const rct::key &k) { return (const crypto::secret_key &)k; }
-static inline const crypto::key_image rct2ki(const rct::key &k) { return (const crypto::key_image &)k; }
-static inline const crypto::hash rct2hash(const rct::key &k) { return (const crypto::hash &)k; }
-static inline bool operator==(const rct::key &k0, const crypto::public_key &k1) { return !memcmp(&k0, &k1, 32); }
-static inline bool operator!=(const rct::key &k0, const crypto::public_key &k1) { return memcmp(&k0, &k1, 32); }
+static inline const rct::key pk2rct(const crypto::public_key& pk) { return (const rct::key&)pk; }
+static inline const rct::key sk2rct(const crypto::secret_key& sk) { return (const rct::key&)sk; }
+static inline const rct::key ki2rct(const crypto::key_image& ki) { return (const rct::key&)ki; }
+static inline const rct::key hash2rct(const crypto::hash& h) { return (const rct::key&)h; }
+static inline const crypto::public_key rct2pk(const rct::key& k) { return (const crypto::public_key&)k; }
+static inline const crypto::secret_key rct2sk(const rct::key& k) { return (const crypto::secret_key&)k; }
+static inline const crypto::key_image rct2ki(const rct::key& k) { return (const crypto::key_image&)k; }
+static inline const crypto::hash rct2hash(const rct::key& k) { return (const crypto::hash&)k; }
+static inline bool operator==(const rct::key& k0, const crypto::public_key& k1) { return !memcmp(&k0, &k1, 32); }
+static inline bool operator!=(const rct::key& k0, const crypto::public_key& k1) { return memcmp(&k0, &k1, 32); }
 }
 
 namespace cryptonote

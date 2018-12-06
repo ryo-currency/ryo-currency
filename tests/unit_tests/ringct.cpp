@@ -1078,3 +1078,13 @@ TEST(ringct, key_ostream)
 		std::string{"BEGIN<8b655970153799af2aeadc9ff1add0ea6c7251d54154cfa92c173a0dd39c1f94>END"},
 		out.str());
 }
+
+TEST(ringct, zeroCommmit)
+{
+	static const uint64_t amount = crypto::rand<uint64_t>();
+	const rct::key z = rct::zeroCommit(amount);
+	const rct::key a = rct::scalarmultBase(rct::identity());
+	const rct::key b = rct::scalarmultH(rct::d2h(amount));
+	const rct::key manual = rct::addKeys(a, b);
+	ASSERT_EQ(z, manual);
+}
