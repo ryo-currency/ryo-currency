@@ -2741,15 +2741,16 @@ bool Blockchain::check_tx_inputs(transaction &tx, tx_verification_context &tvc, 
 		if(vin_mixin > highest_mixin)
 			highest_mixin = vin_mixin;
 
-		if(vin_mixin > MAX_MIXIN)
+		if(vin_mixin > cryptonote::common_config::MAX_MIXIN)
 		{
-			MERROR_VER("Tx " << get_transaction_hash(tx) << " has too high ring size (" << vin_mixin << "), max = " << MAX_MIXIN + 1);
+			MERROR_VER("Tx " << get_transaction_hash(tx) << " has too high ring size (" << vin_mixin << "), max = " << cryptonote::common_config::MAX_MIXIN + 1);
 			tvc.m_verifivation_failed = true;
 			return false;
 		}
 	}
 
-	if(lowest_mixin < DEFAULT_MIXIN)
+	size_t min_mixin = check_hard_fork_feature(FORK_RINGSIZE_INC_REQ) ? cryptonote::common_config::MIN_MIXIN_V2 : cryptonote::common_config::MIN_MIXIN_V1;
+	if(lowest_mixin < min_mixin)
 	{
 		MERROR_VER("Tx " << get_transaction_hash(tx) << " has too low ring size (" << (lowest_mixin + 1) << ")");
 		tvc.m_low_mixin = true;
