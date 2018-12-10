@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2014-2017, The Monero Project
 //
 // All rights reserved.
 //
@@ -27,77 +27,74 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#include "gtest/gtest.h"
-#include <boost/filesystem.hpp>
 
-#include "crypto/crypto.h"
-#include "cryptonote_basic/account.h"
-#include "cryptonote_basic/cryptonote_basic_impl.h"
-#include "include_base_utils.h"
-#include "wallet/api/subaddress.h"
-#include "wallet/wallet2.h"
+#pragma once
 
-class WalletSubaddress : public ::testing::Test
+#include "ringct/bulletproofs.h"
+#include "ringct/rctSigs.h"
+
+template <bool a_verify, size_t n_amounts>
+class test_bulletproof
 {
-  protected:
-	virtual void SetUp()
-	{
-		try
-		{
-			w1.generate_legacy("", password, recovery_key, false);
-		}
-		catch(const std::exception &e)
-		{
-			LOG_ERROR("failed to generate wallet: " << e.what());
-			throw e;
-		}
+  public:
+	static const size_t approx_loop_count = 100 / n_amounts;
+	static const size_t loop_count = (approx_loop_count >= 10 ? approx_loop_count : 10) / (a_verify ? 1 : 5);
+	static const bool verify = a_verify;
 
-		w1.add_subaddress_account(test_label);
-		w1.set_subaddress_label(subaddress_index, test_label);
+	bool init()
+	{
+		proof = rct::bulletproof_PROVE(std::vector<uint64_t>(n_amounts, 749327532984), rct::skvGen(n_amounts));
+		return true;
 	}
 
-	virtual void TearDown()
+	bool test()
 	{
+		bool ret = true;
+		if(verify)
+			ret = rct::bulletproof_VERIFY(proof);
+		else
+			rct::bulletproof_PROVE(std::vector<uint64_t>(n_amounts, 749327532984), rct::skvGen(n_amounts));
+		return ret;
 	}
 
-	tools::wallet2 w1;
-	const std::string password = "testpass";
-	crypto::secret_key recovery_key = crypto::secret_key();
-	const std::string test_label = "subaddress test label";
-
-	uint32_t major_index = 0;
-	uint32_t minor_index = 0;
-	const cryptonote::subaddress_index subaddress_index = {major_index, minor_index};
+  private:
+	rct::Bulletproof proof;
 };
 
-TEST_F(WalletSubaddress, GetSubaddressLabel)
+template <bool batch, size_t start, size_t repeat, size_t mul, size_t add, size_t N>
+class test_aggregated_bulletproof
 {
-	EXPECT_EQ(test_label, w1.get_subaddress_label(subaddress_index));
-}
+  public:
+	static const size_t loop_count = 500 / (N * repeat);
 
-TEST_F(WalletSubaddress, AddSubaddress)
-{
-	std::string label = "test adding subaddress";
-	w1.add_subaddress(0, label);
-	EXPECT_EQ(label, w1.get_subaddress_label({0, 1}));
-}
+	bool init()
+	{
+		size_t o = start;
+		for(size_t n = 0; n < N; ++n)
+		{
+			//printf("adding %zu times %zu\n", repeat, o);
+			for(size_t i = 0; i < repeat; ++i)
+				proofs.push_back(rct::bulletproof_PROVE(std::vector<uint64_t>(o, 749327532984), rct::skvGen(o)));
+			o = o * mul + add;
+		}
+		return true;
+	}
 
-TEST_F(WalletSubaddress, OutOfBoundsIndexes)
-{
-	try
+	bool test()
 	{
-		w1.get_subaddress_label({1, 0});
+		if(batch)
+		{
+			return rct::bulletproof_VERIFY(proofs);
+		}
+		else
+		{
+			for(const rct::Bulletproof &proof : proofs)
+				if(!rct::bulletproof_VERIFY(proof))
+					return false;
+			return true;
+		}
 	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index_major is out of bound", e.what());
-	}
-	try
-	{
-		w1.get_subaddress_label({0, 2});
-	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index.minor is out of bound", e.what());
-	}
-}
+
+  private:
+	std::vector<rct::Bulletproof> proofs;
+};

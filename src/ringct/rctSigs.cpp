@@ -68,30 +68,6 @@ using namespace std;
 
 namespace rct
 {
-bool is_simple(int type)
-{
-	switch(type)
-	{
-	case RCTTypeSimple:
-	case RCTTypeSimpleBulletproof:
-		return true;
-	default:
-		return false;
-	}
-}
-
-bool is_bulletproof(int type)
-{
-	switch(type)
-	{
-	case RCTTypeSimpleBulletproof:
-	case RCTTypeFullBulletproof:
-		return true;
-	default:
-		return false;
-	}
-}
-
 Bulletproof proveRangeBulletproof(key &C, key &mask, uint64_t amount)
 {
 	mask = rct::skGen();
@@ -101,11 +77,33 @@ Bulletproof proveRangeBulletproof(key &C, key &mask, uint64_t amount)
 	return proof;
 }
 
+Bulletproof proveRangeBulletproof(keyV &C, keyV &masks, const std::vector<uint64_t> &amounts)
+{
+	masks = rct::skvGen(amounts.size());
+	Bulletproof proof = bulletproof_PROVE(amounts, masks);
+	CHECK_AND_ASSERT_THROW_MES(proof.V.size() == amounts.size(), "V does not have the expected size");
+	C = proof.V;
+	return proof;
+}
+
 bool verBulletproof(const Bulletproof &proof)
 {
 	try
 	{
 		return bulletproof_VERIFY(proof);
+	}
+	// we can get deep throws from ge_frombytes_vartime if input isn't valid
+	catch(...)
+	{
+		return false;
+	}
+}
+
+bool verBulletproof(const std::vector<const Bulletproof *> &proofs)
+{
+	try
+	{
+		return bulletproof_VERIFY(proofs);
 	}
 	// we can get deep throws from ge_frombytes_vartime if input isn't valid
 	catch(...)
@@ -343,6 +341,7 @@ bool MLSAG_Ver(const key &message, const keyM &pk, const mgSig &rv, size_t dsRow
 		{
 			addKeys2(L, rv.ss[i][j], c_old, pk[i][j]);
 			hashToPoint(Hi, pk[i][j]);
+			CHECK_AND_ASSERT_MES(!(Hi == rct::identity()), false, "Data hashed to point at infinity");
 			addKeys3(R, rv.ss[i][j], Hi, c_old, Ip[j].k);
 			toHash[3 * j + 1] = pk[i][j];
 			toHash[3 * j + 2] = L;
@@ -369,7 +368,7 @@ bool MLSAG_Ver(const key &message, const keyM &pk, const mgSig &rv, size_t dsRow
 //   thus this proves that "amount" is in [0, 2^64]
 //   mask is a such that C = aG + bH, and b = amount
 //verRange verifies that \sum Ci = C and that each Ci is a commitment to 0 or 2^i
-rangeSig proveRange(key &C, key &mask, const xmr_amount &amount)
+rangeSig proveRange(key &C, key &mask, const ryo_amount &amount)
 {
 	sc_0(mask.bytes);
 	identity(C);
@@ -455,7 +454,7 @@ key get_pre_mlsag_hash(const rctSig &rv, hw::device &hwdev)
 	std::stringstream ss;
 	binary_archive<true> ba(ss);
 	CHECK_AND_ASSERT_THROW_MES(!rv.mixRing.empty(), "Empty mixRing");
-	const size_t inputs = is_simple(rv.type) ? rv.mixRing.size() : rv.mixRing[0].size();
+	const size_t inputs = (rv.type == RCTTypeBulletproof || rv.type == RCTTypeSimple) ? rv.mixRing.size() : rv.mixRing[0].size();
 	const size_t outputs = rv.ecdhInfo.size();
 	key prehash;
 	CHECK_AND_ASSERT_THROW_MES(const_cast<rctSig &>(rv).serialize_rctsig_base(ba, inputs, outputs),
@@ -464,7 +463,7 @@ key get_pre_mlsag_hash(const rctSig &rv, hw::device &hwdev)
 	hashes.push_back(hash2rct(h));
 
 	keyV kv;
-	if(rv.type == RCTTypeSimpleBulletproof || rv.type == RCTTypeFullBulletproof)
+	if(rv.type == RCTTypeBulletproof)
 	{
 		kv.reserve((6 * 2 + 9) * rv.p.bulletproofs.size());
 		for(const auto &p : rv.p.bulletproofs)
@@ -567,7 +566,9 @@ mgSig proveRctMG(const key &message, const ctkeyM &pubs, const ctkeyV &inSk, con
 	{
 		sc_sub(sk[rows].bytes, sk[rows].bytes, outSk[j].mask.bytes); //subtract output masks in last row..
 	}
-	return MLSAG_Gen(message, M, sk, kLRki, mscout, index, rows, hwdev);
+	mgSig result = MLSAG_Gen(message, M, sk, kLRki, mscout, index, rows, hwdev);
+	memwipe(sk.data(), sk.size() * sizeof(key));
+	return result;
 }
 
 //Ring-ct MG sigs Simple
@@ -597,7 +598,9 @@ mgSig proveRctMGSimple(const key &message, const ctkeyV &pubs, const ctkey &inSk
 		M[i][0] = pubs[i].dest;
 		subKeys(M[i][1], pubs[i].mask, Cout);
 	}
-	return MLSAG_Gen(message, M, sk, kLRki, mscout, index, rows, hwdev);
+	mgSig result = MLSAG_Gen(message, M, sk, kLRki, mscout, index, rows, hwdev);
+	memwipe(&sk[0], sizeof(key));
+	return result;
 }
 
 //Ring-ct MG sigs
@@ -697,11 +700,11 @@ void getKeyFromBlockchain(ctkey &a, size_t reference_index)
 //getKeyFromBlockchain grabs a key from the blockchain at "reference_index" to mix with
 //populateFromBlockchain creates a keymatrix with "mixin" + 1 columns and one of the columns is inPk
 //   the return value are the key matrix, and the index where inPk was put (random).
-tuple<ctkeyM, xmr_amount> populateFromBlockchain(ctkeyV inPk, int mixin)
+tuple<ctkeyM, ryo_amount> populateFromBlockchain(ctkeyV inPk, int mixin)
 {
 	int rows = inPk.size();
 	ctkeyM rv(mixin + 1, inPk);
-	int index = randXmrAmount(mixin);
+	int index = randRyoAmount(mixin);
 	int i = 0, j = 0;
 	for(i = 0; i <= mixin; i++)
 	{
@@ -709,7 +712,7 @@ tuple<ctkeyM, xmr_amount> populateFromBlockchain(ctkeyV inPk, int mixin)
 		{
 			for(j = 0; j < rows; j++)
 			{
-				getKeyFromBlockchain(rv[i][j], (size_t)randXmrAmount);
+				getKeyFromBlockchain(rv[i][j], (size_t)randRyoAmount);
 			}
 		}
 	}
@@ -721,15 +724,15 @@ tuple<ctkeyM, xmr_amount> populateFromBlockchain(ctkeyV inPk, int mixin)
 //getKeyFromBlockchain grabs a key from the blockchain at "reference_index" to mix with
 //populateFromBlockchain creates a keymatrix with "mixin" columns and one of the columns is inPk
 //   the return value are the key matrix, and the index where inPk was put (random).
-xmr_amount populateFromBlockchainSimple(ctkeyV &mixRing, const ctkey &inPk, int mixin)
+ryo_amount populateFromBlockchainSimple(ctkeyV &mixRing, const ctkey &inPk, int mixin)
 {
-	int index = randXmrAmount(mixin);
+	int index = randRyoAmount(mixin);
 	int i = 0;
 	for(i = 0; i <= mixin; i++)
 	{
 		if(i != index)
 		{
-			getKeyFromBlockchain(mixRing[i], (size_t)randXmrAmount(1000));
+			getKeyFromBlockchain(mixRing[i], (size_t)randRyoAmount(1000));
 		}
 		else
 		{
@@ -751,7 +754,7 @@ xmr_amount populateFromBlockchainSimple(ctkeyV &mixRing, const ctkey &inPk, int 
 //   must know the destination private key to find the correct amount, else will return a random number
 //   Note: For txn fees, the last index in the amounts vector should contain that
 //   Thus the amounts vector will be "one" longer than the destinations vectort
-rctSig genRct(const key &message, const ctkeyV &inSk, const keyV &destinations, const vector<xmr_amount> &amounts, const ctkeyM &mixRing, const keyV &amount_keys, const multisig_kLRki *kLRki, multisig_out *msout, unsigned int index, ctkeyV &outSk, bool bulletproof, hw::device &hwdev)
+rctSig genRct(const key &message, const ctkeyV &inSk, const keyV &destinations, const vector<ryo_amount> &amounts, const ctkeyM &mixRing, const keyV &amount_keys, const multisig_kLRki *kLRki, multisig_out *msout, unsigned int index, ctkeyV &outSk, hw::device &hwdev)
 {
 	CHECK_AND_ASSERT_THROW_MES(amounts.size() == destinations.size() || amounts.size() == destinations.size() + 1, "Different number of amounts/destinations");
 	CHECK_AND_ASSERT_THROW_MES(amount_keys.size() == destinations.size(), "Different number of amount_keys/destinations");
@@ -763,13 +766,10 @@ rctSig genRct(const key &message, const ctkeyV &inSk, const keyV &destinations, 
 	CHECK_AND_ASSERT_THROW_MES((kLRki && msout) || (!kLRki && !msout), "Only one of kLRki/msout is present");
 
 	rctSig rv;
-	rv.type = bulletproof ? RCTTypeFullBulletproof : RCTTypeFull;
+	rv.type = RCTTypeFull;
 	rv.message = message;
 	rv.outPk.resize(destinations.size());
-	if(bulletproof)
-		rv.p.bulletproofs.resize(destinations.size());
-	else
-		rv.p.rangeSigs.resize(destinations.size());
+	rv.p.rangeSigs.resize(destinations.size());
 	rv.ecdhInfo.resize(destinations.size());
 
 	size_t i = 0;
@@ -780,17 +780,10 @@ rctSig genRct(const key &message, const ctkeyV &inSk, const keyV &destinations, 
 		//add destination to sig
 		rv.outPk[i].dest = copy(destinations[i]);
 		//compute range proof
-		if(bulletproof)
-			rv.p.bulletproofs[i] = proveRangeBulletproof(rv.outPk[i].mask, outSk[i].mask, amounts[i]);
-		else
-			rv.p.rangeSigs[i] = proveRange(rv.outPk[i].mask, outSk[i].mask, amounts[i]);
-#ifdef DBG
-		if(bulletproof)
-			CHECK_AND_ASSERT_THROW_MES(verBulletproof(rv.p.bulletproofs[i]), "verBulletproof failed on newly created proof");
-		else
-			CHECK_AND_ASSERT_THROW_MES(verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]), "verRange failed on newly created proof");
+		rv.p.rangeSigs[i] = proveRange(rv.outPk[i].mask, outSk[i].mask, amounts[i]);
+#ifndef NDEBUG
+		CHECK_AND_ASSERT_THROW_MES(verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]), "verRange failed on newly created proof");
 #endif
-
 		//mask amount and mask
 		rv.ecdhInfo[i].mask = copy(outSk[i].mask);
 		rv.ecdhInfo[i].amount = d2h(amounts[i]);
@@ -815,18 +808,18 @@ rctSig genRct(const key &message, const ctkeyV &inSk, const keyV &destinations, 
 	return rv;
 }
 
-rctSig genRct(const key &message, const ctkeyV &inSk, const ctkeyV &inPk, const keyV &destinations, const vector<xmr_amount> &amounts, const keyV &amount_keys, const multisig_kLRki *kLRki, multisig_out *msout, const int mixin, hw::device &hwdev)
+rctSig genRct(const key &message, const ctkeyV &inSk, const ctkeyV &inPk, const keyV &destinations, const vector<ryo_amount> &amounts, const keyV &amount_keys, const multisig_kLRki *kLRki, multisig_out *msout, const int mixin, hw::device &hwdev)
 {
 	unsigned int index;
 	ctkeyM mixRing;
 	ctkeyV outSk;
 	tie(mixRing, index) = populateFromBlockchain(inPk, mixin);
-	return genRct(message, inSk, destinations, amounts, mixRing, amount_keys, kLRki, msout, index, outSk, false, hwdev);
+	return genRct(message, inSk, destinations, amounts, mixRing, amount_keys, kLRki, msout, index, outSk, hwdev);
 }
 
 //RCT simple
 //for post-rct only
-rctSig genRctSimple(const key &message, const ctkeyV &inSk, const keyV &destinations, const vector<xmr_amount> &inamounts, const vector<xmr_amount> &outamounts, xmr_amount txnFee, const ctkeyM &mixRing, const keyV &amount_keys, const std::vector<multisig_kLRki> *kLRki, multisig_out *msout, const std::vector<unsigned int> &index, ctkeyV &outSk, bool bulletproof, hw::device &hwdev)
+rctSig genRctSimple(const key &message, const ctkeyV &inSk, const keyV &destinations, const vector<ryo_amount> &inamounts, const vector<ryo_amount> &outamounts, ryo_amount txnFee, const ctkeyM &mixRing, const keyV &amount_keys, const std::vector<multisig_kLRki> *kLRki, multisig_out *msout, const std::vector<unsigned int> &index, ctkeyV &outSk, bool bulletproof, hw::device &hwdev)
 {
 	CHECK_AND_ASSERT_THROW_MES(inamounts.size() > 0, "Empty inamounts");
 	CHECK_AND_ASSERT_THROW_MES(inamounts.size() == inSk.size(), "Different number of inamounts/inSk");
@@ -845,36 +838,48 @@ rctSig genRctSimple(const key &message, const ctkeyV &inSk, const keyV &destinat
 	}
 
 	rctSig rv;
-	rv.type = bulletproof ? RCTTypeSimpleBulletproof : RCTTypeSimple;
+	rv.type = bulletproof ? RCTTypeBulletproof : RCTTypeSimple;
 	rv.message = message;
 	rv.outPk.resize(destinations.size());
-	if(bulletproof)
-		rv.p.bulletproofs.resize(destinations.size());
-	else
+	if(!bulletproof)
 		rv.p.rangeSigs.resize(destinations.size());
 	rv.ecdhInfo.resize(destinations.size());
 
 	size_t i;
 	keyV masks(destinations.size()); //sk mask..
 	outSk.resize(destinations.size());
-	key sumout = zero();
 	for(i = 0; i < destinations.size(); i++)
 	{
 
 		//add destination to sig
 		rv.outPk[i].dest = copy(destinations[i]);
 		//compute range proof
-		if(bulletproof)
-			rv.p.bulletproofs[i] = proveRangeBulletproof(rv.outPk[i].mask, outSk[i].mask, outamounts[i]);
-		else
+		if(!bulletproof)
 			rv.p.rangeSigs[i] = proveRange(rv.outPk[i].mask, outSk[i].mask, outamounts[i]);
-#ifdef DBG
-		if(bulletproof)
-			CHECK_AND_ASSERT_THROW_MES(verBulletproof(rv.p.bulletproofs[i]), "verBulletproof failed on newly created proof");
-		else
+#ifndef NDEBUG
+		if(!bulletproof)
 			CHECK_AND_ASSERT_THROW_MES(verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]), "verRange failed on newly created proof");
 #endif
+	}
 
+	rv.p.bulletproofs.clear();
+	if(bulletproof)
+	{
+		rct::keyV C, masks;
+		rv.p.bulletproofs.push_back(proveRangeBulletproof(C, masks, outamounts));
+#ifndef NDEBUG
+		CHECK_AND_ASSERT_THROW_MES(verBulletproof(rv.p.bulletproofs.back()), "verBulletproof failed on newly created proof");
+#endif
+		for(i = 0; i < outamounts.size(); ++i)
+		{
+			rv.outPk[i].mask = rct::scalarmult8(C[i]);
+			outSk[i].mask = masks[i];
+		}
+	}
+
+	key sumout = zero();
+	for(i = 0; i < outSk.size(); ++i)
+	{
 		sc_add(sumout.bytes, outSk[i].mask.bytes, sumout.bytes);
 
 		//mask amount and mask
@@ -914,7 +919,7 @@ rctSig genRctSimple(const key &message, const ctkeyV &inSk, const keyV &destinat
 	return rv;
 }
 
-rctSig genRctSimple(const key &message, const ctkeyV &inSk, const ctkeyV &inPk, const keyV &destinations, const vector<xmr_amount> &inamounts, const vector<xmr_amount> &outamounts, const keyV &amount_keys, const std::vector<multisig_kLRki> *kLRki, multisig_out *msout, xmr_amount txnFee, unsigned int mixin, hw::device &hwdev)
+rctSig genRctSimple(const key &message, const ctkeyV &inSk, const ctkeyV &inPk, const keyV &destinations, const vector<ryo_amount> &inamounts, const vector<ryo_amount> &outamounts, const keyV &amount_keys, const std::vector<multisig_kLRki> *kLRki, multisig_out *msout, ryo_amount txnFee, unsigned int mixin, hw::device &hwdev)
 {
 	std::vector<unsigned int> index;
 	index.resize(inPk.size());
@@ -936,19 +941,16 @@ rctSig genRctSimple(const key &message, const ctkeyV &inSk, const ctkeyV &inPk, 
 //   Also contains masked "amount" and "mask" so the receiver can see how much they received
 //verRct:
 //   verifies that all signatures (rangeProogs, MG sig, sum inputs = outputs) are correct
-//decodeRct: (c.f. http://eprint.iacr.org/2015/1098 section 5.1.1)
+//decodeRct: (c.f. https://eprint.iacr.org/2015/1098 section 5.1.1)
 //   uses the attached ecdh info to find the amounts represented by each output commitment
 //   must know the destination private key to find the correct amount, else will return a random number
 bool verRct(const rctSig &rv, bool semantics)
 {
 	PERF_TIMER(verRct);
-	CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull || rv.type == RCTTypeFullBulletproof, false, "verRct called on non-full rctSig");
+	CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull, false, "verRct called on non-full rctSig");
 	if(semantics)
 	{
-		if(rv.type == RCTTypeFullBulletproof)
-			CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.p.bulletproofs.size(), false, "Mismatched sizes of outPk and rv.p.bulletproofs");
-		else
-			CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.p.rangeSigs.size(), false, "Mismatched sizes of outPk and rv.p.rangeSigs");
+		CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.p.rangeSigs.size(), false, "Mismatched sizes of outPk and rv.p.rangeSigs");
 		CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.ecdhInfo.size(), false, "Mismatched sizes of outPk and rv.ecdhInfo");
 		CHECK_AND_ASSERT_MES(rv.p.MGs.size() == 1, false, "full rctSig has not one MG");
 	}
@@ -967,21 +969,14 @@ bool verRct(const rctSig &rv, bool semantics)
 			std::deque<bool> results(rv.outPk.size(), false);
 			DP("range proofs verified?");
 			for(size_t i = 0; i < rv.outPk.size(); i++)
-			{
-				tpool.submit(&waiter, [&, i] {
-					if(rv.p.rangeSigs.empty())
-						results[i] = verBulletproof(rv.p.bulletproofs[i]);
-					else
-						results[i] = verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]);
-				});
-			}
+				tpool.submit(&waiter, [&, i] { results[i] = verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]); });
 			waiter.wait();
 
-			for(size_t i = 0; i < rv.outPk.size(); ++i)
+			for(size_t i = 0; i < results.size(); ++i)
 			{
 				if(!results[i])
 				{
-					LOG_PRINT_L1("Range proof verified failed for output " << i);
+					LOG_PRINT_L1("Range proof verified failed for proof " << i);
 					return false;
 				}
 			}
@@ -1017,18 +1012,27 @@ bool verRct(const rctSig &rv, bool semantics)
 
 //ver RingCT simple
 //assumes only post-rct style inputs (at least for max anonymity)
-bool verRctSimple(const rctSig &rv, bool semantics)
+bool verRctSemanticsSimple(const std::vector<const rctSig *> &rvv)
 {
 	try
 	{
-		PERF_TIMER(verRctSimple);
+		PERF_TIMER(verRctSemanticsSimple);
 
-		CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeSimpleBulletproof, false, "verRctSimple called on non simple rctSig");
-		if(semantics)
+		tools::threadpool &tpool = tools::threadpool::getInstance();
+		tools::threadpool::waiter waiter;
+		std::deque<bool> results;
+		std::vector<const Bulletproof *> proofs;
+		size_t max_non_bp_proofs = 0, offset = 0;
+
+		for(const rctSig *rvp : rvv)
 		{
-			if(rv.type == RCTTypeSimpleBulletproof)
+			CHECK_AND_ASSERT_MES(rvp, false, "rctSig pointer is NULL");
+			const rctSig &rv = *rvp;
+			CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof, false, "verRctSemanticsSimple called on non simple rctSig");
+			const bool bulletproof = rv.type == RCTTypeBulletproof;
+			if(bulletproof)
 			{
-				CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.p.bulletproofs.size(), false, "Mismatched sizes of outPk and rv.p.bulletproofs");
+				CHECK_AND_ASSERT_MES(rv.outPk.size() == n_bulletproof_amounts(rv.p.bulletproofs), false, "Mismatched sizes of outPk and bulletproofs");
 				CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.size() == rv.p.MGs.size(), false, "Mismatched sizes of rv.p.pseudoOuts and rv.p.MGs");
 				CHECK_AND_ASSERT_MES(rv.pseudoOuts.empty(), false, "rv.pseudoOuts is not empty");
 			}
@@ -1039,40 +1043,30 @@ bool verRctSimple(const rctSig &rv, bool semantics)
 				CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.empty(), false, "rv.p.pseudoOuts is not empty");
 			}
 			CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.ecdhInfo.size(), false, "Mismatched sizes of outPk and rv.ecdhInfo");
-		}
-		else
-		{
-			// semantics check is early, and mixRing/MGs aren't resolved yet
-			if(rv.type == RCTTypeSimpleBulletproof)
-				CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.size() == rv.mixRing.size(), false, "Mismatched sizes of rv.p.pseudoOuts and mixRing");
-			else
-				CHECK_AND_ASSERT_MES(rv.pseudoOuts.size() == rv.mixRing.size(), false, "Mismatched sizes of rv.pseudoOuts and mixRing");
+
+			if(!bulletproof)
+				max_non_bp_proofs += rv.p.rangeSigs.size();
 		}
 
-		const size_t threads = std::max(rv.outPk.size(), rv.mixRing.size());
-
-		std::deque<bool> results(threads);
-		tools::threadpool &tpool = tools::threadpool::getInstance();
-		tools::threadpool::waiter waiter;
-
-		const keyV &pseudoOuts = is_bulletproof(rv.type) ? rv.p.pseudoOuts : rv.pseudoOuts;
-
-		if(semantics)
+		results.resize(max_non_bp_proofs);
+		for(const rctSig *rvp : rvv)
 		{
-			key sumOutpks = identity();
+			const rctSig &rv = *rvp;
+
+			const bool bulletproof = rv.type == RCTTypeBulletproof;
+			const keyV &pseudoOuts = bulletproof ? rv.p.pseudoOuts : rv.pseudoOuts;
+
+			rct::keyV masks(rv.outPk.size());
 			for(size_t i = 0; i < rv.outPk.size(); i++)
 			{
-				addKeys(sumOutpks, sumOutpks, rv.outPk[i].mask);
+				masks[i] = rv.outPk[i].mask;
 			}
+			key sumOutpks = addKeys(masks);
 			DP(sumOutpks);
-			key txnFeeKey = scalarmultH(d2h(rv.txnFee));
+			const key txnFeeKey = scalarmultH(d2h(rv.txnFee));
 			addKeys(sumOutpks, txnFeeKey, sumOutpks);
 
-			key sumPseudoOuts = identity();
-			for(size_t i = 0; i < pseudoOuts.size(); i++)
-			{
-				addKeys(sumPseudoOuts, sumPseudoOuts, pseudoOuts[i]);
-			}
+			key sumPseudoOuts = addKeys(pseudoOuts);
 			DP(sumPseudoOuts);
 
 			//check pseudoOuts vs Outs..
@@ -1082,49 +1076,31 @@ bool verRctSimple(const rctSig &rv, bool semantics)
 				return false;
 			}
 
-			results.clear();
-			results.resize(rv.outPk.size());
-			for(size_t i = 0; i < rv.outPk.size(); i++)
+			if(bulletproof)
 			{
-				tpool.submit(&waiter, [&, i] {
-					if(rv.p.rangeSigs.empty())
-						results[i] = verBulletproof(rv.p.bulletproofs[i]);
-					else
-						results[i] = verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]);
-				});
+				for(size_t i = 0; i < rv.p.bulletproofs.size(); i++)
+					proofs.push_back(&rv.p.bulletproofs[i]);
 			}
-			waiter.wait();
-
-			for(size_t i = 0; i < results.size(); ++i)
+			else
 			{
-				if(!results[i])
-				{
-					LOG_PRINT_L1("Range proof verified failed for output " << i);
-					return false;
-				}
+				for(size_t i = 0; i < rv.p.rangeSigs.size(); i++)
+					tpool.submit(&waiter, [&, i, offset] { results[i + offset] = verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]); });
+				offset += rv.p.rangeSigs.size();
 			}
 		}
-		else
+		if(!proofs.empty() && !verBulletproof(proofs))
 		{
-			const key message = get_pre_mlsag_hash(rv, hw::get_device("default"));
+			LOG_PRINT_L1("Aggregate range proof verified failed");
+			return false;
+		}
 
-			results.clear();
-			results.resize(rv.mixRing.size());
-			for(size_t i = 0; i < rv.mixRing.size(); i++)
+		waiter.wait();
+		for(size_t i = 0; i < results.size(); ++i)
+		{
+			if(!results[i])
 			{
-				tpool.submit(&waiter, [&, i] {
-					results[i] = verRctMGSimple(message, rv.p.MGs[i], rv.mixRing[i], pseudoOuts[i]);
-				});
-			}
-			waiter.wait();
-
-			for(size_t i = 0; i < results.size(); ++i)
-			{
-				if(!results[i])
-				{
-					LOG_PRINT_L1("verRctMGSimple failed for input " << i);
-					return false;
-				}
+				LOG_PRINT_L1("Range proof verified failed for proof " << i);
+				return false;
 			}
 		}
 
@@ -1133,12 +1109,77 @@ bool verRctSimple(const rctSig &rv, bool semantics)
 	// we can get deep throws from ge_frombytes_vartime if input isn't valid
 	catch(const std::exception &e)
 	{
-		LOG_PRINT_L1("Error in verRct: " << e.what());
+		LOG_PRINT_L1("Error in verRctSemanticsSimple: " << e.what());
 		return false;
 	}
 	catch(...)
 	{
-		LOG_PRINT_L1("Error in verRct, but not an actual exception");
+		LOG_PRINT_L1("Error in verRctSemanticsSimple, but not an actual exception");
+		return false;
+	}
+}
+
+bool verRctSemanticsSimple(const rctSig &rv)
+{
+	return verRctSemanticsSimple(std::vector<const rctSig *>(1, &rv));
+}
+
+//ver RingCT simple
+//assumes only post-rct style inputs (at least for max anonymity)
+bool verRctNonSemanticsSimple(const rctSig &rv)
+{
+	try
+	{
+		PERF_TIMER(verRctNonSemanticsSimple);
+
+		CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof, false, "verRctNonSemanticsSimple called on non simple rctSig");
+		const bool bulletproof = rv.type == RCTTypeBulletproof;
+		// semantics check is early, and mixRing/MGs aren't resolved yet
+		if(bulletproof)
+			CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.size() == rv.mixRing.size(), false, "Mismatched sizes of rv.p.pseudoOuts and mixRing");
+		else
+			CHECK_AND_ASSERT_MES(rv.pseudoOuts.size() == rv.mixRing.size(), false, "Mismatched sizes of rv.pseudoOuts and mixRing");
+
+		const size_t threads = std::max(rv.outPk.size(), rv.mixRing.size());
+
+		std::deque<bool> results(threads);
+		tools::threadpool &tpool = tools::threadpool::getInstance();
+		tools::threadpool::waiter waiter;
+
+		const keyV &pseudoOuts = bulletproof ? rv.p.pseudoOuts : rv.pseudoOuts;
+
+		const key message = get_pre_mlsag_hash(rv, hw::get_device("default"));
+
+		results.clear();
+		results.resize(rv.mixRing.size());
+		for(size_t i = 0; i < rv.mixRing.size(); i++)
+		{
+			tpool.submit(&waiter, [&, i] {
+				results[i] = verRctMGSimple(message, rv.p.MGs[i], rv.mixRing[i], pseudoOuts[i]);
+			});
+		}
+		waiter.wait();
+
+		for(size_t i = 0; i < results.size(); ++i)
+		{
+			if(!results[i])
+			{
+				LOG_PRINT_L1("verRctMGSimple failed for input " << i);
+				return false;
+			}
+		}
+
+		return true;
+	}
+	// we can get deep throws from ge_frombytes_vartime if input isn't valid
+	catch(const std::exception &e)
+	{
+		LOG_PRINT_L1("Error in verRctNonSemanticsSimple: " << e.what());
+		return false;
+	}
+	catch(...)
+	{
+		LOG_PRINT_L1("Error in verRctNonSemanticsSimple, but not an actual exception");
 		return false;
 	}
 }
@@ -1153,9 +1194,9 @@ bool verRctSimple(const rctSig &rv, bool semantics)
 //decodeRct: (c.f. http://eprint.iacr.org/2015/1098 section 5.1.1)
 //   uses the attached ecdh info to find the amounts represented by each output commitment
 //   must know the destination private key to find the correct amount, else will return a random number
-xmr_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, key &mask, hw::device &hwdev)
+ryo_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, key &mask, hw::device &hwdev)
 {
-	CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull || rv.type == RCTTypeFullBulletproof, false, "decodeRct called on non-full rctSig");
+	CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull, false, "decodeRct called on non-full rctSig");
 	CHECK_AND_ASSERT_THROW_MES(i < rv.ecdhInfo.size(), "Bad index");
 	CHECK_AND_ASSERT_THROW_MES(rv.outPk.size() == rv.ecdhInfo.size(), "Mismatched sizes of rv.outPk and rv.ecdhInfo");
 
@@ -1168,6 +1209,8 @@ xmr_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, key &mask,
 	DP("C");
 	DP(C);
 	key Ctmp;
+	CHECK_AND_ASSERT_THROW_MES(sc_check(mask.bytes) == 0, "warning, bad ECDH mask");
+	CHECK_AND_ASSERT_THROW_MES(sc_check(amount.bytes) == 0, "warning, bad ECDH amount");
 	addKeys2(Ctmp, mask, amount, H);
 	DP("Ctmp");
 	DP(Ctmp);
@@ -1178,15 +1221,15 @@ xmr_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, key &mask,
 	return h2d(amount);
 }
 
-xmr_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, hw::device &hwdev)
+ryo_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, hw::device &hwdev)
 {
 	key mask;
 	return decodeRct(rv, sk, i, mask, hwdev);
 }
 
-xmr_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, key &mask, hw::device &hwdev)
+ryo_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, key &mask, hw::device &hwdev)
 {
-	CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeSimpleBulletproof, false, "decodeRct called on non simple rctSig");
+	CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof, false, "decodeRct called on non simple rctSig");
 	CHECK_AND_ASSERT_THROW_MES(i < rv.ecdhInfo.size(), "Bad index");
 	CHECK_AND_ASSERT_THROW_MES(rv.outPk.size() == rv.ecdhInfo.size(), "Mismatched sizes of rv.outPk and rv.ecdhInfo");
 
@@ -1199,6 +1242,8 @@ xmr_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, key 
 	DP("C");
 	DP(C);
 	key Ctmp;
+	CHECK_AND_ASSERT_THROW_MES(sc_check(mask.bytes) == 0, "warning, bad ECDH mask");
+	CHECK_AND_ASSERT_THROW_MES(sc_check(amount.bytes) == 0, "warning, bad ECDH amount");
 	addKeys2(Ctmp, mask, amount, H);
 	DP("Ctmp");
 	DP(Ctmp);
@@ -1209,7 +1254,7 @@ xmr_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, key 
 	return h2d(amount);
 }
 
-xmr_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, hw::device &hwdev)
+ryo_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, hw::device &hwdev)
 {
 	key mask;
 	return decodeRctSimple(rv, sk, i, mask, hwdev);
@@ -1217,12 +1262,12 @@ xmr_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, hw::
 
 bool signMultisig(rctSig &rv, const std::vector<unsigned int> &indices, const keyV &k, const multisig_out &msout, const key &secret_key)
 {
-	CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull || rv.type == RCTTypeSimple || rv.type == RCTTypeFullBulletproof || rv.type == RCTTypeSimpleBulletproof,
+	CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull || rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof,
 						 false, "unsupported rct type");
 	CHECK_AND_ASSERT_MES(indices.size() == k.size(), false, "Mismatched k/indices sizes");
 	CHECK_AND_ASSERT_MES(k.size() == rv.p.MGs.size(), false, "Mismatched k/MGs size");
 	CHECK_AND_ASSERT_MES(k.size() == msout.c.size(), false, "Mismatched k/msout.c size");
-	if(rv.type == RCTTypeFull || rv.type == RCTTypeFullBulletproof)
+	if(rv.type == RCTTypeFull)
 	{
 		CHECK_AND_ASSERT_MES(rv.p.MGs.size() == 1, false, "MGs not a single element");
 	}

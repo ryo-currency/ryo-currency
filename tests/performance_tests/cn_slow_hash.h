@@ -31,9 +31,11 @@
 #pragma once
 
 #include "crypto/crypto.h"
+#include "crypto/cn_slow_hash.hpp"
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "string_tools.h"
 
+template <bool VERSION1>
 class test_cn_slow_hash
 {
   public:
@@ -50,10 +52,13 @@ class test_cn_slow_hash
 
 	bool init()
 	{
+		const char* exp_result = VERSION1 ? "bbec2cacf69866a8e740380fe7b818fc78f8571221742d729d9d02d7f8989b87" :
+			"45f1fbd7ecdbbf9a94c1d55ce7e5aa9ca37de9f77568cdde243f77f6663cc278";
+		
 		if(!epee::string_tools::hex_to_pod("63617665617420656d70746f72", m_data))
 			return false;
 
-		if(!epee::string_tools::hex_to_pod("bbec2cacf69866a8e740380fe7b818fc78f8571221742d729d9d02d7f8989b87", m_expected_hash))
+		if(!epee::string_tools::hex_to_pod(exp_result, m_expected_hash))
 			return false;
 
 		return true;
@@ -62,14 +67,19 @@ class test_cn_slow_hash
 	bool test()
 	{
 		crypto::hash hash;
-		cn_pow_hash_v2 ctx;
-		cn_pow_hash_v1 ctx_v1 = cn_pow_hash_v1::make_borrowed(ctx);
-		ctx_v1.hash((const void *)&m_data, sizeof(m_data), &hash);
-		// psychocrypt \todo test also new pow function
+		if(VERSION1)
+		{
+			cn_pow_hash_v1 hb = cn_pow_hash_v2::make_borrowed(m_hash);
+			hb.hash(&m_data, sizeof(m_data), &hash);
+		}
+		else
+			m_hash.hash(&m_data, sizeof(m_data), &hash);
+
 		return hash == m_expected_hash;
 	}
 
   private:
 	data_t m_data;
+	cn_pow_hash_v2 m_hash;
 	crypto::hash m_expected_hash;
 };
