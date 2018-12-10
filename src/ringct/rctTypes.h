@@ -68,13 +68,6 @@ extern "C" {
 #include "serialization/vector.h"
 #include "span.h"
 
-//Define this flag when debugging to get additional info on the console
-#ifdef DBG
-#define DP(x) dp(x)
-#else
-#define DP(x)
-#endif
-
 //atomic units of ryo
 #define ATOMS 64
 
@@ -157,7 +150,7 @@ struct ecdhTuple
 };
 
 //containers for representing amounts
-typedef uint64_t xmr_amount;
+typedef uint64_t ryo_amount;
 typedef unsigned int bits[ATOMS];
 typedef key key64[64];
 
@@ -215,6 +208,7 @@ struct Bulletproof
 
 	Bulletproof() {}
 	Bulletproof(const rct::key &V, const rct::key &A, const rct::key &S, const rct::key &T1, const rct::key &T2, const rct::key &taux, const rct::key &mu, const rct::keyV &L, const rct::keyV &R, const rct::key &a, const rct::key &b, const rct::key &t) : V({V}), A(A), S(S), T1(T1), T2(T2), taux(taux), mu(mu), L(L), R(R), a(a), b(b), t(t) {}
+	Bulletproof(const rct::keyV &V, const rct::key &A, const rct::key &S, const rct::key &T1, const rct::key &T2, const rct::key &taux, const rct::key &mu, const rct::keyV &L, const rct::keyV &R, const rct::key &a, const rct::key &b, const rct::key &t) : V(V), A(A), S(S), T1(T1), T2(T2), taux(taux), mu(mu), L(L), R(R), a(a), b(b), t(t) {}
 
 	BEGIN_SERIALIZE_OBJECT()
 	// Commitments aren't saved, they're restored via outPk
@@ -236,6 +230,11 @@ struct Bulletproof
 	END_SERIALIZE()
 };
 
+size_t n_bulletproof_amounts(const Bulletproof &proof);
+size_t n_bulletproof_max_amounts(const Bulletproof &proof);
+size_t n_bulletproof_amounts(const std::vector<Bulletproof> &proofs);
+size_t n_bulletproof_max_amounts(const std::vector<Bulletproof> &proofs);
+
 //A container to hold all signatures necessary for RingCT
 // rangeSigs holds all the rangeproof data of a transaction
 // MG holds the MLSAG signature of a transaction
@@ -248,8 +247,14 @@ enum
 	RCTTypeNull = 0,
 	RCTTypeFull = 1,
 	RCTTypeSimple = 2,
-	RCTTypeFullBulletproof = 3,
-	RCTTypeSimpleBulletproof = 4,
+	RCTTypeBulletproof = 3,
+};
+enum RangeProofType
+{
+	RangeProofBorromean,
+	RangeProofBulletproof,
+	RangeProofMultiOutputBulletproof,
+	RangeProofPaddedBulletproof
 };
 struct rctSigBase
 {
@@ -260,7 +265,7 @@ struct rctSigBase
 	keyV pseudoOuts; //C - for simple rct
 	std::vector<ecdhTuple> ecdhInfo;
 	ctkeyV outPk;
-	xmr_amount txnFee; // contains b
+	ryo_amount txnFee; // contains b
 
 	template <bool W, template <bool> class Archive>
 	bool serialize_rctsig_base(Archive<W> &ar, size_t inputs, size_t outputs)
@@ -268,7 +273,7 @@ struct rctSigBase
 		FIELD(type)
 		if(type == RCTTypeNull)
 			return true;
-		if(type != RCTTypeFull && type != RCTTypeFullBulletproof && type != RCTTypeSimple && type != RCTTypeSimpleBulletproof)
+		if(type != RCTTypeFull && type != RCTTypeSimple && type != RCTTypeBulletproof)
 			return false;
 		VARINT_FIELD(txnFee)
 		// inputs/outputs not saved, only here for serialization help
@@ -330,21 +335,25 @@ struct rctSigPrunable
 	{
 		if(type == RCTTypeNull)
 			return true;
-		if(type != RCTTypeFull && type != RCTTypeFullBulletproof && type != RCTTypeSimple && type != RCTTypeSimpleBulletproof)
+		if(type != RCTTypeFull && type != RCTTypeSimple && type != RCTTypeBulletproof)
 			return false;
-		if(type == RCTTypeSimpleBulletproof || type == RCTTypeFullBulletproof)
+		if(type == RCTTypeBulletproof)
 		{
+			uint32_t nbp = bulletproofs.size();
+			FIELD(nbp)
 			ar.tag("bp");
 			ar.begin_array();
-			PREPARE_CUSTOM_VECTOR_SERIALIZATION(outputs, bulletproofs);
-			if(bulletproofs.size() != outputs)
+			if(nbp > outputs)
 				return false;
-			for(size_t i = 0; i < outputs; ++i)
+			PREPARE_CUSTOM_VECTOR_SERIALIZATION(nbp, bulletproofs);
+			for(size_t i = 0; i < nbp; ++i)
 			{
 				FIELDS(bulletproofs[i])
-				if(outputs - i > 1)
+				if(nbp - i > 1)
 					ar.delimit_array();
 			}
+			if(n_bulletproof_max_amounts(bulletproofs) < outputs)
+				return false;
 			ar.end_array();
 		}
 		else
@@ -367,7 +376,7 @@ struct rctSigPrunable
 		ar.begin_array();
 		// we keep a byte for size of MGs, because we don't know whether this is
 		// a simple or full rct signature, and it's starting to annoy the hell out of me
-		size_t mg_elements = (type == RCTTypeSimple || type == RCTTypeSimpleBulletproof) ? inputs : 1;
+		size_t mg_elements = (type == RCTTypeSimple || type == RCTTypeBulletproof) ? inputs : 1;
 		PREPARE_CUSTOM_VECTOR_SERIALIZATION(mg_elements, MGs);
 		if(MGs.size() != mg_elements)
 			return false;
@@ -385,7 +394,7 @@ struct rctSigPrunable
 			for(size_t j = 0; j < mixin + 1; ++j)
 			{
 				ar.begin_array();
-				size_t mg_ss2_elements = ((type == RCTTypeSimple || type == RCTTypeSimpleBulletproof) ? 1 : inputs) + 1;
+				size_t mg_ss2_elements = ((type == RCTTypeSimple || type == RCTTypeBulletproof) ? 1 : inputs) + 1;
 				PREPARE_CUSTOM_VECTOR_SERIALIZATION(mg_ss2_elements, MGs[i].ss[j]);
 				if(MGs[i].ss[j].size() != mg_ss2_elements)
 					return false;
@@ -411,7 +420,7 @@ struct rctSigPrunable
 				ar.delimit_array();
 		}
 		ar.end_array();
-		if(type == RCTTypeSimpleBulletproof)
+		if(type == RCTTypeBulletproof)
 		{
 			ar.tag("pseudoOuts");
 			ar.begin_array();
@@ -432,6 +441,16 @@ struct rctSigPrunable
 struct rctSig : public rctSigBase
 {
 	rctSigPrunable p;
+
+	keyV &get_pseudo_outs()
+	{
+		return type == RCTTypeBulletproof ? p.pseudoOuts : pseudoOuts;
+	}
+
+	keyV const &get_pseudo_outs() const
+	{
+		return type == RCTTypeBulletproof ? p.pseudoOuts : pseudoOuts;
+	}
 };
 
 //other basepoint H = toPoint(cn_fast_hash(G)), G the basepoint
@@ -512,7 +531,7 @@ void dp(bool a);
 void dp(const char *a, int l);
 void dp(keyV a);
 void dp(keyM a);
-void dp(xmr_amount vali);
+void dp(ryo_amount vali);
 void dp(int vali);
 void dp(bits amountb);
 void dp(const char *st);
@@ -520,20 +539,20 @@ void dp(const char *st);
 //various conversions
 
 //uint long long to 32 byte key
-void d2h(key &amounth, xmr_amount val);
-key d2h(xmr_amount val);
+void d2h(key &amounth, ryo_amount val);
+key d2h(ryo_amount val);
 //uint long long to int[64]
-void d2b(bits amountb, xmr_amount val);
+void d2b(bits amountb, ryo_amount val);
 //32 byte key to uint long long
 // if the key holds a value > 2^64
 // then the value in the first 8 bytes is returned
-xmr_amount h2d(const key &test);
+ryo_amount h2d(const key &test);
 //32 byte key to int[64]
 void h2b(bits amountb2, const key &test);
 //int[64] to 32 byte key
 void b2h(key &amountdh, bits amountb2);
 //int[64] to uint long long
-xmr_amount b2d(bits amountb);
+ryo_amount b2d(bits amountb);
 
 static inline const rct::key pk2rct(const crypto::public_key& pk) { return (const rct::key&)pk; }
 static inline const rct::key sk2rct(const crypto::secret_key& sk) { return (const rct::key&)sk; }

@@ -147,6 +147,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
 	}
 
 	virtual bool close() { /*std::cout << "test_connection::close()" << std::endl; */ return true; }
+	virtual bool send_done() { /*std::cout << "test_connection::send_done()" << std::endl; */ return true; }
 	virtual bool call_run_once_service_io()
 	{
 		std::cout << "test_connection::call_run_once_service_io()" << std::endl;

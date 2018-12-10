@@ -4770,3 +4770,17 @@ int sc_isnonzero(const unsigned char *s)
 			8) +
 		   1;
 }
+
+int ge_p3_is_point_at_infinity(const ge_p3 *p)
+{
+	// X = 0 and Y == Z
+	int n;
+	for (n = 0; n < 10; ++n)
+	{
+		if (p->X[n] | p->T[n])
+			return 0;
+		if (p->Y[n] != p->Z[n])
+		return 0;
+	}
+	return 1;
+}

@@ -125,6 +125,8 @@ TEST_pos(88188888073700000, 88188888_0737000000000000000);
 
 /* supply after 20 year plus the smallest unit */
 TEST_pos(88188888000000001, 88188888_000000001);
+/* Max uint64 */
+TEST_pos(18446744073709551615, 18446744073_709551615);
 
 // Invalid numbers
 TEST_neg_n(~, empty_string);
@@ -137,7 +139,6 @@ TEST_neg_n(_, only_point);
 // Don't go below 10^-9
 TEST_neg(0_0000000001);
 TEST_neg(0_0000000009);
-// check a number larger than 64bit
 TEST_neg(184467440737_000000001);
 
 // Overflow

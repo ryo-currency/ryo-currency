@@ -160,6 +160,7 @@ enum hard_fork_feature
 	FORK_RINGSIZE_INC,
 	FORK_RINGSIZE_INC_REQ,
 	FORK_BULLETPROOFS,
+	FORK_BULLETPROOFS_REQ,
 	FORK_STRICT_TX_SEMANTICS,
 	FORK_DEV_FUND,
 	FORK_FEE_V2,
@@ -187,7 +188,8 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_FEE_V2, 5, 6, 1},
 	{FORK_RINGSIZE_INC, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1},
 	{FORK_RINGSIZE_INC_REQ, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1},
-	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1},
+	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, 8, 1},
+	{FORK_BULLETPROOFS_REQ, hardfork_conf::FORK_ID_DISABLED, 9, 1},
 	{FORK_UNIFORM_IDS, hardfork_conf::FORK_ID_DISABLED, 7, 1},
 	{FORK_UNIFORM_IDS_REQ, hardfork_conf::FORK_ID_DISABLED, 8, 1}
 };
@@ -237,6 +239,8 @@ struct common_config
 	static constexpr uint64_t DYNAMIC_FEE_PER_KB_BASE_BLOCK_REWARD = 64000000000; // 64 * pow(10, 9)
 
 	static constexpr uint64_t CRYPTONOTE_MAX_BLOCK_NUMBER = 500000000;
+
+	static constexpr uint64_t BULLETPROOF_MAX_OUTPUTS = 16;
 
 	///////////////// Dev fund constants
 	// 2 out of 3 multisig address held by fireice, mosu, and psychocrypt
