@@ -131,14 +131,14 @@ tuple<key, key> skpkGen()
 }
 
 //generates C =aG + bH from b, a is given..
-void genC(key &C, const key &a, xmr_amount amount)
+void genC(key &C, const key &a, ryo_amount amount)
 {
 	key bH = scalarmultH(d2h(amount));
 	addKeys1(C, a, bH);
 }
 
 //generates a <secret , public> / Pedersen commitment to the amount
-tuple<ctkey, ctkey> ctskpkGen(xmr_amount amount)
+tuple<ctkey, ctkey> ctskpkGen(ryo_amount amount)
 {
 	ctkey sk, pk;
 	skpkGen(sk.dest, pk.dest);
@@ -159,14 +159,14 @@ tuple<ctkey, ctkey> ctskpkGen(const key &bH)
 	return make_tuple(sk, pk);
 }
 
-key zeroCommit(xmr_amount amount)
+key zeroCommit(ryo_amount amount)
 {
 	key am = d2h(amount);
 	key bH = scalarmultH(am);
 	return addKeys(G, bH);
 }
 
-key commit(xmr_amount amount, const key &mask)
+key commit(ryo_amount amount, const key &mask)
 {
 	key c = scalarmultBase(mask);
 	key am = d2h(amount);
@@ -176,7 +176,7 @@ key commit(xmr_amount amount, const key &mask)
 }
 
 //generates a random uint long long (for testing)
-xmr_amount randXmrAmount(xmr_amount upperlimit)
+ryo_amount randRyoAmount(ryo_amount upperlimit)
 {
 	return h2d(skGen()) % (upperlimit);
 }
@@ -225,6 +225,21 @@ key scalarmultKey(const key &P, const key &a)
 	return aP;
 }
 
+//Computes 8P
+key scalarmult8(const key & P)
+{
+	ge_p3 p3;
+	CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&p3, P.bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
+	ge_p2 p2;
+	ge_p3_to_p2(&p2, &p3);
+	ge_p1p1 p1;
+	ge_mul8(&p1, &p2);
+	ge_p1p1_to_p2(&p2, &p1);
+	rct::key res;
+	ge_tobytes(res.bytes, &p2);
+	return res;
+}
+
 //Computes aH where H= toPoint(cn_fast_hash(G)), G the basepoint
 key scalarmultH(const key &a)
 {
@@ -258,6 +273,28 @@ rct::key addKeys(const key &A, const key &B)
 	key k;
 	addKeys(k, A, B);
 	return k;
+}
+
+rct::key addKeys(const keyV &A) 
+{
+	if (A.empty())
+		return rct::identity();
+
+	ge_p3 p3, tmp;
+	CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&p3, A[0].bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
+	for (size_t i = 1; i < A.size(); ++i)
+	{
+		CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&tmp, A[i].bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
+		ge_cached p2;
+		ge_p3_to_cached(&p2, &tmp);
+		ge_p1p1 p1;
+		ge_add(&p1, &p3, &p2);
+		ge_p1p1_to_p3(&p3, &p1);
+	}
+
+	rct::key res;
+	ge_p3_tobytes(res.bytes, &p3);
+	return res;
 }
 
 //addKeys1

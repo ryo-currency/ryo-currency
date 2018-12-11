@@ -156,34 +156,46 @@ crypto::hash get_transaction_prefix_hash(const transaction_prefix &tx)
 //---------------------------------------------------------------
 bool expand_transaction_1(transaction &tx, bool base_only)
 {
-	if(tx.version >= 2 && !is_coinbase(tx))
+	if(is_coinbase(tx))
+		return true;
+
+	rct::rctSig &rv = tx.rct_signatures;
+	if(rv.outPk.size() != tx.vout.size())
 	{
-		rct::rctSig &rv = tx.rct_signatures;
-		if(rv.outPk.size() != tx.vout.size())
+		LOG_PRINT_L1("Failed to parse transaction from blob, bad outPk size in tx " << get_transaction_hash(tx));
+		return false;
+	}
+
+	for(size_t n = 0; n < tx.rct_signatures.outPk.size(); ++n)
+		rv.outPk[n].dest = rct::pk2rct(boost::get<txout_to_key>(tx.vout[n].target).key);
+
+	if(!base_only && rv.type == rct::RCTTypeBulletproof)
+	{
+		if (rv.p.bulletproofs.size() != 1)
 		{
-			LOG_PRINT_L1("Failed to parse transaction from blob, bad outPk size in tx " << get_transaction_hash(tx));
+			LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs size in tx " << get_transaction_hash(tx));
 			return false;
 		}
-		for(size_t n = 0; n < tx.rct_signatures.outPk.size(); ++n)
-			rv.outPk[n].dest = rct::pk2rct(boost::get<txout_to_key>(tx.vout[n].target).key);
 
-		if(!base_only)
+		if (rv.p.bulletproofs[0].L.size() < 6)
 		{
-			const bool bulletproof = rv.type == rct::RCTTypeFullBulletproof || rv.type == rct::RCTTypeSimpleBulletproof;
-			if(bulletproof)
-			{
-				if(rv.p.bulletproofs.size() != tx.vout.size())
-				{
-					LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs size in tx " << get_transaction_hash(tx));
-					return false;
-				}
-				for(size_t n = 0; n < rv.outPk.size(); ++n)
-				{
-					rv.p.bulletproofs[n].V.resize(1);
-					rv.p.bulletproofs[n].V[0] = rv.outPk[n].mask;
-				}
-			}
+			LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs L size in tx " << get_transaction_hash(tx));
+			return false;
 		}
+
+		const size_t max_outputs = 1 << (rv.p.bulletproofs[0].L.size() - 6);
+		if (max_outputs < tx.vout.size())
+		{
+			LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs max outputs in tx " << get_transaction_hash(tx));
+			return false;
+		}
+
+		const size_t n_amounts = tx.vout.size();
+		CHECK_AND_ASSERT_MES(n_amounts == rv.outPk.size(), false, "Internal error filling out V");
+		rv.p.bulletproofs[0].V.resize(n_amounts);
+
+		for (size_t i = 0; i < n_amounts; ++i)
+			rv.p.bulletproofs[0].V[i] = rct::scalarmultKey(rv.outPk[i].mask, rct::INV_EIGHT);
 	}
 	return true;
 }

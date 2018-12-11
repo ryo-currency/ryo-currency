@@ -27,6 +27,7 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set(unit_tests_sources
+  ../../src/crypto/crypto_ops_builder/verify.c
   apply_permutation.cpp
   ban.cpp
   base58.cpp
@@ -39,11 +40,12 @@ set(unit_tests_sources
   checkpoints.cpp
   command_line.cpp
   crypto.cpp
+  device.cpp
   dns_resolver.cpp
   epee_boosted_tcp_server.cpp
   epee_levin_protocol_handler_async.cpp
   epee_utils.cpp
-  fee.cpp
+  json_serialization.cpp
   get_xtype_from_string.cpp
   hashchain.cpp
   http.cpp
@@ -51,8 +53,10 @@ set(unit_tests_sources
   memwipe.cpp
   mnemonics.cpp
   mul_div.cpp
+  multiexp.cpp
   multisig.cpp
   parse_amount.cpp
+  random.cpp
   serialization.cpp
   sha256.cpp
   slow_memmem.cpp
@@ -81,11 +85,10 @@ target_link_libraries(unit_tests
     cryptonote_core
     blockchain_db
     rpc
+    serialization
     wallet
     p2p
     version
-    ccnconfig
-    epee
     ${Boost_CHRONO_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${GTEST_LIBRARIES}
@@ -109,3 +112,7 @@ SET_PROPERTY(SOURCE memwipe.cpp PROPERTY COMPILE_FLAGS -Ofast)
 add_test(
   NAME    unit_tests
   COMMAND unit_tests --data-dir "${TEST_DATA_DIR}")
+
+add_executable(test_notifier test_notifier.cpp)
+target_link_libraries(test_notifier ${EXTRA_LIBRARIES})
+set_property(TARGET test_notifier PROPERTY FOLDER "tests")

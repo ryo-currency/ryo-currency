@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2014-2017, The Monero Project
 //
 // All rights reserved.
 //
@@ -27,77 +27,37 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#include "gtest/gtest.h"
-#include <boost/filesystem.hpp>
 
-#include "crypto/crypto.h"
-#include "cryptonote_basic/account.h"
-#include "cryptonote_basic/cryptonote_basic_impl.h"
-#include "include_base_utils.h"
-#include "wallet/api/subaddress.h"
-#include "wallet/wallet2.h"
+#pragma once
 
-class WalletSubaddress : public ::testing::Test
+#include "ringct/rctSigs.h"
+
+template <bool a_verify>
+class test_range_proof
 {
-  protected:
-	virtual void SetUp()
-	{
-		try
-		{
-			w1.generate_legacy("", password, recovery_key, false);
-		}
-		catch(const std::exception &e)
-		{
-			LOG_ERROR("failed to generate wallet: " << e.what());
-			throw e;
-		}
+  public:
+	static const size_t loop_count = 50;
+	static const bool verify = a_verify;
 
-		w1.add_subaddress_account(test_label);
-		w1.set_subaddress_label(subaddress_index, test_label);
+	bool init()
+	{
+		rct::key mask;
+		sig = rct::proveRange(C, mask, 84932483243793);
+		return true;
 	}
 
-	virtual void TearDown()
+	bool test()
 	{
+		bool ret = true;
+		rct::key mask;
+		if(verify)
+			ret = rct::verRange(C, sig);
+		else
+			rct::proveRange(C, mask, 84932483243793);
+		return ret;
 	}
 
-	tools::wallet2 w1;
-	const std::string password = "testpass";
-	crypto::secret_key recovery_key = crypto::secret_key();
-	const std::string test_label = "subaddress test label";
-
-	uint32_t major_index = 0;
-	uint32_t minor_index = 0;
-	const cryptonote::subaddress_index subaddress_index = {major_index, minor_index};
+  private:
+	rct::key C;
+	rct::rangeSig sig;
 };
-
-TEST_F(WalletSubaddress, GetSubaddressLabel)
-{
-	EXPECT_EQ(test_label, w1.get_subaddress_label(subaddress_index));
-}
-
-TEST_F(WalletSubaddress, AddSubaddress)
-{
-	std::string label = "test adding subaddress";
-	w1.add_subaddress(0, label);
-	EXPECT_EQ(label, w1.get_subaddress_label({0, 1}));
-}
-
-TEST_F(WalletSubaddress, OutOfBoundsIndexes)
-{
-	try
-	{
-		w1.get_subaddress_label({1, 0});
-	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index_major is out of bound", e.what());
-	}
-	try
-	{
-		w1.get_subaddress_label({0, 2});
-	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index.minor is out of bound", e.what());
-	}
-}
