@@ -206,6 +206,12 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		return false;
 	}
 
+	if(bulletproof && destinations.size() > common_config::BULLETPROOF_MAX_OUTPUTS)
+	{
+		LOG_ERROR("Current bulletproof implementation supports up to 16 outputs (15 + change).");
+		return false;
+	}
+
 	tx.unlock_time = unlock_time;
 	crypto::public_key txkey_pub;
 
