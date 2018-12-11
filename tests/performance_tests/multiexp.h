@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, The Monero Project
 //
 // All rights reserved.
 //
@@ -27,77 +27,61 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#include "gtest/gtest.h"
-#include <boost/filesystem.hpp>
 
-#include "crypto/crypto.h"
-#include "cryptonote_basic/account.h"
-#include "cryptonote_basic/cryptonote_basic_impl.h"
-#include "include_base_utils.h"
-#include "wallet/api/subaddress.h"
-#include "wallet/wallet2.h"
+#pragma once
 
-class WalletSubaddress : public ::testing::Test
+#include "ringct/multiexp.h"
+#include "ringct/rctOps.h"
+#include <vector>
+
+template <test_multiexp_algorithm algorithm, size_t npoints, size_t c = 0>
+class test_multiexp
 {
-  protected:
-	virtual void SetUp()
-	{
-		try
-		{
-			w1.generate_legacy("", password, recovery_key, false);
-		}
-		catch(const std::exception &e)
-		{
-			LOG_ERROR("failed to generate wallet: " << e.what());
-			throw e;
-		}
+public:
+	static const size_t loop_count = npoints >= 1024 ? 10 : npoints < 256 ? 1000 : 100;
 
-		w1.add_subaddress_account(test_label);
-		w1.set_subaddress_label(subaddress_index, test_label);
+	bool init()
+	{
+		data.resize(npoints);
+		res = rct::identity();
+		for(size_t n = 0; n < npoints; ++n)
+		{
+			data[n].scalar = rct::skGen();
+			rct::key point = rct::scalarmultBase(rct::skGen());
+			if(ge_frombytes_vartime(&data[n].point, point.bytes))
+				return false;
+			rct::key kn = rct::scalarmultKey(point, data[n].scalar);
+			res = rct::addKeys(res, kn);
+		}
+		cache_a.s_cache.init_cache(data);
+		cache_a.p_cache.init_cache(data);
+		return true;
 	}
 
-	virtual void TearDown()
+	bool test()
 	{
+		switch(algorithm)
+		{
+		case multiexp_bos_coster:
+			return res == bos_coster_heap_conv_robust(data);
+		case multiexp_straus:
+			cache_b.s_cache.init_cache(data);
+			return res == cache_b.s_cache.straus(data, 0);
+		case multiexp_straus_cached:
+			return res == cache_a.s_cache.straus(data, 0);
+		case multiexp_pippenger:
+			cache_b.p_cache.init_cache(data);
+			return res == cache_b.p_cache.pippenger(data, cache_b.buckets, c);
+		case multiexp_pippenger_cached:
+			return res == cache_a.p_cache.pippenger(data, cache_a.buckets, c);
+		default:
+			return false;
+		}
 	}
 
-	tools::wallet2 w1;
-	const std::string password = "testpass";
-	crypto::secret_key recovery_key = crypto::secret_key();
-	const std::string test_label = "subaddress test label";
-
-	uint32_t major_index = 0;
-	uint32_t minor_index = 0;
-	const cryptonote::subaddress_index subaddress_index = {major_index, minor_index};
+  private:
+	std::vector<rct::MultiexpData> data;
+	rct::bp_cache cache_a;
+	rct::bp_cache cache_b;
+	rct::key res;
 };
-
-TEST_F(WalletSubaddress, GetSubaddressLabel)
-{
-	EXPECT_EQ(test_label, w1.get_subaddress_label(subaddress_index));
-}
-
-TEST_F(WalletSubaddress, AddSubaddress)
-{
-	std::string label = "test adding subaddress";
-	w1.add_subaddress(0, label);
-	EXPECT_EQ(label, w1.get_subaddress_label({0, 1}));
-}
-
-TEST_F(WalletSubaddress, OutOfBoundsIndexes)
-{
-	try
-	{
-		w1.get_subaddress_label({1, 0});
-	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index_major is out of bound", e.what());
-	}
-	try
-	{
-		w1.get_subaddress_label({0, 2});
-	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index.minor is out of bound", e.what());
-	}
-}

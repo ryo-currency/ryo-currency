@@ -43,6 +43,8 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "cryptonote_config.h"
+#include "misc_log_ex.h"
 #include "rctTypes.h"
 using namespace crypto;
 using namespace std;
@@ -116,7 +118,7 @@ void dp(keyM a)
 	printf("]");
 	printf("\n");
 }
-void dp(xmr_amount vali)
+void dp(ryo_amount vali)
 {
 	printf("x: ");
 	std::cout << vali;
@@ -145,37 +147,37 @@ void dp(const char *st)
 //Various Conversions
 
 //uint long long to 32 byte key
-void d2h(key &amounth, const xmr_amount in)
+void d2h(key &amounth, const ryo_amount in)
 {
 	sc_0(amounth.bytes);
-	xmr_amount val = in;
+	ryo_amount val = in;
 	int i = 0;
 	while(val != 0)
 	{
 		amounth[i] = (unsigned char)(val & 0xFF);
 		i++;
-		val /= (xmr_amount)256;
+		val /= (ryo_amount)256;
 	}
 }
 
 //uint long long to 32 byte key
-key d2h(const xmr_amount in)
+key d2h(const ryo_amount in)
 {
 	key amounth;
 	sc_0(amounth.bytes);
-	xmr_amount val = in;
+	ryo_amount val = in;
 	int i = 0;
 	while(val != 0)
 	{
 		amounth[i] = (unsigned char)(val & 0xFF);
 		i++;
-		val /= (xmr_amount)256;
+		val /= (ryo_amount)256;
 	}
 	return amounth;
 }
 
 //uint long long to int[64]
-void d2b(bits amountb, xmr_amount val)
+void d2b(bits amountb, ryo_amount val)
 {
 	int i = 0;
 	while(val != 0)
@@ -194,13 +196,13 @@ void d2b(bits amountb, xmr_amount val)
 //32 byte key to uint long long
 // if the key holds a value > 2^64
 // then the value in the first 8 bytes is returned
-xmr_amount h2d(const key &test)
+ryo_amount h2d(const key &test)
 {
-	xmr_amount vali = 0;
+	ryo_amount vali = 0;
 	int j = 0;
 	for(j = 7; j >= 0; j--)
 	{
-		vali = (xmr_amount)(vali * 256 + (unsigned char)test.bytes[j]);
+		vali = (ryo_amount)(vali * 256 + (unsigned char)test.bytes[j]);
 	}
 	return vali;
 }
@@ -248,14 +250,66 @@ void b2h(key &amountdh, const bits amountb2)
 }
 
 //int[64] to uint long long
-xmr_amount b2d(bits amountb)
+ryo_amount b2d(bits amountb)
 {
-	xmr_amount vali = 0;
+	ryo_amount vali = 0;
 	int j = 0;
 	for(j = 63; j >= 0; j--)
 	{
-		vali = (xmr_amount)(vali * 2 + amountb[j]);
+		vali = (ryo_amount)(vali * 2 + amountb[j]);
 	}
 	return vali;
 }
+
+size_t n_bulletproof_amounts(const Bulletproof &proof)
+{
+	CHECK_AND_ASSERT_MES(proof.L.size() >= 6, 0, "Invalid bulletproof L size");
+	CHECK_AND_ASSERT_MES(proof.L.size() == proof.R.size(), 0, "Mismatched bulletproof L/R size");
+	static const size_t extra_bits = 4;
+	static_assert((1 << extra_bits) == cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS, "log2(BULLETPROOF_MAX_OUTPUTS) is out of date");
+	CHECK_AND_ASSERT_MES(proof.L.size() <= 6 + extra_bits, 0, "Invalid bulletproof L size");
+	CHECK_AND_ASSERT_MES(proof.V.size() <= (1u<<(proof.L.size()-6)), 0, "Invalid bulletproof V/L");
+	CHECK_AND_ASSERT_MES(proof.V.size() * 2 > (1u<<(proof.L.size()-6)), 0, "Invalid bulletproof V/L");
+	CHECK_AND_ASSERT_MES(proof.V.size() > 0, 0, "Empty bulletproof");
+	return proof.V.size();
+}
+
+size_t n_bulletproof_amounts(const std::vector<Bulletproof> &proofs)
+{
+	size_t n = 0;
+	for(const Bulletproof &proof: proofs)
+	{
+		size_t n2 = n_bulletproof_amounts(proof);
+		CHECK_AND_ASSERT_MES(n2 < std::numeric_limits<uint32_t>::max() - n, 0, "Invalid number of bulletproofs");
+		if(n2 == 0)
+			return 0;
+		n += n2;
+	}
+	return n;
+}
+
+size_t n_bulletproof_max_amounts(const Bulletproof &proof)
+{
+	CHECK_AND_ASSERT_MES(proof.L.size() >= 6, 0, "Invalid bulletproof L size");
+	CHECK_AND_ASSERT_MES(proof.L.size() == proof.R.size(), 0, "Mismatched bulletproof L/R size");
+	static const size_t extra_bits = 4;
+	static_assert((1 << extra_bits) == cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS, "log2(BULLETPROOF_MAX_OUTPUTS) is out of date");
+	CHECK_AND_ASSERT_MES(proof.L.size() <= 6 + extra_bits, 0, "Invalid bulletproof L size");
+	return 1 << (proof.L.size() - 6);
+}
+
+size_t n_bulletproof_max_amounts(const std::vector<Bulletproof> &proofs)
+{
+	size_t n = 0;
+	for (const Bulletproof &proof: proofs)
+	{
+		size_t n2 = n_bulletproof_max_amounts(proof);
+		CHECK_AND_ASSERT_MES(n2 < std::numeric_limits<uint32_t>::max() - n, 0, "Invalid number of bulletproofs");
+		if (n2 == 0)
+			return 0;
+		n += n2;
+	}
+	return n;
+}
+
 }

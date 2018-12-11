@@ -27,77 +27,42 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#include "gtest/gtest.h"
-#include <boost/filesystem.hpp>
+
+#pragma once
 
 #include "crypto/crypto.h"
-#include "cryptonote_basic/account.h"
-#include "cryptonote_basic/cryptonote_basic_impl.h"
-#include "include_base_utils.h"
-#include "wallet/api/subaddress.h"
-#include "wallet/wallet2.h"
+#include "cryptonote_basic/cryptonote_basic.h"
 
-class WalletSubaddress : public ::testing::Test
+#include "single_tx_test_base.h"
+
+template <bool verify>
+class test_signature : public single_tx_test_base
 {
-  protected:
-	virtual void SetUp()
-	{
-		try
-		{
-			w1.generate_legacy("", password, recovery_key, false);
-		}
-		catch(const std::exception &e)
-		{
-			LOG_ERROR("failed to generate wallet: " << e.what());
-			throw e;
-		}
+  public:
+	static const size_t loop_count = 10000;
 
-		w1.add_subaddress_account(test_label);
-		w1.set_subaddress_label(subaddress_index, test_label);
+	bool init()
+	{
+		if(!single_tx_test_base::init())
+			return false;
+
+		message = crypto::rand<crypto::hash>();
+		keys = cryptonote::keypair::generate(hw::get_device("default"));
+		crypto::generate_signature(message, keys.pub, keys.sec, m_signature);
+
+		return true;
 	}
 
-	virtual void TearDown()
+	bool test()
 	{
+		if(verify)
+			return crypto::check_signature(message, keys.pub, m_signature);
+		crypto::generate_signature(message, keys.pub, keys.sec, m_signature);
+		return true;
 	}
 
-	tools::wallet2 w1;
-	const std::string password = "testpass";
-	crypto::secret_key recovery_key = crypto::secret_key();
-	const std::string test_label = "subaddress test label";
-
-	uint32_t major_index = 0;
-	uint32_t minor_index = 0;
-	const cryptonote::subaddress_index subaddress_index = {major_index, minor_index};
+  private:
+	cryptonote::keypair keys;
+	crypto::hash message;
+	crypto::signature m_signature;
 };
-
-TEST_F(WalletSubaddress, GetSubaddressLabel)
-{
-	EXPECT_EQ(test_label, w1.get_subaddress_label(subaddress_index));
-}
-
-TEST_F(WalletSubaddress, AddSubaddress)
-{
-	std::string label = "test adding subaddress";
-	w1.add_subaddress(0, label);
-	EXPECT_EQ(label, w1.get_subaddress_label({0, 1}));
-}
-
-TEST_F(WalletSubaddress, OutOfBoundsIndexes)
-{
-	try
-	{
-		w1.get_subaddress_label({1, 0});
-	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index_major is out of bound", e.what());
-	}
-	try
-	{
-		w1.get_subaddress_label({0, 2});
-	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index.minor is out of bound", e.what());
-	}
-}

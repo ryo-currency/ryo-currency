@@ -27,77 +27,61 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#include "gtest/gtest.h"
-#include <boost/filesystem.hpp>
+
+#pragma once
 
 #include "crypto/crypto.h"
-#include "cryptonote_basic/account.h"
-#include "cryptonote_basic/cryptonote_basic_impl.h"
-#include "include_base_utils.h"
-#include "wallet/api/subaddress.h"
-#include "wallet/wallet2.h"
+#include "cryptonote_basic/cryptonote_basic.h"
 
-class WalletSubaddress : public ::testing::Test
+#include "single_tx_test_base.h"
+
+class test_ge_tobytes : public multi_tx_test_base<2>
 {
-  protected:
-	virtual void SetUp()
+  public:
+	static constexpr size_t out_count = 1;
+	static const size_t loop_count = 10000;
+
+	bool init()
 	{
-		try
+		using namespace cryptonote;
+
+		if(!base_class_t::init())
+			return false;
+
+		cryptonote::account_base m_alice;
+		cryptonote::transaction m_tx;
+		std::vector<tx_destination_entry> destinations;
+
+		m_alice.generate_new(0);
+
+		for(size_t i = 0; i < out_count; ++i)
+			destinations.push_back(tx_destination_entry(this->m_source_amount / out_count, m_alice.get_keys().m_account_address, false));
+
+		crypto::secret_key tx_key;
+		std::vector<crypto::secret_key> additional_tx_keys;
+		std::unordered_map<crypto::public_key, cryptonote::subaddress_index> subaddresses;
+		subaddresses[this->m_miners[this->real_source_idx].get_keys().m_account_address.m_spend_public_key] = {0, 0};
+
+		if(!cryptonote::construct_tx_and_get_tx_key(this->m_miners[this->real_source_idx].get_keys(), subaddresses, 
+			this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_tx, 0, tx_key, additional_tx_keys, true, nullptr, true))
 		{
-			w1.generate_legacy("", password, recovery_key, false);
-		}
-		catch(const std::exception &e)
-		{
-			LOG_ERROR("failed to generate wallet: " << e.what());
-			throw e;
+			return false;
 		}
 
-		w1.add_subaddress_account(test_label);
-		w1.set_subaddress_label(subaddress_index, test_label);
+		const cryptonote::txin_to_key &txin = boost::get<cryptonote::txin_to_key>(m_tx.vin[0]);
+		if(ge_frombytes_vartime(&m_p3, (const unsigned char *)&txin.k_image) != 0)
+			return false;
+
+		return true;
 	}
 
-	virtual void TearDown()
+	bool test()
 	{
+		rct::key key;
+		ge_p3_tobytes(key.bytes, &m_p3);
+		return true;
 	}
 
-	tools::wallet2 w1;
-	const std::string password = "testpass";
-	crypto::secret_key recovery_key = crypto::secret_key();
-	const std::string test_label = "subaddress test label";
-
-	uint32_t major_index = 0;
-	uint32_t minor_index = 0;
-	const cryptonote::subaddress_index subaddress_index = {major_index, minor_index};
+  private:
+	ge_p3 m_p3;
 };
-
-TEST_F(WalletSubaddress, GetSubaddressLabel)
-{
-	EXPECT_EQ(test_label, w1.get_subaddress_label(subaddress_index));
-}
-
-TEST_F(WalletSubaddress, AddSubaddress)
-{
-	std::string label = "test adding subaddress";
-	w1.add_subaddress(0, label);
-	EXPECT_EQ(label, w1.get_subaddress_label({0, 1}));
-}
-
-TEST_F(WalletSubaddress, OutOfBoundsIndexes)
-{
-	try
-	{
-		w1.get_subaddress_label({1, 0});
-	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index_major is out of bound", e.what());
-	}
-	try
-	{
-		w1.get_subaddress_label({0, 2});
-	}
-	catch(const std::exception &e)
-	{
-		EXPECT_STREQ("index.minor is out of bound", e.what());
-	}
-}

@@ -53,7 +53,7 @@ class multi_tx_test_base
 		std::vector<tx_source_entry::output_entry> output_entries;
 		for(size_t i = 0; i < ring_size; ++i)
 		{
-			m_miners[i].generate_new(false);
+			m_miners[i].generate_new(0);
 
 			if(!construct_miner_tx(MAINNET, 0, 0, 0, 2, 0, m_miners[i].get_keys().m_account_address, m_miner_txs[i]))
 				return false;
@@ -79,6 +79,7 @@ class multi_tx_test_base
 
 		return true;
 	}
+	using base_class_t = multi_tx_test_base;
 
   protected:
 	cryptonote::account_base m_miners[ring_size];
@@ -88,4 +89,5 @@ class multi_tx_test_base
 	std::vector<cryptonote::tx_source_entry> m_sources;
 	crypto::public_key m_public_keys[ring_size];
 	const crypto::public_key *m_public_key_ptrs[ring_size];
+	
 };

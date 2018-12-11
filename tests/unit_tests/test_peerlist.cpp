@@ -38,12 +38,7 @@ TEST(peer_list, peer_list_general)
 {
 	nodetool::peerlist_manager plm;
 	plm.init(false);
-#define MAKE_IPV4_ADDRESS(a, b, c, d, e)  \
-	epee::net_utils::ipv4_network_address \
-	{                                     \
-		MAKE_IP(a, b, c, d)               \
-		, e                               \
-	}
+#define MAKE_IPV4_ADDRESS(a, b, c, d, e) epee::net_utils::ipv4_network_address { MAKE_IP(a, b, c, d), e }
 #define ADD_GRAY_NODE(addr_, id_, last_seen_) \
 	{                                         \
 		nodetool::peerlist_entry ple;         \

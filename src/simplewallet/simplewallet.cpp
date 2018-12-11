@@ -4526,6 +4526,12 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 		dsts.push_back(de);
 	}
 
+	if(m_wallet->use_fork_rules(FORK_BULLETPROOFS) && dsts.size() >= cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS)
+	{
+		fail_msg_writer() << tr("Bulletproof transactions can support up to 15 ouputs and change. Please break down the payment into smaller parts.");
+		return true;
+	}
+
 	// prompt is there is no payment id and confirmation is required
 	if(payment_id.zero != 0 && m_wallet->confirm_missing_payment_id())
 	{

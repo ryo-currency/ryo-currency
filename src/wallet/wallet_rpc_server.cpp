@@ -762,6 +762,13 @@ bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::requ
 		return false;
 	}
 
+	if(m_wallet->use_fork_rules(cryptonote::FORK_BULLETPROOFS) && dsts.size() >= cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_TX_TOO_LARGE;
+		er.message = "Transaction would be too large. Try /transfer_split.";
+		return false;
+	}
+
 	try
 	{
 		uint64_t mixin;
@@ -787,7 +794,7 @@ bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::requ
 		if(ptx_vector.size() != 1)
 		{
 			er.code = WALLET_RPC_ERROR_CODE_TX_TOO_LARGE;
-			er.message = "Transaction would be too large.  try /transfer_split.";
+			er.message = "Transaction would be too large. Try /transfer_split.";
 			return false;
 		}
 
@@ -822,6 +829,10 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 		return false;
 	}
 
+	size_t max_outputs = -1;
+	if(m_wallet->use_fork_rules(cryptonote::FORK_BULLETPROOFS))
+		max_outputs = cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS - 1;
+
 	try
 	{
 		uint64_t mixin;
@@ -835,8 +846,24 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
 		LOG_PRINT_L2("on_transfer_split calling create_transactions_2");
-		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, check_pid(pid),
-				req.account_index, req.subaddr_indices, m_trusted_daemon);
+		
+		std::vector<wallet2::pending_tx> ptx_vector;
+		if(dsts.size() > max_outputs)
+		{
+			while(dsts.size() > 0)
+			{
+				size_t size_c = std::min(dsts.size(), max_outputs);
+				std::vector<cryptonote::tx_destination_entry> dsts_c(size_c);
+				std::copy(dsts.end()-size_c, dsts.end(), dsts_c.begin());
+				dsts.resize(dsts.size()-size_c);
+				std::vector<wallet2::pending_tx> ptx_vector_c = m_wallet->create_transactions_2(
+					dsts_c, mixin, req.unlock_time, priority, check_pid(pid), req.account_index, req.subaddr_indices, m_trusted_daemon);
+				std::copy(ptx_vector_c.begin(), ptx_vector_c.end(), std::back_inserter(ptx_vector));
+			}
+		}
+		else
+			ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, check_pid(pid), req.account_index, req.subaddr_indices, m_trusted_daemon);
+		
 		LOG_PRINT_L2("on_transfer_split called create_transactions_2");
 
 		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
