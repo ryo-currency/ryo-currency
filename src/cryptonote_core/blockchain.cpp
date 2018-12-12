@@ -192,7 +192,7 @@ bool Blockchain::scan_outputkeys_for_indexes(size_t tx_version, const txin_to_ke
 	// cryptonote_format_utils uses relative offsets for indexing to the global
 	// outputs list.  that is to say that absolute offset #2 is absolute offset
 	// #1 plus relative offset #2.
-	// TODO: Investigate if this is necessary / why this is done.
+	// This is to make the transaction smaller, moo - fireice
 	std::vector<uint64_t> absolute_offsets = relative_output_offsets_to_absolute(tx_in_to_key.key_offsets);
 	std::vector<output_data_t> outputs;
 
@@ -212,16 +212,16 @@ bool Blockchain::scan_outputkeys_for_indexes(size_t tx_version, const txin_to_ke
 	{
 		try
 		{
-			m_db->get_output_key(tx_in_to_key.amount, absolute_offsets, outputs, true);
+			m_db->get_output_key(0, absolute_offsets, outputs, true);
 			if(absolute_offsets.size() != outputs.size())
 			{
-				MERROR_VER("Output does not exist! amount = " << tx_in_to_key.amount);
+				MERROR_VER("Output does not exist!");
 				return false;
 			}
 		}
 		catch(...)
 		{
-			MERROR_VER("Output does not exist! amount = " << tx_in_to_key.amount);
+			MERROR_VER("Output does not exist!");
 			return false;
 		}
 	}
@@ -237,16 +237,16 @@ bool Blockchain::scan_outputkeys_for_indexes(size_t tx_version, const txin_to_ke
 				add_offsets.push_back(absolute_offsets[i]);
 			try
 			{
-				m_db->get_output_key(tx_in_to_key.amount, add_offsets, add_outputs, true);
+				m_db->get_output_key(0, add_offsets, add_outputs, true);
 				if(add_offsets.size() != add_outputs.size())
 				{
-					MERROR_VER("Output does not exist! amount = " << tx_in_to_key.amount);
+					MERROR_VER("Output does not exist!");
 					return false;
 				}
 			}
 			catch(...)
 			{
-				MERROR_VER("Output does not exist! amount = " << tx_in_to_key.amount);
+				MERROR_VER("Output does not exist!");
 				return false;
 			}
 			outputs.insert(outputs.end(), add_outputs.begin(), add_outputs.end());
@@ -265,7 +265,7 @@ bool Blockchain::scan_outputkeys_for_indexes(size_t tx_version, const txin_to_ke
 				if(count < outputs.size())
 					output_index = outputs.at(count);
 				else
-					output_index = m_db->get_output_key(tx_in_to_key.amount, i);
+					output_index = m_db->get_output_key(0, i);
 
 				// call to the passed boost visitor to grab the public key for the output
 				if(!vis.handle_output(output_index.unlock_time, output_index.pubkey, output_index.commitment))
