@@ -908,7 +908,7 @@ uint64_t BlockchainLMDB::add_output(const crypto::hash &tx_hash,
 	CURSOR(output_txs)
 	CURSOR(output_amounts)
 
-	if(tx_output.amount != 0 && tx_output.amount != 1)
+	if(tx_output.amount != 0)
 		throw0(DB_ERROR("RCT-non output"));
 	if(tx_output.target.type() != typeid(txout_to_key))
 		throw0(DB_ERROR("Wrong output type: expected txout_to_key"));
