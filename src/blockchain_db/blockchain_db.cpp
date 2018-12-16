@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/range/adaptor/reversed.hpp>
+#include <unordered_set>
 
 #include "blockchain_db.h"
 #include "cryptonote_basic/cryptonote_format_utils.h"
@@ -69,6 +70,10 @@ using epee::string_tools::pod_to_hex;
 
 namespace cryptonote
 {
+
+// Output public keys that we need to skip; because of a bug, including them
+// would change the offset of every key after them. They were mined by the official pool
+std::unordered_set<crypto::public_key> bad_outpks;
 
 bool blockchain_valid_db_type(const std::string &db_type)
 {
@@ -183,11 +188,10 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 			cryptonote::tx_out vout = tx.vout[i];
 			rct::key commitment = rct::zeroCommit(vout.amount);
 
-			if(m_hardfork->get_current_version_num() <= 3 && tx.version > 2)
-				vout.amount = 1; //Put those on a different index to fix a bug
-			else
-				vout.amount = 0;
+			if(vout.target.type() == typeid(txout_to_key) && bad_outpks.find(boost::get<txout_to_key>(vout.target).key) != bad_outpks.end())
+				continue;
 
+			vout.amount = 0;
 			amount_output_indices.push_back(add_output(tx_hash, vout, i, tx.unlock_time, &commitment));
 		}
 		else
@@ -377,8 +381,22 @@ void BlockchainDB::fixup()
 	set_batch_transactions(true);
 	batch_start();
 
+	static const char* const bad_outs[] =
+		{
+			"cbf2af2d517fce9d4d4a34907541c21ce70ea5cfea5bad887022f790c39c93f1",
+			"0a01eaba1c3e73dfe5fc0f70ed9241d06852aadeb5c7905c3fe08731774f5f56",
+			"ba37354aaab679aaf670f76cc225605751a44dab88830016464eb530b4d3be7d"
+		};
+
+	for(const auto &spk : bad_outs)
+	{
+		crypto::public_key pk;
+		epee::string_tools::hex_to_pod(spk, pk);
+		bad_outpks.insert(pk);
+	}
+
 	// block 685498 (13 key images in one transaction)
-	static const char *const premine_key_images[] =
+	static const char* const premine_key_images[] =
 		{
 			"a42fa875b187e7f9e8d25ad158187458cdcce0db9582b5ccd02e9a5d99a79239", //txid 29b65a4ddd5ad2502f4a5e536651de577837fef2b62e1eeccf518806a5195d98
 			"89018dae2d6283edecf4df800bfdc56f1768fef450034dc9868388ac83cd045b", //txid c06ef81adb318383fef0af64620b35a781a6489b8ab90b574290057a5decd245
