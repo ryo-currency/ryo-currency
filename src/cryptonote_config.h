@@ -155,6 +155,7 @@ enum hard_fork_feature
 {
 	FORK_V2_DIFFICULTY,
 	FORK_V3_DIFFICULTY,
+	FORK_V4_DIFFICULTY,
 	FORK_FIXED_FEE,
 	FORK_NEED_V3_TXES,
 	FORK_RINGSIZE_INC,
@@ -181,6 +182,7 @@ struct hardfork_conf
 static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_V2_DIFFICULTY, 2, 2, 1},
 	{FORK_V3_DIFFICULTY, 4, 4, 1},
+	{FORK_V4_DIFFICULTY, hardfork_conf::FORK_ID_DISABLED, 9, 1},
 	{FORK_FIXED_FEE, 4, 4, 1},
 	{FORK_NEED_V3_TXES, 4, 4, 1},
 	{FORK_STRICT_TX_SEMANTICS, 5, 5, 1},
@@ -224,10 +226,14 @@ struct common_config
 	static constexpr uint64_t BLOCK_FUTURE_TIME_LIMIT_V2 = 60 * 24;
 
 	/////////////// V3 difficulty constants
-	static constexpr uint64_t DIFFICULTY_WINDOW_V3 = 60 + 1;
-	static constexpr uint64_t DIFFICULTY_BLOCKS_COUNT_V3 = DIFFICULTY_WINDOW_V3;
+	static constexpr uint64_t DIFFICULTY_WINDOW_V3 = 60;
+	static constexpr uint64_t DIFFICULTY_BLOCKS_COUNT_V3 = DIFFICULTY_WINDOW_V3 + 1;
 	static constexpr uint64_t BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3 = 11;
 	static constexpr uint64_t BLOCK_FUTURE_TIME_LIMIT_V3 = DIFFICULTY_TARGET * 3;
+
+	/////////////// V4 difficulty constants
+	static constexpr uint64_t DIFFICULTY_WINDOW_V4 = 45;
+	static constexpr uint64_t DIFFICULTY_BLOCKS_COUNT_V4 = DIFFICULTY_WINDOW_V4 + 1;
 
 	static constexpr uint64_t CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE = 240 * 1024; // 240 kB
 	static constexpr uint64_t BLOCK_SIZE_GROWTH_FAVORED_ZONE = CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE * 4;
