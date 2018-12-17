@@ -1,5 +1,4 @@
-// Copyright (c) 2017, SUMOKOIN
-// Copyright (c) 2014-2016, The Monero Project
+// Copyright (c) 2018, Ryo Currency Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
@@ -41,37 +40,65 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#pragma once
+#include "gtest/gtest.h"
+#include "cryptonote_basic/difficulty.h"
 
-#include <cstdint>
-#include <vector>
+#define ASSERT_ARRAYS(x, y) \
+	ASSERT_EQ(x.size(), y.size()) << "Vectors x and y are of unequal length"; \
+	for (int i = 0; i < x.size(); ++i) \
+		EXPECT_EQ(x[i], y[i]) << "Vectors x and y differ at index " << i;
 
-#include "crypto/hash.h"
-
-namespace cryptonote
+TEST(timestamp_interpolation, null)
 {
-typedef std::uint64_t difficulty_type;
+	std::vector<uint64_t> ts     = { 100, 200, 300, 400, 500 };
+	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500 };
+	
+	cryptonote::interpolate_timestamps<4>(ts);
+	ASSERT_ARRAYS(ts, ts_exp);
+}
 
-/**
-   * @brief checks if a hash fits the given difficulty
-   *
-   * The hash passes if (hash * difficulty) < 2^192.
-   * Phrased differently, if (hash * difficulty) fits without overflow into
-   * the least significant 192 bits of the 256 bit multiplication result.
-   *
-   * @param hash the hash to check
-   * @param difficulty the difficulty to check against
-   *
-   * @return true if valid, else false
-   */
-bool check_hash(const crypto::hash &hash, difficulty_type difficulty);
-difficulty_type next_difficulty_v1(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds);
-difficulty_type next_difficulty_v2(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds);
-difficulty_type next_difficulty_v3(const std::vector<std::uint64_t> &timestamps, const std::vector<difficulty_type> &cumulative_difficulties);
-difficulty_type next_difficulty_v4(std::vector<uint64_t> timestamps, const std::vector<difficulty_type>& cumulative_difficulties);
-template<size_t N>
-void interpolate_timestamps(std::vector<uint64_t>& timestamps);
+TEST(timestamp_interpolation, one)
+{
+	std::vector<uint64_t> ts     = { 100, 600, 100, 400, 500 };
+	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500 };
+
+	cryptonote::interpolate_timestamps<4>(ts);
+	ASSERT_ARRAYS(ts, ts_exp);
+}
+
+TEST(timestamp_interpolation, two)
+{
+	std::vector<uint64_t> ts     = { 100, 600, 100,  50, 500 };
+	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500 };
+	
+	cryptonote::interpolate_timestamps<4>(ts);
+	ASSERT_ARRAYS(ts, ts_exp);
+}
+
+TEST(timestamp_interpolation, three)
+{
+	std::vector<uint64_t> ts     = { 100, 600, 100,  50,  70, 600 };
+	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500, 600 };
+	
+	cryptonote::interpolate_timestamps<5>(ts);
+	ASSERT_ARRAYS(ts, ts_exp);
+}
+
+TEST(timestamp_interpolation, three_1)
+{
+	std::vector<uint64_t> ts     = { 100, 200, 300, 150, 150, 600 };
+	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500, 600 };
+	
+	cryptonote::interpolate_timestamps<5>(ts);
+	ASSERT_ARRAYS(ts, ts_exp);
+}
+
+TEST(timestamp_interpolation, four)
+{
+	std::vector<uint64_t> ts     = { 100, 600, 100, 400, 500,  50,  70, 800 };
+	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500, 600, 700, 800 };
+	
+	cryptonote::interpolate_timestamps<7>(ts);
+	ASSERT_ARRAYS(ts, ts_exp);
 }
