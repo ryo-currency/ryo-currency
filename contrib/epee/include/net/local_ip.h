@@ -25,7 +25,6 @@
 //
 
 #pragma once
-#include <byteswap.h>
 #include "cryptonote_config.h"
 
 namespace epee
@@ -45,7 +44,7 @@ inline uint32_t bits_to_mask(uint32_t bits)
 	// Now move those bits to the high end
 	netmask <<= 32u - bits;
 	// And finally swap endianness to little endian
-	return __bswap_32(netmask);
+	return __builtin_bswap32(netmask);
 }
 
 inline bool is_ip_local(uint32_t ip)

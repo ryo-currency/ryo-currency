@@ -405,7 +405,7 @@ difficulty_type next_difficulty_v4(std::vector<uint64_t> timestamps, const std::
 		assert(timestamps[i] != 0);
 		L += std::min(timestamps[i] - timestamps[i - 1], 5 * T) * i * i;
 	}
-	L = std::max(L, 1ul);
+	L = std::max<uint64_t>(L, 1);
 
 	// Let's take CD as a sum of N difficulties. Sum of weights is (n*(n+1)*(2n+1))/6 (SUM)
 	// L is a sigma(timeperiods * weights)
