@@ -1521,6 +1521,15 @@ class BlockchainDB
 	bool m_open;										   //!< Whether or not the BlockchainDB is open/ready for use
 	mutable epee::critical_section m_synchronization_lock; //!< A lock, currently for when BlockchainLMDB needs to resize the backing db file
 
+	inline bool is_vout_bad(const cryptonote::tx_out& vout) 
+	{
+		return vout.target.type() == typeid(txout_to_key) && bad_outpks.find(boost::get<txout_to_key>(vout.target).key) != bad_outpks.end();
+	}
+
+private:
+	// Output public keys that we need to skip; because of a bug, including them
+	// would change the offset of every key after them. They were mined by the official pool
+	std::unordered_set<crypto::public_key> bad_outpks;
 }; // class BlockchainDB
 
 BlockchainDB *new_db(const std::string &db_type);
