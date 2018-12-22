@@ -6582,7 +6582,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 		cryptonote::transaction tx;
 		pending_tx ptx;
 		size_t bytes;
-		uint64_t fee;
+		uint64_t fee = 0;
 		std::vector<std::vector<tools::wallet2::get_outs_entry>> outs;
 
 		void add(const account_public_address &addr, bool is_subaddress, uint64_t amount, unsigned int original_output_index, bool merge_destinations)
@@ -6858,8 +6858,12 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 		}
 		else
 		{
-			while(!dsts.empty() && dsts[0].amount <= available_amount && estimate_rct_tx_size(tx.selected_transfers.size(), fake_outs_count, tx.dsts.size(), bulletproof) < TX_SIZE_TARGET(upper_transaction_size_limit))
+			while(!dsts.empty() && dsts[0].amount <= available_amount && 
+				estimate_rct_tx_size(tx.selected_transfers.size(), fake_outs_count, tx.dsts.size(), bulletproof) < TX_SIZE_TARGET(upper_transaction_size_limit))
 			{
+				if(bulletproof && tx.dsts.size() >= cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS-1)
+					break;
+
 				// we can fully pay that destination
 				LOG_PRINT_L2("We can fully pay " << get_public_address_as_str(m_nettype, dsts[0].is_subaddress, dsts[0].addr) << " for " << print_money(dsts[0].amount));
 				tx.add(dsts[0].addr, dsts[0].is_subaddress, dsts[0].amount, original_output_index, m_merge_destinations);
@@ -6869,13 +6873,17 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 				++original_output_index;
 			}
 
-			if(available_amount > 0 && !dsts.empty() && estimate_rct_tx_size(tx.selected_transfers.size(), fake_outs_count, tx.dsts.size(), bulletproof) < TX_SIZE_TARGET(upper_transaction_size_limit))
+			if(available_amount > 0 && !dsts.empty() && 
+				estimate_rct_tx_size(tx.selected_transfers.size(), fake_outs_count, tx.dsts.size(), bulletproof) < TX_SIZE_TARGET(upper_transaction_size_limit))
 			{
-				// we can partially fill that destination
-				LOG_PRINT_L2("We can partially pay " << get_public_address_as_str(m_nettype, dsts[0].is_subaddress, dsts[0].addr) << " for " << print_money(available_amount) << "/" << print_money(dsts[0].amount));
-				tx.add(dsts[0].addr, dsts[0].is_subaddress, available_amount, original_output_index, m_merge_destinations);
-				dsts[0].amount -= available_amount;
-				available_amount = 0;
+				if(!bulletproof || tx.dsts.size() < cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS-1)
+				{
+					// we can partially fill that destination
+					LOG_PRINT_L2("We can partially pay " << get_public_address_as_str(m_nettype, dsts[0].is_subaddress, dsts[0].addr) << " for " << print_money(available_amount) << "/" << print_money(dsts[0].amount));
+					tx.add(dsts[0].addr, dsts[0].is_subaddress, available_amount, original_output_index, m_merge_destinations);
+					dsts[0].amount -= available_amount;
+					available_amount = 0;
+				}
 			}
 		}
 
