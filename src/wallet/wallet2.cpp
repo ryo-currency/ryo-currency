@@ -6582,6 +6582,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 		cryptonote::transaction tx;
 		pending_tx ptx;
 		size_t bytes;
+		uint64_t fee;
 		std::vector<std::vector<tools::wallet2::get_outs_entry>> outs;
 
 		void add(const account_public_address &addr, bool is_subaddress, uint64_t amount, unsigned int original_output_index, bool merge_destinations)
@@ -6968,6 +6969,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 				tx.ptx = test_ptx;
 				tx.bytes = txBlob.size();
 				tx.outs = outs;
+				tx.fee = needed_fee;
 				accumulated_fee += test_ptx.fee;
 				accumulated_change += test_ptx.change_dts.amount;
 				adding_fee = false;
@@ -7017,7 +7019,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 							  fake_outs_count,		 /* CONST size_t fake_outputs_count, */
 							  tx.outs,				 /* MOD   std::vector<std::vector<tools::wallet2::get_outs_entry>> &outs, */
 							  unlock_time,			 /* CONST uint64_t unlock_time,  */
-							  needed_fee,			 /* CONST uint64_t fee, */
+							  tx.fee,				 /* CONST uint64_t fee, */
 							  payment_id,			 /* const crypto::uniform_payment_id* */
 							  test_tx,				 /* OUT   cryptonote::transaction& tx, */
 							  test_ptx,				 /* OUT   cryptonote::transaction& tx, */
@@ -7133,6 +7135,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 		cryptonote::transaction tx;
 		pending_tx ptx;
 		size_t bytes;
+		uint64_t fee = 0;
 		std::vector<std::vector<get_outs_entry>> outs;
 	};
 	std::vector<TX> txes;
@@ -7229,6 +7232,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 			tx.ptx = test_ptx;
 			tx.bytes = txBlob.size();
 			tx.outs = outs;
+			tx.fee = needed_fee;
 			accumulated_fee += test_ptx.fee;
 			accumulated_change += test_ptx.change_dts.amount;
 			if(!unused_transfers_indices.empty() || !unused_dust_indices.empty())
@@ -7247,7 +7251,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 		TX &tx = *i;
 		cryptonote::transaction test_tx;
 		pending_tx test_ptx;
-		transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, tx.outs, unlock_time, needed_fee, payment_id,
+		transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, tx.outs, unlock_time, tx.fee, payment_id,
 							  test_tx, test_ptx, bulletproof, uniform_pid);
 		auto txBlob = t_serializable_object_to_blob(test_ptx.tx);
 		tx.tx = test_tx;
