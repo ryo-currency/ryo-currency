@@ -71,10 +71,6 @@ using epee::string_tools::pod_to_hex;
 namespace cryptonote
 {
 
-// Output public keys that we need to skip; because of a bug, including them
-// would change the offset of every key after them. They were mined by the official pool
-std::unordered_set<crypto::public_key> bad_outpks;
-
 bool blockchain_valid_db_type(const std::string &db_type)
 {
 	int i;
@@ -188,7 +184,7 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 			cryptonote::tx_out vout = tx.vout[i];
 			rct::key commitment = rct::zeroCommit(vout.amount);
 
-			if(vout.target.type() == typeid(txout_to_key) && bad_outpks.find(boost::get<txout_to_key>(vout.target).key) != bad_outpks.end())
+			if(is_vout_bad(vout))
 				continue;
 
 			vout.amount = 0;
@@ -372,15 +368,6 @@ void BlockchainDB::show_stats()
 
 void BlockchainDB::fixup()
 {
-	if(is_read_only())
-	{
-		LOG_PRINT_L1("Database is opened read only - skipping fixup check");
-		return;
-	}
-
-	set_batch_transactions(true);
-	batch_start();
-
 	static const char* const bad_outs[] =
 	{
 		// MAINNET
@@ -509,7 +496,16 @@ void BlockchainDB::fixup()
 		bad_outpks.insert(pk);
 	}
 
-	// block 685498 (13 key images in one transaction)
+	if(is_read_only())
+	{
+		LOG_PRINT_L1("Database is opened read only - skipping fixup check");
+		return;
+	}
+
+	set_batch_transactions(true);
+	batch_start();
+
+	// premine key images 
 	static const char* const premine_key_images[] =
 	{
 		"a42fa875b187e7f9e8d25ad158187458cdcce0db9582b5ccd02e9a5d99a79239", //txid 29b65a4ddd5ad2502f4a5e536651de577837fef2b62e1eeccf518806a5195d98

@@ -2528,11 +2528,15 @@ bool Blockchain::get_tx_outputs_gindexs(const crypto::hash &tx_id, std::vector<u
 
 	// get amount output indexes, currently referred to in parts as "output global indices", but they are actually specific to amounts
 	indexs = m_db->get_tx_amount_output_indices(tx_index);
+
 	if(indexs.empty())
 	{
 		// empty indexs is only valid if the vout is empty, which is legal but rare
 		cryptonote::transaction tx = m_db->get_tx(tx_id);
-		CHECK_AND_ASSERT_MES(tx.vout.empty(), false, "internal error: global indexes for transaction " << tx_id << " is empty, and tx vout is not");
+		if(tx.vout.size() == 1 && m_db->is_vout_bad(tx.vout[0]))
+			indexs.insert(indexs.begin(), uint64_t(-1)); //This vout is unspendable so give it an invalid index
+		else
+			CHECK_AND_ASSERT_MES(tx.vout.empty(), false, "internal error: global indexes for transaction " << tx_id << " is empty, and tx vout is not");
 	}
 
 	return true;
