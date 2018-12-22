@@ -1034,6 +1034,7 @@ bool verRctSemanticsSimple(const std::vector<const rctSig *> &rvv)
 			{
 				CHECK_AND_ASSERT_MES(rv.outPk.size() <= cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS, false, "Too many outputs");
 				CHECK_AND_ASSERT_MES(rv.outPk.size() == n_bulletproof_amounts(rv.p.bulletproofs), false, "Mismatched sizes of outPk and bulletproofs");
+				CHECK_AND_ASSERT_MES(is_canonical_bulletproof_layout(rv.p.bulletproofs), false, "Non-canonical layout");
 				CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.size() == rv.p.MGs.size(), false, "Mismatched sizes of rv.p.pseudoOuts and rv.p.MGs");
 				CHECK_AND_ASSERT_MES(rv.pseudoOuts.empty(), false, "rv.pseudoOuts is not empty");
 			}
