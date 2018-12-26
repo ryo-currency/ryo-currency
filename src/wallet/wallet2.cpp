@@ -6393,56 +6393,99 @@ void wallet2::transfer_selected_rct(std::vector<cryptonote::tx_destination_entry
 
 std::vector<size_t> wallet2::pick_preferred_rct_inputs(uint64_t needed_money, uint32_t subaddr_account, const std::set<uint32_t> &subaddr_indices) const
 {
+	struct pick_out
+	{
+		pick_out(size_t idx, uint64_t amount, uint64_t blk_height) : idx(idx), amount(amount), blk_height(blk_height) {}
+		size_t idx;
+		uint64_t amount;
+		uint64_t blk_height;
+	};
+
 	std::vector<size_t> picks;
 	float current_output_relatdness = 1.0f;
+	std::vector<pick_out> pick_list;
+	pick_list.reserve(m_transfers.size());
 
 	LOG_PRINT_L2("pick_preferred_rct_inputs: needed_money " << print_money(needed_money));
+
+	// Highest and second highest available amounts
+	uint64_t amount_a = 0;
+	uint64_t amount_b = 0;
+	// Check if the pick_list is sorted (sorting a sorted list is a worst case scenario usually)
+	uint64_t last_block = 0;
+	bool sorted = true;
 
 	// try to find a rct input of enough size
 	for(size_t i = 0; i < m_transfers.size(); ++i)
 	{
 		const transfer_details &td = m_transfers[i];
-		if(!td.m_spent && td.is_rct() && td.amount() >= needed_money && is_transfer_unlocked(td) && td.m_subaddr_index.major == subaddr_account && subaddr_indices.count(td.m_subaddr_index.minor) == 1)
+		if(!td.m_spent && !td.m_key_image_partial && td.is_rct() && is_transfer_unlocked(td) && 
+				td.m_subaddr_index.major == subaddr_account && subaddr_indices.count(td.m_subaddr_index.minor) == 1)
 		{
-			LOG_PRINT_L2("We can use " << i << " alone: " << print_money(td.amount()));
-			picks.push_back(i);
-			return picks;
+			uint64_t amt = td.amount();
+			if(amt >= needed_money)
+			{
+				LOG_PRINT_L2("We can use " << i << " alone: " << print_money(amt));
+				picks.push_back(i);
+				return picks;
+			}
+
+			pick_list.emplace_back(i, amt, td.m_block_height);
+			if(amt > amount_a)
+			{
+				amount_b = amount_a;
+				amount_a = amt;
+			}
+
+			if(td.m_block_height < last_block)
+				sorted = false;
+			last_block = td.m_block_height;
 		}
 	}
+
+	// This means there is no chance of constructing a two output tx of any kind, return empty
+	if(amount_a + amount_b < needed_money)
+		return picks;
+
+	// This makes the O(n^2) below the worst possible case and limited to small n's (otherwise they will naturally spead out)
+	if(!sorted)
+		std::sort(pick_list.begin(), pick_list.end(), [](const pick_out& a, const pick_out& b) { return a.blk_height < b.blk_height; });
+	else
+		LOG_PRINT_L2("pick_preferred_rct_inputs: sort skipped, we are sorted already");
 
 	// then try to find two outputs
 	// this could be made better by picking one of the outputs to be a small one, since those
 	// are less useful since often below the needed money, so if one can be used in a pair,
 	// it gets rid of it for the future
-	for(size_t i = 0; i < m_transfers.size(); ++i)
+	for(size_t i = 0; i < pick_list.size(); i++)
 	{
-		const transfer_details &td = m_transfers[i];
-		if(!td.m_spent && !td.m_key_image_partial && td.is_rct() && is_transfer_unlocked(td) && td.m_subaddr_index.major == subaddr_account && subaddr_indices.count(td.m_subaddr_index.minor) == 1)
+		LOG_PRINT_L2("Considering input " << pick_list[i].idx << ", " << print_money(pick_list[i].amount));
+		for(size_t j = pick_list.size(); j-- > i+1;)
 		{
-			LOG_PRINT_L2("Considering input " << i << ", " << print_money(td.amount()));
-			for(size_t j = i + 1; j < m_transfers.size(); ++j)
+			if(pick_list[i].amount + pick_list[j].amount >= needed_money)
 			{
-				const transfer_details &td2 = m_transfers[j];
-				if(!td2.m_spent && !td.m_key_image_partial && td2.is_rct() && td.amount() + td2.amount() >= needed_money && is_transfer_unlocked(td2) && td2.m_subaddr_index == td.m_subaddr_index)
+				size_t i_idx = pick_list[i].idx;
+				size_t j_idx = pick_list[j].idx;
+				const transfer_details &td = m_transfers[i_idx];
+				const transfer_details &td2 = m_transfers[j_idx];
+				
+				// update our picks if those outputs are less related than any we
+				// already found. If the same, don't update, and oldest suitable outputs
+				// will be used in preference.
+				float relatedness = get_output_relatedness(td, td2);
+				LOG_PRINT_L2("  with input " << j_idx  << ", " << pick_list[j].amount << ", relatedness " << relatedness);
+				if(relatedness < current_output_relatdness)
 				{
-					// update our picks if those outputs are less related than any we
-					// already found. If the same, don't update, and oldest suitable outputs
-					// will be used in preference.
-					float relatedness = get_output_relatedness(td, td2);
-					LOG_PRINT_L2("  with input " << j << ", " << print_money(td2.amount()) << ", relatedness " << relatedness);
-					if(relatedness < current_output_relatdness)
-					{
-						// reset the current picks with those, and return them directly
-						// if they're unrelated. If they are related, we'll end up returning
-						// them if we find nothing better
-						picks.clear();
-						picks.push_back(i);
-						picks.push_back(j);
-						LOG_PRINT_L0("we could use " << i << " and " << j);
-						if(relatedness == 0.0f)
-							return picks;
-						current_output_relatdness = relatedness;
-					}
+					// reset the current picks with those, and return them directly
+					// if they're unrelated. If they are related, we'll end up returning
+					// them if we find nothing better
+					picks.clear();
+					picks.push_back(i_idx);
+					picks.push_back(j_idx);
+					LOG_PRINT_L0("we could use " << i_idx << " and " << j_idx);
+					if(relatedness == 0.0f)
+						return picks;
+					current_output_relatdness = relatedness;
 				}
 			}
 		}
@@ -6539,6 +6582,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 		cryptonote::transaction tx;
 		pending_tx ptx;
 		size_t bytes;
+		uint64_t fee = 0;
 		std::vector<std::vector<tools::wallet2::get_outs_entry>> outs;
 
 		void add(const account_public_address &addr, bool is_subaddress, uint64_t amount, unsigned int original_output_index, bool merge_destinations)
@@ -6697,13 +6741,12 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 	// try to pick outputs not from the same block. We will get two outputs, one for
 	// the destination, and one for change.
 	LOG_PRINT_L2("checking preferred");
-	std::vector<size_t> preferred_inputs;
 	uint64_t rct_outs_needed = 2 * (fake_outs_count + 1);
 	rct_outs_needed += 100; // some fudge factor since we don't know how many are locked
 
 	// this is used to build a tx that's 1 or 2 inputs, and 2 outputs, which will get us a known fee.
 	uint64_t estimated_fee = calculate_fee(fake_outs_count+1, estimate_rct_tx_size(2, fake_outs_count, 2, bulletproof), fee_multiplier);
-	preferred_inputs = pick_preferred_rct_inputs(needed_money + estimated_fee, subaddr_account, subaddr_indices);
+	std::vector<size_t> preferred_inputs = pick_preferred_rct_inputs(needed_money + estimated_fee, subaddr_account, subaddr_indices);
 	if(!preferred_inputs.empty())
 	{
 		string s;
@@ -6815,8 +6858,12 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 		}
 		else
 		{
-			while(!dsts.empty() && dsts[0].amount <= available_amount && estimate_rct_tx_size(tx.selected_transfers.size(), fake_outs_count, tx.dsts.size(), bulletproof) < TX_SIZE_TARGET(upper_transaction_size_limit))
+			while(!dsts.empty() && dsts[0].amount <= available_amount && 
+				estimate_rct_tx_size(tx.selected_transfers.size(), fake_outs_count, tx.dsts.size(), bulletproof) < TX_SIZE_TARGET(upper_transaction_size_limit))
 			{
+				if(bulletproof && tx.dsts.size() >= cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS-1)
+					break;
+
 				// we can fully pay that destination
 				LOG_PRINT_L2("We can fully pay " << get_public_address_as_str(m_nettype, dsts[0].is_subaddress, dsts[0].addr) << " for " << print_money(dsts[0].amount));
 				tx.add(dsts[0].addr, dsts[0].is_subaddress, dsts[0].amount, original_output_index, m_merge_destinations);
@@ -6826,13 +6873,17 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 				++original_output_index;
 			}
 
-			if(available_amount > 0 && !dsts.empty() && estimate_rct_tx_size(tx.selected_transfers.size(), fake_outs_count, tx.dsts.size(), bulletproof) < TX_SIZE_TARGET(upper_transaction_size_limit))
+			if(available_amount > 0 && !dsts.empty() && 
+				estimate_rct_tx_size(tx.selected_transfers.size(), fake_outs_count, tx.dsts.size(), bulletproof) < TX_SIZE_TARGET(upper_transaction_size_limit))
 			{
-				// we can partially fill that destination
-				LOG_PRINT_L2("We can partially pay " << get_public_address_as_str(m_nettype, dsts[0].is_subaddress, dsts[0].addr) << " for " << print_money(available_amount) << "/" << print_money(dsts[0].amount));
-				tx.add(dsts[0].addr, dsts[0].is_subaddress, available_amount, original_output_index, m_merge_destinations);
-				dsts[0].amount -= available_amount;
-				available_amount = 0;
+				if(!bulletproof || tx.dsts.size() < cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS-1)
+				{
+					// we can partially fill that destination
+					LOG_PRINT_L2("We can partially pay " << get_public_address_as_str(m_nettype, dsts[0].is_subaddress, dsts[0].addr) << " for " << print_money(available_amount) << "/" << print_money(dsts[0].amount));
+					tx.add(dsts[0].addr, dsts[0].is_subaddress, available_amount, original_output_index, m_merge_destinations);
+					dsts[0].amount -= available_amount;
+					available_amount = 0;
+				}
 			}
 		}
 
@@ -6926,6 +6977,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 				tx.ptx = test_ptx;
 				tx.bytes = txBlob.size();
 				tx.outs = outs;
+				tx.fee = needed_fee;
 				accumulated_fee += test_ptx.fee;
 				accumulated_change += test_ptx.change_dts.amount;
 				adding_fee = false;
@@ -6975,7 +7027,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_2(std::vector<cryp
 							  fake_outs_count,		 /* CONST size_t fake_outputs_count, */
 							  tx.outs,				 /* MOD   std::vector<std::vector<tools::wallet2::get_outs_entry>> &outs, */
 							  unlock_time,			 /* CONST uint64_t unlock_time,  */
-							  needed_fee,			 /* CONST uint64_t fee, */
+							  tx.fee,				 /* CONST uint64_t fee, */
 							  payment_id,			 /* const crypto::uniform_payment_id* */
 							  test_tx,				 /* OUT   cryptonote::transaction& tx, */
 							  test_ptx,				 /* OUT   cryptonote::transaction& tx, */
@@ -7091,6 +7143,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 		cryptonote::transaction tx;
 		pending_tx ptx;
 		size_t bytes;
+		uint64_t fee = 0;
 		std::vector<std::vector<get_outs_entry>> outs;
 	};
 	std::vector<TX> txes;
@@ -7187,6 +7240,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 			tx.ptx = test_ptx;
 			tx.bytes = txBlob.size();
 			tx.outs = outs;
+			tx.fee = needed_fee;
 			accumulated_fee += test_ptx.fee;
 			accumulated_change += test_ptx.change_dts.amount;
 			if(!unused_transfers_indices.empty() || !unused_dust_indices.empty())
@@ -7205,7 +7259,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_from(const crypton
 		TX &tx = *i;
 		cryptonote::transaction test_tx;
 		pending_tx test_ptx;
-		transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, tx.outs, unlock_time, needed_fee, payment_id,
+		transfer_selected_rct(tx.dsts, tx.selected_transfers, fake_outs_count, tx.outs, unlock_time, tx.fee, payment_id,
 							  test_tx, test_ptx, bulletproof, uniform_pid);
 		auto txBlob = t_serializable_object_to_blob(test_ptx.tx);
 		tx.tx = test_tx;
