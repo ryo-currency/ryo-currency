@@ -4470,6 +4470,9 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 			fail_msg_writer() << tr("payment id has invalid format, expected 16 or 64 character hex string: ") << payment_id_str;
 			return true;
 		}
+
+		if(m_wallet->confirm_missing_payment_id())
+			message_writer() << tr("You included a PID. Normally this would be a privacy problem, however Ryo Uniform PID's fixed this.");
 	}
 
 	uint64_t locked_blocks = 0;
