@@ -48,9 +48,9 @@
 #define CN_ADD_TARGETS_AND_HEADERS
 #define INTEL_AVX2
 
+#include "../keccak.h"
 #include "aux_hash.h"
 #include "cn_slow_hash.hpp"
-#include "../keccak.h"
 
 #ifdef HAS_INTEL_HW
 
@@ -71,13 +71,13 @@ inline void sub_round(__m256 n0, __m256 n1, __m256 n2, __m256 n3, __m256 rnd_c, 
 {
 	n1 = _mm256_add_ps(n1, c);
 	__m256 nn = _mm256_mul_ps(n0, c);
-	nn = _mm256_mul_ps(n1, _mm256_mul_ps(nn,nn));
+	nn = _mm256_mul_ps(n1, _mm256_mul_ps(nn, nn));
 	nn = xor_flip(nn);
 	n = _mm256_add_ps(n, nn);
 
 	n3 = _mm256_sub_ps(n3, c);
 	__m256 dd = _mm256_mul_ps(n2, c);
-	dd = _mm256_mul_ps(n3, _mm256_mul_ps(dd,dd));
+	dd = _mm256_mul_ps(n3, _mm256_mul_ps(dd, dd));
 	dd = xor_flip(dd);
 	d = _mm256_add_ps(d, dd);
 
@@ -106,12 +106,12 @@ inline void round_compute(__m256 n0, __m256 n1, __m256 n2, __m256 n3, __m256 rnd
 
 	// Make sure abs(d) > 2.0 - this prevents division by zero and accidental overflows by division by < 1.0
 	d = _mm256_or_ps((__m256)_mm256_set1_epi32(0x40000000), d);
-	r =_mm256_add_ps(r, _mm256_div_ps(n,d));
+	r = _mm256_add_ps(r, _mm256_div_ps(n, d));
 }
 
 // 112×4 = 448
-template<bool add>
-inline __m256i double_comupte(__m256 n0, __m256 n1,  __m256 n2,  __m256 n3, float lcnt, float hcnt, __m256 rnd_c, __m256& sum)
+template <bool add>
+inline __m256i double_comupte(__m256 n0, __m256 n1, __m256 n2, __m256 n3, float lcnt, float hcnt, __m256 rnd_c, __m256& sum)
 {
 	__m256 c = _mm256_insertf128_ps(_mm256_castps128_ps256(_mm_set1_ps(lcnt)), _mm_set1_ps(hcnt), 1);
 	__m256 r = _mm256_setzero_ps();
@@ -134,24 +134,24 @@ inline __m256i double_comupte(__m256 n0, __m256 n1,  __m256 n2,  __m256 n3, floa
 	return _mm256_cvttps_epi32(r);
 }
 
-template<size_t rot>
+template <size_t rot>
 inline void double_comupte_wrap(__m256 n0, __m256 n1, __m256 n2, __m256 n3, float lcnt, float hcnt, __m256 rnd_c, __m256& sum, __m256i& out)
 {
 	__m256i r = double_comupte<rot % 2 != 0>(n0, n1, n2, n3, lcnt, hcnt, rnd_c, sum);
 	if(rot != 0)
-		r = _mm256_or_si256(_mm256_bslli_epi128(r, 16-rot), _mm256_bsrli_epi128(r, rot));
+		r = _mm256_or_si256(_mm256_bslli_epi128(r, 16 - rot), _mm256_bsrli_epi128(r, rot));
 
 	out = _mm256_xor_si256(out, r);
 }
 
-template<size_t MEMORY, size_t ITER, size_t VERSION>
-void cn_slow_hash<MEMORY,ITER,VERSION>::inner_hash_3_avx()
+template <size_t MEMORY, size_t ITER, size_t VERSION>
+void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3_avx()
 {
 	uint32_t s = spad.as_dword(0) >> 8;
 	cn_sptr idx0 = scratchpad_ptr(s, 0);
 	cn_sptr idx2 = scratchpad_ptr(s, 2);
 	__m256 sum0 = _mm256_setzero_ps();
-	
+
 	for(size_t i = 0; i < ITER; i++)
 	{
 		__m256i v01, v23;
@@ -162,13 +162,13 @@ void cn_slow_hash<MEMORY,ITER,VERSION>::inner_hash_3_avx()
 		__m256 d01, d23;
 		prep_dv_avx(idx0, v01, n01);
 		prep_dv_avx(idx2, v23, n23);
-		
+
 		__m256i out, out2;
 		__m256 n10, n22, n33;
 		n10 = _mm256_permute2f128_ps(n01, n01, 0x01);
 		n22 = _mm256_permute2f128_ps(n23, n23, 0x00);
 		n33 = _mm256_permute2f128_ps(n23, n23, 0x11);
-		
+
 		out = _mm256_setzero_si256();
 		double_comupte_wrap<0>(n01, n10, n22, n33, 1.3437500f, 1.4296875f, rc, suma, out);
 		double_comupte_wrap<1>(n01, n22, n33, n10, 1.2812500f, 1.3984375f, rc, suma, out);
@@ -177,7 +177,7 @@ void cn_slow_hash<MEMORY,ITER,VERSION>::inner_hash_3_avx()
 		_mm256_store_si256(idx0.as_xmm256(), _mm256_xor_si256(v01, out));
 		sum0 = _mm256_add_ps(suma, sumb);
 		out2 = out;
-		
+
 		__m256 n11, n02, n30;
 		n11 = _mm256_permute2f128_ps(n01, n01, 0x11);
 		n02 = _mm256_permute2f128_ps(n01, n23, 0x20);
@@ -192,7 +192,7 @@ void cn_slow_hash<MEMORY,ITER,VERSION>::inner_hash_3_avx()
 		sum1 = _mm256_add_ps(suma, sumb);
 
 		out2 = _mm256_xor_si256(out2, out);
-		out2 = _mm256_xor_si256(_mm256_permute2x128_si256(out2,out2,0x41), out2);
+		out2 = _mm256_xor_si256(_mm256_permute2x128_si256(out2, out2, 0x41), out2);
 		suma = _mm256_permute2f128_ps(sum0, sum1, 0x30);
 		sumb = _mm256_permute2f128_ps(sum0, sum1, 0x21);
 		sum0 = _mm256_add_ps(suma, sumb);
@@ -202,7 +202,7 @@ void cn_slow_hash<MEMORY,ITER,VERSION>::inner_hash_3_avx()
 		__m128 sum = _mm256_castps256_ps128(sum0);
 
 		sum = _mm_and_ps((__m128)_mm_set1_epi32(0x7fffffff), sum); // take abs(va) by masking the float sign bit
-		// vs range 0 - 64 
+		// vs range 0 - 64
 		__m128i v0 = _mm_cvttps_epi32(_mm_mul_ps(sum, _mm_set1_ps(16777216.0f)));
 		v0 = _mm_xor_si128(v0, _mm256_castsi256_si128(out2));
 		__m128i v1 = _mm_shuffle_epi32(v0, _MM_SHUFFLE(0, 1, 2, 3));
