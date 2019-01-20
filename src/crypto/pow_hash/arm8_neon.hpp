@@ -66,13 +66,13 @@ inline void veorq_f32(float32x4_t& v, uint32_t v2)
 	v = (float32x4_t)veorq_u32((uint32x4_t)v, vc);
 }
 
-template<size_t v>
+template <size_t v>
 inline void vrot_si32(int32x4_t& r)
 {
 	r = (int32x4_t)vextq_s8((int8x16_t)r, (int8x16_t)r, v);
 }
 
-template<>
+template <>
 inline void vrot_si32<0>(int32x4_t& r)
 {
 }

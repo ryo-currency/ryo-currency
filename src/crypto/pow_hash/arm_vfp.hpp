@@ -46,8 +46,8 @@
 // Parts of this file are originally copyright (c) 2012-2013, The Cryptonote developers
 
 #pragma once
-#include <stddef.h>
 #include <inttypes.h>
+#include <stddef.h>
 
 // This header emulates NEON instructions in IEEE 754 compilant way
 // Don't expect to use this code for anything other than verificaiton
@@ -115,21 +115,21 @@ inline uint32x4_t vdupq_n_u32(uint32_t a)
 	return r;
 }
 
-template<size_t v>
+template <size_t v>
 inline void vrot_si32(int32x4_t& r)
 {
 	uint8_t tmp[v];
 	uint8_t* vt = (uint8_t*)&r;
-	for(size_t i=0; i < v; i++)
+	for(size_t i = 0; i < v; i++)
 		tmp[i] = vt[i];
-	for(size_t i=0; i < 16-v; i++)
-		vt[i] = vt[i+v];
-	size_t e = 16-v;
-	for(size_t i=e; i < 16; i++)
-		vt[i] = tmp[i-e];
+	for(size_t i = 0; i < 16 - v; i++)
+		vt[i] = vt[i + v];
+	size_t e = 16 - v;
+	for(size_t i = e; i < 16; i++)
+		vt[i] = tmp[i - e];
 }
 
-template<>
+template <>
 inline void vrot_si32<0>(int32x4_t& r)
 {
 }

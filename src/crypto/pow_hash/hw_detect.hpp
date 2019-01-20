@@ -48,8 +48,8 @@
 #pragma once
 
 #if defined(_WIN32) || defined(_WIN64)
-#include <malloc.h>
 #include <intrin.h>
+#include <malloc.h>
 #define HAS_WIN_INTRIN_API
 #endif
 
@@ -67,7 +67,7 @@
 
 #if defined(__arm__) || defined(__aarch64__)
 #define HAS_ARM
-#endif 
+#endif
 
 #if defined(__aarch64__)
 #include <asm/hwcap.h>
@@ -81,14 +81,14 @@
 
 #if defined(CN_ADD_TARGETS_AND_HEADERS)
 #if defined(__aarch64__)
-#pragma GCC target ("+crypto")
+#pragma GCC target("+crypto")
 #include "arm8_neon.hpp"
 #elif defined(__arm__)
-#pragma GCC target ("fpu=vfpv4")
+#pragma GCC target("fpu=vfpv4")
 #include "arm_vfp.hpp"
 #elif defined(HAS_INTEL_HW) && defined(INTEL_AVX2)
-#pragma GCC target ("aes,avx2")
+#pragma GCC target("aes,avx2")
 #elif defined(HAS_INTEL_HW)
-#pragma GCC target ("aes,ssse3")
+#pragma GCC target("aes,ssse3")
 #endif
 #endif
