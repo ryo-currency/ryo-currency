@@ -55,7 +55,7 @@
 #if defined(__cplusplus)
 #include <memory.h>
 
-#include "cn_slow_hash.hpp"
+#include "pow_hash/cn_slow_hash.hpp"
 #include "hash.h"
 #include "memwipe.h"
 

@@ -47,7 +47,7 @@
 #include "include_base_utils.h"
 using namespace epee;
 
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
 #include "cryptonote_config.h"
