@@ -47,7 +47,7 @@
 #pragma once
 #include "account.h"
 #include "blobdatatype.h"
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
 #include "cryptonote_basic_impl.h"

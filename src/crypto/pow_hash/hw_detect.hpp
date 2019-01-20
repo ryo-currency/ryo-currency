@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
@@ -39,26 +39,56 @@
 // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
+// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// Parts of this file are originally copyright (c) 2014-2017, SUMOKOIN
+// Parts of this file are originally copyright (c) 2014-2017, The Monero Project
+// Parts of this file are originally copyright (c) 2012-2013, The Cryptonote developers
 
 #pragma once
-#include <inttypes.h> 
 
-extern "C" {
+#if defined(_WIN32) || defined(_WIN64)
+#include <malloc.h>
+#include <intrin.h>
+#define HAS_WIN_INTRIN_API
+#endif
 
-/** auxiliary hashing functions
- * 
- * @warning Hash functions were optimized to handle only 200 bytes long input. As such they
- * are not useable outside of PoW calculation.
- *
- * @param data 200byte input data
- * @param hashval 32byte hashed data
- * @{
- */
-void blake256_hash(const uint8_t* data, uint8_t* hashval);
-void skein_hash(const uint8_t* data, uint8_t *hashval);
-void groestl_hash(const uint8_t* data, uint8_t* hashval);
-void jh_hash(const uint8_t* data, uint8_t* hashval);
+// Note HAS_INTEL_HW and HAS_ARM_HW only mean we can emit the AES instructions
+// check CPU support for the hardware AES encryption has to be done at runtime
+#if defined(__x86_64__) || defined(__i386__) || defined(_M_X86) || defined(_M_X64)
+#ifdef __GNUC__
+#include <x86intrin.h>
+#if !defined(HAS_WIN_INTRIN_API)
+#include <cpuid.h>
+#endif // !defined(HAS_WIN_INTRIN_API)
+#endif // __GNUC__
+#define HAS_INTEL_HW
+#endif
 
-///@}
-}
+#if defined(__arm__) || defined(__aarch64__)
+#define HAS_ARM
+#endif 
+
+#if defined(__aarch64__)
+#include <asm/hwcap.h>
+#include <sys/auxv.h>
+#define HAS_ARM_HW
+#endif
+
+#if !defined(_LP64) && !defined(_WIN64)
+#define BUILD32
+#endif
+
+#if defined(CN_ADD_TARGETS_AND_HEADERS)
+#if defined(__aarch64__)
+#pragma GCC target ("+crypto")
+#include "arm8_neon.hpp"
+#elif defined(__arm__)
+#pragma GCC target ("fpu=vfpv4")
+#include "arm_vfp.hpp"
+#elif defined(HAS_INTEL_HW) && defined(INTEL_AVX2)
+#pragma GCC target ("aes,avx2")
+#elif defined(HAS_INTEL_HW)
+#pragma GCC target ("aes,ssse3")
+#endif
+#endif

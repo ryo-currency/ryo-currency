@@ -44,7 +44,7 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "include_base_utils.h"
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
