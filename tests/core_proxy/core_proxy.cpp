@@ -210,7 +210,7 @@ bool tests::proxy_core::handle_incoming_block(const cryptonote::blobdata &block_
 	cout << "BLOCK" << endl
 		 << endl;
 	cout << (h = get_block_hash(b)) << endl;
-	get_block_longhash(b, hash_ctx, lh);
+	get_block_longhash(MAINNET, b, hash_ctx, lh);
 	cout << lh << endl;
 	cout << get_transaction_hash(b.miner_tx) << endl;
 	cout << ::get_object_blobsize(b.miner_tx) << endl;
@@ -245,7 +245,7 @@ bool tests::proxy_core::init(const boost::program_options::variables_map & /*vm*
 	crypto::hash h = get_block_hash(m_genesis);
 	cn_pow_hash_v2 hash_ctx;
 	crypto::hash lh;
-	get_block_longhash(m_genesis, hash_ctx, lh);
+	get_block_longhash(MAINNET, m_genesis, hash_ctx, lh);
 	add_block(h, lh, m_genesis, block_to_blob(m_genesis));
 	return true;
 }

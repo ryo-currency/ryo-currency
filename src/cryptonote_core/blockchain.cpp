@@ -1621,7 +1621,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		difficulty_type current_diff = get_next_difficulty_for_alternative_chain(alt_chain, bei);
 		CHECK_AND_ASSERT_MES(current_diff, false, "!!!!!!! DIFFICULTY OVERHEAD !!!!!!!");
 		crypto::hash proof_of_work = null_hash;
-		get_block_longhash(bei.bl, m_pow_ctx, proof_of_work);
+		get_block_longhash(m_nettype, bei.bl, m_pow_ctx, proof_of_work);
 		if(!check_hash(proof_of_work, current_diff))
 		{
 			MERROR_VER("Block with id: " << id << std::endl
@@ -3465,7 +3465,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 		}
 		else
 		{
-			get_block_longhash(bl, m_pow_ctx, proof_of_work);
+			get_block_longhash(m_nettype, bl, m_pow_ctx, proof_of_work);
 		}
 
 		// validate proof_of_work versus difficulty target
@@ -3863,7 +3863,7 @@ void Blockchain::block_longhash_worker(cn_pow_hash_v2 &hash_ctx, const std::vect
 			break;
 		crypto::hash id = get_block_hash(block);
 		crypto::hash pow;
-		get_block_longhash(block, hash_ctx, pow);
+		get_block_longhash(m_nettype, block, hash_ctx, pow);
 		map.emplace(id, pow);
 	}
 

@@ -148,6 +148,7 @@ class miner
 	std::atomic<int32_t> m_pausers_count;
 	epee::critical_section m_miners_count_lock;
 
+	static network_type m_nettype;
 	std::list<boost::thread> m_threads;
 	epee::critical_section m_threads_lock;
 	i_miner_handler *m_phandler;

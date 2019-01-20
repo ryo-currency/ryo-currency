@@ -53,18 +53,6 @@
 #include "../keccak.h"
 
 #ifdef HAS_INTEL_HW
-#include <stdio.h>
-void print256_num_f(__m256 var) 
-{
-    float *v64val = (float*) &var;
-    printf("%15.7f %15.7f %15.7f %15.7f %15.7f %15.7f %15.7f %15.7f\n", v64val[7], v64val[6], v64val[5], v64val[4], v64val[3], v64val[2], v64val[1], v64val[0]);
-}
-
-void print256_num(__m256i var) 
-{
-    uint64_t *v64val = (uint64_t*) &var;
-    printf("%.16lx%.16lx%.16lx%.16lx\n",  v64val[3], v64val[2], v64val[1], v64val[0]);
-}
 
 inline void prep_dv_avx(cn_sptr& idx, __m256i& v, __m256& n01)
 {
@@ -170,9 +158,6 @@ void cn_slow_hash<MEMORY,ITER,VERSION>::inner_hash_3_avx()
 		__m256 suma, sumb, sum1;
 		__m256 rc = sum0;
 
-		print256_num_f(rc);
-		if(i > 2) exit(0);
-
 		__m256 n01, n23;
 		__m256 d01, d23;
 		prep_dv_avx(idx0, v01, n01);
@@ -229,12 +214,9 @@ void cn_slow_hash<MEMORY,ITER,VERSION>::inner_hash_3_avx()
 		sum = _mm_div_ps(sum, _mm_set1_ps(64.0f));
 		sum0 = _mm256_insertf128_ps(_mm256_castps128_ps256(sum), sum, 1);
 		uint32_t n = _mm_cvtsi128_si32(v0);
-		printf("%u\n", n);
 		idx0 = scratchpad_ptr(n, 0);
 		idx2 = scratchpad_ptr(n, 2);
 	}
-	
-	print256_num_f(sum0);
 }
 
 template class cn_v1_hash_t;

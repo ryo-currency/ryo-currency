@@ -231,8 +231,10 @@ void miner::init_options(boost::program_options::options_description &desc)
 	command_line::add_arg(desc, arg_bg_mining_miner_target_percentage);
 }
 //-----------------------------------------------------------------------------------------------------
+network_type miner::m_nettype = UNDEFINED;
 bool miner::init(const boost::program_options::variables_map &vm, network_type nettype)
 {
+	m_nettype = nettype;
 	if(command_line::has_arg(vm, arg_extra_messages))
 	{
 		std::string buff;
@@ -405,7 +407,7 @@ bool miner::find_nonce_for_given_block(block &bl, const difficulty_type &diffic,
 	for(; bl.nonce != std::numeric_limits<uint32_t>::max(); bl.nonce++)
 	{
 		crypto::hash h;
-		get_block_longhash(bl, hash_ctx, h);
+		get_block_longhash(m_nettype, bl, hash_ctx, h);
 
 		if(check_hash(h, diffic))
 		{
@@ -504,7 +506,7 @@ bool miner::worker_thread()
 
 		b.nonce = nonce;
 		crypto::hash h;
-		get_block_longhash(b, hash_ctx, h);
+		get_block_longhash(m_nettype, b, hash_ctx, h);
 
 		if(check_hash(h, local_diff))
 		{
