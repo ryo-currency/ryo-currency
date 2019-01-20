@@ -175,7 +175,7 @@ public:
 		return cn_pow_hash_v1(t.lpad.as_void(), t.spad.as_void());
 	}
 
-	static cn_pow_hash_v3 make_borrowed(cn_pow_hash_v2& t)
+	static cn_pow_hash_v3 make_borrowed_v3(cn_pow_hash_v2& t)
 	{
 		return cn_pow_hash_v3(t.lpad.as_void(), t.spad.as_void());
 	}

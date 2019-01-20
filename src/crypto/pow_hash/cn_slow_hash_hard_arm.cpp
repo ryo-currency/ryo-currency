@@ -401,17 +401,6 @@ void cn_slow_hash<MEMORY,ITER,VERSION>::hardware_hash(const void* in, size_t len
 #endif // HAS_ARM_HW
 
 #ifdef HAS_ARM
-#include <stdio.h>
-
-/*void print128_num_f(float32x4_t var) 
-{
-    printf("%45.7f %45.7f %45.7f %45.7f\n", var[3], var[2], var[1], var[0]);
-}
-
-void print128_num(int32x4_t var) 
-{
-    printf("%.8x%.8x%.8x%.8x\n",  var[3], var[2], var[1], var[0]);
-}*/
 
 inline void prep_dv(cn_sptr& idx, int32x4_t& v, float32x4_t& n)
 {

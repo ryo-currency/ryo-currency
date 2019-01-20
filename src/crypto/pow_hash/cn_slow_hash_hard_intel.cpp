@@ -408,19 +408,6 @@ inline void prep_dv(cn_sptr& idx, __m128i& v, __m128& n)
 	n = _mm_cvtepi32_ps(v);
 }
 
-#include <stdio.h>
-void print128_num_f(__m128 var) 
-{
-    float *v64val = (float*) &var;
-    printf("%45.7f %45.7f %45.7f %45.7f\n", v64val[3], v64val[2], v64val[1], v64val[0]);
-}
-
-void print128_num(__m128i var) 
-{
-    uint64_t *v64val = (uint64_t*) &var;
-    printf("%.16lx%.16lx\n",  v64val[1], v64val[0]);
-}
-
 inline __m128 xor_flip(__m128 x)
 {
 	// Break the dependency chain by flipping the lower bit of mantissa (FMA avoidance)
