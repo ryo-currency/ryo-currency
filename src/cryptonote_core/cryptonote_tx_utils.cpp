@@ -623,7 +623,7 @@ bool construct_tx(const account_keys &sender_account_keys, std::vector<tx_source
 	return construct_tx_and_get_tx_key(sender_account_keys, subaddresses, sources, destinations_copy, change_addr, payment_id, tx, unlock_time, tx_key, additional_tx_keys, false, NULL);
 }
 //---------------------------------------------------------------
-bool generate_genesis_block(block &bl, std::string const &genesis_tx, uint32_t nonce)
+bool generate_genesis_block(network_type nettype, block &bl, std::string const &genesis_tx, uint32_t nonce)
 {
 	LOG_PRINT_L1("Generating genesis_tx tx : " << genesis_tx << ", nonce : " << nonce);
 
@@ -639,7 +639,7 @@ bool generate_genesis_block(block &bl, std::string const &genesis_tx, uint32_t n
 	bl.minor_version = 1;
 	bl.timestamp = 0;
 	bl.nonce = nonce;
-	miner::find_nonce_for_given_block(bl, 1, 0);
+	miner::find_nonce_for_given_block(nettype, bl, 1, 0);
 	bl.invalidate_hashes();
 	return true;
 }

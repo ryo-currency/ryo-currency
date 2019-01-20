@@ -9695,15 +9695,15 @@ void wallet2::generate_genesis(cryptonote::block &b) const
 {
 	if(m_nettype == TESTNET)
 	{
-		cryptonote::generate_genesis_block(b, config<TESTNET>::GENESIS_TX, config<TESTNET>::GENESIS_NONCE);
+		cryptonote::generate_genesis_block(TESTNET, b, config<TESTNET>::GENESIS_TX, config<TESTNET>::GENESIS_NONCE);
 	}
 	else if(m_nettype == STAGENET)
 	{
-		cryptonote::generate_genesis_block(b, config<STAGENET>::GENESIS_TX, config<STAGENET>::GENESIS_NONCE);
+		cryptonote::generate_genesis_block(STAGENET, b, config<STAGENET>::GENESIS_TX, config<STAGENET>::GENESIS_NONCE);
 	}
 	else
 	{
-		cryptonote::generate_genesis_block(b, config<MAINNET>::GENESIS_TX, config<MAINNET>::GENESIS_NONCE);
+		cryptonote::generate_genesis_block(MAINNET, b, config<MAINNET>::GENESIS_TX, config<MAINNET>::GENESIS_NONCE);
 	}
 }
 }

@@ -81,14 +81,22 @@
 
 #if defined(CN_ADD_TARGETS_AND_HEADERS)
 #if defined(__aarch64__)
+#ifndef __clang__
 #pragma GCC target("+crypto")
+#endif
 #include "arm8_neon.hpp"
 #elif defined(__arm__)
+#ifndef __clang__
 #pragma GCC target("fpu=vfpv4")
+#endif
 #include "arm_vfp.hpp"
 #elif defined(HAS_INTEL_HW) && defined(INTEL_AVX2)
+#ifndef __clang__
 #pragma GCC target("aes,avx2")
+#endif
 #elif defined(HAS_INTEL_HW)
+#ifndef __clang__
 #pragma GCC target("aes,ssse3")
+#endif
 #endif
 #endif
