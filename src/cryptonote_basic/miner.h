@@ -96,7 +96,7 @@ class miner
 	bool on_idle();
 	void on_synchronized();
 	//synchronous analog (for fast calls)
-	static bool find_nonce_for_given_block(block &bl, const difficulty_type &diffic, uint64_t height);
+	static bool find_nonce_for_given_block(network_type nettype, block &bl, const difficulty_type &diffic, uint64_t height);
 	void pause();
 	void resume();
 	void do_print_hashrate(bool do_hr);
@@ -148,7 +148,7 @@ class miner
 	std::atomic<int32_t> m_pausers_count;
 	epee::critical_section m_miners_count_lock;
 
-	static network_type m_nettype;
+	network_type m_nettype = UNDEFINED;
 	std::list<boost::thread> m_threads;
 	epee::critical_section m_threads_lock;
 	i_miner_handler *m_phandler;

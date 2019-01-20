@@ -241,7 +241,7 @@ void tests::proxy_core::get_blockchain_top(uint64_t &height, crypto::hash &top_i
 
 bool tests::proxy_core::init(const boost::program_options::variables_map & /*vm*/)
 {
-	generate_genesis_block(m_genesis, config<MAINNET>::GENESIS_TX, config<MAINNET>::GENESIS_NONCE);
+	generate_genesis_block(MAINNET, m_genesis, config<MAINNET>::GENESIS_TX, config<MAINNET>::GENESIS_NONCE);
 	crypto::hash h = get_block_hash(m_genesis);
 	cn_pow_hash_v2 hash_ctx;
 	crypto::hash lh;
