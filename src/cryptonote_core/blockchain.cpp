@@ -131,7 +131,8 @@ static const struct
 	{5, 129750, 0, 1532782050},
 	{6, 130425, 0, 1532868450},
 	{7, 159180, 0, 1542300607},
-	{8, 162815, 0, 1543265893}
+	{8, 162815, 0, 1543265893},
+	{9, 182750, 0, 1548096165}
 };
 static const uint64_t testnet_hard_fork_version_1_till = (uint64_t)-1;
 
@@ -401,15 +402,15 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 		block_verification_context bvc = boost::value_initialized<block_verification_context>();
 		if(m_nettype == TESTNET)
 		{
-			generate_genesis_block(bl, config<TESTNET>::GENESIS_TX, config<TESTNET>::GENESIS_NONCE);
+			generate_genesis_block(TESTNET, bl, config<TESTNET>::GENESIS_TX, config<TESTNET>::GENESIS_NONCE);
 		}
 		else if(m_nettype == STAGENET)
 		{
-			generate_genesis_block(bl, config<STAGENET>::GENESIS_TX, config<STAGENET>::GENESIS_NONCE);
+			generate_genesis_block(STAGENET, bl, config<STAGENET>::GENESIS_TX, config<STAGENET>::GENESIS_NONCE);
 		}
 		else
 		{
-			generate_genesis_block(bl, config<MAINNET>::GENESIS_TX, config<MAINNET>::GENESIS_NONCE);
+			generate_genesis_block(MAINNET, bl, config<MAINNET>::GENESIS_TX, config<MAINNET>::GENESIS_NONCE);
 		}
 		add_new_block(bl, bvc);
 		CHECK_AND_ASSERT_MES(!bvc.m_verifivation_failed, false, "Failed to add genesis block to blockchain");
@@ -1621,7 +1622,7 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		difficulty_type current_diff = get_next_difficulty_for_alternative_chain(alt_chain, bei);
 		CHECK_AND_ASSERT_MES(current_diff, false, "!!!!!!! DIFFICULTY OVERHEAD !!!!!!!");
 		crypto::hash proof_of_work = null_hash;
-		get_block_longhash(bei.bl, m_pow_ctx, proof_of_work);
+		get_block_longhash(m_nettype, bei.bl, m_pow_ctx, proof_of_work);
 		if(!check_hash(proof_of_work, current_diff))
 		{
 			MERROR_VER("Block with id: " << id << std::endl
@@ -3465,7 +3466,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 		}
 		else
 		{
-			get_block_longhash(bl, m_pow_ctx, proof_of_work);
+			get_block_longhash(m_nettype, bl, m_pow_ctx, proof_of_work);
 		}
 
 		// validate proof_of_work versus difficulty target
@@ -3863,7 +3864,7 @@ void Blockchain::block_longhash_worker(cn_pow_hash_v2 &hash_ctx, const std::vect
 			break;
 		crypto::hash id = get_block_hash(block);
 		crypto::hash pow;
-		get_block_longhash(block, hash_ctx, pow);
+		get_block_longhash(m_nettype, block, hash_ctx, pow);
 		map.emplace(id, pow);
 	}
 

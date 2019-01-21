@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
@@ -42,11 +42,12 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 
 #pragma once
-#include <inttypes.h> 
+#include <inttypes.h>
 
-extern "C" {
+extern "C"
+{
 
-/** auxiliary hashing functions
+	/** auxiliary hashing functions
  * 
  * @warning Hash functions were optimized to handle only 200 bytes long input. As such they
  * are not useable outside of PoW calculation.
@@ -55,10 +56,10 @@ extern "C" {
  * @param hashval 32byte hashed data
  * @{
  */
-void blake256_hash(const uint8_t* data, uint8_t* hashval);
-void skein_hash(const uint8_t* data, uint8_t *hashval);
-void groestl_hash(const uint8_t* data, uint8_t* hashval);
-void jh_hash(const uint8_t* data, uint8_t* hashval);
+	void blake256_hash(const uint8_t* data, uint8_t* hashval);
+	void skein_hash(const uint8_t* data, uint8_t* hashval);
+	void groestl_hash(const uint8_t* data, uint8_t* hashval);
+	void jh_hash(const uint8_t* data, uint8_t* hashval);
 
-///@}
+	///@}
 }

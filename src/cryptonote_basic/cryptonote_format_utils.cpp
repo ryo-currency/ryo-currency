@@ -47,7 +47,7 @@
 #include "include_base_utils.h"
 using namespace epee;
 
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
 #include "cryptonote_config.h"
@@ -968,18 +968,27 @@ crypto::hash get_block_hash(const block &b)
 	return p;
 }
 //---------------------------------------------------------------
-bool get_block_longhash(const block &b, cn_pow_hash_v2 &ctx, crypto::hash &res)
+bool get_block_longhash(network_type nettype, const block &b, cn_pow_hash_v2 &ctx, crypto::hash &res)
 {
 	block b_local = b; //workaround to avoid const errors with do_serialize
 	blobdata bd = get_block_hashing_blob(b);
-	if(b_local.major_version < CRYPTONOTE_V2_POW_BLOCK_VERSION)
+	
+	uint8_t cn_heavy_v = get_fork_v(nettype, FORK_POW_CN_HEAVY);
+	uint8_t cn_gpu_v = get_fork_v(nettype, FORK_POW_CN_GPU);
+
+	if(cn_gpu_v != hardfork_conf::FORK_ID_DISABLED && b_local.major_version >= cn_gpu_v)
 	{
-		cn_pow_hash_v1 ctx_v1 = cn_pow_hash_v1::make_borrowed(ctx);
-		ctx_v1.hash(bd.data(), bd.size(), res.data);
+		cn_pow_hash_v3 ctx_v3 = cn_pow_hash_v3::make_borrowed_v3(ctx);
+		ctx_v3.hash(bd.data(), bd.size(), res.data);
+	}
+	else if(cn_heavy_v != hardfork_conf::FORK_ID_DISABLED && b_local.major_version >= cn_heavy_v)
+	{
+		ctx.hash(bd.data(), bd.size(), res.data);
 	}
 	else
 	{
-		ctx.hash(bd.data(), bd.size(), res.data);
+		cn_pow_hash_v1 ctx_v1 = cn_pow_hash_v1::make_borrowed(ctx);
+		ctx_v1.hash(bd.data(), bd.size(), res.data);
 	}
 	return true;
 }

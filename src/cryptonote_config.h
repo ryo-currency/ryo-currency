@@ -58,7 +58,6 @@
 #define CURRENT_TRANSACTION_VERSION 3
 #define MIN_TRANSACTION_VERSION 2
 #define MAX_TRANSACTION_VERSION 3
-#define CRYPTONOTE_V2_POW_BLOCK_VERSION 3
 #define CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE 10
 
 // MONEY_SUPPLY - total number coins to be generated
@@ -153,6 +152,8 @@ enum network_type : uint8_t
 
 enum hard_fork_feature
 {
+	FORK_POW_CN_HEAVY,
+	FORK_POW_CN_GPU,
 	FORK_V2_DIFFICULTY,
 	FORK_V3_DIFFICULTY,
 	FORK_V4_DIFFICULTY,
@@ -180,6 +181,8 @@ struct hardfork_conf
 };
 
 static constexpr hardfork_conf FORK_CONFIG[] = {
+	{FORK_POW_CN_HEAVY, 3, 3, 1},
+	{FORK_POW_CN_GPU, hardfork_conf::FORK_ID_DISABLED, 9, 1},
 	{FORK_V2_DIFFICULTY, 2, 2, 1},
 	{FORK_V3_DIFFICULTY, 4, 4, 1},
 	{FORK_V4_DIFFICULTY, hardfork_conf::FORK_ID_DISABLED, 9, 1},

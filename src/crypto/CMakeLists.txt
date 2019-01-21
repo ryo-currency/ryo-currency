@@ -43,7 +43,6 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set(crypto_sources
-  aux_hash.c
   chacha.c
   crypto-ops-data.c
   crypto-ops.c
@@ -52,14 +51,15 @@ set(crypto_sources
   keccak.c
   random.cpp
   tree-hash.c
-  cn_slow_hash_soft.cpp
-  cn_slow_hash_hard_intel.cpp
-  cn_slow_hash_hard_arm.cpp)
+  pow_hash/aux_hash.c
+  pow_hash/cn_slow_hash_soft.cpp
+  pow_hash/cn_slow_hash_hard_intel.cpp
+  pow_hash/cn_slow_hash_intel_avx2.cpp
+  pow_hash/cn_slow_hash_hard_arm.cpp)
 
 set(crypto_headers)
 
 set(crypto_private_headers
-  aux_hash.h
   chacha.h
   crypto-ops.h
   crypto.h
@@ -68,7 +68,7 @@ set(crypto_private_headers
   hash.h
   keccak.h
   random.hpp
-  cn_slow_hash.hpp)
+  pow_hash/cn_slow_hash.hpp)
 
 ryo_private_headers(cncrypto
   ${crypto_private_headers})

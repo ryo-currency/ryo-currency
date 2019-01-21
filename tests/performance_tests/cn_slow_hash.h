@@ -31,7 +31,7 @@
 #pragma once
 
 #include "crypto/crypto.h"
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "string_tools.h"
 

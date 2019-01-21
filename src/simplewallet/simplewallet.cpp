@@ -57,7 +57,7 @@
 #include "common/json_util.h"
 #include "common/scoped_message_writer.h"
 #include "common/util.h"
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "crypto/crypto.h" // for crypto::secret_key definition
 #include "cryptonote_basic/cryptonote_format_utils.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
