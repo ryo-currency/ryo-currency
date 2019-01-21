@@ -44,7 +44,7 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "include_base_utils.h"
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -9695,15 +9695,15 @@ void wallet2::generate_genesis(cryptonote::block &b) const
 {
 	if(m_nettype == TESTNET)
 	{
-		cryptonote::generate_genesis_block(b, config<TESTNET>::GENESIS_TX, config<TESTNET>::GENESIS_NONCE);
+		cryptonote::generate_genesis_block(TESTNET, b, config<TESTNET>::GENESIS_TX, config<TESTNET>::GENESIS_NONCE);
 	}
 	else if(m_nettype == STAGENET)
 	{
-		cryptonote::generate_genesis_block(b, config<STAGENET>::GENESIS_TX, config<STAGENET>::GENESIS_NONCE);
+		cryptonote::generate_genesis_block(STAGENET, b, config<STAGENET>::GENESIS_TX, config<STAGENET>::GENESIS_NONCE);
 	}
 	else
 	{
-		cryptonote::generate_genesis_block(b, config<MAINNET>::GENESIS_TX, config<MAINNET>::GENESIS_NONCE);
+		cryptonote::generate_genesis_block(MAINNET, b, config<MAINNET>::GENESIS_TX, config<MAINNET>::GENESIS_NONCE);
 	}
 }
 }
