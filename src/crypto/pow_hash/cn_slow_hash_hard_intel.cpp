@@ -136,27 +136,27 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::implode_scratchpad_hard()
 	__m128i x0, x1, x2, x3, x4, x5, x6, x7;
 	__m128i k0, k1, k2, k3, k4, k5, k6, k7, k8, k9;
 
-	aes_genkey(spad.as_xmm() + 2, k0, k1, k2, k3, k4, k5, k6, k7, k8, k9);
+	aes_genkey(spad.as_ptr<__m128i>() + 2, k0, k1, k2, k3, k4, k5, k6, k7, k8, k9);
 
-	x0 = _mm_load_si128(spad.as_xmm() + 4);
-	x1 = _mm_load_si128(spad.as_xmm() + 5);
-	x2 = _mm_load_si128(spad.as_xmm() + 6);
-	x3 = _mm_load_si128(spad.as_xmm() + 7);
-	x4 = _mm_load_si128(spad.as_xmm() + 8);
-	x5 = _mm_load_si128(spad.as_xmm() + 9);
-	x6 = _mm_load_si128(spad.as_xmm() + 10);
-	x7 = _mm_load_si128(spad.as_xmm() + 11);
+	x0 = _mm_load_si128(spad.as_ptr<__m128i>() + 4);
+	x1 = _mm_load_si128(spad.as_ptr<__m128i>() + 5);
+	x2 = _mm_load_si128(spad.as_ptr<__m128i>() + 6);
+	x3 = _mm_load_si128(spad.as_ptr<__m128i>() + 7);
+	x4 = _mm_load_si128(spad.as_ptr<__m128i>() + 8);
+	x5 = _mm_load_si128(spad.as_ptr<__m128i>() + 9);
+	x6 = _mm_load_si128(spad.as_ptr<__m128i>() + 10);
+	x7 = _mm_load_si128(spad.as_ptr<__m128i>() + 11);
 
 	for(size_t i = 0; i < MEMORY / sizeof(__m128i); i += 8)
 	{
-		x0 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 0), x0);
-		x1 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 1), x1);
-		x2 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 2), x2);
-		x3 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 3), x3);
-		x4 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 4), x4);
-		x5 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 5), x5);
-		x6 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 6), x6);
-		x7 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 7), x7);
+		x0 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 0), x0);
+		x1 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 1), x1);
+		x2 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 2), x2);
+		x3 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 3), x3);
+		x4 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 4), x4);
+		x5 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 5), x5);
+		x6 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 6), x6);
+		x7 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 7), x7);
 
 		aes_round8(k0, x0, x1, x2, x3, x4, x5, x6, x7);
 		aes_round8(k1, x0, x1, x2, x3, x4, x5, x6, x7);
@@ -175,14 +175,14 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::implode_scratchpad_hard()
 
 	for(size_t i = 0; VERSION > 0 && i < MEMORY / sizeof(__m128i); i += 8)
 	{
-		x0 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 0), x0);
-		x1 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 1), x1);
-		x2 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 2), x2);
-		x3 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 3), x3);
-		x4 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 4), x4);
-		x5 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 5), x5);
-		x6 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 6), x6);
-		x7 = _mm_xor_si128(_mm_load_si128(lpad.as_xmm() + i + 7), x7);
+		x0 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 0), x0);
+		x1 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 1), x1);
+		x2 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 2), x2);
+		x3 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 3), x3);
+		x4 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 4), x4);
+		x5 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 5), x5);
+		x6 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 6), x6);
+		x7 = _mm_xor_si128(_mm_load_si128(lpad.as_ptr<__m128i>() + i + 7), x7);
 
 		aes_round8(k0, x0, x1, x2, x3, x4, x5, x6, x7);
 		aes_round8(k1, x0, x1, x2, x3, x4, x5, x6, x7);
@@ -214,14 +214,14 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::implode_scratchpad_hard()
 		xor_shift(x0, x1, x2, x3, x4, x5, x6, x7);
 	}
 
-	_mm_store_si128(spad.as_xmm() + 4, x0);
-	_mm_store_si128(spad.as_xmm() + 5, x1);
-	_mm_store_si128(spad.as_xmm() + 6, x2);
-	_mm_store_si128(spad.as_xmm() + 7, x3);
-	_mm_store_si128(spad.as_xmm() + 8, x4);
-	_mm_store_si128(spad.as_xmm() + 9, x5);
-	_mm_store_si128(spad.as_xmm() + 10, x6);
-	_mm_store_si128(spad.as_xmm() + 11, x7);
+	_mm_store_si128(spad.as_ptr<__m128i>() + 4, x0);
+	_mm_store_si128(spad.as_ptr<__m128i>() + 5, x1);
+	_mm_store_si128(spad.as_ptr<__m128i>() + 6, x2);
+	_mm_store_si128(spad.as_ptr<__m128i>() + 7, x3);
+	_mm_store_si128(spad.as_ptr<__m128i>() + 8, x4);
+	_mm_store_si128(spad.as_ptr<__m128i>() + 9, x5);
+	_mm_store_si128(spad.as_ptr<__m128i>() + 10, x6);
+	_mm_store_si128(spad.as_ptr<__m128i>() + 11, x7);
 }
 
 template <size_t MEMORY, size_t ITER, size_t VERSION>
@@ -230,16 +230,16 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::explode_scratchpad_hard()
 	__m128i x0, x1, x2, x3, x4, x5, x6, x7;
 	__m128i k0, k1, k2, k3, k4, k5, k6, k7, k8, k9;
 
-	aes_genkey(spad.as_xmm(), k0, k1, k2, k3, k4, k5, k6, k7, k8, k9);
+	aes_genkey(spad.as_ptr<__m128i>(), k0, k1, k2, k3, k4, k5, k6, k7, k8, k9);
 
-	x0 = _mm_load_si128(spad.as_xmm() + 4);
-	x1 = _mm_load_si128(spad.as_xmm() + 5);
-	x2 = _mm_load_si128(spad.as_xmm() + 6);
-	x3 = _mm_load_si128(spad.as_xmm() + 7);
-	x4 = _mm_load_si128(spad.as_xmm() + 8);
-	x5 = _mm_load_si128(spad.as_xmm() + 9);
-	x6 = _mm_load_si128(spad.as_xmm() + 10);
-	x7 = _mm_load_si128(spad.as_xmm() + 11);
+	x0 = _mm_load_si128(spad.as_ptr<__m128i>() + 4);
+	x1 = _mm_load_si128(spad.as_ptr<__m128i>() + 5);
+	x2 = _mm_load_si128(spad.as_ptr<__m128i>() + 6);
+	x3 = _mm_load_si128(spad.as_ptr<__m128i>() + 7);
+	x4 = _mm_load_si128(spad.as_ptr<__m128i>() + 8);
+	x5 = _mm_load_si128(spad.as_ptr<__m128i>() + 9);
+	x6 = _mm_load_si128(spad.as_ptr<__m128i>() + 10);
+	x7 = _mm_load_si128(spad.as_ptr<__m128i>() + 11);
 
 	for(size_t i = 0; VERSION > 0 && i < 16; i++)
 	{
@@ -270,14 +270,14 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::explode_scratchpad_hard()
 		aes_round8(k8, x0, x1, x2, x3, x4, x5, x6, x7);
 		aes_round8(k9, x0, x1, x2, x3, x4, x5, x6, x7);
 
-		_mm_store_si128(lpad.as_xmm() + i + 0, x0);
-		_mm_store_si128(lpad.as_xmm() + i + 1, x1);
-		_mm_store_si128(lpad.as_xmm() + i + 2, x2);
-		_mm_store_si128(lpad.as_xmm() + i + 3, x3);
-		_mm_store_si128(lpad.as_xmm() + i + 4, x4);
-		_mm_store_si128(lpad.as_xmm() + i + 5, x5);
-		_mm_store_si128(lpad.as_xmm() + i + 6, x6);
-		_mm_store_si128(lpad.as_xmm() + i + 7, x7);
+		_mm_store_si128(lpad.as_ptr<__m128i>() + i + 0, x0);
+		_mm_store_si128(lpad.as_ptr<__m128i>() + i + 1, x1);
+		_mm_store_si128(lpad.as_ptr<__m128i>() + i + 2, x2);
+		_mm_store_si128(lpad.as_ptr<__m128i>() + i + 3, x3);
+		_mm_store_si128(lpad.as_ptr<__m128i>() + i + 4, x4);
+		_mm_store_si128(lpad.as_ptr<__m128i>() + i + 5, x5);
+		_mm_store_si128(lpad.as_ptr<__m128i>() + i + 6, x6);
+		_mm_store_si128(lpad.as_ptr<__m128i>() + i + 7, x7);
 	}
 }
 
@@ -349,11 +349,11 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::hardware_hash(const void* in, size_t l
 	for(size_t i = 0; i < ITER; i++)
 	{
 		__m128i cx;
-		cx = _mm_load_si128(scratchpad_ptr(idx0).as_xmm());
+		cx = _mm_load_si128(scratchpad_ptr(idx0).template as_ptr<__m128i>());
 
 		cx = _mm_aesenc_si128(cx, _mm_set_epi64x(ah0, al0));
 
-		_mm_store_si128(scratchpad_ptr(idx0).as_xmm(), _mm_xor_si128(bx0, cx));
+		_mm_store_si128(scratchpad_ptr(idx0).template as_ptr<__m128i>(), _mm_xor_si128(bx0, cx));
 		idx0 = xmm_extract_64(cx);
 		bx0 = cx;
 
@@ -404,7 +404,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::hardware_hash(const void* in, size_t l
 
 inline void prep_dv(cn_sptr& idx, __m128i& v, __m128& n)
 {
-	v = _mm_load_si128(idx.as_xmm());
+	v = _mm_load_si128(idx.as_ptr<__m128i>());
 	n = _mm_cvtepi32_ps(v);
 }
 
@@ -487,7 +487,7 @@ inline void single_comupte_wrap(__m128 n0, __m128 n1, __m128 n2, __m128 n3, floa
 {
 	__m128i r = single_comupte<rot % 2 != 0>(n0, n1, n2, n3, cnt, rnd_c, sum);
 	if(rot != 0)
-		r = _mm_alignr_epi8(r, r, rot);
+		r = _mm_or_si128(_mm_bslli_si128(r, 16 - rot), _mm_bsrli_si128(r, rot));
 	out = _mm_xor_si128(out, r);
 }
 
@@ -520,7 +520,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3()
 		single_comupte_wrap<2>(n0, n3, n1, n2, 1.3593750f, rc, sumb, out);
 		single_comupte_wrap<3>(n0, n3, n2, n1, 1.3671875f, rc, sumb, out);
 		sum0 = _mm_add_ps(suma, sumb);
-		_mm_store_si128(idx0.as_xmm(), _mm_xor_si128(v0, out));
+		_mm_store_si128(idx0.as_ptr<__m128i>(), _mm_xor_si128(v0, out));
 		out2 = out;
 
 		out = _mm_setzero_si128();
@@ -529,7 +529,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3()
 		single_comupte_wrap<2>(n1, n3, n0, n2, 1.3828125f, rc, sumb, out);
 		single_comupte_wrap<3>(n1, n3, n2, n0, 1.3046875f, rc, sumb, out);
 		sum1 = _mm_add_ps(suma, sumb);
-		_mm_store_si128(idx1.as_xmm(), _mm_xor_si128(v1, out));
+		_mm_store_si128(idx1.as_ptr<__m128i>(), _mm_xor_si128(v1, out));
 		out2 = _mm_xor_si128(out2, out);
 
 		out = _mm_setzero_si128();
@@ -538,7 +538,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3()
 		single_comupte_wrap<2>(n2, n3, n1, n0, 1.2578125f, rc, sumb, out);
 		single_comupte_wrap<3>(n2, n3, n0, n1, 1.2890625f, rc, sumb, out);
 		sum2 = _mm_add_ps(suma, sumb);
-		_mm_store_si128(idx2.as_xmm(), _mm_xor_si128(v2, out));
+		_mm_store_si128(idx2.as_ptr<__m128i>(), _mm_xor_si128(v2, out));
 		out2 = _mm_xor_si128(out2, out);
 
 		out = _mm_setzero_si128();
@@ -547,7 +547,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3()
 		single_comupte_wrap<2>(n3, n0, n1, n2, 1.3359375f, rc, sumb, out);
 		single_comupte_wrap<3>(n3, n0, n2, n1, 1.4609375f, rc, sumb, out);
 		sum3 = _mm_add_ps(suma, sumb);
-		_mm_store_si128(idx3.as_xmm(), _mm_xor_si128(v3, out));
+		_mm_store_si128(idx3.as_ptr<__m128i>(), _mm_xor_si128(v3, out));
 		out2 = _mm_xor_si128(out2, out);
 		sum0 = _mm_add_ps(sum0, sum1);
 		sum2 = _mm_add_ps(sum2, sum3);
