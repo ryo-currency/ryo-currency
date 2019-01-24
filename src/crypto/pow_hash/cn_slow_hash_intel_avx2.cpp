@@ -56,28 +56,26 @@
 
 inline void prep_dv_avx(cn_sptr& idx, __m256i& v, __m256& n01)
 {
-	v = _mm256_load_si256(idx.as_xmm256());
+	v = _mm256_load_si256(idx.as_ptr<__m256i>());
 	n01 = _mm256_cvtepi32_ps(v);
 }
 
-inline __m256 xor_flip(__m256 x)
+inline __m256 xor_flip(const __m256& x)
 {
 	// Break the dependency chain by flipping the lower bit of mantissa (FMA avoidance)
 	return _mm256_xor_ps((__m256)_mm256_set1_epi32(0x00000001), x);
 }
 
 // 14
-inline void sub_round(__m256 n0, __m256 n1, __m256 n2, __m256 n3, __m256 rnd_c, __m256& n, __m256& d, __m256& c)
+inline void sub_round(const __m256& n0, const __m256& n1, const __m256& n2, const __m256& n3, const __m256& rnd_c, __m256& n, __m256& d, __m256& c)
 {
-	n1 = _mm256_add_ps(n1, c);
 	__m256 nn = _mm256_mul_ps(n0, c);
-	nn = _mm256_mul_ps(n1, _mm256_mul_ps(nn, nn));
+	nn = _mm256_mul_ps(_mm256_add_ps(n1, c), _mm256_mul_ps(nn, nn));
 	nn = xor_flip(nn);
 	n = _mm256_add_ps(n, nn);
 
-	n3 = _mm256_sub_ps(n3, c);
 	__m256 dd = _mm256_mul_ps(n2, c);
-	dd = _mm256_mul_ps(n3, _mm256_mul_ps(dd, dd));
+	dd = _mm256_mul_ps(_mm256_sub_ps(n3, c), _mm256_mul_ps(dd, dd));
 	dd = xor_flip(dd);
 	d = _mm256_add_ps(d, dd);
 
@@ -91,7 +89,7 @@ inline void sub_round(__m256 n0, __m256 n1, __m256 n2, __m256 n3, __m256 rnd_c, 
 }
 
 // 14*8 + 2 = 112
-inline void round_compute(__m256 n0, __m256 n1, __m256 n2, __m256 n3, __m256 rnd_c, __m256& c, __m256& r)
+inline void round_compute(const __m256& n0, const __m256& n1, const __m256& n2, const __m256& n3, const __m256& rnd_c, __m256& c, __m256& r)
 {
 	__m256 n = _mm256_setzero_ps(), d = _mm256_setzero_ps();
 
@@ -111,7 +109,8 @@ inline void round_compute(__m256 n0, __m256 n1, __m256 n2, __m256 n3, __m256 rnd
 
 // 112×4 = 448
 template <bool add>
-inline __m256i double_comupte(__m256 n0, __m256 n1, __m256 n2, __m256 n3, float lcnt, float hcnt, __m256 rnd_c, __m256& sum)
+inline __m256i double_comupte(const __m256& n0, const __m256& n1, const __m256& n2, const __m256& n3, 
+							  float lcnt, float hcnt, const __m256& rnd_c, __m256& sum)
 {
 	__m256 c = _mm256_insertf128_ps(_mm256_castps128_ps256(_mm_set1_ps(lcnt)), _mm_set1_ps(hcnt), 1);
 	__m256 r = _mm256_setzero_ps();
@@ -135,7 +134,8 @@ inline __m256i double_comupte(__m256 n0, __m256 n1, __m256 n2, __m256 n3, float 
 }
 
 template <size_t rot>
-inline void double_comupte_wrap(__m256 n0, __m256 n1, __m256 n2, __m256 n3, float lcnt, float hcnt, __m256 rnd_c, __m256& sum, __m256i& out)
+inline void double_comupte_wrap(const __m256& n0, const __m256& n1, const __m256& n2, const __m256& n3, 
+								float lcnt, float hcnt, const __m256& rnd_c, __m256& sum, __m256i& out)
 {
 	__m256i r = double_comupte<rot % 2 != 0>(n0, n1, n2, n3, lcnt, hcnt, rnd_c, sum);
 	if(rot != 0)
@@ -174,7 +174,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3_avx()
 		double_comupte_wrap<1>(n01, n22, n33, n10, 1.2812500f, 1.3984375f, rc, suma, out);
 		double_comupte_wrap<2>(n01, n33, n10, n22, 1.3593750f, 1.3828125f, rc, sumb, out);
 		double_comupte_wrap<3>(n01, n33, n22, n10, 1.3671875f, 1.3046875f, rc, sumb, out);
-		_mm256_store_si256(idx0.as_xmm256(), _mm256_xor_si256(v01, out));
+		_mm256_store_si256(idx0.as_ptr<__m256i>(), _mm256_xor_si256(v01, out));
 		sum0 = _mm256_add_ps(suma, sumb);
 		out2 = out;
 
@@ -188,7 +188,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3_avx()
 		double_comupte_wrap<1>(n23, n02, n30, n11, 1.2734375f, 1.3515625f, rc, suma, out);
 		double_comupte_wrap<2>(n23, n30, n11, n02, 1.2578125f, 1.3359375f, rc, sumb, out);
 		double_comupte_wrap<3>(n23, n30, n02, n11, 1.2890625f, 1.4609375f, rc, sumb, out);
-		_mm256_store_si256(idx2.as_xmm256(), _mm256_xor_si256(v23, out));
+		_mm256_store_si256(idx2.as_ptr<__m256i>(), _mm256_xor_si256(v23, out));
 		sum1 = _mm256_add_ps(suma, sumb);
 
 		out2 = _mm256_xor_si256(out2, out);

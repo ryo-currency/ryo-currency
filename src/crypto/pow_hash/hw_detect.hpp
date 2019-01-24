@@ -81,6 +81,9 @@
 
 #if defined(CN_ADD_TARGETS_AND_HEADERS)
 #if defined(__aarch64__)
+#ifndef __ARM_FEATURE_CRYPTO
+#define __ARM_FEATURE_CRYPTO 1
+#endif
 #ifndef __clang__
 #pragma GCC target("+crypto")
 #endif
@@ -96,7 +99,7 @@
 #endif
 #elif defined(HAS_INTEL_HW)
 #ifndef __clang__
-#pragma GCC target("aes,ssse3")
+#pragma GCC target("aes,sse2")
 #endif
 #endif
 #endif

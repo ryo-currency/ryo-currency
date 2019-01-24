@@ -47,12 +47,14 @@
 
 #pragma once
 
+#include <boost/align/aligned_alloc.hpp>
 #include "hw_detect.hpp"
 #include <assert.h>
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 // Macros are for template instantiations
 // Cryptonight
@@ -121,12 +123,6 @@ class cn_sptr
 	cn_sptr(uint64_t* ptr) { base_ptr = ptr; }
 	cn_sptr(uint32_t* ptr) { base_ptr = ptr; }
 	cn_sptr(uint8_t* ptr) { base_ptr = ptr; }
-#ifdef HAS_INTEL_HW
-	cn_sptr(__m128i* ptr)
-	{
-		base_ptr = ptr;
-	}
-#endif
 
 	inline void set(void* ptr)
 	{
@@ -146,13 +142,10 @@ class cn_sptr
 	inline int32_t& as_dword(size_t i) { return *(reinterpret_cast<int32_t*>(base_ptr) + i); }
 	inline uint32_t& as_udword(size_t i) { return *(reinterpret_cast<uint32_t*>(base_ptr) + i); }
 	inline const uint32_t& as_udword(size_t i) const { return *(reinterpret_cast<uint32_t*>(base_ptr) + i); }
-#ifdef HAS_INTEL_HW
-	inline __m128i* as_xmm()
-	{
-		return reinterpret_cast<__m128i*>(base_ptr);
-	}
-	inline __m256i* as_xmm256() { return reinterpret_cast<__m256i*>(base_ptr); }
-#endif
+	
+	template <typename cast_t>
+	inline cast_t* as_ptr() { return reinterpret_cast<cast_t*>(base_ptr); }
+
   private:
 	void* base_ptr;
 };
@@ -163,13 +156,8 @@ class cn_slow_hash
   public:
 	cn_slow_hash() : borrowed_pad(false)
 	{
-#if !defined(HAS_WIN_INTRIN_API)
-		lpad.set(aligned_alloc(4096, MEMORY));
-		spad.set(aligned_alloc(4096, 4096));
-#else
-		lpad.set(_aligned_malloc(MEMORY, 4096));
-		spad.set(_aligned_malloc(4096, 4096));
-#endif
+		lpad.set(boost::alignment::aligned_alloc(4096, MEMORY));
+		spad.set(boost::alignment::aligned_alloc(4096, 4096));
 	}
 
 	cn_slow_hash(cn_slow_hash&& other) noexcept : lpad(other.lpad.as_byte()), spad(other.spad.as_byte()), borrowed_pad(other.borrowed_pad)
@@ -279,17 +267,10 @@ class cn_slow_hash
 	{
 		if(!borrowed_pad)
 		{
-#if !defined(HAS_WIN_INTRIN_API)
 			if(lpad.as_void() != nullptr)
-				free(lpad.as_void());
+				boost::alignment::aligned_free(lpad.as_void());
 			if(lpad.as_void() != nullptr)
-				free(spad.as_void());
-#else
-			if(lpad.as_void() != nullptr)
-				_aligned_free(lpad.as_void());
-			if(lpad.as_void() != nullptr)
-				_aligned_free(spad.as_void());
-#endif
+				boost::alignment::aligned_free(spad.as_void());
 		}
 
 		lpad.set(nullptr);
