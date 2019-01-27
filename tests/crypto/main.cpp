@@ -89,6 +89,12 @@ inline std::string get_strval<long unsigned int>(const long unsigned int& val)
 }
 
 template<>
+inline std::string get_strval<unsigned int>(const unsigned int& val)
+{
+	return std::to_string(val);
+}
+
+template<>
 inline std::string get_strval<bool>(const bool& val)
 {
 	return val ? "true" : "false";
