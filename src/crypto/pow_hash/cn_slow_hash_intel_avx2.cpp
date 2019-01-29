@@ -60,10 +60,21 @@ inline void prep_dv_avx(cn_sptr& idx, __m256i& v, __m256& n01)
 	n01 = _mm256_cvtepi32_ps(v);
 }
 
-inline __m256 xor_flip(const __m256& x)
+inline __m256 _mm256_set1_ps_epi32(uint32_t x)
 {
-	// Break the dependency chain by flipping the lower bit of mantissa (FMA avoidance)
-	return _mm256_xor_ps((__m256)_mm256_set1_epi32(0x00000001), x);
+	return _mm256_castsi256_ps(_mm256_set1_epi32(x));
+}
+
+inline __m128 _mm_set1_ps_epi32(uint32_t x)
+{
+	return _mm_castsi128_ps(_mm_set1_epi32(x));
+}
+
+inline __m256 fma_break(const __m256& x) 
+{ 
+	// Break the dependency chain by setitng the exp to ?????01 
+	__m256 xx = _mm256_and_ps(_mm256_set1_ps_epi32(0xFEFFFFFF), x); 
+	return _mm256_or_ps(_mm256_set1_ps_epi32(0x00800000), xx); 
 }
 
 // 14
@@ -71,20 +82,20 @@ inline void sub_round(const __m256& n0, const __m256& n1, const __m256& n2, cons
 {
 	__m256 nn = _mm256_mul_ps(n0, c);
 	nn = _mm256_mul_ps(_mm256_add_ps(n1, c), _mm256_mul_ps(nn, nn));
-	nn = xor_flip(nn);
+	nn = fma_break(nn);
 	n = _mm256_add_ps(n, nn);
 
 	__m256 dd = _mm256_mul_ps(n2, c);
 	dd = _mm256_mul_ps(_mm256_sub_ps(n3, c), _mm256_mul_ps(dd, dd));
-	dd = xor_flip(dd);
+	dd = fma_break(dd);
 	d = _mm256_add_ps(d, dd);
 
 	//Constant feedback
 	c = _mm256_add_ps(c, rnd_c);
 	c = _mm256_add_ps(c, _mm256_set1_ps(0.734375f));
 	__m256 r = _mm256_add_ps(nn, dd);
-	r = _mm256_and_ps((__m256)_mm256_set1_epi32(0x807FFFFF), r);
-	r = _mm256_or_ps((__m256)_mm256_set1_epi32(0x40000000), r);
+	r = _mm256_and_ps(_mm256_set1_ps_epi32(0x807FFFFF), r);
+	r = _mm256_or_ps(_mm256_set1_ps_epi32(0x40000000), r);
 	c = _mm256_add_ps(c, r);
 }
 
@@ -103,7 +114,8 @@ inline void round_compute(const __m256& n0, const __m256& n1, const __m256& n2, 
 	sub_round(n0, n3, n2, n1, rnd_c, n, d, c);
 
 	// Make sure abs(d) > 2.0 - this prevents division by zero and accidental overflows by division by < 1.0
-	d = _mm256_or_ps((__m256)_mm256_set1_epi32(0x40000000), d);
+	d = _mm256_and_ps(_mm256_set1_ps_epi32(0xFF7FFFFF), d);
+	d = _mm256_or_ps(_mm256_set1_ps_epi32(0x40000000), d);
 	r = _mm256_add_ps(r, _mm256_div_ps(n, d));
 }
 
@@ -121,8 +133,8 @@ inline __m256i double_comupte(const __m256& n0, const __m256& n1, const __m256& 
 	round_compute(n0, n1, n2, n3, rnd_c, c, r);
 
 	// do a quick fmod by setting exp to 2
-	r = _mm256_and_ps((__m256)_mm256_set1_epi32(0x807FFFFF), r);
-	r = _mm256_or_ps((__m256)_mm256_set1_epi32(0x40000000), r);
+	r = _mm256_and_ps(_mm256_set1_ps_epi32(0x807FFFFF), r);
+	r = _mm256_or_ps(_mm256_set1_ps_epi32(0x40000000), r);
 
 	if(add)
 		sum = _mm256_add_ps(sum, r);
@@ -159,7 +171,6 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3_avx()
 		__m256 rc = sum0;
 
 		__m256 n01, n23;
-		__m256 d01, d23;
 		prep_dv_avx(idx0, v01, n01);
 		prep_dv_avx(idx2, v23, n23);
 
@@ -201,7 +212,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3_avx()
 		// Clear the high 128 bits
 		__m128 sum = _mm256_castps256_ps128(sum0);
 
-		sum = _mm_and_ps((__m128)_mm_set1_epi32(0x7fffffff), sum); // take abs(va) by masking the float sign bit
+		sum = _mm_and_ps(_mm_set1_ps_epi32(0x7fffffff), sum); // take abs(va) by masking the float sign bit
 		// vs range 0 - 64
 		__m128i v0 = _mm_cvttps_epi32(_mm_mul_ps(sum, _mm_set1_ps(16777216.0f)));
 		v0 = _mm_xor_si128(v0, _mm256_castsi256_si128(out2));
