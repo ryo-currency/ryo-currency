@@ -408,10 +408,16 @@ inline void prep_dv(cn_sptr& idx, __m128i& v, __m128& n)
 	n = _mm_cvtepi32_ps(v);
 }
 
-inline __m128 xor_flip(__m128 x)
+inline __m128 _mm_set1_ps_epi32(uint32_t x)
 {
-	// Break the dependency chain by flipping the lower bit of mantissa (FMA avoidance)
-	return _mm_xor_ps((__m128)_mm_set1_epi32(0x00000001), x);
+	return _mm_castsi128_ps(_mm_set1_epi32(x));
+}
+
+inline __m128 fma_break(__m128 x) 
+{ 
+	// Break the dependency chain by setitng the exp to ?????01 
+	__m128 xx = _mm_and_ps(_mm_set1_ps_epi32(0xFEFFFFFF), x); 
+	return _mm_or_ps(_mm_set1_ps_epi32(0x00800000), xx); 
 }
 
 // 14
@@ -420,21 +426,21 @@ inline void sub_round(__m128 n0, __m128 n1, __m128 n2, __m128 n3, __m128 rnd_c, 
 	n1 = _mm_add_ps(n1, c);
 	__m128 nn = _mm_mul_ps(n0, c);
 	nn = _mm_mul_ps(n1, _mm_mul_ps(nn, nn));
-	nn = xor_flip(nn);
+	nn = fma_break(nn);
 	n = _mm_add_ps(n, nn);
 
 	n3 = _mm_sub_ps(n3, c);
 	__m128 dd = _mm_mul_ps(n2, c);
 	dd = _mm_mul_ps(n3, _mm_mul_ps(dd, dd));
-	dd = xor_flip(dd);
+	dd = fma_break(dd);
 	d = _mm_add_ps(d, dd);
 
 	//Constant feedback
 	c = _mm_add_ps(c, rnd_c);
 	c = _mm_add_ps(c, _mm_set1_ps(0.734375f));
 	__m128 r = _mm_add_ps(nn, dd);
-	r = _mm_and_ps((__m128)_mm_set1_epi32(0x807FFFFF), r);
-	r = _mm_or_ps((__m128)_mm_set1_epi32(0x40000000), r);
+	r = _mm_and_ps(_mm_set1_ps_epi32(0x807FFFFF), r);
+	r = _mm_or_ps(_mm_set1_ps_epi32(0x40000000), r);
 	c = _mm_add_ps(c, r);
 }
 
@@ -453,7 +459,8 @@ inline void round_compute(__m128 n0, __m128 n1, __m128 n2, __m128 n3, __m128 rnd
 	sub_round(n0, n3, n2, n1, rnd_c, n, d, c);
 
 	// Make sure abs(d) > 2.0 - this prevents division by zero and accidental overflows by division by < 1.0
-	d = _mm_or_ps((__m128)_mm_set1_epi32(0x40000000), d);
+	d = _mm_and_ps(_mm_set1_ps_epi32(0xFF7FFFFF), d);
+	d = _mm_or_ps(_mm_set1_ps_epi32(0x40000000), d);
 	r = _mm_add_ps(r, _mm_div_ps(n, d));
 }
 
@@ -470,8 +477,8 @@ inline __m128i single_comupte(__m128 n0, __m128 n1, __m128 n2, __m128 n3, float 
 	round_compute(n0, n1, n2, n3, rnd_c, c, r);
 
 	// do a quick fmod by setting exp to 2
-	r = _mm_and_ps((__m128)_mm_set1_epi32(0x807FFFFF), r);
-	r = _mm_or_ps((__m128)_mm_set1_epi32(0x40000000), r);
+	r = _mm_and_ps(_mm_set1_ps_epi32(0x807FFFFF), r);
+	r = _mm_or_ps(_mm_set1_ps_epi32(0x40000000), r);
 
 	if(add)
 		sum = _mm_add_ps(sum, r);
@@ -553,7 +560,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3()
 		sum2 = _mm_add_ps(sum2, sum3);
 		sum0 = _mm_add_ps(sum0, sum2);
 
-		sum0 = _mm_and_ps((__m128)_mm_set1_epi32(0x7fffffff), sum0); // take abs(va) by masking the float sign bit
+		sum0 = _mm_and_ps(_mm_set1_ps_epi32(0x7fffffff), sum0); // take abs(va) by masking the float sign bit
 		// vs range 0 - 64
 		n0 = _mm_mul_ps(sum0, _mm_set1_ps(16777216.0f));
 		v0 = _mm_cvttps_epi32(n0);

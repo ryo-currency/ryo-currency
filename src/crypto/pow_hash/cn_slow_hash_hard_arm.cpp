@@ -415,13 +415,15 @@ inline void sub_round(const float32x4_t& n0, const float32x4_t& n1, const float3
 	float32x4_t ln1 = vaddq_f32(n1, c);
 	float32x4_t nn = vmulq_f32(n0, c);
 	nn = vmulq_f32(ln1, vmulq_f32(nn, nn));
-	veorq_f32(nn, 0x00000001);
+	vandq_f32(nn, 0xFEFFFFFF);
+	vorq_f32(nn, 0x00800000);
 	n = vaddq_f32(n, nn);
 
 	float32x4_t ln3 = vsubq_f32(n3, c);
 	float32x4_t dd = vmulq_f32(n2, c);
 	dd = vmulq_f32(ln3, vmulq_f32(dd, dd));
-	veorq_f32(dd, 0x00000001);
+	vandq_f32(dd, 0xFEFFFFFF);
+	vorq_f32(dd, 0x00800000);
 	d = vaddq_f32(d, dd);
 
 	//Constant feedback
@@ -448,6 +450,7 @@ inline void round_compute(const float32x4_t& n0, const float32x4_t& n1, const fl
 	sub_round(n0, n3, n2, n1, rnd_c, n, d, c);
 
 	// Make sure abs(d) > 2.0 - this prevents division by zero and accidental overflows by division by < 1.0
+	vandq_f32(d, 0xFF7FFFFF);
 	vorq_f32(d, 0x40000000);
 	r = vaddq_f32(r, vdivq_f32(n, d));
 }
