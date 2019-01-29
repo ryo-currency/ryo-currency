@@ -62,7 +62,7 @@
 // Cryptonight-heavy
 #define cn_v2_hash_t cn_slow_hash<4 * 1024 * 1024, 0x40000, 1>
 // Cryptonight-GPU
-#define cn_v3_hash_t cn_slow_hash<2 * 1024 * 1024, 0x10000, 2>
+#define cn_v3_hash_t cn_slow_hash<2 * 1024 * 1024, 0xC000, 2>
 
 // Use the types below
 template <size_t MEMORY, size_t ITER, size_t VERSION>
