@@ -61,7 +61,7 @@ set(crypto_sources
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 		set_source_files_properties(pow_hash/cn_slow_hash_intel_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
-		set_source_files_properties(pow_hash/cn_slow_hard_intel.cpp PROPERTIES COMPILE_FLAGS "-mssse3 -maes")
+		set_source_files_properties(pow_hash/cn_slow_hard_intel.cpp PROPERTIES COMPILE_FLAGS "-msse2 -maes")
 	elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
 		set_source_files_properties(pow_hash/cn_slow_hash_hard_arm.cpp PROPERTIES COMPILE_FLAGS "-march=armv8-a+crypto")
 	endif()
