@@ -99,7 +99,9 @@ DISABLE_VS_WARNINGS(4267)
 
 // used to overestimate the block reward when estimating a per kB to use
 #define BLOCK_REWARD_OVERESTIMATE ((uint64_t)(16000000000))
-#define MAINNET_HARDFORK_V3_HEIGHT ((uint64_t)(116520))
+
+constexpr uint64_t MAINNET_HARDFORK_V3_HEIGHT = 116520;
+constexpr uint64_t MAINNET_HARDFORK_V6_HEIGHT = 228750;
 
 static const struct
 {
@@ -112,7 +114,9 @@ static const struct
 	{2, 21300, 0, 1497657600},
 	{3, MAINNET_HARDFORK_V3_HEIGHT, 0, 1522800000},
 	{4, 150000, 0, 1530967408},
-	{5, 161500, 0, 1533767730}
+	{5, 161500, 0, 1533767730},
+	{6, MAINNET_HARDFORK_V6_HEIGHT, 0, 1550067000},
+	{7, 228870, 0, 1550095800}
 };
 
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
@@ -809,6 +813,9 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
 	uint64_t height = m_db->height();
 
 	if(m_nettype == MAINNET && height >= MAINNET_HARDFORK_V3_HEIGHT && height <= (MAINNET_HARDFORK_V3_HEIGHT + common_config::DIFFICULTY_BLOCKS_COUNT_V2))
+		return (difficulty_type)480000000;
+
+	if(m_nettype == MAINNET && height >= MAINNET_HARDFORK_V6_HEIGHT && height <= (MAINNET_HARDFORK_V6_HEIGHT + common_config::DIFFICULTY_BLOCKS_COUNT_V4))
 		return (difficulty_type)480000000;
 
 	size_t block_count;

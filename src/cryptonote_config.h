@@ -182,21 +182,21 @@ struct hardfork_conf
 
 static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_POW_CN_HEAVY, 3, 3, 1},
-	{FORK_POW_CN_GPU, hardfork_conf::FORK_ID_DISABLED, 9, 1},
+	{FORK_POW_CN_GPU, 6, 9, 1},
 	{FORK_V2_DIFFICULTY, 2, 2, 1},
 	{FORK_V3_DIFFICULTY, 4, 4, 1},
-	{FORK_V4_DIFFICULTY, hardfork_conf::FORK_ID_DISABLED, 9, 1},
+	{FORK_V4_DIFFICULTY, 6, 9, 1},
 	{FORK_FIXED_FEE, 4, 4, 1},
 	{FORK_NEED_V3_TXES, 4, 4, 1},
 	{FORK_STRICT_TX_SEMANTICS, 5, 5, 1},
 	{FORK_DEV_FUND, 5, 5, 1},
 	{FORK_FEE_V2, 5, 6, 1},
-	{FORK_RINGSIZE_INC, hardfork_conf::FORK_ID_DISABLED, 8, 1},
-	{FORK_RINGSIZE_INC_REQ, hardfork_conf::FORK_ID_DISABLED, 9, 1},
-	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, 8, 1},
-	{FORK_BULLETPROOFS_REQ, hardfork_conf::FORK_ID_DISABLED, 9, 1},
-	{FORK_UNIFORM_IDS, hardfork_conf::FORK_ID_DISABLED, 7, 1},
-	{FORK_UNIFORM_IDS_REQ, hardfork_conf::FORK_ID_DISABLED, 8, 1}
+	{FORK_RINGSIZE_INC, 6, 8, 1},
+	{FORK_RINGSIZE_INC_REQ, 7, 9, 1},
+	{FORK_BULLETPROOFS, 6, 8, 1},
+	{FORK_BULLETPROOFS_REQ, 7, 9, 1},
+	{FORK_UNIFORM_IDS, 6, 7, 1},
+	{FORK_UNIFORM_IDS_REQ, 7, 8, 1}
 };
 
 // COIN - number of smallest units in one coin
