@@ -389,12 +389,12 @@ difficulty_type next_difficulty_v4(std::vector<uint64_t> timestamps, const std::
 	assert(timestamps.size() == N + 1);
 	assert(cumulative_difficulties.size() == N + 1);
 
-	// highest timestamp must higher than the lowest
-	timestamps[N] = std::max(timestamps[N], timestamps[0] + 1);
 	// the newest timestamp is not allwed to be older than the previous
 	uint64_t t_last = std::max(timestamps[N], timestamps[N - 1]);
 	// the newest timestamp can only be 5 target times in the future
 	timestamps[N] = std::min(t_last, timestamps[N - 1] + 5 * T);
+	// highest timestamp must higher than the lowest
+	timestamps[N] = std::max(timestamps[N], timestamps[0] + 1);
 
 	interpolate_timestamps<N>(timestamps);
 
