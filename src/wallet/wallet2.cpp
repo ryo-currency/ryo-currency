@@ -625,7 +625,7 @@ wallet2::wallet2(network_type nettype, bool restricted) : m_multisig_rescan_info
 														  m_store_tx_info(true),
 														  m_default_mixin(0),
 														  m_default_priority(0),
-														  m_refresh_type(RefreshOptimizeCoinbase),
+														  m_refresh_type(RefreshDefault),
 														  m_auto_refresh(true),
 														  m_refresh_from_block_height(0),
 														  m_explicit_refresh_from_block_height(true),
@@ -1062,11 +1062,13 @@ void wallet2::scan_output(const cryptonote::transaction &tx, const crypto::publi
 								  error::wallet_internal_error, "key_image generated ephemeral public key not matched with output_key");
 	}
 
-	outs.push_back(i);
 	if(tx_scan_info.money_transfered == 0)
-	{
 		tx_scan_info.money_transfered = tools::decodeRct(tx.rct_signatures, tx_scan_info.received->derivation, i, tx_scan_info.mask, m_account.get_device());
-	}
+
+	if(!tx_scan_info.money_transfered)
+		return;
+
+	outs.push_back(i);
 	tx_money_got_in_outs[tx_scan_info.received->index] += tx_scan_info.money_transfered;
 	tx_scan_info.amount = tx_scan_info.money_transfered;
 	++num_vouts_received;
@@ -1096,34 +1098,27 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 		LOG_PRINT_L0("Transaction extra has unsupported format: " << txid);
 	}
 
+	tx_extra_pub_key pub_key_field;
+	if(!find_tx_extra_field_by_type(tx_extra_fields, pub_key_field))
+	{
+		LOG_PRINT_L0("Public key wasn't found in the transaction extra. Skipping transaction " << txid);
+		if(m_callback != nullptr)
+			m_callback->on_skip_transaction(height, txid, tx);
+	}
+	else
+		tx_pub_key = pub_key_field.pub_key;
+
 	// Don't try to extract tx public key if tx has no ouputs
-	size_t pk_index = 0;
 	std::vector<tx_scan_info_t> tx_scan_info(tx.vout.size());
 	std::deque<bool> output_found(tx.vout.size(), false);
 
 	// total accumulated received amount (un-filtered)
 	uint64_t total_received_acc = 0;
 
-	while(!tx.vout.empty())
+	if(!tx.vout.empty() && tx_pub_key != null_pkey)
 	{
-		// if tx.vout is not empty, we loop through all tx pubkeys
-		// Holy crap this loop is badly designed... It is an inf loop with two exit breaks below
-		// \todo scan the blockchain to see if there are any instances of pk not at pk_index 1
-		// \todo remove this loop altogether and ignore non-first pk
-
-		tx_extra_pub_key pub_key_field;
-		if(!find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, pk_index++))
-		{
-			if(pk_index > 1)
-				break;
-			LOG_PRINT_L0("Public key wasn't found in the transaction extra. Skipping transaction " << txid);
-			if(0 != m_callback)
-				m_callback->on_skip_transaction(height, txid, tx);
-			break;
-		}
-
 		int num_vouts_received = 0;
-		tx_pub_key = pub_key_field.pub_key;
+
 		tools::threadpool &tpool = tools::threadpool::getInstance();
 		tools::threadpool::waiter waiter;
 		const cryptonote::account_keys &keys = m_account.get_keys();
@@ -1140,57 +1135,25 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 
 		std::vector<crypto::public_key> additional_tx_pub_keys;
 		std::vector<crypto::key_derivation> additional_derivations;
-		if(pk_index == 1)
-		{
-			// additional tx pubkeys and derivations for multi-destination transfers involving one or more subaddresses
-			additional_tx_pub_keys = get_additional_tx_pub_keys_from_extra(tx);
 
-			for(size_t i = 0; i < additional_tx_pub_keys.size(); ++i)
+		// additional tx pubkeys and derivations for multi-destination transfers involving one or more subaddresses
+		additional_tx_pub_keys = get_additional_tx_pub_keys_from_extra(tx);
+
+		for(size_t i = 0; i < additional_tx_pub_keys.size(); ++i)
+		{
+			additional_derivations.push_back({});
+			if(!hwdev.generate_key_derivation(additional_tx_pub_keys[i], keys.m_view_secret_key, additional_derivations.back()))
 			{
-				additional_derivations.push_back({});
-				if(!hwdev.generate_key_derivation(additional_tx_pub_keys[i], keys.m_view_secret_key, additional_derivations.back()))
-				{
-					MWARNING("Failed to generate key derivation from tx pubkey, skipping");
-					additional_derivations.pop_back();
-				}
+				MWARNING("Failed to generate key derivation from tx pubkey, skipping");
+				additional_derivations.pop_back();
 			}
 		}
+
 		hwdev_lock.unlock();
 
 		if(miner_tx && m_refresh_type == RefreshNoCoinbase)
 		{
 			// assume coinbase isn't for us
-		}
-		else if(miner_tx && m_refresh_type == RefreshOptimizeCoinbase)
-		{
-			check_acc_out_precomp_once(tx.vout[0], derivation, additional_derivations, 0, tx_scan_info[0], output_found[0]);
-			THROW_WALLET_EXCEPTION_IF(tx_scan_info[0].error, error::acc_outs_lookup_error, tx, tx_pub_key, m_account.get_keys());
-
-			// this assumes that the miner tx pays a single address
-			if(tx_scan_info[0].received)
-			{
-				// process the other outs from that tx
-				// the first one was already checked
-				for(size_t i = 1; i < tx.vout.size(); ++i)
-				{
-					tpool.submit(&waiter, boost::bind(&wallet2::check_acc_out_precomp_once, this, std::cref(tx.vout[i]), std::cref(derivation), std::cref(additional_derivations), i,
-													  std::ref(tx_scan_info[i]), std::ref(output_found[i])));
-				}
-				waiter.wait();
-				// then scan all outputs from 0
-				hwdev_lock.lock();
-				hwdev.set_mode(hw::device::NONE);
-				for(size_t i = 0; i < tx.vout.size(); ++i)
-				{
-					THROW_WALLET_EXCEPTION_IF(tx_scan_info[i].error, error::acc_outs_lookup_error, tx, tx_pub_key, m_account.get_keys());
-					if(tx_scan_info[i].received)
-					{
-						hwdev.conceal_derivation(tx_scan_info[i].received->derivation, tx_pub_key, additional_tx_pub_keys, derivation, additional_derivations);
-						scan_output(tx, tx_pub_key, i, tx_scan_info[i], num_vouts_received, tx_money_got_in_outs, outs);
-					}
-				}
-				hwdev_lock.unlock();
-			}
 		}
 		else if(tx.vout.size() > 1 && tools::threadpool::getInstance().get_max_concurrency() > 1)
 		{
@@ -1266,7 +1229,7 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 						td.m_key_image_known = !m_watch_only && !m_multisig;
 						td.m_key_image_partial = m_multisig;
 						td.m_amount = amount;
-						td.m_pk_index = pk_index - 1;
+						td.m_pk_index = 0;
 						td.m_subaddr_index = tx_scan_info[o].received->index;
 						expand_subaddresses(tx_scan_info[o].received->index);
 						if(tx.vout[o].amount == 0)
@@ -1336,7 +1299,7 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 						td.m_tx = (const cryptonote::transaction_prefix &)tx;
 						td.m_txid = txid;
 						td.m_amount = amount;
-						td.m_pk_index = pk_index - 1;
+						td.m_pk_index = 0;
 						td.m_subaddr_index = tx_scan_info[o].received->index;
 						expand_subaddresses(tx_scan_info[o].received->index);
 						if(tx.vout[o].amount == 0)
@@ -2808,7 +2771,7 @@ bool wallet2::load_keys(const std::string &keys_file_name, const epee::wipeable_
 		m_refresh_type = RefreshType::RefreshDefault;
 		if(field_refresh_type_found)
 		{
-			if(field_refresh_type == RefreshFull || field_refresh_type == RefreshOptimizeCoinbase || field_refresh_type == RefreshNoCoinbase)
+ 			if(field_refresh_type == RefreshFull || field_refresh_type == RefreshNoCoinbase)
 				m_refresh_type = (RefreshType)field_refresh_type;
 			else
 				LOG_PRINT_L0("Unknown refresh-type value (" << field_refresh_type << "), using default");
@@ -8449,61 +8412,13 @@ bool wallet2::verify(const std::string &data, const cryptonote::account_public_a
 crypto::public_key wallet2::get_tx_pub_key_from_received_outs(const tools::wallet2::transfer_details &td) const
 {
 	std::vector<tx_extra_field> tx_extra_fields;
-	if(!parse_tx_extra(td.m_tx.extra, tx_extra_fields))
-	{
-		// Extra may only be partially parsed, it's OK if tx_extra_fields contains public key
-	}
+	parse_tx_extra(td.m_tx.extra, tx_extra_fields);
 
-	// Due to a previous bug, there might be more than one tx pubkey in extra, one being
-	// the result of a previously discarded signature.
-	// For speed, since scanning for outputs is a slow process, we check whether extra
-	// contains more than one pubkey. If not, the first one is returned. If yes, they're
-	// checked for whether they yield at least one output
 	tx_extra_pub_key pub_key_field;
-	THROW_WALLET_EXCEPTION_IF(!find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, 0), error::wallet_internal_error,
+	THROW_WALLET_EXCEPTION_IF(!find_tx_extra_field_by_type(tx_extra_fields, pub_key_field), error::wallet_internal_error,
 							  "Public key wasn't found in the transaction extra");
-	const crypto::public_key tx_pub_key = pub_key_field.pub_key;
-	bool two_found = find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, 1);
-	if(!two_found)
-	{
-		// easy case, just one found
-		return tx_pub_key;
-	}
 
-	// more than one, loop and search
-	const cryptonote::account_keys &keys = m_account.get_keys();
-	size_t pk_index = 0;
-	hw::device &hwdev = m_account.get_device();
-
-	const std::vector<crypto::public_key> additional_tx_pub_keys = get_additional_tx_pub_keys_from_extra(td.m_tx);
-	std::vector<crypto::key_derivation> additional_derivations;
-	for(size_t i = 0; i < additional_tx_pub_keys.size(); ++i)
-	{
-		additional_derivations.push_back({});
-		bool r = hwdev.generate_key_derivation(additional_tx_pub_keys[i], keys.m_view_secret_key, additional_derivations.back());
-		THROW_WALLET_EXCEPTION_IF(!r, error::wallet_internal_error, "Failed to generate key derivation");
-	}
-
-	while(find_tx_extra_field_by_type(tx_extra_fields, pub_key_field, pk_index++))
-	{
-		const crypto::public_key tx_pub_key = pub_key_field.pub_key;
-		crypto::key_derivation derivation;
-		bool r = hwdev.generate_key_derivation(tx_pub_key, keys.m_view_secret_key, derivation);
-		THROW_WALLET_EXCEPTION_IF(!r, error::wallet_internal_error, "Failed to generate key derivation");
-
-		for(size_t i = 0; i < td.m_tx.vout.size(); ++i)
-		{
-			tx_scan_info_t tx_scan_info;
-			check_acc_out_precomp(td.m_tx.vout[i], derivation, additional_derivations, i, tx_scan_info);
-			if(!tx_scan_info.error && tx_scan_info.received)
-				return tx_pub_key;
-		}
-	}
-
-	// we found no key yielding an output
-	THROW_WALLET_EXCEPTION_IF(true, error::wallet_internal_error,
-							  "Public key yielding at least one output wasn't found in the transaction extra");
-	return crypto::null_pkey;
+	return pub_key_field.pub_key;
 }
 
 bool wallet2::export_key_images(const std::string &filename) const
