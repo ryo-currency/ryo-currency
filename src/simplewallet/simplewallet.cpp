@@ -293,10 +293,8 @@ const struct
 	const char *name;
 	tools::wallet2::RefreshType refresh_type;
 } refresh_type_names[] =
-	{
+{
 		{"full", tools::wallet2::RefreshFull},
-		{"optimize-coinbase", tools::wallet2::RefreshOptimizeCoinbase},
-		{"optimized-coinbase", tools::wallet2::RefreshOptimizeCoinbase},
 		{"no-coinbase", tools::wallet2::RefreshNoCoinbase},
 		{"default", tools::wallet2::RefreshDefault},
 };
