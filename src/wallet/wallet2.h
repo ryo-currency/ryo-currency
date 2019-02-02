@@ -166,10 +166,9 @@ class wallet2
 
 	enum RefreshType
 	{
-		RefreshFull,
-		RefreshOptimizeCoinbase,
-		RefreshNoCoinbase,
-		RefreshDefault = RefreshOptimizeCoinbase,
+		RefreshFull = 0,
+		RefreshNoCoinbase = 2,
+		RefreshDefault = RefreshFull,
 	};
 
 	static const char *tr(const char *str);
