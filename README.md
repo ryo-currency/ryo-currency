@@ -1,6 +1,6 @@
 # Ryo
 
-Copyright (c) 2018, Ryo Currency Project
+Copyright (c) 2019, Ryo Currency Project
 
 Copyright (c) 2014-2017, The Monero Project
 
@@ -18,53 +18,58 @@ Please note that code is developed on the [dev branch](https://github.com/ryo-cu
 
 ## Introduction
 
-Ryo (両 in Japanese: one syllable) is the most **secure, private and untraceable cryptocurrency out there**. Ryo originated from the _Tael_, an ancient Far East  unit of weight standard used for exchanging gold and silver. Based on the foundations of Monero, Ryo emerged and is poised to dominate the privacy conscious crypto scene. Backed by a full featured and balanced development team headed by the legendary fireice_uk and psychocrypt.
+Ryo (両 in Japanese: one syllable) is the most **secure, private and untraceable cryptocurrency out there**. Ryo originated from the _Tael_, an ancient Far East unit of weight standard used for exchanging gold and silver. Based on the foundations of Monero, Ryo emerged and is poised to dominate the privacy conscious crypto scene. Backed by a full-featured and balanced development team headed by the legendary fireice_uk and psychocrypt.
 
 Our blockchain ensures the highest level of privacy out there by
-from the get-go having(1) **Ring Confidential Transactions (RingCT)** (2) and hardcoding **minimum transaction _mixin_ to 12**. These settings significantly reduce the chance of being identified, traced or attacked by blockchain statistical analysis.
+from the get-go having(1) **Ring Confidential Transactions (RingCT)** (2) and hardcoding **minimum transaction _mixin_ to 25**. These settings significantly reduce the chance of being identified, traced or attacked by blockchain statistical analysis.
 
-Ryo has a very high privacy setting that is suitable for all high confidential transactions as well as for storage of value without being traced, monitored or identified. We call this **true fungibility**. This means that each coin is **equal** and **interchangable**; it is highly unlikely that any coin can ever by blacklisted due to previous transactions. Over the course of many years these characteristics will pay off as crypto attacks become more sophisticated with much greater computation power in the future.
+Ryo developers implemented, **uniform transaction ID system**. The system hides the very fact that you use payment ID in your transaction, since all transactions now have uniform ID in it. This feature is first of its kind among any Cryptonote currencies and is retrofitted with old payment ID system.
+
+Ryo has a very high privacy setting that is suitable for all high confidential transactions as well as for storage of value without being traced, monitored or identified. We call this **true fungibility**. This means that each coin is **equal** and **interchangeable**; it is highly unlikely that any coin can ever by blacklisted due to previous transactions. Over the course of many years these characteristics will pay off as crypto attacks become more sophisticated with much greater computation power in the future.
 
 ## Coin Supply & Emission
 
-- **Total supply**: **80,188,888** coins in 20 years, then **263,000** coins will be emitted yearly to account for inflation.
+- **Total supply**: **88,188,888** coins in 20 years, then **263,000** coins will be emitted yearly to account for inflation.
 - More than **80 million coins are available** for community mining.
-- 8,790,000 Ryo coins were burned to get rid of the original Sumokoin premine. Additionally, 100,000 coins were premined and instantly unlocked to Sumokoin devs in 2017.
+- 8,790,000 Ryo coins were burned to get rid of the original Sumokoin premine [burned premine keyimages](https://github.com/ryo-currency/ryo-currency/tree/master/utils/burned_premine_keyimages). Additionally, 100,000 coins were premined and instantly unlocked to Sumokoin devs in 2017. The pre-mined coins have been [frozen/burned](https://github.com/ryo-currency/ryo-currency/blob/917dbb993178bb8a2ea571f214b15adcbb7c708f/src/blockchain_db/blockchain_db.cpp#L364) as announced on [reddit](https://www.reddit.com/r/ryocurrency/comments/8nb8eq/direction_for_ryo/).
 
-The pre-mined coins have been frozen/burned in commit [c3a3cb6](https://github.com/ryo-currency/ryo-emergency/commit/c3a3cb620488e88be7c52e017072261a3063b872)/ [blockchain_db/blockchain_db.cpp#L250-L258](https://github.com/ryo-currency/ryo-emergency/blob/c3a3cb620488e88be7c52e017072261a3063b872/src/blockchain_db/blockchain_db.cpp#L250-L258) as announced on [reddit](https://www.reddit.com/r/ryocurrency/comments/8nb8eq/direction_for_ryo/).
+- After 2 rounds of community debates [(pt1](https://www.reddit.com/r/ryocurrency/comments/8xsyqo/community_debate_lets_talk_about_the_development/e26i1vw/) / [pt2)](https://github.com/ryo-currency/ryo-writeups/blob/master/dev-fund.md) **8,000,000** Ryo coins were introduced as development fund which is located in 2/3 multisig wallet and emitted on weekly basis next 6 years. In an effort to provide transparency to the community on how the development fund is allocated, Ryo dev team built the following Dev-Fund Explorer page: [Dev fund explorer](https://ryo-currency.com/dev-fund/)
 
 - **Coin symbol**: **RYO**
 - **Coin Units**:
   + 1 nanoRyo &nbsp;= 0.000000001 **RYO** (10<sup>-9</sup>-_the smallest coin unit_)
   + 1 microRyo = 0.000001 **RYO** (10<sup>-6</sup>)
   + 1 milliRyo = 0.001 **RYO** (10<sup>-3</sup>)
-- **Hash algorithm**: CryptoNight Heavy (Proof-Of-Work)
+- **Hash algorithm**: CryptoNight GPU (Proof-Of-Work)
 - **Emission scheme**: Ryo's block reward changes _every 6-months_ according to the following "Camel" distribution*. Our emission scheme is inspired by real-world mining production comparable to crude oil, coal and gas which is often slow at first, accelerated in the next few years before declining and becoming depleted. However, the emission path of Ryo is generally not that far apart from Bitcoin.
 
-![](https://ryo-currency.com/img/png/dark-block-reward-by-year.png)
+![](https://ryo-currency.com/img/png/light-block-reward-by-year.png) 
 
-![](https://ryo-currency.com/img/png/dark-block-reward-by-month.png)
+![](https://ryo-currency.com/img/png/light-block-reward-by-month-2.png)
 
-![](https://ryo-currency.com/img/png/dark-emission-speed.png)
+![](https://ryo-currency.com/img/png/light-emission-speed.png)
 
 \* The emulated algorithm of Ryo block-reward emission can be found in Python and C++ scripts at [scripts](scripts) directory.
 
-## I have Sumokoin, how can i claim my Ryo?
-- You can claim your Ryo, if you had Sumokoin before they forked at block #137500. Ryo Currency as a chain fork kept all the transactions -and thus coins you had in your wallet- up and until Sumokoin forked at block #137500. To further secure your Ryo, we're going to tie the coins to a block after the fork.
-- First, install the latest Ryo wallet. Run it and generate a new wallet. Write down the seeds. Copy the MAIN ADDRESS under the RECEIVE tab. Then from the Ryo gui, click SETTINGS » NEW WALLET and restore your Ryo from the same seeds used for your old Sumokoin wallet in the Ryo GUI.
-- Send all your coins to the new Ryo MAIN ADDRESS you copied before.
+## I have Sumokoin, how can I claim my Ryo?
+- You can claim your Ryo, **if you had Sumokoin before they forked at block #137500**. Ryo Currency as a chain fork kept all the transactions -and thus coins you had in your wallet- up and until Sumokoin forked at block #137500. To further secure your Ryo, we're going to tie the coins to a block after the fork.
+- First, install the latest Ryo [wallet](https://ryo-currency.com/wallet/). Run it and generate a new wallet. Write down the seed words. Copy the PRIMARY ADDRESS under the RECEIVE tab. Then from the Ryo wallet Atom, click MENU - SWITCH WALLET » RESTORE WALLET FROM SEED and restore your Ryo from the same seeds used for your old Sumokoin wallet.
+- Send all your coins to the new Ryo PRIMARY ADDRESS you copied before.
 After this, you can safely transact Sumokoin, it's important to first move your Ryo, before you move your Sumokoin.
 - If you are comfortable using the CLI, you can just SWEEP ALL Ryo to yourself instead of all the above.
 
-## About this Project
+## About this Project and licensing details
 
-This is the core implementation of Ryo. It is open source and completely free to use without restrictions, except for those specified in the license agreement below. There are no restrictions on anyone creating an alternative implementation of Ryo that uses the protocol and network in a compatible manner.
+This is the core implementation of Ryo. It is free to get and modify for your own usage, however, you [can't](https://www.reddit.com/r/ryocurrency/comments/8tc5tg/decision_our_source_code_will_be_sourceavailable) distribute modified copies from this repository.
+
+[Ryo-libre](https://github.com/ryo-currency/ryo-libre) is open source and completely free to use version of this repository without restrictions which is updated on yearly basis. There are no restrictions on anyone creating an alternative implementation of Ryo that uses the protocol and network in a compatible manner. [(Read more about Ryo-libre)](https://www.reddit.com/r/ryocurrency/comments/am4g0y/ann_ryolibre_open_source_repository_of_ryo)
+
 
 ## Precompiled binaries
 
 Along with each release you can find our [precompiled binaries](https://github.com/ryo-currency/ryo-currency/releases).
 To verify that the downloaded binaries are created by one of our developer please verify the checksums.
-The authenticity of the checksums can by verified with the [PGP-key's](docs/pgp_keys.md).
+The authenticity of the checksums can be verified with the [PGP-key's](docs/pgp_keys.md).
 
 ## Compiling Ryo from source
 
