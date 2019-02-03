@@ -2,6 +2,7 @@
 /build
 /tags
 log/
+test-wallets/
 
 # vim swap files
 *.swp

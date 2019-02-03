@@ -25,43 +25,50 @@
 //
 
 #pragma once
+#include "cryptonote_config.h"
 
 namespace epee
 {
 namespace net_utils
 {
+struct ipv4_net_range
+{
+	uint32_t address;
+	uint32_t netmask;
+};
+
+inline uint32_t bits_to_mask(uint32_t bits)
+{
+	// 2^x-1 or in other words, give me x ones
+	uint32_t netmask = (1u << bits) - 1u;
+	// Now move those bits to the high end
+	netmask <<= 32u - bits;
+	// And finally swap endianness to little endian
+	return __builtin_bswap32(netmask);
+}
+
 inline bool is_ip_local(uint32_t ip)
 {
-	/*
-      local ip area
-      10.0.0.0 — 10.255.255.255 
-      172.16.0.0 — 172.31.255.255 
-      192.168.0.0 — 192.168.255.255 
-      */
-	if((ip | 0xffffff00) == 0xffffff0a)
-		return true;
+	//Note - we are working in litte endian here
+	const ipv4_net_range local_ranges[] = {
+		{ 0x0000000a, bits_to_mask(8)  }, // 10.0.0.0/8 
+		{ 0x0000a8c0, bits_to_mask(16) }, // 192.168.0.0/16
+		{ 0x000010ac, bits_to_mask(12) }  // 172.16.0.0/12
+	};
 
-	if((ip | 0xffff0000) == 0xffffa8c0)
-		return true;
-
-	if((ip | 0xffffff00) == 0xffffffac)
+	for(size_t i=0; i < countof(local_ranges); i++)
 	{
-		uint32_t second_num = (ip << 8) & 0xff000000;
-		if(second_num >= 16 && second_num <= 31)
+		if((ip & local_ranges[i].netmask) == local_ranges[i].address)
 			return true;
 	}
+
 	return false;
 }
+
 inline bool is_ip_loopback(uint32_t ip)
 {
-	if((ip | 0xffffff00) == 0xffffff7f)
-		return true;
-	//MAKE_IP
-	/*
-      loopback ip
-      127.0.0.0 — 127.255.255.255 
-      */
-	return false;
+	// 127.0.0.0/8
+	return (ip & 0x000000ff) == 0x0000007f;
 }
 }
 }

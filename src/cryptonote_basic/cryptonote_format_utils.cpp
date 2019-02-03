@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -47,7 +47,7 @@
 #include "include_base_utils.h"
 using namespace epee;
 
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
 #include "cryptonote_config.h"
@@ -156,34 +156,46 @@ crypto::hash get_transaction_prefix_hash(const transaction_prefix &tx)
 //---------------------------------------------------------------
 bool expand_transaction_1(transaction &tx, bool base_only)
 {
-	if(tx.version >= 2 && !is_coinbase(tx))
+	if(is_coinbase(tx))
+		return true;
+
+	rct::rctSig &rv = tx.rct_signatures;
+	if(rv.outPk.size() != tx.vout.size())
 	{
-		rct::rctSig &rv = tx.rct_signatures;
-		if(rv.outPk.size() != tx.vout.size())
+		LOG_PRINT_L1("Failed to parse transaction from blob, bad outPk size in tx " << get_transaction_hash(tx));
+		return false;
+	}
+
+	for(size_t n = 0; n < tx.rct_signatures.outPk.size(); ++n)
+		rv.outPk[n].dest = rct::pk2rct(boost::get<txout_to_key>(tx.vout[n].target).key);
+
+	if(!base_only && rv.type == rct::RCTTypeBulletproof)
+	{
+		if (rv.p.bulletproofs.size() != 1)
 		{
-			LOG_PRINT_L1("Failed to parse transaction from blob, bad outPk size in tx " << get_transaction_hash(tx));
+			LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs size in tx " << get_transaction_hash(tx));
 			return false;
 		}
-		for(size_t n = 0; n < tx.rct_signatures.outPk.size(); ++n)
-			rv.outPk[n].dest = rct::pk2rct(boost::get<txout_to_key>(tx.vout[n].target).key);
 
-		if(!base_only)
+		if (rv.p.bulletproofs[0].L.size() < 6)
 		{
-			const bool bulletproof = rv.type == rct::RCTTypeFullBulletproof || rv.type == rct::RCTTypeSimpleBulletproof;
-			if(bulletproof)
-			{
-				if(rv.p.bulletproofs.size() != tx.vout.size())
-				{
-					LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs size in tx " << get_transaction_hash(tx));
-					return false;
-				}
-				for(size_t n = 0; n < rv.outPk.size(); ++n)
-				{
-					rv.p.bulletproofs[n].V.resize(1);
-					rv.p.bulletproofs[n].V[0] = rv.outPk[n].mask;
-				}
-			}
+			LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs L size in tx " << get_transaction_hash(tx));
+			return false;
 		}
+
+		const size_t max_outputs = 1 << (rv.p.bulletproofs[0].L.size() - 6);
+		if (max_outputs < tx.vout.size())
+		{
+			LOG_PRINT_L1("Failed to parse transaction from blob, bad bulletproofs max outputs in tx " << get_transaction_hash(tx));
+			return false;
+		}
+
+		const size_t n_amounts = tx.vout.size();
+		CHECK_AND_ASSERT_MES(n_amounts == rv.outPk.size(), false, "Internal error filling out V");
+		rv.p.bulletproofs[0].V.resize(n_amounts);
+
+		for (size_t i = 0; i < n_amounts; ++i)
+			rv.p.bulletproofs[0].V[i] = rct::scalarmultKey(rv.outPk[i].mask, rct::INV_EIGHT);
 	}
 	return true;
 }
@@ -378,7 +390,10 @@ bool parse_tx_extra(const std::vector<uint8_t> &tx_extra, std::vector<tx_extra_f
 	{
 		tx_extra_field field;
 		bool r = ::do_serialize(ar, field);
-		CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field. extra = " << string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+
+		CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field! n= " << tx_extra_fields.size() << " extra = " << 
+			string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+
 		tx_extra_fields.push_back(field);
 
 		std::ios_base::iostate state = iss.rdstate();
@@ -509,6 +524,38 @@ bool remove_field_from_tx_extra(std::vector<uint8_t> &tx_extra, const std::type_
 	tx_extra.reserve(s.size());
 	std::copy(s.begin(), s.end(), std::back_inserter(tx_extra));
 	return true;
+}
+//---------------------------------------------------------------
+bool add_payment_id_to_tx_extra(std::vector<uint8_t> &tx_extra, const tx_extra_uniform_payment_id* pid)
+{
+	size_t pos = tx_extra.size();
+	tx_extra.resize(pos + 1 + sizeof(crypto::uniform_payment_id));
+	tx_extra[pos] = TX_EXTRA_UNIFORM_PAYMENT_ID;
+
+	if(pid != nullptr)
+	{
+		if(pid->pid.zero == 0) //failsafe, don't add unencrypted data
+			return false;
+		memcpy(&tx_extra[pos+1], &pid->pid, sizeof(crypto::uniform_payment_id));
+	}
+	else
+	{
+		rand(sizeof(crypto::uniform_payment_id), &tx_extra[pos+1]);
+	}
+
+	return true;
+}
+//---------------------------------------------------------------
+bool get_payment_id_from_tx_extra(const std::vector<uint8_t> &tx_extra, tx_extra_uniform_payment_id& pid)
+{
+	std::vector<tx_extra_field> tx_extra_fields;
+	parse_tx_extra(tx_extra, tx_extra_fields);
+	return get_payment_id_from_tx_extra(tx_extra_fields, pid);
+}
+//---------------------------------------------------------------
+bool get_payment_id_from_tx_extra(const std::vector<tx_extra_field> &tx_extra_fields, tx_extra_uniform_payment_id& pid)
+{
+	return find_tx_extra_field_by_type(tx_extra_fields, pid);
 }
 //---------------------------------------------------------------
 void set_payment_id_to_tx_extra_nonce(blobdata &extra_nonce, const crypto::hash &payment_id)
@@ -921,18 +968,27 @@ crypto::hash get_block_hash(const block &b)
 	return p;
 }
 //---------------------------------------------------------------
-bool get_block_longhash(const block &b, cn_pow_hash_v2 &ctx, crypto::hash &res)
+bool get_block_longhash(network_type nettype, const block &b, cn_pow_hash_v2 &ctx, crypto::hash &res)
 {
 	block b_local = b; //workaround to avoid const errors with do_serialize
 	blobdata bd = get_block_hashing_blob(b);
-	if(b_local.major_version < CRYPTONOTE_V2_POW_BLOCK_VERSION)
+	
+	uint8_t cn_heavy_v = get_fork_v(nettype, FORK_POW_CN_HEAVY);
+	uint8_t cn_gpu_v = get_fork_v(nettype, FORK_POW_CN_GPU);
+
+	if(cn_gpu_v != hardfork_conf::FORK_ID_DISABLED && b_local.major_version >= cn_gpu_v)
 	{
-		cn_pow_hash_v1 ctx_v1 = cn_pow_hash_v1::make_borrowed(ctx);
-		ctx_v1.hash(bd.data(), bd.size(), res.data);
+		cn_pow_hash_v3 ctx_v3 = cn_pow_hash_v3::make_borrowed_v3(ctx);
+		ctx_v3.hash(bd.data(), bd.size(), res.data);
+	}
+	else if(cn_heavy_v != hardfork_conf::FORK_ID_DISABLED && b_local.major_version >= cn_heavy_v)
+	{
+		ctx.hash(bd.data(), bd.size(), res.data);
 	}
 	else
 	{
-		ctx.hash(bd.data(), bd.size(), res.data);
+		cn_pow_hash_v1 ctx_v1 = cn_pow_hash_v1::make_borrowed(ctx);
+		ctx_v1.hash(bd.data(), bd.size(), res.data);
 	}
 	return true;
 }

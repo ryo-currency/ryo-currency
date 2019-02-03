@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -47,7 +47,7 @@
 #pragma once
 #include "account.h"
 #include "blobdatatype.h"
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
 #include "cryptonote_basic_impl.h"
@@ -90,6 +90,9 @@ bool add_tx_pub_key_to_extra(std::vector<uint8_t> &tx_extra, const crypto::publi
 std::vector<crypto::public_key> get_additional_tx_pub_keys_from_extra(const std::vector<uint8_t> &tx_extra);
 std::vector<crypto::public_key> get_additional_tx_pub_keys_from_extra(const transaction_prefix &tx);
 bool add_additional_tx_pub_keys_to_extra(std::vector<uint8_t> &tx_extra, const std::vector<crypto::public_key> &additional_pub_keys);
+bool add_payment_id_to_tx_extra(std::vector<uint8_t> &tx_extra, const tx_extra_uniform_payment_id* pid = nullptr);
+bool get_payment_id_from_tx_extra(const std::vector<uint8_t> &tx_extra, tx_extra_uniform_payment_id& pid);
+bool get_payment_id_from_tx_extra(const std::vector<tx_extra_field> &tx_extra_fields, tx_extra_uniform_payment_id& pid);
 bool add_extra_nonce_to_tx_extra(std::vector<uint8_t> &tx_extra, const blobdata &extra_nonce);
 bool remove_field_from_tx_extra(std::vector<uint8_t> &tx_extra, const std::type_info &type);
 void set_payment_id_to_tx_extra_nonce(blobdata &extra_nonce, const crypto::hash &payment_id);
@@ -122,7 +125,7 @@ blobdata get_block_hashing_blob(const block &b);
 bool calculate_block_hash(const block &b, crypto::hash &res);
 bool get_block_hash(const block &b, crypto::hash &res);
 crypto::hash get_block_hash(const block &b);
-bool get_block_longhash(const block &b, cn_pow_hash_v2 &ctx, crypto::hash &res);
+bool get_block_longhash(network_type nettype, const block &b, cn_pow_hash_v2 &ctx, crypto::hash &res);
 bool parse_and_validate_block_from_blob(const blobdata &b_blob, block &b);
 bool get_inputs_money_amount(const transaction &tx, uint64_t &money);
 uint64_t get_outs_money_amount(const transaction &tx);

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -48,6 +48,8 @@
 #include "cryptonote_basic/account.h"
 #include "cryptonote_basic/subaddress_index.h"
 #include "ringct/rctOps.h"
+
+static constexpr uint8_t UNI_PAYMENT_ID_TAIL = 0x55;
 
 #define ENCRYPTED_PAYMENT_ID_TAIL 0x8d
 #define CHACHA8_KEY_TAIL 0x8c
@@ -344,6 +346,26 @@ bool device_default::encrypt_payment_id(crypto::hash8 &payment_id, const crypto:
 
 	for(size_t b = 0; b < 8; ++b)
 		payment_id.data[b] ^= hash.data[b];
+
+	return true;
+}
+
+bool device_default::encrypt_payment_id(crypto::uniform_payment_id &payment_id, const crypto::public_key &public_key, const crypto::secret_key &secret_key)
+{
+	uint8_t hash[200];
+	uint8_t data[33]; /* A hash, and an extra byte */
+
+	// Generate key deriviation directly in data;
+	crypto::key_derivation* derivation = reinterpret_cast<crypto::key_derivation*>(data);
+	if(!generate_key_derivation(public_key, secret_key, *derivation))
+		return false;
+
+	data[32] = UNI_PAYMENT_ID_TAIL;
+	keccak(data, 33, hash, 200);
+
+	uint8_t* id = reinterpret_cast<uint8_t*>(&payment_id);
+	for(size_t i=0; i < sizeof(crypto::uniform_payment_id); i++)
+		id[i] ^= hash[i];
 
 	return true;
 }

@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Ryo Currency Project
+# Copyright (c) 2019, Ryo Currency Project
 # Copyright (c) 2014-2018, The Monero Project
 #
 # All rights reserved.
@@ -29,7 +29,7 @@
 # Authors and copyright holders agree that:
 #
 # 8. This licence expires and the work covered by it is released into the 
-#    public domain on 1st of February 2019
+#    public domain on 1st of February 2020
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -155,9 +155,9 @@ if(ARCH_ID STREQUAL "ppc64le")
 endif()
 
 if(WIN32 OR ARM)
-  set(OPT_FLAGS_RELEASE "-O2")
+  add_compile_options("$<$<CONFIG:RELEASE>:-O2>")
 else()
-  set(OPT_FLAGS_RELEASE "-Ofast")
+  add_compile_options("$<$<CONFIG:RELEASE>:-O3>")
 endif()
 
 # BUILD_TAG is used to select the build type to check for a new version
@@ -167,9 +167,6 @@ if(BUILD_TAG)
 else()
   message(STATUS "Building without build tag")
 endif()
-
-set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
-set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 
 # set this to 0 if per-block checkpoint needs to be disabled
 set(PER_BLOCK_CHECKPOINT 0)

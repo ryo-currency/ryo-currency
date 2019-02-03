@@ -1,4 +1,4 @@
-# Copyright (c) 2018, Ryo Currency Project
+# Copyright (c) 2019, Ryo Currency Project
 # Portions copyright (c) 2014-2018, The Monero Project
 #
 # Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 # Authors and copyright holders agree that:
 #
 # 8. This licence expires and the work covered by it is released into the 
-#    public domain on 1st of February 2019
+#    public domain on 1st of February 2020
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -43,7 +43,6 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set(crypto_sources
-  aux_hash.c
   chacha.c
   crypto-ops-data.c
   crypto-ops.c
@@ -52,14 +51,25 @@ set(crypto_sources
   keccak.c
   random.cpp
   tree-hash.c
-  cn_slow_hash_soft.cpp
-  cn_slow_hash_hard_intel.cpp
-  cn_slow_hash_hard_arm.cpp)
+  pow_hash/aux_hash.c
+  pow_hash/cn_slow_hash_soft.cpp
+  pow_hash/cn_slow_hash_hard_intel.cpp
+  pow_hash/cn_slow_hash_intel_avx2.cpp
+  pow_hash/cn_slow_hash_hard_arm.cpp)
+
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+	if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+		set_source_files_properties(pow_hash/cn_slow_hash_intel_avx2.cpp PROPERTIES COMPILE_FLAGS "-mavx2")
+		set_source_files_properties(pow_hash/cn_slow_hard_intel.cpp PROPERTIES COMPILE_FLAGS "-msse2 -maes")
+	elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+		set_source_files_properties(pow_hash/cn_slow_hash_hard_arm.cpp PROPERTIES COMPILE_FLAGS "-march=armv8-a+crypto")
+	endif()
+endif()
 
 set(crypto_headers)
 
 set(crypto_private_headers
-  aux_hash.h
   chacha.h
   crypto-ops.h
   crypto.h
@@ -68,7 +78,7 @@ set(crypto_private_headers
   hash.h
   keccak.h
   random.hpp
-  cn_slow_hash.hpp)
+  pow_hash/cn_slow_hash.hpp)
 
 ryo_private_headers(cncrypto
   ${crypto_private_headers})

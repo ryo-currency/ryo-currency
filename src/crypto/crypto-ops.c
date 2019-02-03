@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -4769,4 +4769,18 @@ int sc_isnonzero(const unsigned char *s)
 			 1) >>
 			8) +
 		   1;
+}
+
+int ge_p3_is_point_at_infinity(const ge_p3 *p)
+{
+	// X = 0 and Y == Z
+	int n;
+	for (n = 0; n < 10; ++n)
+	{
+		if (p->X[n] | p->T[n])
+			return 0;
+		if (p->Y[n] != p->Z[n])
+		return 0;
+	}
+	return 1;
 }

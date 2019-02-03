@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -291,7 +291,7 @@ inline T clamp(T lo, T v, T hi)
 difficulty_type next_difficulty_v3(const std::vector<std::uint64_t> &timestamps, const std::vector<difficulty_type> &cumulative_difficulties)
 {
 	constexpr int64_t T = common_config::DIFFICULTY_TARGET;
-	constexpr int64_t N = common_config::DIFFICULTY_WINDOW_V3 - 1;
+	constexpr int64_t N = common_config::DIFFICULTY_WINDOW_V3;
 	constexpr int64_t FTL = common_config::BLOCK_FUTURE_TIME_LIMIT_V3;
 
 	assert(timestamps.size() == N + 1);
@@ -317,6 +317,111 @@ difficulty_type next_difficulty_v3(const std::vector<std::uint64_t> &timestamps,
 	next_D = (next_D * 99ull) / 100ull;
 
 	LOG_PRINT_L2("diff sum: " << (cumulative_difficulties[N] - cumulative_difficulties[0]) << " L " << L << " sizes " << timestamps.size() << " " << cumulative_difficulties.size() << " next_D " << next_D);
+
+	return next_D;
+}
+
+//Find non-zero timestamp with index smaller than i
+inline uint64_t findLastValid(const std::vector<uint64_t>& timestamps, size_t i)
+{
+	while(--i >= 1)
+	{
+		if(timestamps[i] != 0)
+			return timestamps[i];
+	}
+
+	return timestamps[0];
+}
+
+template<size_t N>
+void interpolate_timestamps(std::vector<uint64_t>& timestamps)
+{
+	uint64_t maxValid = timestamps[N];
+	for(size_t i = 1; i < N; i++)
+	{
+		/* 
+		 * Mask timestamp if it is smaller or equal to last valid timestamp
+		 * or if it is larger or equal to largest timestamp
+		 */
+		if(timestamps[i] <= findLastValid(timestamps, i) || timestamps[i] >= maxValid)
+		{
+			if(i != 1)
+				timestamps[i-1] = 0;
+			timestamps[i] = 0;
+		}
+	}
+
+	// Now replace zeros with number of masked timestamps before this one (inclusive)
+	uint64_t mctr = 0;
+	for(size_t i = 1; i < N; i++)
+	{
+		if(timestamps[i] == 0)
+			timestamps[i] = ++mctr;
+		else
+			mctr = 0;
+	}
+
+	// interpolate timestamps of masked times
+	for(uint64_t i = N-1; i > 0; i--)
+	{
+		if(timestamps[i] <= N)
+		{
+			// denominator -- NOT THE SAME AS [i+1]
+			uint64_t den = timestamps[i] + 1; 
+			// numerator
+			uint64_t num = timestamps[i];
+			uint64_t delta = timestamps[i+1] - timestamps[i-num];
+
+			timestamps[i] = timestamps[i-num] + (delta * num) / den;
+		}
+	}
+}
+
+template void interpolate_timestamps<4>(std::vector<uint64_t>& timestamps);
+template void interpolate_timestamps<5>(std::vector<uint64_t>& timestamps);
+template void interpolate_timestamps<7>(std::vector<uint64_t>& timestamps);
+
+difficulty_type next_difficulty_v4(std::vector<uint64_t> timestamps, const std::vector<difficulty_type>& cumulative_difficulties)
+{
+	constexpr uint64_t T = common_config::DIFFICULTY_TARGET;
+	constexpr uint64_t N = common_config::DIFFICULTY_WINDOW_V4;
+
+	assert(timestamps.size() == N + 1);
+	assert(cumulative_difficulties.size() == N + 1);
+
+	// the newest timestamp is not allwed to be older than the previous
+	uint64_t t_last = std::max(timestamps[N], timestamps[N - 1]);
+	// the newest timestamp can only be 5 target times in the future
+	timestamps[N] = std::min(t_last, timestamps[N - 1] + 5 * T);
+	// highest timestamp must higher than the lowest
+	timestamps[N] = std::max(timestamps[N], timestamps[0] + 1);
+
+	interpolate_timestamps<N>(timestamps);
+
+	uint64_t L = 0;
+	for(uint64_t i = 1; i <= N; i++)
+	{
+		assert(timestamps[i] >= timestamps[i - 1]);
+		assert(timestamps[i] != 0);
+		L += std::min(timestamps[i] - timestamps[i - 1], 5 * T) * i * i;
+	}
+	L = std::max<uint64_t>(L, 1);
+
+	// Let's take CD as a sum of N difficulties. Sum of weights is (n*(n+1)*(2n+1))/6 (SUM)
+	// L is a sigma(timeperiods * weights)
+	// D = CD*T*SUM / NL
+	// D = CD*T*N*(N+1)*(2N+1) / 6NL
+	// D = CD*T*(N+1)*(2N+1) / 6L
+	// TSUM = T*(N+1)*(2N+1) / 6 (const)
+	// D = CD*TSUM / L
+
+	// By a happy accident most time units are a multiple of 6 so we can prepare a TSUM without loosing accuracy
+	constexpr uint64_t TSUM = (T * (N + 1) * (2 * N + 1)) / 6;
+	uint64_t next_D = ((cumulative_difficulties[N] - cumulative_difficulties[0]) * TSUM) / L;
+
+	// Sanity limits
+	uint64_t prev_D = cumulative_difficulties[N] - cumulative_difficulties[N - 1];
+	next_D = std::max((prev_D * 67) / 100, std::min(next_D, (prev_D * 150) / 100));
 
 	return next_D;
 }

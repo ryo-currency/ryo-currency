@@ -41,7 +41,7 @@ class single_tx_test_base
 	{
 		using namespace cryptonote;
 
-		m_bob.generate_new(false);
+		m_bob.generate_new(0);
 
 		if(!construct_miner_tx(MAINNET, 0, 0, 0, 2, 0, m_bob.get_keys().m_account_address, m_tx))
 			return false;

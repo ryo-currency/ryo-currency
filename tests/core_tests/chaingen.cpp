@@ -179,7 +179,7 @@ bool test_generator::construct_block(cryptonote::block &blk, uint64_t height, co
 
 	// Nonce search...
 	blk.nonce = 0;
-	while(!miner::find_nonce_for_given_block(blk, get_test_difficulty(), height))
+	while(!miner::find_nonce_for_given_block(MAINNET, blk, get_test_difficulty(), height))
 		blk.timestamp++;
 
 	add_block(blk, txs_size, block_sizes, already_generated_coins);
@@ -527,7 +527,7 @@ void fill_tx_sources_and_destinations(const std::vector<test_event_entry> &event
 void fill_nonce(cryptonote::block &blk, const difficulty_type &diffic, uint64_t height)
 {
 	blk.nonce = 0;
-	while(!miner::find_nonce_for_given_block(blk, diffic, height))
+	while(!miner::find_nonce_for_given_block(MAINNET, blk, diffic, height))
 		blk.timestamp++;
 }
 
@@ -579,7 +579,7 @@ bool construct_tx_to_key(const std::vector<test_event_entry> &events, cryptonote
 	vector<tx_destination_entry> destinations;
 	fill_tx_sources_and_destinations(events, blk_head, from, to, amount, fee, nmix, sources, destinations);
 
-	return construct_tx(from.get_keys(), sources, destinations, from.get_keys().m_account_address, std::vector<uint8_t>(), tx, 0);
+	return construct_tx(from.get_keys(), sources, destinations, from.get_keys().m_account_address, nullptr, tx, 0);
 }
 
 transaction construct_tx_with_fee(std::vector<test_event_entry> &events, const block &blk_head,
