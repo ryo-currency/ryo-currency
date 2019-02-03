@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -1521,6 +1521,15 @@ class BlockchainDB
 	bool m_open;										   //!< Whether or not the BlockchainDB is open/ready for use
 	mutable epee::critical_section m_synchronization_lock; //!< A lock, currently for when BlockchainLMDB needs to resize the backing db file
 
+	inline bool is_vout_bad(const cryptonote::tx_out& vout) 
+	{
+		return vout.target.type() == typeid(txout_to_key) && bad_outpks.find(boost::get<txout_to_key>(vout.target).key) != bad_outpks.end();
+	}
+
+private:
+	// Output public keys that we need to skip; because of a bug, including them
+	// would change the offset of every key after them. They were mined by the official pool
+	std::unordered_set<crypto::public_key> bad_outpks;
 }; // class BlockchainDB
 
 BlockchainDB *new_db(const std::string &db_type);

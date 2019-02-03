@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -161,6 +161,7 @@ extern const fe fe_fffb2;
 extern const fe fe_fffb3;
 extern const fe fe_fffb4;
 extern const ge_p3 ge_p3_identity;
+extern const ge_p3 ge_p3_H;
 void ge_fromfe_frombytes_vartime(ge_p2 *, const unsigned char *);
 void sc_0(unsigned char *);
 void sc_reduce32(unsigned char *);
@@ -171,6 +172,7 @@ void sc_mul(unsigned char *, const unsigned char *, const unsigned char *);
 void sc_muladd(unsigned char *s, const unsigned char *a, const unsigned char *b, const unsigned char *c);
 int sc_check(const unsigned char *);
 int sc_isnonzero(const unsigned char *); /* Doesn't normalize */
+int ge_p3_is_point_at_infinity(const ge_p3 *p);
 
 // internal
 uint64_t load_3(const unsigned char *in);

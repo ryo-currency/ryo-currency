@@ -33,38 +33,53 @@
 #include "crypto/crypto.h"
 #include "cryptonote_basic/cryptonote_basic.h"
 
-#include "single_tx_test_base.h"
+#include "multi_tx_test_base.h"
 
-class test_ge_frombytes_vartime : public multi_tx_test_base<1>
+class test_ge_frombytes_vartime : public multi_tx_test_base<2>
 {
   public:
+	static constexpr size_t out_count = 1;
 	static const size_t loop_count = 10000;
-
-	typedef multi_tx_test_base<1> base_class;
 
 	bool init()
 	{
 		using namespace cryptonote;
 
-		if(!base_class::init())
+		if(!base_class_t::init())
 			return false;
 
-		m_alice.generate_new(false);
-
+		cryptonote::account_base m_alice;
+		cryptonote::transaction m_tx;
 		std::vector<tx_destination_entry> destinations;
-		destinations.push_back(tx_destination_entry(1, m_alice.get_keys().m_account_address, false));
 
-		return construct_tx(this->m_miners[this->real_source_idx].get_keys(), this->m_sources, destinations, boost::none, std::vector<uint8_t>(), m_tx, 0);
+		m_alice.generate_new(0);
+
+		for(size_t i = 0; i < out_count; ++i)
+			destinations.push_back(tx_destination_entry(this->m_source_amount / out_count, m_alice.get_keys().m_account_address, false));
+
+		crypto::secret_key tx_key;
+		std::vector<crypto::secret_key> additional_tx_keys;
+		std::unordered_map<crypto::public_key, cryptonote::subaddress_index> subaddresses;
+		subaddresses[this->m_miners[this->real_source_idx].get_keys().m_account_address.m_spend_public_key] = {0, 0};
+
+		if(!cryptonote::construct_tx_and_get_tx_key(this->m_miners[this->real_source_idx].get_keys(), subaddresses, 
+			this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_tx, 0, tx_key, additional_tx_keys, true, nullptr, true))
+		{
+			return false;
+		}
+
+		const cryptonote::txin_to_key &txin = boost::get<cryptonote::txin_to_key>(m_tx.vin[0]);
+		m_key = rct::ki2rct(txin.k_image);
+
+		return true;
 	}
 
 	bool test()
 	{
 		ge_p3 unp;
-		const cryptonote::txin_to_key &txin = boost::get<cryptonote::txin_to_key>(m_tx.vin[0]);
-		return ge_frombytes_vartime(&unp, (const unsigned char *)&txin.k_image) == 0;
+		return ge_frombytes_vartime(&unp, (const unsigned char *)&m_key) == 0;
 	}
 
   private:
-	cryptonote::account_base m_alice;
-	cryptonote::transaction m_tx;
+	rct::key m_key;
 };

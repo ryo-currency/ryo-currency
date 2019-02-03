@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -126,7 +126,8 @@ class device_default : public hw::device
 	bool open_tx(crypto::secret_key &tx_key) override;
 
 	bool encrypt_payment_id(crypto::hash8 &payment_id, const crypto::public_key &public_key, const crypto::secret_key &secret_key) override;
-
+	bool encrypt_payment_id(crypto::uniform_payment_id &payment_id, const crypto::public_key &public_key, const crypto::secret_key &secret_key) override;
+	
 	bool ecdhEncode(rct::ecdhTuple &unmasked, const rct::key &sharedSec) override;
 	bool ecdhDecode(rct::ecdhTuple &masked, const rct::key &sharedSec) override;
 

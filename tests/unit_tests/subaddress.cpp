@@ -44,7 +44,7 @@ class WalletSubaddress : public ::testing::Test
 	{
 		try
 		{
-			recovery_key = w1.generate_new("", password, nullptr);
+			w1.generate_legacy("", password, recovery_key, false);
 		}
 		catch(const std::exception &e)
 		{
@@ -62,7 +62,7 @@ class WalletSubaddress : public ::testing::Test
 
 	tools::wallet2 w1;
 	const std::string password = "testpass";
-	crypto::secret_key_16 recovery_key = crypto::secret_key_16();
+	crypto::secret_key recovery_key = crypto::secret_key();
 	const std::string test_label = "subaddress test label";
 
 	uint32_t major_index = 0;

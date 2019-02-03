@@ -35,9 +35,9 @@
 #include <string>
 
 #include "../io.h"
-#include "crypto/cn_slow_hash.hpp"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "crypto/hash.h"
-#include "crypto/aux_hash.h"
+#include "crypto/pow_hash/aux_hash.h"
 #include "warnings.h"
 
 using namespace std;

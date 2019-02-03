@@ -1,4 +1,5 @@
-// Copyright (c) 2016, Monero Research Labs
+// Copyright (c) 2019, Ryo Currency Project
+// Portions copyright (c) 2016, Monero Research Labs
 //
 // Author: Shen Noether <shen.noether@gmx.com>
 //
@@ -31,7 +32,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -85,15 +86,14 @@ keyM keyMInit(size_t rows, size_t cols)
 //generates a random scalar which can be used as a secret key or mask
 void skGen(key &sk)
 {
-	sk = crypto::rand<key>();
-	sc_reduce32(sk.bytes);
+	random_scalar(sk.bytes);
 }
 
 //generates a random scalar which can be used as a secret key or mask
 key skGen()
 {
-	key sk = crypto::rand<key>();
-	sc_reduce32(sk.bytes);
+	key sk;
+	skGen(sk);
 	return sk;
 }
 
@@ -103,12 +103,8 @@ keyV skvGen(size_t rows)
 {
 	CHECK_AND_ASSERT_THROW_MES(rows > 0, "0 keys requested");
 	keyV rv(rows);
-	size_t i = 0;
-	crypto::rand(rows * sizeof(key), (uint8_t *)&rv[0]);
-	for(i = 0; i < rows; i++)
-	{
-		sc_reduce32(rv[i].bytes);
-	}
+	for(size_t i = 0; i < rows; i++)
+		skGen(rv[i]);
 	return rv;
 }
 
@@ -136,14 +132,14 @@ tuple<key, key> skpkGen()
 }
 
 //generates C =aG + bH from b, a is given..
-void genC(key &C, const key &a, xmr_amount amount)
+void genC(key &C, const key &a, ryo_amount amount)
 {
 	key bH = scalarmultH(d2h(amount));
 	addKeys1(C, a, bH);
 }
 
 //generates a <secret , public> / Pedersen commitment to the amount
-tuple<ctkey, ctkey> ctskpkGen(xmr_amount amount)
+tuple<ctkey, ctkey> ctskpkGen(ryo_amount amount)
 {
 	ctkey sk, pk;
 	skpkGen(sk.dest, pk.dest);
@@ -164,17 +160,14 @@ tuple<ctkey, ctkey> ctskpkGen(const key &bH)
 	return make_tuple(sk, pk);
 }
 
-key zeroCommit(xmr_amount amount)
+key zeroCommit(ryo_amount amount)
 {
-	key mask = identity();
-	mask = scalarmultBase(mask);
 	key am = d2h(amount);
 	key bH = scalarmultH(am);
-	addKeys(mask, mask, bH);
-	return mask;
+	return addKeys(G, bH);
 }
 
-key commit(xmr_amount amount, const key &mask)
+key commit(ryo_amount amount, const key &mask)
 {
 	key c = scalarmultBase(mask);
 	key am = d2h(amount);
@@ -184,7 +177,7 @@ key commit(xmr_amount amount, const key &mask)
 }
 
 //generates a random uint long long (for testing)
-xmr_amount randXmrAmount(xmr_amount upperlimit)
+ryo_amount randRyoAmount(ryo_amount upperlimit)
 {
 	return h2d(skGen()) % (upperlimit);
 }
@@ -233,6 +226,21 @@ key scalarmultKey(const key &P, const key &a)
 	return aP;
 }
 
+//Computes 8P
+key scalarmult8(const key & P)
+{
+	ge_p3 p3;
+	CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&p3, P.bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
+	ge_p2 p2;
+	ge_p3_to_p2(&p2, &p3);
+	ge_p1p1 p1;
+	ge_mul8(&p1, &p2);
+	ge_p1p1_to_p2(&p2, &p1);
+	rct::key res;
+	ge_tobytes(res.bytes, &p2);
+	return res;
+}
+
 //Computes aH where H= toPoint(cn_fast_hash(G)), G the basepoint
 key scalarmultH(const key &a)
 {
@@ -266,6 +274,28 @@ rct::key addKeys(const key &A, const key &B)
 	key k;
 	addKeys(k, A, B);
 	return k;
+}
+
+rct::key addKeys(const keyV &A) 
+{
+	if (A.empty())
+		return rct::identity();
+
+	ge_p3 p3, tmp;
+	CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&p3, A[0].bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
+	for (size_t i = 1; i < A.size(); ++i)
+	{
+		CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&tmp, A[i].bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
+		ge_cached p2;
+		ge_p3_to_cached(&p2, &tmp);
+		ge_p1p1 p1;
+		ge_add(&p1, &p3, &p2);
+		ge_p1p1_to_p3(&p3, &p1);
+	}
+
+	rct::key res;
+	ge_p3_tobytes(res.bytes, &p3);
+	return res;
 }
 
 //addKeys1

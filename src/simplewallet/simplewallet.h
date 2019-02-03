@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -276,6 +276,7 @@ class simple_wallet : public tools::i_wallet2_callback
      */
 	void commit_or_save(std::vector<tools::wallet2::pending_tx> &ptx_vector, bool do_not_relay);
 
+	inline size_t get_min_ring_size() { return (m_wallet->use_fork_rules(FORK_RINGSIZE_INC) ? common_config::MIN_MIXIN_V2 : common_config::MIN_MIXIN_V1) + 1; }
 	//----------------- i_wallet2_callback ---------------------
 	virtual void on_new_block(uint64_t height, const cryptonote::block &block);
 	virtual void on_money_received(uint64_t height, const crypto::hash &txid, const cryptonote::transaction &tx, uint64_t amount, const cryptonote::subaddress_index &subaddr_index);

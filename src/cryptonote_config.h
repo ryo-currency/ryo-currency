@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -58,7 +58,6 @@
 #define CURRENT_TRANSACTION_VERSION 3
 #define MIN_TRANSACTION_VERSION 2
 #define MAX_TRANSACTION_VERSION 3
-#define CRYPTONOTE_V2_POW_BLOCK_VERSION 3
 #define CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE 10
 
 // MONEY_SUPPLY - total number coins to be generated
@@ -119,9 +118,6 @@
 
 #define THREAD_STACK_SIZE 5 * 1024 * 1024
 
-#define DEFAULT_MIXIN 12 // default & minimum mixin allowed
-#define MAX_MIXIN 240
-
 #define PER_KB_FEE_QUANTIZATION_DECIMALS 8
 
 #define HASH_OF_HASHES_STEP 256
@@ -156,14 +152,22 @@ enum network_type : uint8_t
 
 enum hard_fork_feature
 {
+	FORK_POW_CN_HEAVY,
+	FORK_POW_CN_GPU,
 	FORK_V2_DIFFICULTY,
 	FORK_V3_DIFFICULTY,
+	FORK_V4_DIFFICULTY,
 	FORK_FIXED_FEE,
 	FORK_NEED_V3_TXES,
+	FORK_RINGSIZE_INC,
+	FORK_RINGSIZE_INC_REQ,
 	FORK_BULLETPROOFS,
+	FORK_BULLETPROOFS_REQ,
 	FORK_STRICT_TX_SEMANTICS,
 	FORK_DEV_FUND,
-	FORK_FEE_V2
+	FORK_FEE_V2,
+	FORK_UNIFORM_IDS,
+	FORK_UNIFORM_IDS_REQ
 };
 
 struct hardfork_conf
@@ -177,14 +181,22 @@ struct hardfork_conf
 };
 
 static constexpr hardfork_conf FORK_CONFIG[] = {
+	{FORK_POW_CN_HEAVY, 3, 3, 1},
+	{FORK_POW_CN_GPU, 6, 9, 1},
 	{FORK_V2_DIFFICULTY, 2, 2, 1},
 	{FORK_V3_DIFFICULTY, 4, 4, 1},
+	{FORK_V4_DIFFICULTY, 6, 9, 1},
 	{FORK_FIXED_FEE, 4, 4, 1},
 	{FORK_NEED_V3_TXES, 4, 4, 1},
 	{FORK_STRICT_TX_SEMANTICS, 5, 5, 1},
 	{FORK_DEV_FUND, 5, 5, 1},
 	{FORK_FEE_V2, 5, 6, 1},
-	{FORK_BULLETPROOFS, hardfork_conf::FORK_ID_DISABLED, hardfork_conf::FORK_ID_DISABLED, 1}
+	{FORK_RINGSIZE_INC, 6, 8, 1},
+	{FORK_RINGSIZE_INC_REQ, 7, 9, 1},
+	{FORK_BULLETPROOFS, 6, 8, 1},
+	{FORK_BULLETPROOFS_REQ, 7, 9, 1},
+	{FORK_UNIFORM_IDS, 6, 7, 1},
+	{FORK_UNIFORM_IDS_REQ, 7, 8, 1}
 };
 
 // COIN - number of smallest units in one coin
@@ -192,6 +204,10 @@ inline constexpr uint64_t MK_COINS(uint64_t coins) { return coins * 1000000000ul
 
 struct common_config
 {
+	static constexpr size_t MIN_MIXIN_V1 = 12; // default & minimum mixin allowed
+	static constexpr size_t MIN_MIXIN_V2 = 24;
+	static constexpr size_t MAX_MIXIN = 240;
+
 	static constexpr uint64_t POISSON_CHECK_TRIGGER = 10;  // Reorg size that triggers poisson timestamp check
 	static constexpr uint64_t POISSON_CHECK_DEPTH = 60;   // Main-chain depth of the poisson check. The attacker will have to tamper 50% of those blocks
 	static constexpr double POISSON_LOG_P_REJECT = -75.0; // Reject reorg if the probablity that the timestamps are genuine is below e^x, -75 = 10^-33
@@ -213,10 +229,14 @@ struct common_config
 	static constexpr uint64_t BLOCK_FUTURE_TIME_LIMIT_V2 = 60 * 24;
 
 	/////////////// V3 difficulty constants
-	static constexpr uint64_t DIFFICULTY_WINDOW_V3 = 60 + 1;
-	static constexpr uint64_t DIFFICULTY_BLOCKS_COUNT_V3 = DIFFICULTY_WINDOW_V3;
+	static constexpr uint64_t DIFFICULTY_WINDOW_V3 = 60;
+	static constexpr uint64_t DIFFICULTY_BLOCKS_COUNT_V3 = DIFFICULTY_WINDOW_V3 + 1;
 	static constexpr uint64_t BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW_V3 = 11;
 	static constexpr uint64_t BLOCK_FUTURE_TIME_LIMIT_V3 = DIFFICULTY_TARGET * 3;
+
+	/////////////// V4 difficulty constants
+	static constexpr uint64_t DIFFICULTY_WINDOW_V4 = 45;
+	static constexpr uint64_t DIFFICULTY_BLOCKS_COUNT_V4 = DIFFICULTY_WINDOW_V4 + 1;
 
 	static constexpr uint64_t CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE = 240 * 1024; // 240 kB
 	static constexpr uint64_t BLOCK_SIZE_GROWTH_FAVORED_ZONE = CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE * 4;
@@ -228,6 +248,8 @@ struct common_config
 	static constexpr uint64_t DYNAMIC_FEE_PER_KB_BASE_BLOCK_REWARD = 64000000000; // 64 * pow(10, 9)
 
 	static constexpr uint64_t CRYPTONOTE_MAX_BLOCK_NUMBER = 500000000;
+
+	static constexpr uint64_t BULLETPROOF_MAX_OUTPUTS = 16;
 
 	///////////////// Dev fund constants
 	// 2 out of 3 multisig address held by fireice, mosu, and psychocrypt

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -88,7 +88,11 @@ inline void serialize(Archive &a, crypto::key_image &x, const boost::serializati
 {
 	a &reinterpret_cast<char(&)[sizeof(crypto::key_image)]>(x);
 }
-
+template <class Archive>
+inline void serialize(Archive &a, crypto::uniform_payment_id &x, const boost::serialization::version_type ver)
+{
+	a &reinterpret_cast<char(&)[sizeof(crypto::uniform_payment_id)]>(x);
+}
 template <class Archive>
 inline void serialize(Archive &a, crypto::signature &x, const boost::serialization::version_type ver)
 {
@@ -309,7 +313,7 @@ inline void serialize(Archive &a, rct::rctSigBase &x, const boost::serialization
 	a &x.type;
 	if(x.type == rct::RCTTypeNull)
 		return;
-	if(x.type != rct::RCTTypeFull && x.type != rct::RCTTypeFullBulletproof && x.type != rct::RCTTypeSimple && x.type != rct::RCTTypeSimpleBulletproof)
+	if(x.type != rct::RCTTypeFull && x.type != rct::RCTTypeSimple && x.type != rct::RCTTypeBulletproof)
 		throw boost::archive::archive_exception(boost::archive::archive_exception::other_exception, "Unsupported rct type");
 	// a & x.message; message is not serialized, as it can be reconstructed from the tx data
 	// a & x.mixRing; mixRing is not serialized, as it can be reconstructed from the offsets
@@ -337,7 +341,7 @@ inline void serialize(Archive &a, rct::rctSig &x, const boost::serialization::ve
 	a &x.type;
 	if(x.type == rct::RCTTypeNull)
 		return;
-	if(x.type != rct::RCTTypeFull && x.type != rct::RCTTypeFullBulletproof && x.type != rct::RCTTypeSimple && x.type != rct::RCTTypeSimpleBulletproof)
+	if(x.type != rct::RCTTypeFull && x.type != rct::RCTTypeSimple && x.type != rct::RCTTypeBulletproof)
 		throw boost::archive::archive_exception(boost::archive::archive_exception::other_exception, "Unsupported rct type");
 	// a & x.message; message is not serialized, as it can be reconstructed from the tx data
 	// a & x.mixRing; mixRing is not serialized, as it can be reconstructed from the offsets
@@ -351,7 +355,7 @@ inline void serialize(Archive &a, rct::rctSig &x, const boost::serialization::ve
 	if(x.p.rangeSigs.empty())
 		a &x.p.bulletproofs;
 	a &x.p.MGs;
-	if(x.type == rct::RCTTypeSimpleBulletproof)
+	if(x.type == rct::RCTTypeBulletproof)
 		a &x.p.pseudoOuts;
 }
 }

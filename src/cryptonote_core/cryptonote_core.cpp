@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -760,13 +760,11 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 		MERROR_VER("tx with invalid outputs, rejected for tx id= " << get_transaction_hash(tx));
 		return false;
 	}
-	if(tx.version >= 2)
+
+	if(tx.rct_signatures.outPk.size() != tx.vout.size())
 	{
-		if(tx.rct_signatures.outPk.size() != tx.vout.size())
-		{
-			MERROR_VER("tx with mismatched vout/outPk count, rejected for tx id= " << get_transaction_hash(tx));
-			return false;
-		}
+		MERROR_VER("tx with mismatched vout/outPk count, rejected for tx id= " << get_transaction_hash(tx));
+		return false;
 	}
 
 	if(!check_money_overflow(tx))
@@ -802,35 +800,33 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 		return false;
 	}
 
-	if(tx.version >= 2)
+	const rct::rctSig &rv = tx.rct_signatures;
+	switch(rv.type)
 	{
-		const rct::rctSig &rv = tx.rct_signatures;
-		switch(rv.type)
+	case rct::RCTTypeNull:
+		// coinbase should not come here, so we reject for all other types
+		MERROR_VER("Unexpected Null rctSig type");
+		return false;
+	case rct::RCTTypeSimple:
+	case rct::RCTTypeBulletproof:
+		// Use inefficient version for now - we will be scrapping the whole system
+		// and there is very little point in polishing turds
+		if(!rct::verRctSemanticsSimple(rv))
 		{
-		case rct::RCTTypeNull:
-			// coinbase should not come here, so we reject for all other types
-			MERROR_VER("Unexpected Null rctSig type");
-			return false;
-		case rct::RCTTypeSimple:
-		case rct::RCTTypeSimpleBulletproof:
-			if(!rct::verRctSimple(rv, true))
-			{
-				MERROR_VER("rct signature semantics check failed");
-				return false;
-			}
-			break;
-		case rct::RCTTypeFull:
-		case rct::RCTTypeFullBulletproof:
-			if(!rct::verRct(rv, true))
-			{
-				MERROR_VER("rct signature semantics check failed");
-				return false;
-			}
-			break;
-		default:
-			MERROR_VER("Unknown rct type: " << rv.type);
+			MERROR_VER("rct signature semantics check failed");
 			return false;
 		}
+		break;
+	case rct::RCTTypeFull:
+		if(!rct::verRct(rv, true))
+		{
+			MERROR_VER("rct signature semantics check failed");
+			return false;
+		}
+		break;
+	default:
+		MERROR_VER("Unknown rct type: " << rv.type);
+		return false;
 	}
 
 	return true;

@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -71,4 +71,7 @@ bool check_hash(const crypto::hash &hash, difficulty_type difficulty);
 difficulty_type next_difficulty_v1(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds);
 difficulty_type next_difficulty_v2(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds);
 difficulty_type next_difficulty_v3(const std::vector<std::uint64_t> &timestamps, const std::vector<difficulty_type> &cumulative_difficulties);
+difficulty_type next_difficulty_v4(std::vector<uint64_t> timestamps, const std::vector<difficulty_type>& cumulative_difficulties);
+template<size_t N>
+void interpolate_timestamps(std::vector<uint64_t>& timestamps);
 }

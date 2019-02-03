@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -233,6 +233,7 @@ void miner::init_options(boost::program_options::options_description &desc)
 //-----------------------------------------------------------------------------------------------------
 bool miner::init(const boost::program_options::variables_map &vm, network_type nettype)
 {
+	m_nettype = nettype;
 	if(command_line::has_arg(vm, arg_extra_messages))
 	{
 		std::string buff;
@@ -399,13 +400,13 @@ bool miner::stop()
 	return true;
 }
 //-----------------------------------------------------------------------------------------------------
-bool miner::find_nonce_for_given_block(block &bl, const difficulty_type &diffic, uint64_t height)
+bool miner::find_nonce_for_given_block(network_type nettype, block &bl, const difficulty_type &diffic, uint64_t height)
 {
 	cn_pow_hash_v2 hash_ctx;
 	for(; bl.nonce != std::numeric_limits<uint32_t>::max(); bl.nonce++)
 	{
 		crypto::hash h;
-		get_block_longhash(bl, hash_ctx, h);
+		get_block_longhash(nettype, bl, hash_ctx, h);
 
 		if(check_hash(h, diffic))
 		{
@@ -504,7 +505,7 @@ bool miner::worker_thread()
 
 		b.nonce = nonce;
 		crypto::hash h;
-		get_block_longhash(b, hash_ctx, h);
+		get_block_longhash(m_nettype, b, hash_ctx, h);
 
 		if(check_hash(h, local_diff))
 		{
@@ -662,7 +663,7 @@ bool miner::background_worker_thread()
 			boost::tribool battery_powered(on_battery_power());
 			if(!indeterminate(battery_powered))
 			{
-				on_ac_power = !battery_powered;
+				on_ac_power = !(bool)battery_powered;
 			}
 		}
 

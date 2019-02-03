@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2019
+//    public domain on 1st of February 2020
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -96,7 +96,7 @@ class miner
 	bool on_idle();
 	void on_synchronized();
 	//synchronous analog (for fast calls)
-	static bool find_nonce_for_given_block(block &bl, const difficulty_type &diffic, uint64_t height);
+	static bool find_nonce_for_given_block(network_type nettype, block &bl, const difficulty_type &diffic, uint64_t height);
 	void pause();
 	void resume();
 	void do_print_hashrate(bool do_hr);
@@ -148,6 +148,7 @@ class miner
 	std::atomic<int32_t> m_pausers_count;
 	epee::critical_section m_miners_count_lock;
 
+	network_type m_nettype = UNDEFINED;
 	std::list<boost::thread> m_threads;
 	epee::critical_section m_threads_lock;
 	i_miner_handler *m_phandler;
