@@ -21,7 +21,7 @@ Please note that code is developed on the [dev branch](https://github.com/ryo-cu
 Ryo (両 in Japanese: one syllable) is the most **secure, private and untraceable cryptocurrency out there**. Ryo originated from the _Tael_, an ancient Far East  unit of weight standard used for exchanging gold and silver. Based on the foundations of Monero, Ryo emerged and is poised to dominate the privacy conscious crypto scene. Backed by a full featured and balanced development team headed by the legendary fireice_uk and psychocrypt.
 
 Our blockchain ensures the highest level of privacy out there by
-from the get-go having(1) **Ring Confidential Transactions (RingCT)** (2) and hardcoding **minimum transaction _mixin_ to 12**. These settings significantly reduce the chance of being identified, traced or attacked by blockchain statistical analysis.
+having from the get-go (1) **Ring Confidential Transactions (RingCT)** (2) and hardcoding **minimum transaction _mixin_ to 12**. These settings significantly reduce the chance of being identified, traced or attacked by blockchain statistical analysis.
 
 Ryo has a very high privacy setting that is suitable for all high confidential transactions as well as for storage of value without being traced, monitored or identified. We call this **true fungibility**. This means that each coin is **equal** and **interchangable**; it is highly unlikely that any coin can ever by blacklisted due to previous transactions. Over the course of many years these characteristics will pay off as crypto attacks become more sophisticated with much greater computation power in the future.
 
