@@ -482,7 +482,7 @@ void handle_transfer_exception(const std::exception_ptr &e, bool trusted_daemon)
 	}
 
 	if(warn_of_possible_attack)
-		fail_msg_writer() << tr("There was an error, which could mean the node may be trying to get you to retry creating a transaction, and zero in on which outputs you own. Or it could be a bona fide error. It may be prudent to disconnect from this node, and not try to send a tranasction immediately. Alternatively, connect to another node so the original node cannot correlate information.");
+		fail_msg_writer() << tr("There was an error, which could mean the node may be trying to get you to retry creating a transaction, and zero in on which outputs you own. Or it could be a bona fide error. It may be prudent to disconnect from this node, and not try to send a transaction immediately. Alternatively, connect to another node so the original node cannot correlate information.");
 }
 
 bool check_file_overwrite(const std::string &filename)
@@ -2153,7 +2153,7 @@ simple_wallet::simple_wallet()
 								"refresh-type <full|optimize-coinbase|no-coinbase|default>\n "
 								"  Set the wallet's refresh behaviour.\n "
 								"priority [0|1|2|3|4]\n "
-								"  Set the fee too default/unimportant/normal/elevated/priority.\n "
+								"  Set the fee to default/unimportant/normal/elevated/priority.\n "
 								"confirm-missing-payment-id <1|0>\n "
 								"ask-password <1|0>\n "
 								"unit <ryo|milliryo|microryo|nanoryo>\n "
