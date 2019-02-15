@@ -180,7 +180,7 @@ bool read_from_tty(const bool verify, const char *message, epee::wipeable_string
 	while(true)
 	{
 		if(message)
-			std::cout << message << ": ";
+			std::cout << message << ": " << std::flush;
 		if(!read_from_tty(pass1))
 			return false;
 		if(verify)
