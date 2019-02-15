@@ -3154,7 +3154,7 @@ bool Blockchain::check_fee(const transaction &tx, size_t blob_size, uint64_t fee
 			return false;
 		fee_per_kb = get_dynamic_per_kb_fee(base_reward, median);
 
-		LOG_PRINT_L2("Using " << print_money(fee) << "/kB fee");
+		LOG_PRINT_L2("Using " << print_money(fee_per_kb) << "/kB fee");
 
 		//WHO THOUGHT THAT FLOATS IN CONSENSUS CODE ARE A GOOD IDEA?????
 		float kB = (blob_size - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE) * 1.0f / 1024;
