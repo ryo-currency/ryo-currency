@@ -158,8 +158,11 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 	return true;
 }
 //---------------------------------------------------------------
-crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr)
-{
+crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, bool allow_any_key)
+{	
+	if(allow_any_key && change_addr)
+		return change_addr->m_view_public_key;
+  
 	account_public_address addr = {null_pkey, null_pkey};
 	size_t count = 0;
 	for(const auto &i : destinations)
@@ -171,7 +174,7 @@ crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination
 		if(i.addr == addr)
 			continue;
 		if(count > 0)
-			return null_pkey;
+			return allow_any_key ? addr.m_view_public_key : null_pkey;
 		addr = i.addr;
 		++count;
 	}
@@ -380,6 +383,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 
 	if(use_uniform_pids)
 	{
+		tx_extra_uniform_payment_id pid;
 		//Add payment id after pubkeys
 		if(payment_id != nullptr)
 		{
@@ -389,36 +393,31 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 				return false;
 			}
 
-			LOG_PRINT_L2("Encrypting payment id " << payment_id->payment_id);
-
-			crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
-			if(view_key_pub == null_pkey)
-			{
-				LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
-				return false;
-			}
-
-			tx_extra_uniform_payment_id pid;
 			pid.pid = *payment_id;
-
-			if(!hwdev.encrypt_payment_id(pid.pid, view_key_pub, tx_key))
-			{
-				LOG_ERROR("Failed to encrypt payment id");
-				return false;
-			}
-
-			if(!add_payment_id_to_tx_extra(tx.extra, &pid))
-			{
-				LOG_ERROR("Failed to add encrypted payment id to tx extra");
-				return false;
-			}
-
-			LOG_PRINT_L1("Encrypted payment ID: " << pid.pid.payment_id);
 		}
-		else
+
+		LOG_PRINT_L2("Encrypting payment id " << pid.pid.payment_id);
+
+		crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr, payment_id == nullptr);
+		if(view_key_pub == null_pkey)
 		{
-			add_payment_id_to_tx_extra(tx.extra, nullptr);
+			LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
+			return false;
 		}
+
+		if(!hwdev.encrypt_payment_id(pid.pid, view_key_pub, tx_key))
+		{
+			LOG_ERROR("Failed to encrypt payment id");
+			return false;
+		}
+
+		if(!add_payment_id_to_tx_extra(tx.extra, pid))
+		{
+			LOG_ERROR("Failed to add encrypted payment id to tx extra");
+			return false;
+		}
+
+		LOG_PRINT_L1("Encrypted payment ID: " << pid.pid.payment_id);
 	}
 	else if(payment_id != nullptr)
 	{
