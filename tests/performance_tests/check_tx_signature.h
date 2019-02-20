@@ -69,7 +69,7 @@ class test_check_tx_signature : private multi_tx_test_base<a_ring_size>
 		std::vector<crypto::secret_key> additional_tx_keys;
 		std::unordered_map<crypto::public_key, cryptonote::subaddress_index> subaddresses;
 		subaddresses[this->m_miners[this->real_source_idx].get_keys().m_account_address.m_spend_public_key] = {0, 0};
-		if(!construct_tx_and_get_tx_key(this->m_miners[this->real_source_idx].get_keys(), subaddresses, this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_tx, 0, tx_key, additional_tx_keys, BULLETPROOF, nullptr, true))
+		if(!construct_tx_and_get_tx_key(this->m_miners[this->real_source_idx].get_keys(), subaddresses, this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_tx, 0, tx_key, additional_tx_keys, BULLETPROOF, nullptr))
 			return false;
 
 		get_transaction_prefix_hash(m_tx, m_tx_prefix_hash);
@@ -125,7 +125,7 @@ class test_check_tx_signature_aggregated_bulletproofs : private multi_tx_test_ba
 		m_txes.resize(a_num_txes + (extra_outs > 0 ? 1 : 0));
 		for(size_t n = 0; n < a_num_txes; ++n)
 		{
-			if(!construct_tx_and_get_tx_key(this->m_miners[this->real_source_idx].get_keys(), subaddresses, this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_txes[n], 0, tx_key, additional_tx_keys, true, nullptr, true))
+			if(!construct_tx_and_get_tx_key(this->m_miners[this->real_source_idx].get_keys(), subaddresses, this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_txes[n], 0, tx_key, additional_tx_keys, true, nullptr))
 				return false;
 		}
 
@@ -136,7 +136,7 @@ class test_check_tx_signature_aggregated_bulletproofs : private multi_tx_test_ba
 			for(size_t n = 1; n < extra_outs; ++n)
 				destinations.push_back(tx_destination_entry(1, m_alice.get_keys().m_account_address, false));
 
-			if(!construct_tx_and_get_tx_key(this->m_miners[this->real_source_idx].get_keys(), subaddresses, this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_txes.back(), 0, tx_key, additional_tx_keys, true, nullptr, true))
+			if(!construct_tx_and_get_tx_key(this->m_miners[this->real_source_idx].get_keys(), subaddresses, this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_txes.back(), 0, tx_key, additional_tx_keys, true, nullptr))
 				return false;
 		}
 
