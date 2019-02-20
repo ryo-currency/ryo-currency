@@ -63,7 +63,7 @@ class test_ge_frombytes_vartime : public multi_tx_test_base<2>
 		subaddresses[this->m_miners[this->real_source_idx].get_keys().m_account_address.m_spend_public_key] = {0, 0};
 
 		if(!cryptonote::construct_tx_and_get_tx_key(this->m_miners[this->real_source_idx].get_keys(), subaddresses, 
-			this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_tx, 0, tx_key, additional_tx_keys, true, nullptr, true))
+			this->m_sources, destinations, cryptonote::account_public_address{}, nullptr, m_tx, 0, tx_key, additional_tx_keys, true, nullptr))
 		{
 			return false;
 		}

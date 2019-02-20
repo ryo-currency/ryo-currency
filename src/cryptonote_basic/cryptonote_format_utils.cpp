@@ -526,23 +526,16 @@ bool remove_field_from_tx_extra(std::vector<uint8_t> &tx_extra, const std::type_
 	return true;
 }
 //---------------------------------------------------------------
-bool add_payment_id_to_tx_extra(std::vector<uint8_t> &tx_extra, const tx_extra_uniform_payment_id* pid)
+bool add_payment_id_to_tx_extra(std::vector<uint8_t> &tx_extra, const tx_extra_uniform_payment_id &pid)
 {
 	size_t pos = tx_extra.size();
 	tx_extra.resize(pos + 1 + sizeof(crypto::uniform_payment_id));
 	tx_extra[pos] = TX_EXTRA_UNIFORM_PAYMENT_ID;
 
-	if(pid != nullptr)
-	{
-		if(pid->pid.zero == 0) //failsafe, don't add unencrypted data
-			return false;
-		memcpy(&tx_extra[pos+1], &pid->pid, sizeof(crypto::uniform_payment_id));
-	}
-	else
-	{
-		rand(sizeof(crypto::uniform_payment_id), &tx_extra[pos+1]);
-	}
-
+	if(pid.pid.zero == 0) //failsafe, don't add unencrypted data
+		return false;
+	memcpy(&tx_extra[pos+1], &pid.pid, sizeof(crypto::uniform_payment_id));
+	
 	return true;
 }
 //---------------------------------------------------------------
