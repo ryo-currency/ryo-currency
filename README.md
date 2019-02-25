@@ -41,15 +41,11 @@ Ryo has a very high privacy setting that is suitable for all high confidential t
   + 1 microRyo = 0.000001 **RYO** (10<sup>-6</sup>)
   + 1 milliRyo = 0.001 **RYO** (10<sup>-3</sup>)
 - **Hash algorithm**: CryptoNight GPU (Proof-Of-Work)
-- **Emission scheme**: Ryo's block reward changes _every 6-months_ according to the following "Camel" distribution*. Our emission scheme is inspired by real-world mining production comparable to crude oil, coal and gas which is often slow at first, accelerated in the next few years before declining and becoming depleted. However, the emission path of Ryo is generally not that far apart from Bitcoin.
-
-![](https://ryo-currency.com/img/png/light-block-reward-by-year.png) 
+- **Emission scheme**: Ryo's block reward changes _every 6-months_ according to the following "Camel" distribution. Our emission scheme is inspired by real-world mining production comparable to crude oil, coal and gas which is often slow at first, accelerated in the next few years before declining and becoming depleted. However, the emission path of Ryo is generally not that far apart from Bitcoin.
 
 ![](https://ryo-currency.com/img/png/light-block-reward-by-month-2.png)
 
-![](https://ryo-currency.com/img/png/light-emission-speed.png)
-
-\* The emulated algorithm of Ryo block-reward emission can be found in Python and C++ scripts at [scripts](scripts) directory.
+![](https://ryo-currency.com/img/png/light-emission-speed-2.png)
 
 ## I have Sumokoin, how can I claim my Ryo?
 - You can claim your Ryo, **if you had Sumokoin before they forked at block #137500**. Ryo Currency as a chain fork kept all the transactions -and thus coins you had in your wallet- up and until Sumokoin forked at block #137500. To further secure your Ryo, we're going to tie the coins to a block after the fork.
@@ -69,7 +65,7 @@ This is the core implementation of Ryo. It is free to get and modify for your ow
 
 Along with each release you can find our [precompiled binaries](https://github.com/ryo-currency/ryo-currency/releases).
 To verify that the downloaded binaries are created by one of our developer please verify the checksums.
-The authenticity of the checksums can be verified with the [PGP-key's](docs/pgp_keys.md).
+The authenticity of the checksums can be verified with the [PGP-key's](doc/pgp_keys.md).
 
 ## Compiling Ryo from source
 
@@ -108,9 +104,12 @@ library archives (`.a`).
 [^] On Debian/Ubuntu `libgtest-dev` only includes sources and headers. You must
 build the library binary manually. This can be done with the following command ```sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake . && sudo make && sudo mv libg* /usr/lib/ ```
 
+Debian / Ubuntu one liner for all dependencies  
+``` sudo apt update && sudo apt install build-essential cmake pkg-config libboost-all-dev libssl-dev libzmq3-dev libunbound-dev libsodium-dev libunwind8-dev liblzma-dev libreadline6-dev libldns-dev libexpat1-dev doxygen graphviz libpgm-dev```
+
 ### Cloning the repository
 
-Clone recursively to pull-in needed submodule(s):
+This repo does not use submodules, so simply clone this repo:
 
 `$ git clone https://github.com/ryo-currency/ryo-currency.git`
 
@@ -129,7 +128,7 @@ invokes cmake commands as needed.
 * Change to the root of the source code directory, change to the most recent release branch, and build:
 
         cd ryo-currency
-        git checkout tags/0.2.0
+        git checkout tags/0.4.0.0
         make
 
     *Optional*: If your machine has several cores and enough memory, enable
