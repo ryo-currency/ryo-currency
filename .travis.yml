@@ -187,11 +187,11 @@ script:
   - cd $HOME
   - |
     if [ "$COMPILE" == "main" ] ; then
-        mkdir linux-x64-build
-        cd linux-x64-build
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/ryo-linux-x64-release -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Debug -DBUILD_TAG="linux-x64-release" $TRAVIS_BUILD_DIR
-        make -j "$NUMBER_OF_CPUS"
-        make install
+        mkdir linux-x64-build &&
+        cd linux-x64-build &&
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/ryo-linux-x64-release -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Debug -DBUILD_TAG="linux-x64-release" $TRAVIS_BUILD_DIR &&
+        make -j "$NUMBER_OF_CPUS" &&
+        make install &&
         cd bin
         # runtime tests are currently disabled because the help is exiting with error code 1
         #for prog in $(find . -type f -executable)
@@ -201,14 +201,14 @@ script:
         #done
     elif [ "$COMPILE" == "tests" ] ; then
         # compile tests
-        cd $HOME
-        mkdir linux-x64-tests-build
-        cd linux-x64-tests-build
-        cmake -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug $TRAVIS_BUILD_DIR
+        cd $HOME &&
+        mkdir linux-x64-tests-build &&
+        cd linux-x64-tests-build &&
+        cmake -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug $TRAVIS_BUILD_DIR &&
         # build all tests
-        make -j "$NUMBER_OF_CPUS"
+        make -j "$NUMBER_OF_CPUS" &&
         # run unit tests
-        cd tests
+        cd tests &&
         ctest -V
     else
         echo "not supported compile option '$COMPILE'"

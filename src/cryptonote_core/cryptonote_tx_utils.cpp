@@ -158,8 +158,11 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 	return true;
 }
 //---------------------------------------------------------------
-crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr)
-{
+crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, bool allow_any_key)
+{	
+	if(allow_any_key && change_addr)
+		return change_addr->m_view_public_key;
+  
 	account_public_address addr = {null_pkey, null_pkey};
 	size_t count = 0;
 	for(const auto &i : destinations)
@@ -171,7 +174,7 @@ crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination
 		if(i.addr == addr)
 			continue;
 		if(count > 0)
-			return null_pkey;
+			return allow_any_key ? addr.m_view_public_key : null_pkey;
 		addr = i.addr;
 		++count;
 	}
@@ -180,7 +183,7 @@ crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination
 	return addr.m_view_public_key;
 }
 //---------------------------------------------------------------
-bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout, bool use_uniform_pids)
+bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout)
 {
 	hw::device &hwdev = sender_account_keys.get_device();
 
@@ -378,82 +381,42 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		add_additional_tx_pub_keys_to_extra(tx.extra, additional_tx_public_keys);
 	}
 
-	if(use_uniform_pids)
+	
+	tx_extra_uniform_payment_id pid;
+	//Add payment id after pubkeys
+	if(payment_id != nullptr)
 	{
-		//Add payment id after pubkeys
-		if(payment_id != nullptr)
+		if(payment_id->zero != 0)
 		{
-			if(payment_id->zero != 0)
-			{
-				LOG_ERROR("Internal error. Invalid payment id.");
-				return false;
-			}
-
-			LOG_PRINT_L2("Encrypting payment id " << payment_id->payment_id);
-
-			crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
-			if(view_key_pub == null_pkey)
-			{
-				LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
-				return false;
-			}
-
-			tx_extra_uniform_payment_id pid;
-			pid.pid = *payment_id;
-
-			if(!hwdev.encrypt_payment_id(pid.pid, view_key_pub, tx_key))
-			{
-				LOG_ERROR("Failed to encrypt payment id");
-				return false;
-			}
-
-			if(!add_payment_id_to_tx_extra(tx.extra, &pid))
-			{
-				LOG_ERROR("Failed to add encrypted payment id to tx extra");
-				return false;
-			}
-
-			LOG_PRINT_L1("Encrypted payment ID: " << pid.pid.payment_id);
-		}
-		else
-		{
-			add_payment_id_to_tx_extra(tx.extra, nullptr);
-		}
-	}
-	else if(payment_id != nullptr)
-	{
-		blobdata extra_nonce;
-		const uint64_t* split_id = reinterpret_cast<const uint64_t*>(&payment_id->payment_id);
-		if(split_id[1] == 0 && split_id[2] ==  0 && split_id[3] == 0)
-		{
-			crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr);
-			if(view_key_pub == null_pkey)
-			{
-				LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
-				return false;
-			}
-
-			crypto::hash8 legacy_enc_pid;
-			memcpy(&legacy_enc_pid, &payment_id->payment_id, sizeof(crypto::hash8));
-			if(!hwdev.encrypt_payment_id(legacy_enc_pid, view_key_pub, tx_key))
-			{
-				LOG_ERROR("Failed to encrypt payment id");
-				return false;
-			}
-
-			set_encrypted_payment_id_to_tx_extra_nonce(extra_nonce, legacy_enc_pid);
-		}
-		else
-		{
-			set_payment_id_to_tx_extra_nonce(extra_nonce, payment_id->payment_id);
-		}
-
-		if(!add_extra_nonce_to_tx_extra(tx.extra, extra_nonce))
-		{
-			LOG_ERROR("Failed to add extra_nonce");
+			LOG_ERROR("Internal error. Invalid payment id.");
 			return false;
 		}
+
+		pid.pid = *payment_id;
 	}
+
+	LOG_PRINT_L2("Encrypting payment id " << pid.pid.payment_id);
+
+	crypto::public_key view_key_pub = get_destination_view_key_pub(destinations, change_addr, payment_id == nullptr);
+	if(view_key_pub == null_pkey)
+	{
+		LOG_ERROR("Destinations have to have exactly one output to support encrypted payment ids");
+		return false;
+	}
+
+	if(!hwdev.encrypt_payment_id(pid.pid, view_key_pub, tx_key))
+	{
+		LOG_ERROR("Failed to encrypt payment id");
+		return false;
+	}
+
+	if(!add_payment_id_to_tx_extra(tx.extra, pid))
+	{
+		LOG_ERROR("Failed to add encrypted payment id to tx extra");
+		return false;
+	}
+
+	LOG_PRINT_L1("Encrypted payment ID: " << pid.pid.payment_id);
 
 	//check money
 	if(summary_outs_money > summary_inputs_money)
@@ -586,7 +549,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	return true;
 }
 //---------------------------------------------------------------
-bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout, bool use_uniform_pids)
+bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout)
 {
 	hw::device &hwdev = sender_account_keys.get_device();
 	hwdev.open_tx(tx_key);
@@ -607,7 +570,7 @@ bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const 
 	}
 
 	bool r = construct_tx_with_tx_key(sender_account_keys, subaddresses, sources, destinations, change_addr, 
-		payment_id, tx, unlock_time, tx_key, additional_tx_keys, bulletproof, msout, use_uniform_pids);
+		payment_id, tx, unlock_time, tx_key, additional_tx_keys, bulletproof, msout);
 
 	hwdev.close_tx();
 	return r;

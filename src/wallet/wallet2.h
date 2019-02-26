@@ -690,7 +690,7 @@ class wallet2
 	uint64_t unlocked_balance_all() const;
 	void transfer_selected_rct(std::vector<cryptonote::tx_destination_entry> dsts, const std::vector<size_t> &selected_transfers, size_t fake_outputs_count,
 							   std::vector<std::vector<tools::wallet2::get_outs_entry>> &outs,
-							   uint64_t unlock_time, uint64_t fee, const crypto::uniform_payment_id* payment_id, cryptonote::transaction &tx, pending_tx &ptx, bool bulletproof, bool uniform_pids);
+							   uint64_t unlock_time, uint64_t fee, const crypto::uniform_payment_id* payment_id, cryptonote::transaction &tx, pending_tx &ptx, bool bulletproof);
 
 	void commit_tx(pending_tx &ptx_vector);
 	void commit_tx(std::vector<pending_tx> &ptx_vector);
