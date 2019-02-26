@@ -90,7 +90,7 @@ bool add_tx_pub_key_to_extra(std::vector<uint8_t> &tx_extra, const crypto::publi
 std::vector<crypto::public_key> get_additional_tx_pub_keys_from_extra(const std::vector<uint8_t> &tx_extra);
 std::vector<crypto::public_key> get_additional_tx_pub_keys_from_extra(const transaction_prefix &tx);
 bool add_additional_tx_pub_keys_to_extra(std::vector<uint8_t> &tx_extra, const std::vector<crypto::public_key> &additional_pub_keys);
-bool add_payment_id_to_tx_extra(std::vector<uint8_t> &tx_extra, const tx_extra_uniform_payment_id* pid = nullptr);
+bool add_payment_id_to_tx_extra(std::vector<uint8_t> &tx_extra, const tx_extra_uniform_payment_id &pid);
 bool get_payment_id_from_tx_extra(const std::vector<uint8_t> &tx_extra, tx_extra_uniform_payment_id& pid);
 bool get_payment_id_from_tx_extra(const std::vector<tx_extra_field> &tx_extra_fields, tx_extra_uniform_payment_id& pid);
 bool add_extra_nonce_to_tx_extra(std::vector<uint8_t> &tx_extra, const blobdata &extra_nonce);
