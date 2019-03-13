@@ -97,7 +97,10 @@ inline bool check_avx2()
 {
 	int32_t cpu_info[4];
 	cpuid(7, 0, cpu_info);
-	return (cpu_info[1] & (1 << 5)) != 0;
+	const bool has_avx2 = (cpu_info[1] & (1 << 5)) != 0;
+	cpuid(1, 0, cpu_info);
+	const bool osxsave = (cpu_info[2] & (1 << 27)) != 0;
+	return has_avx2 && osxsave;
 }
 #endif
 
@@ -142,7 +145,7 @@ class cn_sptr
 	inline int32_t& as_dword(size_t i) { return *(reinterpret_cast<int32_t*>(base_ptr) + i); }
 	inline uint32_t& as_udword(size_t i) { return *(reinterpret_cast<uint32_t*>(base_ptr) + i); }
 	inline const uint32_t& as_udword(size_t i) const { return *(reinterpret_cast<uint32_t*>(base_ptr) + i); }
-	
+
 	template <typename cast_t>
 	inline cast_t* as_ptr() { return reinterpret_cast<cast_t*>(base_ptr); }
 
