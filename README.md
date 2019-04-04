@@ -487,6 +487,18 @@ config](utils/conf/ryod.conf).
 If you're on Mac, you may need to add the `--max-concurrency 1` option to
 ryo-wallet-cli, and possibly ryod, if you get crashes refreshing.
 
+### Importing blockchain data from a raw file
+
+To bootstrap your local node and speed up synchronization with the network, you can import a raw file containing an export of the blockchain using the following command:
+
+        ./ryo-blockchain-import --input-file <PathToFile>/blockchain.raw
+
+To verify the contents of the blockchain file during import use the `--verify 1` flag. This may affect performance and extend the length of time to import but is recommended if you are downloading your file from an unknown source.
+
+        ./ryo-blockchain-import --verify 1 --input-file <PathToFile>/blockchain.raw
+
+Note: It is important to only import the blockchain file from a trustworthy source whenever possible.
+
 ## Using Tor
 
 While Ryo isn't made to integrate with Tor, it can be used wrapped with torsocks, by
