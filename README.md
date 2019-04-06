@@ -499,6 +499,8 @@ To verify the contents of the blockchain file during import use the `--verify 1`
 
 Note: It is important to only import the blockchain file from a trustworthy source whenever possible.
 
+For additional information on Ryo's import and export commands as well as other included utilities, see the documentation [here](src/blockchain_utilities/README.md).
+
 ## Using Tor
 
 While Ryo isn't made to integrate with Tor, it can be used wrapped with torsocks, by
