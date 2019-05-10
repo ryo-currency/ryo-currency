@@ -83,6 +83,7 @@
 #include <thread>
 
 #ifdef WIN32
+#undef fmt
 #include <windows.h>
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>

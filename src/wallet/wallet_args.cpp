@@ -53,6 +53,7 @@
 #include <boost/format.hpp>
 
 #if defined(WIN32)
+#undef fmt
 #include <crtdbg.h>
 #include <boost/locale.hpp>
 #endif

@@ -204,7 +204,7 @@ bool connection<t_protocol_handler>::request_callback()
 template <class t_protocol_handler>
 boost::asio::io_service &connection<t_protocol_handler>::get_io_service()
 {
-	return socket_.get_io_service();
+	return GET_IO_SERVICE(socket_);
 }
 //---------------------------------------------------------------------------------
 template <class t_protocol_handler>
@@ -367,7 +367,7 @@ bool connection<t_protocol_handler>::call_run_once_service_io()
 	if(!m_is_multithreaded)
 	{
 		//single thread model, we can wait in blocked call
-		size_t cnt = socket_.get_io_service().run_one();
+		size_t cnt = GET_IO_SERVICE(socket_).run_one();
 		if(!cnt) //service is going to quit
 			return false;
 	}
@@ -378,7 +378,7 @@ bool connection<t_protocol_handler>::call_run_once_service_io()
 		//if no handlers were called
 		//TODO: Maybe we need to have have critical section + event + callback to upper protocol to
 		//ask it inside(!) critical region if we still able to go in event wait...
-		size_t cnt = socket_.get_io_service().poll_one();
+		size_t cnt = GET_IO_SERVICE(socket_).poll_one();
 		if(!cnt)
 			misc_utils::sleep_no_w(0);
 	}
