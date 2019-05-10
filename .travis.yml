@@ -5,6 +5,7 @@ cache:
   apt: true
 
 os: linux
+dist: trusty
 
 addons:
   apt:
