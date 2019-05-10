@@ -28,7 +28,7 @@
 
 add_library(epee STATIC hex.cpp http_auth.cpp mlog.cpp net_utils_base.cpp string_tools.cpp wipeable_string.cpp memwipe.c
     connection_basic.cpp network_throttle.cpp network_throttle-detail.cpp)
-if (USE_READLINE AND GNU_READLINE_FOUND)
+if (USE_READLINE AND GNU_READLINE_FOUND AND READLINE_FOUND)
   add_library(epee_readline STATIC readline_buffer.cpp)
 endif()
 
@@ -45,7 +45,7 @@ if (BUILD_GUI_DEPS)
     endif()
     install(TARGETS epee
         ARCHIVE DESTINATION ${lib_folder})
-    if (USE_READLINE AND GNU_READLINE_FOUND)
+    if (USE_READLINE AND GNU_READLINE_FOUND AND READLINE_FOUND)
       install(TARGETS epee_readline
           ARCHIVE DESTINATION ${lib_folder})
     endif()
@@ -59,7 +59,7 @@ target_link_libraries(epee
     ${OPENSSL_LIBRARIES}
     ${EXTRA_LIBRARIES})
 
-if (USE_READLINE AND GNU_READLINE_FOUND)
+if (USE_READLINE AND GNU_READLINE_FOUND AND READLINE_FOUND)
   target_link_libraries(epee_readline
     PUBLIC
       easylogging
