@@ -178,18 +178,18 @@ inline std::string get_account_integrated_address_as_str(network_type nettype, c
 }
 
 template <network_type NETTYPE>
-bool get_account_address_from_str(address_parse_info &info, const std::string &str, const bool silent = false);
+bool get_account_address_from_str(address_parse_info &info, const std::string &str);
 
-inline bool get_account_address_from_str(network_type nettype, address_parse_info &info, const std::string &str, const bool silent = false)
+inline bool get_account_address_from_str(network_type nettype, address_parse_info &info, const std::string &str)
 {
 	switch(nettype)
 	{
 	case MAINNET:
-		return get_account_address_from_str<MAINNET>(info, str, silent);
+		return get_account_address_from_str<MAINNET>(info, str);
 	case TESTNET:
-		return get_account_address_from_str<TESTNET>(info, str, silent);
+		return get_account_address_from_str<TESTNET>(info, str);
 	case STAGENET:
-		return get_account_address_from_str<STAGENET>(info, str, silent);
+		return get_account_address_from_str<STAGENET>(info, str);
 	default:
 		return false;
 	}

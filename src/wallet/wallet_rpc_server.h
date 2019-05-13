@@ -55,8 +55,7 @@
 #include <boost/program_options/variables_map.hpp>
 #include <string>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.rpc"
+
 
 namespace tools
 {

@@ -62,6 +62,7 @@ target_link_libraries(ringct_basic
   PUBLIC
     common
     cncrypto
+    fmt::fmt-header-only
   PRIVATE
     ${OPENSSL_LIBRARIES}
     ${EXTRA_LIBRARIES})
@@ -88,6 +89,7 @@ target_link_libraries(ringct
     cncrypto
     cryptonote_basic
     device
+    fmt::fmt-header-only
   PRIVATE
     ${OPENSSL_LIBRARIES}
     ${EXTRA_LIBRARIES})

@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#define GULPS_CAT_MAJOR "password"
 
 #include "password.h"
 
@@ -59,6 +60,8 @@
 #endif
 
 #include "memwipe.h"
+
+#include "common/gulps.hpp"
 
 #define EOT 0x4
 
@@ -95,7 +98,7 @@ bool read_from_tty(epee::wipeable_string &pass)
 		}
 		else if(ch == '\n' || ch == '\r')
 		{
-			std::cout << std::endl;
+			GULPS_PRINT("\n");
 			break;
 		}
 		else if(ch == BACKSPACE)
@@ -154,7 +157,7 @@ bool read_from_tty(epee::wipeable_string &aPass)
 		}
 		else if(ch == '\n' || ch == '\r')
 		{
-			std::cout << std::endl;
+			GULPS_PRINT("\n");
 			break;
 		}
 		else if(ch == BACKSPACE)
@@ -180,17 +183,17 @@ bool read_from_tty(const bool verify, const char *message, epee::wipeable_string
 	while(true)
 	{
 		if(message)
-			std::cout << message << ": " << std::flush;
+			GULPS_PRINT_NOLF(message, ": ");
 		if(!read_from_tty(pass1))
 			return false;
 		if(verify)
 		{
-			std::cout << "Confirm password: ";
+			GULPS_PRINT_NOLF("Confirm password: ");
 			if(!read_from_tty(pass2))
 				return false;
 			if(pass1 != pass2)
 			{
-				std::cout << "Passwords do not match! Please try again." << std::endl;
+				GULPS_PRINT("Passwords do not match! Please try again.");
 				pass1.clear();
 				pass2.clear();
 			}

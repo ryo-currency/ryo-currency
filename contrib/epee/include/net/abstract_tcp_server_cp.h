@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "tcp_serv"
 
 #ifndef _LEVIN_CP_SERVER_H_
 #define _LEVIN_CP_SERVER_H_
@@ -33,7 +37,6 @@
 #include <string>
 #include <winsock2.h>
 
-#include "misc_log_ex.h"
 //#include "threads_helper.h"
 #include "syncobj.h"
 #define ENABLE_PROFILING
@@ -41,8 +44,9 @@
 #include "pragma_comp_defs.h"
 #include "profile_tools.h"
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net"
+#include "common/gulps.hpp"	
+
+
 
 #define LEVIN_DEFAULT_DATA_BUFF_SIZE 2000
 
@@ -161,7 +165,7 @@ class cp_server_impl //: public abstract_handler
 				if(WSA_IO_PENDING == err)
 					return true;
 			}
-			LOG_ERROR("BIG FAIL: WSASend error code not correct, res=" << res << " last_err=" << err);
+			GULPS_ERRORF("BIG FAIL: WSASend error code not correct, res={} las_err={}", res, err);
 			::InterlockedExchange(&m_psend_data->m_is_in_use, 0);
 			query_shutdown();
 			//closesocket(m_psend_data);
@@ -173,7 +177,7 @@ class cp_server_impl //: public abstract_handler
 			if(!bytes_sent || bytes_sent != cb)
 			{
 				int err = ::WSAGetLastError();
-				LOG_ERROR("BIG FAIL: WSASend immediatly complete? but bad results, res=" << res << " last_err=" << err);
+				GULPS_ERRORF("BIG FAIL: WSASend immediatly complete? but bad results, res={} last_err={}", res, err);
 				query_shutdown();
 				return false;
 			}
@@ -192,7 +196,7 @@ class cp_server_impl //: public abstract_handler
 		delete m_psend_data;
 		m_psend_data = (io_data_base *)new char[sizeof(io_data_base) + new_size - 1];
 		m_psend_data->TotalBuffBytes = new_size;
-		LOG_PRINT("Connection buffer resized up to " << new_size, LOG_LEVEL_3);
+		GULPS_PRINT_L3("Connection buffer resized up to ", new_size);
 		return true;
 	}
 

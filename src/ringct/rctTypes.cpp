@@ -43,15 +43,13 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "rctTypes"
 
 #include "cryptonote_config.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include "rctTypes.h"
 using namespace crypto;
 using namespace std;
-
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "ringct"
 
 namespace rct
 {
@@ -63,86 +61,84 @@ namespace rct
 void dp(key a)
 {
 	int j = 0;
-	printf("\"");
+	GULPS_PRINT("\"");
 	for(j = 0; j < 32; j++)
 	{
-		printf("%02x", (unsigned char)a.bytes[j]);
+		GULPS_PRINTF("{0:x}", (unsigned char)a.bytes[j]);
 	}
-	printf("\"");
-	printf("\n");
+	GULPS_PRINT("\"");
+	GULPS_PRINT("\n");
 }
 
 void dp(bool a)
 {
-	printf(" ... %s ... ", a ? "true" : "false");
-	printf("\n");
+	GULPS_PRINTF(" ... {} ... ", a ? "true" : "false");
+	GULPS_PRINT("\n");
 }
 
 void dp(const char *a, int l)
 {
 	int j = 0;
-	printf("\"");
+	GULPS_PRINT("\"");
 	for(j = 0; j < l; j++)
 	{
-		printf("%02x", (unsigned char)a[j]);
+		GULPS_PRINTF("{0:x}", (unsigned char)a[j]);
 	}
-	printf("\"");
-	printf("\n");
+	GULPS_PRINT("\"");
+	GULPS_PRINT("\n");
 }
 void dp(keyV a)
 {
 	size_t j = 0;
-	printf("[");
+	GULPS_PRINT("[");
 	for(j = 0; j < a.size(); j++)
 	{
 		dp(a[j]);
 		if(j < a.size() - 1)
 		{
-			printf(",");
+			GULPS_PRINT(",");
 		}
 	}
-	printf("]");
-	printf("\n");
+	GULPS_PRINT("]");
+	GULPS_PRINT("\n");
 }
 void dp(keyM a)
 {
 	size_t j = 0;
-	printf("[");
+	GULPS_PRINT("[");
 	for(j = 0; j < a.size(); j++)
 	{
 		dp(a[j]);
 		if(j < a.size() - 1)
 		{
-			printf(",");
+			GULPS_PRINT(",");
 		}
 	}
-	printf("]");
-	printf("\n");
+	GULPS_PRINT("]");
+	GULPS_PRINT("\n");
 }
 void dp(ryo_amount vali)
 {
-	printf("x: ");
-	std::cout << vali;
-	printf("\n\n");
+	GULPS_PRINT("x: ", vali, "\n\n");
 }
 
 void dp(int vali)
 {
-	printf("x: %d\n", vali);
-	printf("\n");
+	GULPS_PRINTF("x: {}\n", vali);
+	GULPS_PRINT("\n");
 }
 void dp(bits amountb)
 {
 	for(int i = 0; i < 64; i++)
 	{
-		printf("%d", amountb[i]);
+		GULPS_PRINT(amountb[i]);
 	}
-	printf("\n");
+	GULPS_PRINT("\n");
 }
 
 void dp(const char *st)
 {
-	printf("%s\n", st);
+	GULPS_PRINTF("{}\n", st);
 }
 
 //Various Conversions
@@ -264,14 +260,14 @@ ryo_amount b2d(bits amountb)
 
 size_t n_bulletproof_amounts(const Bulletproof &proof)
 {
-	CHECK_AND_ASSERT_MES(proof.L.size() >= 6, 0, "Invalid bulletproof L size");
-	CHECK_AND_ASSERT_MES(proof.L.size() == proof.R.size(), 0, "Mismatched bulletproof L/R size");
+	GULPS_CHECK_AND_ASSERT_MES(proof.L.size() >= 6, 0, "Invalid bulletproof L size");
+	GULPS_CHECK_AND_ASSERT_MES(proof.L.size() == proof.R.size(), 0, "Mismatched bulletproof L/R size");
 	static const size_t extra_bits = 4;
 	static_assert((1 << extra_bits) == cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS, "log2(BULLETPROOF_MAX_OUTPUTS) is out of date");
-	CHECK_AND_ASSERT_MES(proof.L.size() <= 6 + extra_bits, 0, "Invalid bulletproof L size");
-	CHECK_AND_ASSERT_MES(proof.V.size() <= (1u<<(proof.L.size()-6)), 0, "Invalid bulletproof V/L");
-	CHECK_AND_ASSERT_MES(proof.V.size() * 2 > (1u<<(proof.L.size()-6)), 0, "Invalid bulletproof V/L");
-	CHECK_AND_ASSERT_MES(proof.V.size() > 0, 0, "Empty bulletproof");
+	GULPS_CHECK_AND_ASSERT_MES(proof.L.size() <= 6 + extra_bits, 0, "Invalid bulletproof L size");
+	GULPS_CHECK_AND_ASSERT_MES(proof.V.size() <= (1u<<(proof.L.size()-6)), 0, "Invalid bulletproof V/L");
+	GULPS_CHECK_AND_ASSERT_MES(proof.V.size() * 2 > (1u<<(proof.L.size()-6)), 0, "Invalid bulletproof V/L");
+	GULPS_CHECK_AND_ASSERT_MES(proof.V.size() > 0, 0, "Empty bulletproof");
 	return proof.V.size();
 }
 
@@ -281,7 +277,7 @@ size_t n_bulletproof_amounts(const std::vector<Bulletproof> &proofs)
 	for(const Bulletproof &proof: proofs)
 	{
 		size_t n2 = n_bulletproof_amounts(proof);
-		CHECK_AND_ASSERT_MES(n2 < std::numeric_limits<uint32_t>::max() - n, 0, "Invalid number of bulletproofs");
+		GULPS_CHECK_AND_ASSERT_MES(n2 < std::numeric_limits<uint32_t>::max() - n, 0, "Invalid number of bulletproofs");
 		if(n2 == 0)
 			return 0;
 		n += n2;
@@ -291,11 +287,11 @@ size_t n_bulletproof_amounts(const std::vector<Bulletproof> &proofs)
 
 size_t n_bulletproof_max_amounts(const Bulletproof &proof)
 {
-	CHECK_AND_ASSERT_MES(proof.L.size() >= 6, 0, "Invalid bulletproof L size");
-	CHECK_AND_ASSERT_MES(proof.L.size() == proof.R.size(), 0, "Mismatched bulletproof L/R size");
+	GULPS_CHECK_AND_ASSERT_MES(proof.L.size() >= 6, 0, "Invalid bulletproof L size");
+	GULPS_CHECK_AND_ASSERT_MES(proof.L.size() == proof.R.size(), 0, "Mismatched bulletproof L/R size");
 	static const size_t extra_bits = 4;
 	static_assert((1 << extra_bits) == cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS, "log2(BULLETPROOF_MAX_OUTPUTS) is out of date");
-	CHECK_AND_ASSERT_MES(proof.L.size() <= 6 + extra_bits, 0, "Invalid bulletproof L size");
+	GULPS_CHECK_AND_ASSERT_MES(proof.L.size() <= 6 + extra_bits, 0, "Invalid bulletproof L size");
 	return 1 << (proof.L.size() - 6);
 }
 
@@ -305,7 +301,7 @@ size_t n_bulletproof_max_amounts(const std::vector<Bulletproof> &proofs)
 	for (const Bulletproof &proof: proofs)
 	{
 		size_t n2 = n_bulletproof_max_amounts(proof);
-		CHECK_AND_ASSERT_MES(n2 < std::numeric_limits<uint32_t>::max() - n, 0, "Invalid number of bulletproofs");
+		GULPS_CHECK_AND_ASSERT_MES(n2 < std::numeric_limits<uint32_t>::max() - n, 0, "Invalid number of bulletproofs");
 		if (n2 == 0)
 			return 0;
 		n += n2;

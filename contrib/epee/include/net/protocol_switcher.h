@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "net"
 
 #ifndef _PROTOCOL_SWITCHER_H_
 #define _PROTOCOL_SWITCHER_H_
@@ -109,7 +113,7 @@ bool protocol_switcher::handle_recv(const void *ptr, size_t cb)
 		}
 		else
 		{
-			LOG_ERROR("Wrong protocol accepted on port...");
+			GULPS_ERROR("Wrong protocol accepted on port...");
 			return false;
 		}
 	}

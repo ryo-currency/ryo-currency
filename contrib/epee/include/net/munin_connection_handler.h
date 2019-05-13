@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "mun_conn"
 
 #ifndef _MUNIN_CONNECTION_HANDLER_H_
 #define _MUNIN_CONNECTION_HANDLER_H_
@@ -46,6 +50,8 @@
 	{
 #define END_MUNIN_SERVICE() }
 #define MUNIN_SERVICE_PARAM(munin_var_name_str, variable) paramters_text += std::string() + munin_var_name_str ".value " + boost::lexical_cast<std::string>(variable) + "\n"
+
+#include "common/gulps.hpp"	
 
 namespace epee
 {
@@ -139,9 +145,7 @@ class munin_node_server_connection_handler
 
 		const char *pbuff = (const char *)ptr;
 		std::string recvd_buff(pbuff, cb);
-		LOG_PRINT("munin_recv: \n"
-					  << recvd_buff,
-				  LOG_LEVEL_3);
+		GULPS_PRINT_L3("munin_recv: \n{}", recvd_buff);
 
 		m_cache += recvd_buff;
 
@@ -169,7 +173,7 @@ class munin_node_server_connection_handler
 				stop_handling = true;
 				return false;
 			default:
-				LOG_ERROR("Error in munin state machine! Unknown state=" << m_machine_state);
+				GULPS_LOG_ERROR("Error in munin state machine! Unknown state=" , m_machine_state);
 				stop_handling = true;
 				m_machine_state = http_state_error;
 				return false;
@@ -287,9 +291,7 @@ class munin_node_server_connection_handler
 
 	bool send_hook(const std::string &buff)
 	{
-		LOG_PRINT("munin_send: \n"
-					  << buff,
-				  LOG_LEVEL_3);
+		GULPS_PRINT_L3("munin_send: \n{}", buff);
 
 		if(m_psnd_hndlr)
 			return m_psnd_hndlr->do_send(buff.data(), buff.size());

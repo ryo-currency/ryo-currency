@@ -41,15 +41,19 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "daemon_core"
 
 #pragma once
 
 #include "cryptonote_core/cryptonote_core.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
-#include "misc_log_ex.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
+#include "common/gulps.hpp"	
+
+
 
 namespace daemonize
 {
@@ -98,13 +102,13 @@ class t_core final
 	bool run()
 	{
 		//initialize core here
-		MGINFO("Initializing core...");
+		GULPS_GLOBAL_PRINT("Initializing core...");
 		std::string config_subdir = get_config_subdir();
 		if(!m_core.init(m_vm_HACK, config_subdir.empty() ? NULL : config_subdir.c_str()))
 		{
 			return false;
 		}
-		MGINFO("Core initialized OK");
+		GULPS_GLOBAL_PRINT("Core initialized OK");
 		return true;
 	}
 
@@ -115,7 +119,7 @@ class t_core final
 
 	~t_core()
 	{
-		MGINFO("Deinitializing core...");
+		GULPS_GLOBAL_PRINT("Deinitializing core...");
 		try
 		{
 			m_core.deinit();
@@ -123,7 +127,7 @@ class t_core final
 		}
 		catch(...)
 		{
-			MERROR("Failed to deinitialize core...");
+			GULPS_ERROR("Failed to deinitialize core...");
 		}
 	}
 };

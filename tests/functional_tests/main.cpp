@@ -32,6 +32,7 @@
 
 #include "include_base_utils.h"
 #include "string_tools.h"
+#include "common/gulps.hpp"
 using namespace epee;
 
 #include "common/command_line.h"
@@ -59,13 +60,13 @@ const command_line::arg_descriptor<size_t> arg_test_repeat_count = {"test_repeat
 
 int main(int argc, char *argv[])
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	tools::on_startup();
 	string_tools::set_module_name_and_folder(argv[0]);
 
 	//set up logging options
-	mlog_configure(mlog_get_default_log_path("functional_tests.log"), true);
-	mlog_set_log_level(3);
+	
+	
 
 	po::options_description desc_options("Allowed options");
 	command_line::add_arg(desc_options, command_line::arg_help);
@@ -131,7 +132,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	CATCH_ENTRY_L0("main", 1);
+	GULPS_CATCH_ENTRY_L0("main", 1);
 
 	return 0;
 }

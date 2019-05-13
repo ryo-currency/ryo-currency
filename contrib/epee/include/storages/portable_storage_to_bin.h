@@ -67,7 +67,7 @@ size_t pack_varint(t_stream &strm, size_t val)
 	}
 	else
 	{
-		CHECK_AND_ASSERT_THROW_MES(val <= 4611686018427387903, "failed to pack varint - too big amount = " << val);
+		GULPS_CHECK_AND_ASSERT_THROW_MES(val <= 4611686018427387903, "failed to pack varint - too big amount = ",  val);
 		return pack_varint_t<uint64_t>(strm, PORTABLE_RAW_SIZE_MARK_INT64, val);
 	}
 }
@@ -204,7 +204,7 @@ bool pack_entry_to_buff(t_stream &strm, const section &sec)
 	pack_varint(strm, sec.m_entries.size());
 	for(const section_pair &se : sec.m_entries)
 	{
-		CHECK_AND_ASSERT_THROW_MES(se.first.size() < std::numeric_limits<uint8_t>::max(), "storage_entry_name is too long: " << se.first.size() << ", val: " << se.first);
+		GULPS_CHECK_AND_ASSERT_THROW_MES(se.first.size() < std::numeric_limits<uint8_t>::max(), "storage_entry_name is too long: ", se.first.size(),", val: ", se.first);
 		uint8_t len = static_cast<uint8_t>(se.first.size());
 		strm.write((const char *)&len, sizeof(len));
 		strm.write(se.first.data(), size_t(len));

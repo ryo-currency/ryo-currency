@@ -41,6 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "dns_utils"
 
 #include "common/dns_utils.h"
 // check local first (in the event of static or in-source compilation of libunbound)
@@ -53,11 +54,11 @@
 #include <boost/thread/thread.hpp>
 #include <random>
 #include <stdlib.h>
-using namespace epee;
 namespace bf = boost::filesystem;
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net.dns"
+#include "common/gulps.hpp"
+
+
 
 static const char *DEFAULT_DNS_PUBLIC_ADDR[] =
 {
@@ -88,27 +89,27 @@ get_builtin_cert(void)
 {
 	return
 // The ICANN CA fetched at 24 Sep 2010.  Valid to 2028
-"-----BEGIN CERTIFICATE-----\n"
-"MIIDdzCCAl+gAwIBAgIBATANBgkqhkiG9w0BAQsFADBdMQ4wDAYDVQQKEwVJQ0FO\n"
-"TjEmMCQGA1UECxMdSUNBTk4gQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAUBgNV\n"
-"BAMTDUlDQU5OIFJvb3QgQ0ExCzAJBgNVBAYTAlVTMB4XDTA5MTIyMzA0MTkxMloX\n"
-"DTI5MTIxODA0MTkxMlowXTEOMAwGA1UEChMFSUNBTk4xJjAkBgNVBAsTHUlDQU5O\n"
-"IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MRYwFAYDVQQDEw1JQ0FOTiBSb290IENB\n"
-"MQswCQYDVQQGEwJVUzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKDb\n"
-"cLhPNNqc1NB+u+oVvOnJESofYS9qub0/PXagmgr37pNublVThIzyLPGCJ8gPms9S\n"
-"G1TaKNIsMI7d+5IgMy3WyPEOECGIcfqEIktdR1YWfJufXcMReZwU4v/AdKzdOdfg\n"
-"ONiwc6r70duEr1IiqPbVm5T05l1e6D+HkAvHGnf1LtOPGs4CHQdpIUcy2kauAEy2\n"
-"paKcOcHASvbTHK7TbbvHGPB+7faAztABLoneErruEcumetcNfPMIjXKdv1V1E3C7\n"
-"MSJKy+jAqqQJqjZoQGB0necZgUMiUv7JK1IPQRM2CXJllcyJrm9WFxY0c1KjBO29\n"
-"iIKK69fcglKcBuFShUECAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8B\n"
-"Af8EBAMCAf4wHQYDVR0OBBYEFLpS6UmDJIZSL8eZzfyNa2kITcBQMA0GCSqGSIb3\n"
-"DQEBCwUAA4IBAQAP8emCogqHny2UYFqywEuhLys7R9UKmYY4suzGO4nkbgfPFMfH\n"
-"6M+Zj6owwxlwueZt1j/IaCayoKU3QsrYYoDRolpILh+FPwx7wseUEV8ZKpWsoDoD\n"
-"2JFbLg2cfB8u/OlE4RYmcxxFSmXBg0yQ8/IoQt/bxOcEEhhiQ168H2yE5rxJMt9h\n"
-"15nu5JBSewrCkYqYYmaxyOC3WrVGfHZxVI7MpIFcGdvSb2a1uyuua8l0BKgk3ujF\n"
-"0/wsHNeP22qNyVO+XVBzrM8fk8BSUFuiT/6tZTYXRtEt5aKQZgXbKU5dUF3jT9qg\n"
-"j/Br5BZw3X/zd325TvnswzMC1+ljLzHnQGGk\n"
-"-----END CERTIFICATE-----\n"
+"-----BEGIN CERTIFICATE-----"
+"MIIDdzCCAl+gAwIBAgIBATANBgkqhkiG9w0BAQsFADBdMQ4wDAYDVQQKEwVJQ0FO"
+"TjEmMCQGA1UECxMdSUNBTk4gQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkxFjAUBgNV"
+"BAMTDUlDQU5OIFJvb3QgQ0ExCzAJBgNVBAYTAlVTMB4XDTA5MTIyMzA0MTkxMloX"
+"DTI5MTIxODA0MTkxMlowXTEOMAwGA1UEChMFSUNBTk4xJjAkBgNVBAsTHUlDQU5O"
+"IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MRYwFAYDVQQDEw1JQ0FOTiBSb290IENB"
+"MQswCQYDVQQGEwJVUzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKDb"
+"cLhPNNqc1NB+u+oVvOnJESofYS9qub0/PXagmgr37pNublVThIzyLPGCJ8gPms9S"
+"G1TaKNIsMI7d+5IgMy3WyPEOECGIcfqEIktdR1YWfJufXcMReZwU4v/AdKzdOdfg"
+"ONiwc6r70duEr1IiqPbVm5T05l1e6D+HkAvHGnf1LtOPGs4CHQdpIUcy2kauAEy2"
+"paKcOcHASvbTHK7TbbvHGPB+7faAztABLoneErruEcumetcNfPMIjXKdv1V1E3C7"
+"MSJKy+jAqqQJqjZoQGB0necZgUMiUv7JK1IPQRM2CXJllcyJrm9WFxY0c1KjBO29"
+"iIKK69fcglKcBuFShUECAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8B"
+"Af8EBAMCAf4wHQYDVR0OBBYEFLpS6UmDJIZSL8eZzfyNa2kITcBQMA0GCSqGSIb3"
+"DQEBCwUAA4IBAQAP8emCogqHny2UYFqywEuhLys7R9UKmYY4suzGO4nkbgfPFMfH"
+"6M+Zj6owwxlwueZt1j/IaCayoKU3QsrYYoDRolpILh+FPwx7wseUEV8ZKpWsoDoD"
+"2JFbLg2cfB8u/OlE4RYmcxxFSmXBg0yQ8/IoQt/bxOcEEhhiQ168H2yE5rxJMt9h"
+"15nu5JBSewrCkYqYYmaxyOC3WrVGfHZxVI7MpIFcGdvSb2a1uyuua8l0BKgk3ujF"
+"0/wsHNeP22qNyVO+XVBzrM8fk8BSUFuiT/6tZTYXRtEt5aKQZgXbKU5dUF3jT9qg"
+"j/Br5BZw3X/zd325TvnswzMC1+ljLzHnQGGk"
+"-----END CERTIFICATE-----"
 		;
 }
 */
@@ -236,12 +237,12 @@ DNSResolver::DNSResolver() : m_data(new DNSResolverData())
 		dns_public_addr = tools::dns_utils::parse_dns_public(res);
 		if(!dns_public_addr.empty())
 		{
-			MGINFO("Using public DNS server(s): " << boost::join(dns_public_addr, ", ") << " (TCP)");
+			GULPS_INFOF("Using public DNS server(s): {} (TCP)", boost::join(dns_public_addr, ", "));
 			use_dns_public = 1;
 		}
 		else
 		{
-			MERROR("Failed to parse DNS_PUBLIC");
+			GULPS_ERROR("Failed to parse DNS_PUBLIC");
 		}
 	}
 
@@ -265,7 +266,7 @@ DNSResolver::DNSResolver() : m_data(new DNSResolverData())
 	const char * const *ds = ::get_builtin_ds();
 	while (*ds)
 	{
-		MINFO("adding trust anchor: " << *ds);
+		GULPS_INFOF("adding trust anchor: {}", *ds);
 		ub_ctx_add_ta(m_data->m_ub_context, string_copy(*ds++));
 	}
 }
@@ -426,12 +427,12 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
 		if(!avail[cur_index])
 		{
 			records[cur_index].clear();
-			LOG_PRINT_L2("DNSSEC not available for checkpoint update at URL: " << url << ", skipping.");
+			GULPS_LOGF_L2("DNSSEC not available for checkpoint update at URL: {}, skipping.", url);
 		}
 		if(!valid[cur_index])
 		{
 			records[cur_index].clear();
-			LOG_PRINT_L2("DNSSEC validation failed for checkpoint update at URL: " << url << ", skipping.");
+			GULPS_LOGF_L2("DNSSEC validation failed for checkpoint update at URL: {}, skipping.", url);
 		}
 
 		cur_index++;
@@ -453,7 +454,7 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
 
 	if(num_valid_records < 2)
 	{
-		//LOG_PRINT_L0("WARNING: no two valid MoneroPulse DNS checkpoint records were received");
+		//GULPS_LOG_L0("WARNING: no two valid MoneroPulse DNS checkpoint records were received");
 		return false;
 	}
 
@@ -477,7 +478,7 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
 
 	if(good_records_index < 0)
 	{
-		//LOG_PRINT_L0("WARNING: no two MoneroPulse DNS checkpoint records matched");
+		//GULPS_LOG_L0("WARNING: no two MoneroPulse DNS checkpoint records matched");
 		return false;
 	}
 
@@ -494,13 +495,13 @@ std::vector<std::string> parse_dns_public(const char *s)
 	{
 		for(size_t i = 0; i < sizeof(DEFAULT_DNS_PUBLIC_ADDR) / sizeof(DEFAULT_DNS_PUBLIC_ADDR[0]); ++i)
 			dns_public_addr.push_back(DEFAULT_DNS_PUBLIC_ADDR[i]);
-		LOG_PRINT_L0("Using default public DNS server(s): " << boost::join(dns_public_addr, ", ") << " (TCP)");
+			GULPS_LOGF_L0("Using default public DNS server(s):{}  (TCP)", boost::join(dns_public_addr, ", "));
 	}
 	else if(sscanf(s, "tcp://%u.%u.%u.%u%c", &ip0, &ip1, &ip2, &ip3, &c) == 4)
 	{
 		if(ip0 > 255 || ip1 > 255 || ip2 > 255 || ip3 > 255)
 		{
-			MERROR("Invalid IP: " << s << ", using default");
+			GULPS_ERRORF("Invalid IP: {}, using default", s);
 		}
 		else
 		{
@@ -509,7 +510,7 @@ std::vector<std::string> parse_dns_public(const char *s)
 	}
 	else
 	{
-		MERROR("Invalid DNS_PUBLIC contents, ignored");
+		GULPS_ERROR("Invalid DNS_PUBLIC contents, ignored");
 	}
 	return dns_public_addr;
 }

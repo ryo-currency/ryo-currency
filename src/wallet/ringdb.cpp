@@ -41,18 +41,17 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "ringdb"
 
 #include "ringdb.h"
 #include "misc_language.h"
-#include "misc_log_ex.h"
 #include "wallet_errors.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <lmdb.h>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.ringdb"
+#include "common/gulps.hpp"	
 
 static const char zerokey[8] = {0};
 static const MDB_val zerokeyval = {sizeof(zerokey), (void *)zerokey};
@@ -180,14 +179,14 @@ static int resize_env(MDB_env *env, const char *db_path, size_t needed)
 			boost::filesystem::space_info si = boost::filesystem::space(path);
 			if(si.available < needed)
 			{
-				MERROR("!! WARNING: Insufficient free space to extend database !!: " << (si.available >> 20L) << " MB available");
+				GULPS_ERRORF("!! WARNING: Insufficient free space to extend database !!: {} MB available", (si.available >> 20L) );
 				return ENOSPC;
 			}
 		}
 		catch(...)
 		{
 			// print something but proceed.
-			MWARNING("Unable to query free disk space.");
+			GULPS_WARN("Unable to query free disk space.");
 		}
 
 		mapsize += needed;
@@ -316,7 +315,7 @@ bool ringdb::remove_rings(const crypto::chacha_key &chacha_key, const cryptonote
 			continue;
 		THROW_WALLET_EXCEPTION_IF(data.mv_size <= 0, tools::error::wallet_internal_error, "Invalid ring data size");
 
-		MDEBUG("Removing ring data for key image " << txin.k_image);
+		GULPS_LOG_L1("Removing ring data for key image ", txin.k_image);
 		dbr = mdb_del(txn, dbi_rings, &key, NULL);
 		THROW_WALLET_EXCEPTION_IF(dbr, tools::error::wallet_internal_error, "Failed to remove ring to database: " + std::string(mdb_strerror(dbr)));
 	}
@@ -352,10 +351,10 @@ bool ringdb::get_ring(const crypto::chacha_key &chacha_key, const crypto::key_im
 
 	std::string data_plaintext = decrypt(std::string((const char *)data.mv_data, data.mv_size), key_image, chacha_key);
 	outs = decompress_ring(data_plaintext);
-	MDEBUG("Found ring for key image " << key_image << ":");
-	MDEBUG("Relative: " << boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
+	GULPS_LOG_L1("Found ring for key image :", key_image);
+	GULPS_LOGF_L1("Relative: {}", boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
 	outs = cryptonote::relative_output_offsets_to_absolute(outs);
-	MDEBUG("Absolute: " << boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
+	GULPS_LOGF_L1("Absolute: {}", boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
 
 	dbr = mdb_txn_commit(txn);
 	THROW_WALLET_EXCEPTION_IF(dbr, tools::error::wallet_internal_error, "Failed to commit txn getting ring from database: " + std::string(mdb_strerror(dbr)));
@@ -407,13 +406,13 @@ bool ringdb::blackball_worker(const crypto::public_key &output, int op)
 	switch(op)
 	{
 	case BLACKBALL_BLACKBALL:
-		MDEBUG("Blackballing output " << output);
+		GULPS_LOGF_L1("Blackballing output {}", output);
 		dbr = mdb_put(txn, dbi_blackballs, &key, &data, MDB_NODUPDATA);
 		if(dbr == MDB_KEYEXIST)
 			dbr = 0;
 		break;
 	case BLACKBALL_UNBLACKBALL:
-		MDEBUG("Unblackballing output " << output);
+		GULPS_LOGF_L1("Unblackballing output {}", output);
 		dbr = mdb_del(txn, dbi_blackballs, &key, &data);
 		if(dbr == MDB_NOTFOUND)
 			dbr = 0;

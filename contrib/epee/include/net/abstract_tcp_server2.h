@@ -54,8 +54,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net"
+
 
 #define ABSTRACT_SERVER_SEND_QUE_MAX_COUNT 1000
 

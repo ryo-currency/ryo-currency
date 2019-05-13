@@ -23,6 +23,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "msc_os_dep"
+
 #ifdef _WIN32
 #include <Winsock2.h>
 #endif
@@ -47,6 +52,8 @@
 
 #include <boost/lexical_cast.hpp>
 #include <iostream>
+
+#include "common/gulps.hpp"	
 
 #pragma once
 namespace epee
@@ -92,7 +99,7 @@ inline uint64_t get_tick_count()
 
 inline int call_sys_cmd(const std::string &cmd)
 {
-	std::cout << "# " << cmd << std::endl;
+	GULPS_PRINT("# {}", cmd);
 
 	FILE *fp;
 	//char tstCommand[] ="ls *";
@@ -103,7 +110,7 @@ inline int call_sys_cmd(const std::string &cmd)
 	fp = popen(cmd.c_str(), "r");
 #endif
 	while(fgets(path, 1000, fp) != NULL)
-		std::cout << path;
+		GULPS_PRINT(path);
 
 #if !defined(__GNUC__)
 	_pclose(fp);

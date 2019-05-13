@@ -43,22 +43,25 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "rctOps"
 
 #include "rctOps.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include <boost/lexical_cast.hpp>
 using namespace crypto;
 using namespace std;
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "ringct"
+//undef RYO_DEFAULT_LOG_CATEGORY
+//#define RYO_DEFAULT_LOG_CATEGORY
 
-#define CHECK_AND_ASSERT_THROW_MES_L1(expr, message) \
+#define CHECK_AND_ASSERT_THROW_MES_L1(expr, ...) \
 	{                                                \
 		if(!(expr))                                  \
 		{                                            \
-			MWARNING(message);                       \
-			throw std::runtime_error(message);       \
+			std::string str;	\
+			str = stream_writer::write(__VA_ARGS__);	\
+			GULPS_WARN(str);                       \
+			throw std::runtime_error(str);       \
 		}                                            \
 	}
 
@@ -101,7 +104,7 @@ key skGen()
 //Mainly used in testing
 keyV skvGen(size_t rows)
 {
-	CHECK_AND_ASSERT_THROW_MES(rows > 0, "0 keys requested");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(rows > 0, "0 keys requested");
 	keyV rv(rows);
 	for(size_t i = 0; i < rows; i++)
 		skGen(rv[i]);

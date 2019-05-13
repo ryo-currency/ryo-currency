@@ -23,6 +23,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "smtp"
+
+#include "common/gulps.hpp"	
 
 #pragma once
 #include "smtp.h"
@@ -40,7 +46,7 @@ inline bool send_mail(const std::string &server, int port, const std::string &lo
 
 	if(!smtp.ServerConnect(server.c_str(), port))
 	{
-		LOG_PRINT("Reporting: Failed to connect to server " << server << ":" << port, LOG_LEVEL_0);
+		GULPS_PRINTF("Reporting: Failed to connect to server {}:{}", server , port);
 		return false;
 	}
 
@@ -48,7 +54,7 @@ inline bool send_mail(const std::string &server, int port, const std::string &lo
 	{
 		if(!smtp.ServerLogin(login.c_str(), pass.c_str()))
 		{
-			LOG_PRINT("Reporting: Failed to auth on server " << server << ":" << port, LOG_LEVEL_0);
+			GULPS_PRINTF("Reporting: Failed to auth on server {}:", server );
 			return false;
 		}
 	}
@@ -64,11 +70,11 @@ inline bool send_mail(const std::string &server, int port, const std::string &lo
 		char *szErrorText = smtp.GetLastErrorText();
 		if(szErrorText)
 		{
-			LOG_PRINT("Failed to send message, error text: " << szErrorText, LOG_LEVEL_0);
+			GULPS_PRINTF("Failed to send message, error text: {}", szErrorText);
 		}
 		else
 		{
-			LOG_PRINT("Failed to send message, error text: null", LOG_LEVEL_0);
+			GULPS_PRINT("Failed to send message, error text: null");
 		}
 		return false;
 	}

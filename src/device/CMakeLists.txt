@@ -85,6 +85,8 @@ target_link_libraries(device
     cncrypto
     ringct_basic
     ${OPENSSL_CRYPTO_LIBRARIES}
+    fmt::fmt-header-only
   PRIVATE
     ${Blocks}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)

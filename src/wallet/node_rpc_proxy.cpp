@@ -82,9 +82,9 @@ boost::optional<std::string> NodeRPCProxy::get_rpc_version(uint32_t &rpc_version
 		m_daemon_rpc_mutex.lock();
 		bool r = net_utils::invoke_http_json_rpc("/json_rpc", "get_version", req_t, resp_t, m_http_client, rpc_timeout);
 		m_daemon_rpc_mutex.unlock();
-		CHECK_AND_ASSERT_MES(r, std::string(), "Failed to connect to daemon");
-		CHECK_AND_ASSERT_MES(resp_t.status != CORE_RPC_STATUS_BUSY, resp_t.status, "Failed to connect to daemon");
-		CHECK_AND_ASSERT_MES(resp_t.status == CORE_RPC_STATUS_OK, resp_t.status, "Failed to get daemon RPC version");
+		GULPS_CHECK_AND_ASSERT_MES(r, std::string(), "Failed to connect to daemon");
+		GULPS_CHECK_AND_ASSERT_MES(resp_t.status != CORE_RPC_STATUS_BUSY, resp_t.status, "Failed to connect to daemon");
+		GULPS_CHECK_AND_ASSERT_MES(resp_t.status == CORE_RPC_STATUS_OK, resp_t.status, "Failed to get daemon RPC version");
 		m_rpc_version = resp_t.version;
 	}
 	rpc_version = m_rpc_version;
@@ -102,9 +102,9 @@ boost::optional<std::string> NodeRPCProxy::get_height(uint64_t &height) const
 		m_daemon_rpc_mutex.lock();
 		bool r = net_utils::invoke_http_json("/getheight", req, res, m_http_client, rpc_timeout);
 		m_daemon_rpc_mutex.unlock();
-		CHECK_AND_ASSERT_MES(r, std::string(), "Failed to connect to daemon");
-		CHECK_AND_ASSERT_MES(res.status != CORE_RPC_STATUS_BUSY, res.status, "Failed to connect to daemon");
-		CHECK_AND_ASSERT_MES(res.status == CORE_RPC_STATUS_OK, res.status, "Failed to get current blockchain height");
+		GULPS_CHECK_AND_ASSERT_MES(r, std::string(), "Failed to connect to daemon");
+		GULPS_CHECK_AND_ASSERT_MES(res.status != CORE_RPC_STATUS_BUSY, res.status, "Failed to connect to daemon");
+		GULPS_CHECK_AND_ASSERT_MES(res.status == CORE_RPC_STATUS_OK, res.status, "Failed to get current blockchain height");
 		m_height = res.height;
 		m_height_time = now;
 	}
@@ -129,9 +129,9 @@ boost::optional<std::string> NodeRPCProxy::get_target_height(uint64_t &height) c
 		bool r = net_utils::invoke_http_json_rpc("/json_rpc", "get_info", req_t, resp_t, m_http_client, rpc_timeout);
 		m_daemon_rpc_mutex.unlock();
 
-		CHECK_AND_ASSERT_MES(r, std::string(), "Failed to connect to daemon");
-		CHECK_AND_ASSERT_MES(resp_t.status != CORE_RPC_STATUS_BUSY, resp_t.status, "Failed to connect to daemon");
-		CHECK_AND_ASSERT_MES(resp_t.status == CORE_RPC_STATUS_OK, resp_t.status, "Failed to get target blockchain height");
+		GULPS_CHECK_AND_ASSERT_MES(r, std::string(), "Failed to connect to daemon");
+		GULPS_CHECK_AND_ASSERT_MES(resp_t.status != CORE_RPC_STATUS_BUSY, resp_t.status, "Failed to connect to daemon");
+		GULPS_CHECK_AND_ASSERT_MES(resp_t.status == CORE_RPC_STATUS_OK, resp_t.status, "Failed to get target blockchain height");
 		m_target_height = resp_t.target_height;
 		m_target_height_time = now;
 	}
@@ -150,9 +150,9 @@ boost::optional<std::string> NodeRPCProxy::get_earliest_height(uint8_t version, 
 		req_t.version = version;
 		bool r = net_utils::invoke_http_json_rpc("/json_rpc", "hard_fork_info", req_t, resp_t, m_http_client, rpc_timeout);
 		m_daemon_rpc_mutex.unlock();
-		CHECK_AND_ASSERT_MES(r, std::string(), "Failed to connect to daemon");
-		CHECK_AND_ASSERT_MES(resp_t.status != CORE_RPC_STATUS_BUSY, resp_t.status, "Failed to connect to daemon");
-		CHECK_AND_ASSERT_MES(resp_t.status == CORE_RPC_STATUS_OK, resp_t.status, "Failed to get hard fork status");
+		GULPS_CHECK_AND_ASSERT_MES(r, std::string(), "Failed to connect to daemon");
+		GULPS_CHECK_AND_ASSERT_MES(resp_t.status != CORE_RPC_STATUS_BUSY, resp_t.status, "Failed to connect to daemon");
+		GULPS_CHECK_AND_ASSERT_MES(resp_t.status == CORE_RPC_STATUS_OK, resp_t.status, "Failed to get hard fork status");
 		m_earliest_height[version] = resp_t.earliest_height;
 	}
 

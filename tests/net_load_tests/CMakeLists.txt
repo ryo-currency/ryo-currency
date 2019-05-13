@@ -46,7 +46,8 @@ target_link_libraries(net_load_tests_clt
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBARRY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 
 set(srv_sources
   srv.cpp)
@@ -67,7 +68,8 @@ target_link_libraries(net_load_tests_srv
     ${Boost_DATE_TIME_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 
 set_property(TARGET net_load_tests_clt net_load_tests_srv
   PROPERTY

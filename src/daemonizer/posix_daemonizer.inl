@@ -41,6 +41,8 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#undef GULPS_CAT_MAJOR
+#define GULPS_CAT_MAJOR "posix_dmnzer"
 
 #pragma once
 
@@ -51,8 +53,11 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
+#define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
+
 namespace daemonizer
 {
+extern gulps_log_level log_scr, log_dsk;
 namespace
 {
 const command_line::arg_descriptor<bool> arg_detach = {
@@ -87,10 +92,11 @@ inline bool daemonize(
 	int argc, char* argv[], T_executor &&executor // universal ref
 	,
 	boost::program_options::variables_map const &vm)
-{
+{	
+	
 	if(command_line::has_arg(vm, arg_detach))
 	{
-		tools::success_msg_writer() << "Forking to background...";
+		GULPS_PRINT_OK("Forking to background...");
 		std::string pidfile;
 		if(command_line::has_arg(vm, arg_pidfile))
 		{
@@ -106,7 +112,7 @@ inline bool daemonize(
 	}
 	else
 	{
-		//LOG_PRINT_L0("Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL);
+		//GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, " (", RYO_VERSION_FULL, ")");
 		return executor.run_interactive(vm);
 	}
 }

@@ -23,14 +23,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "kv_ser"
 
 #pragma once
 
 #include "enableable.h"
 #include "keyvalue_serialization_overloads.h"
-#include "misc_log_ex.h"
 #include <boost/foreach.hpp>
 #include <boost/utility/value_init.hpp>
+
+#include "common/gulps.hpp"	
 
 namespace epee
 {
@@ -59,7 +64,7 @@ namespace epee
 		catch(const std::exception &err)                                                                         \
 		{                                                                                                        \
 			(void)(err);                                                                                         \
-			LOG_ERROR("Exception on unserializing: " << err.what());                                             \
+			GULPS_ERRORF("Exception on unserializing: {}", err.what());                                             \
 			return false;                                                                                        \
 		}                                                                                                        \
 	}                                                                                                            \

@@ -43,9 +43,14 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "basic_util"
+
 
 #include "include_base_utils.h"
-using namespace epee;
+#include "common/gulps.hpp"
 
 #include "common/base58.h"
 #include "common/dns_utils.h"
@@ -59,8 +64,9 @@ using namespace epee;
 #include "serialization/container.h"
 #include "string_tools.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "cn"
+#include "common/gulps.hpp"
+
+
 
 namespace cryptonote
 {
@@ -177,7 +183,7 @@ bool get_block_reward(network_type nettype, size_t median_size, size_t current_b
 
 	if(current_block_size > 2 * median_size)
 	{
-		MERROR("Block cumulative size is too big: " << current_block_size << ", expected less than " << 2 * median_size);
+		GULPS_ERRORF("Block cumulative size is too big: {}, expected less than {}", current_block_size, 2 * median_size);
 		return false;
 	}
 
@@ -284,14 +290,13 @@ bool is_coinbase(const transaction &tx)
 }
 //-----------------------------------------------------------------------
 template <network_type NETTYPE>
-bool get_account_address_from_str(address_parse_info &info, std::string const &str, const bool silent)
+bool get_account_address_from_str(address_parse_info &info, std::string const &str)
 {
 	blobdata data;
 	uint64_t prefix;
 	if(!tools::base58::decode_addr(str, prefix, data))
 	{
-		if(!silent)
-			LOG_PRINT_L2("Invalid address format");
+		GULPS_ERROR("Invalid address format");
 		return false;
 	}
 
@@ -321,8 +326,7 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 		break;
 */
 	default:
-		if(!silent)
-			LOG_PRINT_L1("Wrong address prefix: " << prefix);
+		GULPS_ERROR("Wrong address prefix: "_s + std::to_string(prefix));
 		return false;
 	}
 
@@ -331,8 +335,7 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 		integrated_address iadr;
 		if(!::serialization::parse_binary(data, iadr))
 		{
-			if(!silent)
-				LOG_PRINT_L1("Account public address keys can't be parsed");
+			GULPS_ERROR("Account public address keys can't be parsed");
 			return false;
 		}
 		info.address = iadr.adr;
@@ -343,8 +346,7 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 		kurz_address kadr;
 		if(!::serialization::parse_binary(data, kadr))
 		{
-			if(!silent)
-				LOG_PRINT_L1("Account public address keys can't be parsed");
+			GULPS_ERROR("Account public address keys can't be parsed");
 			return false;
 		}
 
@@ -355,25 +357,23 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 	{
 		if(!::serialization::parse_binary(data, info.address))
 		{
-			if(!silent)
-				LOG_PRINT_L1("Account public address keys can't be parsed");
+			GULPS_ERROR("Account public address keys can't be parsed");
 			return false;
 		}
 	}
 
 	if(!crypto::check_key(info.address.m_spend_public_key) || !crypto::check_key(info.address.m_view_public_key))
 	{
-		if(!silent)
-			LOG_PRINT_L1("Failed to validate address keys");
+		GULPS_ERROR("Failed to validate address keys");
 		return false;
 	}
 
 	return true;
 }
 
-template bool get_account_address_from_str<MAINNET>(address_parse_info &, std::string const &, const bool);
-template bool get_account_address_from_str<TESTNET>(address_parse_info &, std::string const &, const bool);
-template bool get_account_address_from_str<STAGENET>(address_parse_info &, std::string const &, const bool);
+template bool get_account_address_from_str<MAINNET>(address_parse_info &, std::string const &);
+template bool get_account_address_from_str<TESTNET>(address_parse_info &, std::string const &);
+template bool get_account_address_from_str<STAGENET>(address_parse_info &, std::string const &);
 
 //--------------------------------------------------------------------------------
 bool operator==(const cryptonote::transaction &a, const cryptonote::transaction &b)
@@ -394,7 +394,7 @@ bool parse_hash256(const std::string str_hash, crypto::hash &hash)
 	bool res = epee::string_tools::parse_hexstr_to_binbuff(str_hash, buf);
 	if(!res || buf.size() != sizeof(crypto::hash))
 	{
-		std::cout << "invalid hash format: <" << str_hash << '>' << std::endl;
+		GULPS_ERRORF("invalid hash format: <{}>", str_hash);
 		return false;
 	}
 	else

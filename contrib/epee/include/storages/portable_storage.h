@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "prt_strg"
 
 #pragma once
 
@@ -33,6 +37,8 @@
 #include "portable_storage_to_bin.h"
 #include "portable_storage_to_json.h"
 #include "portable_storage_val_converters.h"
+
+#include "common/gulps.hpp"	
 
 namespace epee
 {
@@ -105,18 +111,18 @@ class portable_storage
 };
 inline bool portable_storage::dump_as_json(std::string &buff, size_t indent, bool insert_newlines)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	std::stringstream ss;
 	epee::serialization::dump_as_json(ss, m_root, indent, insert_newlines);
 	buff = ss.str();
 	return true;
-	CATCH_ENTRY("portable_storage::dump_as_json", false)
+	GULPS_CATCH_ENTRY("portable_storage::dump_as_json", false)
 }
 inline bool portable_storage::load_from_json(const std::string &source)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	return json::load_from_json(source, *this);
-	CATCH_ENTRY("portable_storage::load_from_json", false)
+	GULPS_CATCH_ENTRY("portable_storage::load_from_json", false)
 }
 
 template <class trace_policy>
@@ -127,7 +133,7 @@ bool portable_storage::dump_as_xml(std::string &targetObj, const std::string &ro
 
 inline bool portable_storage::store_to_binary(binarybuffer &target)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	std::stringstream ss;
 	storage_block_header sbh = AUTO_VAL_INIT(sbh);
 	sbh.m_signature_a = PORTABLE_STORAGE_SIGNATUREA;
@@ -137,38 +143,38 @@ inline bool portable_storage::store_to_binary(binarybuffer &target)
 	pack_entry_to_buff(ss, m_root);
 	target = ss.str();
 	return true;
-	CATCH_ENTRY("portable_storage::store_to_binary", false)
+	GULPS_CATCH_ENTRY("portable_storage::store_to_binary", false)
 }
 inline bool portable_storage::load_from_binary(const binarybuffer &source)
 {
 	m_root.m_entries.clear();
 	if(source.size() < sizeof(storage_block_header))
 	{
-		LOG_ERROR("portable_storage: wrong binary format, packet size = " << source.size() << " less than expected sizeof(storage_block_header)=" << sizeof(storage_block_header));
+		GULPS_ERRORF("portable_storage: wrong binary format, packet size = {} less than expected sizeof(storage_block_header)={}", source.size() , sizeof(storage_block_header));
 		return false;
 	}
 	storage_block_header *pbuff = (storage_block_header *)source.data();
 	if(pbuff->m_signature_a != PORTABLE_STORAGE_SIGNATUREA ||
 	   pbuff->m_signature_b != PORTABLE_STORAGE_SIGNATUREB)
 	{
-		LOG_ERROR("portable_storage: wrong binary format - signature mismatch");
+		GULPS_ERROR("portable_storage: wrong binary format - signature mismatch");
 		return false;
 	}
 	if(pbuff->m_ver != PORTABLE_STORAGE_FORMAT_VER)
 	{
-		LOG_ERROR("portable_storage: wrong binary format - unknown format ver = " << pbuff->m_ver);
+		GULPS_ERRORF("portable_storage: wrong binary format - unknown format ver = {}", pbuff->m_ver);
 		return false;
 	}
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	throwable_buffer_reader buf_reader(source.data() + sizeof(storage_block_header), source.size() - sizeof(storage_block_header));
 	buf_reader.read(m_root);
 	return true; //TODO:
-	CATCH_ENTRY("portable_storage::load_from_binary", false);
+	GULPS_CATCH_ENTRY("portable_storage::load_from_binary", false);
 }
 //---------------------------------------------------------------------------------------------------------------
 inline hsection portable_storage::open_section(const std::string &section_name, hsection hparent_section, bool create_if_notexist)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	hparent_section = hparent_section ? hparent_section : &m_root;
 	storage_entry *pentry = find_storage_entry(section_name, hparent_section);
 	if(!pentry)
@@ -177,7 +183,7 @@ inline hsection portable_storage::open_section(const std::string &section_name, 
 			return nullptr;
 		return insert_new_section(section_name, hparent_section);
 	}
-	CHECK_AND_ASSERT(pentry, nullptr);
+	GULPS_CHECK_AND_ASSERT(pentry, nullptr);
 	//check that section_entry we find is real "CSSection"
 	if(pentry->type() != typeid(section))
 	{
@@ -187,7 +193,7 @@ inline hsection portable_storage::open_section(const std::string &section_name, 
 			return nullptr;
 	}
 	return &boost::get<section>(*pentry);
-	CATCH_ENTRY("portable_storage::open_section", nullptr);
+	GULPS_CATCH_ENTRY("portable_storage::open_section", nullptr);
 }
 //---------------------------------------------------------------------------------------------------------------
 template <class to_type>
@@ -203,7 +209,7 @@ template <class t_value>
 bool portable_storage::get_value(const std::string &value_name, t_value &val, hsection hparent_section)
 {
 	BOOST_MPL_ASSERT((boost::mpl::contains<storage_entry::types, t_value>));
-	//TRY_ENTRY();
+	//GULPS_TRY_ENTRY();
 	if(!hparent_section)
 		hparent_section = &m_root;
 	storage_entry *pentry = find_storage_entry(value_name, hparent_section);
@@ -213,12 +219,12 @@ bool portable_storage::get_value(const std::string &value_name, t_value &val, hs
 	get_value_visitor<t_value> gvv(val);
 	boost::apply_visitor(gvv, *pentry);
 	return true;
-	//CATCH_ENTRY("portable_storage::template<>get_value", false);
+	//	GULPS_CATCH_ENTRY("portable_storage::template<>get_value", false);
 }
 //---------------------------------------------------------------------------------------------------------------
 inline bool portable_storage::get_value(const std::string &value_name, storage_entry &val, hsection hparent_section)
 {
-	//TRY_ENTRY();
+	//GULPS_TRY_ENTRY();
 	if(!hparent_section)
 		hparent_section = &m_root;
 	storage_entry *pentry = find_storage_entry(value_name, hparent_section);
@@ -227,14 +233,14 @@ inline bool portable_storage::get_value(const std::string &value_name, storage_e
 
 	val = *pentry;
 	return true;
-	//CATCH_ENTRY("portable_storage::template<>get_value", false);
+	//GULPS_CATCH_ENTRY("portable_storage::template<>get_value", false);
 }
 //---------------------------------------------------------------------------------------------------------------
 template <class t_value>
 bool portable_storage::set_value(const std::string &value_name, const t_value &v, hsection hparent_section)
 {
 	BOOST_MPL_ASSERT((boost::mpl::contains<boost::mpl::push_front<storage_entry::types, storage_entry>::type, t_value>));
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	if(!hparent_section)
 		hparent_section = &m_root;
 	storage_entry *pentry = find_storage_entry(value_name, hparent_section);
@@ -247,39 +253,39 @@ bool portable_storage::set_value(const std::string &value_name, const t_value &v
 	}
 	*pentry = storage_entry(v);
 	return true;
-	CATCH_ENTRY("portable_storage::template<>set_value", false);
+	GULPS_CATCH_ENTRY("portable_storage::template<>set_value", false);
 }
 //---------------------------------------------------------------------------------------------------------------
 inline storage_entry *portable_storage::find_storage_entry(const std::string &pentry_name, hsection psection)
 {
-	TRY_ENTRY();
-	CHECK_AND_ASSERT(psection, nullptr);
+	GULPS_TRY_ENTRY();
+	GULPS_CHECK_AND_ASSERT(psection, nullptr);
 	auto it = psection->m_entries.find(pentry_name);
 	if(it == psection->m_entries.end())
 		return nullptr;
 
 	return &it->second;
-	CATCH_ENTRY("portable_storage::find_storage_entry", nullptr);
+	GULPS_CATCH_ENTRY("portable_storage::find_storage_entry", nullptr);
 }
 //---------------------------------------------------------------------------------------------------------------
 template <class entry_type>
 storage_entry *portable_storage::insert_new_entry_get_storage_entry(const std::string &pentry_name, hsection psection, const entry_type &entry)
 {
-	TRY_ENTRY();
-	CHECK_AND_ASSERT(psection, nullptr);
+	GULPS_TRY_ENTRY();
+	GULPS_CHECK_AND_ASSERT(psection, nullptr);
 	auto ins_res = psection->m_entries.insert(std::pair<std::string, storage_entry>(pentry_name, entry));
 	return &ins_res.first->second;
-	CATCH_ENTRY("portable_storage::insert_new_entry_get_storage_entry", nullptr);
+	GULPS_CATCH_ENTRY("portable_storage::insert_new_entry_get_storage_entry", nullptr);
 }
 //---------------------------------------------------------------------------------------------------------------
 inline hsection portable_storage::insert_new_section(const std::string &pentry_name, hsection psection)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	storage_entry *pse = insert_new_entry_get_storage_entry(pentry_name, psection, section());
 	if(!pse)
 		return nullptr;
 	return &boost::get<section>(*pse);
-	CATCH_ENTRY("portable_storage::insert_new_section", nullptr);
+	GULPS_CATCH_ENTRY("portable_storage::insert_new_section", nullptr);
 }
 //---------------------------------------------------------------------------------------------------------------
 template <class to_type>
@@ -302,7 +308,7 @@ template <class t_value>
 harray portable_storage::get_first_value(const std::string &value_name, t_value &target, hsection hparent_section)
 {
 	BOOST_MPL_ASSERT((boost::mpl::contains<storage_entry::types, t_value>));
-	//TRY_ENTRY();
+	//GULPS_TRY_ENTRY();
 	if(!hparent_section)
 		hparent_section = &m_root;
 	storage_entry *pentry = find_storage_entry(value_name, hparent_section);
@@ -316,7 +322,7 @@ harray portable_storage::get_first_value(const std::string &value_name, t_value 
 	if(!boost::apply_visitor(gfv, ar_entry))
 		return nullptr;
 	return &ar_entry;
-	//CATCH_ENTRY("portable_storage::get_first_value", nullptr);
+	//	GULPS_CATCH_ENTRY("portable_storage::get_first_value", nullptr);
 }
 //---------------------------------------------------------------------------------------------------------------
 template <class to_type>
@@ -340,20 +346,20 @@ template <class t_value>
 bool portable_storage::get_next_value(harray hval_array, t_value &target)
 {
 	BOOST_MPL_ASSERT((boost::mpl::contains<storage_entry::types, t_value>));
-	//TRY_ENTRY();
-	CHECK_AND_ASSERT(hval_array, false);
+	//GULPS_TRY_ENTRY();
+	GULPS_CHECK_AND_ASSERT(hval_array, false);
 	array_entry &ar_entry = *hval_array;
 	get_next_value_visitor<t_value> gnv(target);
 	if(!boost::apply_visitor(gnv, ar_entry))
 		return false;
 	return true;
-	//CATCH_ENTRY("portable_storage::get_next_value", false);
+	//	GULPS_CATCH_ENTRY("portable_storage::get_next_value", false);
 }
 //---------------------------------------------------------------------------------------------------------------
 template <class t_value>
 harray portable_storage::insert_first_value(const std::string &value_name, const t_value &target, hsection hparent_section)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	if(!hparent_section)
 		hparent_section = &m_root;
 	storage_entry *pentry = find_storage_entry(value_name, hparent_section);
@@ -373,28 +379,28 @@ harray portable_storage::insert_first_value(const std::string &value_name, const
 	array_entry_t<t_value> &arr_typed = boost::get<array_entry_t<t_value>>(arr);
 	arr_typed.insert_first_val(target);
 	return &arr;
-	CATCH_ENTRY("portable_storage::insert_first_value", nullptr);
+	GULPS_CATCH_ENTRY("portable_storage::insert_first_value", nullptr);
 }
 //---------------------------------------------------------------------------------------------------------------
 template <class t_value>
 bool portable_storage::insert_next_value(harray hval_array, const t_value &target)
 {
-	TRY_ENTRY();
-	CHECK_AND_ASSERT(hval_array, false);
+	GULPS_TRY_ENTRY();
+	GULPS_CHECK_AND_ASSERT(hval_array, false);
 
-	CHECK_AND_ASSERT_MES(hval_array->type() == typeid(array_entry_t<t_value>),
-						 false, "unexpected type in insert_next_value: " << typeid(array_entry_t<t_value>).name());
+	GULPS_CHECK_AND_ASSERT_MES(hval_array->type() == typeid(array_entry_t<t_value>),
+						 false, "unexpected type in insert_next_value: " , typeid(array_entry_t<t_value>).name());
 
 	array_entry_t<t_value> &arr_typed = boost::get<array_entry_t<t_value>>(*hval_array);
 	arr_typed.insert_next_value(target);
 	return true;
-	CATCH_ENTRY("portable_storage::insert_next_value", false);
+	GULPS_CATCH_ENTRY("portable_storage::insert_next_value", false);
 }
 //---------------------------------------------------------------------------------------------------------------
 //sections
 inline harray portable_storage::get_first_section(const std::string &sec_name, hsection &h_child_section, hsection hparent_section)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	if(!hparent_section)
 		hparent_section = &m_root;
 	storage_entry *pentry = find_storage_entry(sec_name, hparent_section);
@@ -411,13 +417,13 @@ inline harray portable_storage::get_first_section(const std::string &sec_name, h
 		return nullptr;
 	h_child_section = psec;
 	return &ar_entry;
-	CATCH_ENTRY("portable_storage::get_first_section", nullptr);
+	GULPS_CATCH_ENTRY("portable_storage::get_first_section", nullptr);
 }
 //---------------------------------------------------------------------------------------------------------------
 inline bool portable_storage::get_next_section(harray hsec_array, hsection &h_child_section)
 {
-	TRY_ENTRY();
-	CHECK_AND_ASSERT(hsec_array, false);
+	GULPS_TRY_ENTRY();
+	GULPS_CHECK_AND_ASSERT(hsec_array, false);
 	if(hsec_array->type() != typeid(array_entry_t<section>))
 		return false;
 	array_entry_t<section> &sec_array = boost::get<array_entry_t<section>>(*hsec_array);
@@ -425,12 +431,12 @@ inline bool portable_storage::get_next_section(harray hsec_array, hsection &h_ch
 	if(!h_child_section)
 		return false;
 	return true;
-	CATCH_ENTRY("portable_storage::get_next_section", false);
+	GULPS_CATCH_ENTRY("portable_storage::get_next_section", false);
 }
 //---------------------------------------------------------------------------------------------------------------
 inline harray portable_storage::insert_first_section(const std::string &sec_name, hsection &hinserted_childsection, hsection hparent_section)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	if(!hparent_section)
 		hparent_section = &m_root;
 	storage_entry *pentry = find_storage_entry(sec_name, hparent_section);
@@ -450,20 +456,20 @@ inline harray portable_storage::insert_first_section(const std::string &sec_name
 	array_entry_t<section> &sec_array = boost::get<array_entry_t<section>>(ar_entry);
 	hinserted_childsection = &sec_array.insert_first_val(section());
 	return &ar_entry;
-	CATCH_ENTRY("portable_storage::insert_first_section", nullptr);
+	GULPS_CATCH_ENTRY("portable_storage::insert_first_section", nullptr);
 }
 //---------------------------------------------------------------------------------------------------------------
 inline bool portable_storage::insert_next_section(harray hsec_array, hsection &hinserted_childsection)
 {
-	TRY_ENTRY();
-	CHECK_AND_ASSERT(hsec_array, false);
-	CHECK_AND_ASSERT_MES(hsec_array->type() == typeid(array_entry_t<section>),
-						 false, "unexpected type(not 'section') in insert_next_section, type: " << hsec_array->type().name());
+	GULPS_TRY_ENTRY();
+	GULPS_CHECK_AND_ASSERT(hsec_array, false);
+	GULPS_CHECK_AND_ASSERT_MES(hsec_array->type() == typeid(array_entry_t<section>),
+						 false, "unexpected type(not 'section') in insert_next_section, type: " , hsec_array->type().name());
 
 	array_entry_t<section> &sec_array = boost::get<array_entry_t<section>>(*hsec_array);
 	hinserted_childsection = &sec_array.insert_next_value(section());
 	return true;
-	CATCH_ENTRY("portable_storage::insert_next_section", false);
+	GULPS_CATCH_ENTRY("portable_storage::insert_next_section", false);
 }
 //---------------------------------------------------------------------------------------------------------------
 }

@@ -46,13 +46,13 @@ const command_line::arg_descriptor<bool> arg_test_transactions = {"test_transact
 
 int main(int argc, char *argv[])
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 	tools::on_startup();
 	epee::string_tools::set_module_name_and_folder(argv[0]);
 
 	//set up logging options
-	mlog_configure(mlog_get_default_log_path("core_tests.log"), true);
-	mlog_set_log_level(2);
+	
+	
 
 	po::options_description desc_options("Allowed options");
 	command_line::add_arg(desc_options, command_line::arg_help);
@@ -215,16 +215,16 @@ int main(int argc, char *argv[])
 		GENERATE_AND_PLAY(gen_multisig_tx_invalid_33_1_2_no_threshold);
 		GENERATE_AND_PLAY(gen_multisig_tx_invalid_33_1_3_no_threshold);
 
-		el::Level level = (failed_tests.empty() ? el::Level::Info : el::Level::Error);
-		MLOG(level, "\nREPORT:");
-		MLOG(level, "  Test run: " << tests_count);
-		MLOG(level, "  Failures: " << failed_tests.size());
+		std::string level_str  = (failed_tests.empty() ? "" : "Error: ");
+		std::cout << level_str << "\nREPORT:" << std::endl;
+		std::cout << level_str << "  Test run: " << tests_count << std::endl;
+		std::cout << level_str << "  Failures: " << failed_tests.size() << std::endl;
 		if(!failed_tests.empty())
 		{
-			MLOG(level, "FAILED TESTS:");
+			std::cout << level_str <<"FAILED TESTS:" << std::endl;
 			BOOST_FOREACH(auto test_name, failed_tests)
 			{
-				MLOG(level, "  " << test_name);
+				std::cout << level_str << "  " << test_name << std::endl;
 			}
 		}
 	}
@@ -234,11 +234,11 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		MERROR("Wrong arguments");
+		std::cout << "Wrong arguments" << std::endl;
 		return 2;
 	}
 
 	return failed_tests.empty() ? 0 : 1;
 
-	CATCH_ENTRY_L0("main", 1);
+	GULPS_CATCH_ENTRY_L0("main", 1);
 }

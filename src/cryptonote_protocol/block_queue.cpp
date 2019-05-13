@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#define GULPS_CAT_MAJOR "blk_queue"
 
 #include "block_queue.h"
 #include "cryptonote_protocol_defs.h"
@@ -51,8 +52,9 @@
 #include <unordered_map>
 #include <vector>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "cn.block_queue"
+#include "common/gulps.hpp"	
+
+
 
 namespace std
 {
@@ -82,7 +84,7 @@ void block_queue::add_blocks(uint64_t height, std::list<cryptonote::block_comple
 
 void block_queue::add_blocks(uint64_t height, uint64_t nblocks, const boost::uuids::uuid &connection_id, boost::posix_time::ptime time)
 {
-	CHECK_AND_ASSERT_THROW_MES(nblocks > 0, "Empty span");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(nblocks > 0, "Empty span");
 	boost::unique_lock<boost::recursive_mutex> lock(mutex);
 	blocks.insert(span(height, nblocks, connection_id, time));
 }
@@ -162,9 +164,9 @@ uint64_t block_queue::get_max_block_height() const
 void block_queue::print() const
 {
 	boost::unique_lock<boost::recursive_mutex> lock(mutex);
-	MDEBUG("Block queue has " << blocks.size() << " spans");
+	GULPS_LOGF_L1("Block queue has {} spans", blocks.size() );
 	for(const auto &span : blocks)
-		MDEBUG("  " << span.start_block_height << " - " << (span.start_block_height + span.nblocks - 1) << " (" << span.nblocks << ") - " << (is_blockchain_placeholder(span) ? "blockchain" : span.blocks.empty() ? "scheduled" : "filled    ") << "  " << span.connection_id << " (" << ((unsigned)(span.rate * 10 / 1024.f)) / 10.f << " kB/s)");
+		GULPS_LOGF_L1("  {} - {} ({}) - {} {} ({} kB/s)", span.start_block_height, (span.start_block_height + span.nblocks - 1), span.nblocks, (is_blockchain_placeholder(span) ? "blockchain" : span.blocks.empty() ? "scheduled" : "filled    ") , boost::uuids::to_string(span.connection_id), ((unsigned)(span.rate * 10 / 1024.f)) / 10.f);
 }
 
 std::string block_queue::get_overview() const
@@ -198,7 +200,7 @@ std::pair<uint64_t, uint64_t> block_queue::reserve_span(uint64_t first_block_hei
 
 	if(last_block_height < first_block_height || max_blocks == 0)
 	{
-		MDEBUG("reserve_span: early out: first_block_height " << first_block_height << ", last_block_height " << last_block_height << ", max_blocks " << max_blocks);
+		GULPS_LOGF_L1("reserve_span: early out: first_block_height {}, last_block_height {}, max_blocks {}", first_block_height , last_block_height , max_blocks);
 		return std::make_pair(0, 0);
 	}
 
@@ -219,7 +221,7 @@ std::pair<uint64_t, uint64_t> block_queue::reserve_span(uint64_t first_block_hei
 	}
 	if(span_length == 0)
 		return std::make_pair(0, 0);
-	MDEBUG("Reserving span " << span_start_height << " - " << (span_start_height + span_length - 1) << " for " << connection_id);
+	GULPS_LOGF_L1("Reserving span {} - {} for {}", span_start_height , (span_start_height + span_length - 1) , boost::uuids::to_string(connection_id));
 	add_blocks(span_start_height, span_length, connection_id, time);
 	set_span_hashes(span_start_height, connection_id, hashes);
 	return std::make_pair(span_start_height, span_length);
@@ -245,7 +247,7 @@ std::pair<uint64_t, uint64_t> block_queue::get_start_gap_span() const
 	uint64_t first_span_height = i->start_block_height;
 	if(first_span_height <= current_height + 1)
 		return std::make_pair(0, 0);
-	MDEBUG("Found gap at start of spans: last blockchain block height " << current_height << ", first span's block height " << first_span_height);
+	GULPS_LOGF_L1("Found gap at start of spans: last blockchain block height {}, first span's block height {}", current_height , first_span_height);
 	print();
 	return std::make_pair(current_height + 1, first_span_height - current_height - 1);
 }
@@ -419,7 +421,7 @@ float block_queue::get_speed(const boost::uuids::uuid &connection_id) const
 		return 1.0f; // everything dead ? Can't happen, but let's trap anyway
 
 	const float speed = conn_rate / best_rate;
-	MTRACE(" Relative speed for " << connection_id << ": " << speed << " (" << conn_rate << "/" << best_rate);
+	GULPS_LOGF_L2(" Relative speed for {}: {} ({}/{})", boost::uuids::to_string(connection_id) , speed , conn_rate , best_rate);
 	return speed;
 }
 

@@ -23,14 +23,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "lev_help"
 
 #pragma once
 
 #include "levin_base.h"
 #include "serializeble_struct_helper.h"
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net"
+#include "common/gulps.hpp"	
+
+
 
 namespace epee
 {
@@ -79,19 +84,19 @@ bool load_levin_data_from_levin_message(std::string &levin_data, const std::stri
 {
 	if(buff.size() < sizeof(levin::bucket_head))
 	{
-		LOG_PRINT_L3("size of buff(" << buff.size() << ") is too small, at load_struct_from_levin_message");
+		GULPS_LOG_L3("size of buff(", buff.size(), ") is too small, at load_struct_from_levin_message");
 		return false;
 	}
 
 	levin::bucket_head &head = *(levin::bucket_head *)(&buff[0]);
 	if(head.m_signature != LEVIN_SIGNATURE)
 	{
-		LOG_PRINT_L3("Failed to read signature in levin message, at load_struct_from_levin_message");
+		GULPS_LOG_L3("Failed to read signature in levin message, at load_struct_from_levin_message");
 		return false;
 	}
 	if(head.m_cb != buff.size() - sizeof(levin::bucket_head))
 	{
-		LOG_PRINT_L3("sizes mismatch, at load_struct_from_levin_message");
+		GULPS_LOG_L3("sizes mismatch, at load_struct_from_levin_message");
 		return false;
 	}
 
@@ -106,19 +111,19 @@ bool load_struct_from_levin_message(t_struct &t, const std::string &buff, int &c
 {
 	if(buff.size() < sizeof(levin::bucket_head))
 	{
-		LOG_ERROR("size of buff(" << buff.size() << ") is too small, at load_struct_from_levin_message");
+		GULPS_ERROR("size of buff(", buff.size(), ") is too small, at load_struct_from_levin_message");
 		return false;
 	}
 
 	levin::bucket_head &head = *(levin::bucket_head *)(&buff[0]);
 	if(head.m_signature != LEVIN_SIGNATURE)
 	{
-		LOG_ERROR("Failed to read signature in levin message, at load_struct_from_levin_message");
+		GULPS_ERROR("Failed to read signature in levin message, at load_struct_from_levin_message");
 		return false;
 	}
 	if(head.m_cb != buff.size() - sizeof(levin::bucket_head))
 	{
-		LOG_ERROR("sizes mismatch, at load_struct_from_levin_message");
+		GULPS_ERROR("sizes mismatch, at load_struct_from_levin_message");
 		return false;
 	}
 
@@ -127,7 +132,7 @@ bool load_struct_from_levin_message(t_struct &t, const std::string &buff, int &c
 
 	if(!StorageNamed::load_struct_from_storage_buff_t<t_struct, StorageNamed::DefaultStorageType>(t, buff_strg))
 	{
-		LOG_ERROR("Failed to read storage, at load_struct_from_levin_message");
+		GULPS_ERROR("Failed to read storage, at load_struct_from_levin_message");
 		return false;
 	}
 	command = head.m_command;
