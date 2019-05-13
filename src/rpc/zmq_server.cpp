@@ -41,9 +41,12 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "zmq_serv"
 
 #include "zmq_server.h"
 #include <boost/chrono/chrono.hpp>
+
+#include "common/gulps.hpp"	
 
 namespace cryptonote
 {
@@ -79,7 +82,7 @@ void ZmqServer::serve()
 			{
 				std::string message_string(reinterpret_cast<const char *>(message.data()), message.size());
 
-				MDEBUG(std::string("Received RPC request: \"") + message_string + "\"");
+				GULPS_LOG_L1(std::string("Received RPC request: \""), message_string, "\"");
 
 				std::string response = handler.handle(message_string);
 
@@ -87,16 +90,16 @@ void ZmqServer::serve()
 				memcpy((void *)reply.data(), response.c_str(), response.size());
 
 				rep_socket->send(reply);
-				MDEBUG(std::string("Sent RPC reply: \"") + response + "\"");
+				GULPS_LOG_L1(std::string("Sent RPC reply: \""), response, "\"");
 			}
 		}
 		catch(const boost::thread_interrupted &e)
 		{
-			MDEBUG("ZMQ Server thread interrupted.");
+			GULPS_LOG_L1("ZMQ Server thread interrupted.");
 		}
 		catch(const zmq::error_t &e)
 		{
-			MERROR(std::string("ZMQ error: ") + e.what());
+			GULPS_ERROR(std::string("ZMQ error: "), e.what());
 		}
 		boost::this_thread::interruption_point();
 	}
@@ -104,7 +107,7 @@ void ZmqServer::serve()
 
 bool ZmqServer::addIPCSocket(std::string address, std::string port)
 {
-	MERROR("ZmqServer::addIPCSocket not yet implemented!");
+	GULPS_ERROR("ZmqServer::addIPCSocket not yet implemented!");
 	return false;
 }
 
@@ -123,7 +126,7 @@ bool ZmqServer::addTCPSocket(std::string address, std::string port)
 	}
 	catch(const std::exception &e)
 	{
-		MERROR(std::string("Error creating ZMQ Socket: ") + e.what());
+		GULPS_ERROR(std::string("Error creating ZMQ Socket: "), e.what());
 		return false;
 	}
 	return true;

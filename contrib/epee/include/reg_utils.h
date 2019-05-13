@@ -227,13 +227,13 @@ inline bool RegGetRAWValue(HKEY hParentKey, const char *pSubKey, const char *pVa
 //-----------------------------------------------------------------------------------------------------------------------------------
 inline bool RegRemoveValue(HKEY hParentKey, const char *pValName)
 {
-	//CHECK_AND_ASSERT(hParentKey&&pValName, false);
+	//GULPS_CHECK_AND_ASSERT(hParentKey&&pValName, false);
 	return ::RegDeleteValueA(hParentKey, pValName) == ERROR_SUCCESS ? true : false;
 }
 //-----------------------------------------------------------------------------------------------------------------------------------
 inline bool RegRemoveKey(HKEY hParentKey, const char *pKeyName)
 {
-	//CHECK_AND_ASSERT(hParentKey&&pKeyName, false);
+	//GULPS_CHECK_AND_ASSERT(hParentKey&&pKeyName, false);
 	return ::RegDeleteKeyA(hParentKey, pKeyName) == ERROR_SUCCESS ? true : false;
 }
 }

@@ -29,7 +29,7 @@
 #include "gtest/gtest.h"
 
 #include "memwipe.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include <stdint.h>
 
 // Probably won't catch the optimized out case, but at least we test
@@ -46,14 +46,14 @@ static void test(bool wipe)
 	char *quux = (char *)malloc(4); // same size, just after free, so we're likely to get the same, depending on the allocator
 	if((intptr_t)quux == foop)
 	{
-		MDEBUG(std::hex << std::setw(8) << std::setfill('0') << *(uint32_t *)quux);
+		std::cout << std::hex << std::setw(8) << std::setfill('0') << *(uint32_t *)quux << std::endl;
 		if(wipe)
 		{
 			ASSERT_TRUE(memcmp(quux, "bar", 3));
 		}
 	}
 	else
-		MWARNING("We did not get the same location, cannot check");
+		GULPS_WARN("We did not get the same location, cannot check");
 	free(quux);
 }
 

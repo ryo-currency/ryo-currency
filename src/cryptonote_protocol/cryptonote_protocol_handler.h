@@ -47,6 +47,10 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "cn_pcl_hand"
 
 #pragma once
 
@@ -62,6 +66,9 @@
 #include "storages/levin_abstract_invoke2.h"
 #include "warnings.h"
 #include <boost/circular_buffer.hpp>
+
+#include "common/gulps.hpp"	
+
 
 PUSH_WARNINGS
 DISABLE_VS_WARNINGS(4355)
@@ -169,7 +176,7 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	template <class t_parameter>
 	bool post_notify(typename t_parameter::request &arg, cryptonote_connection_context &context)
 	{
-		LOG_PRINT_L2("[" << epee::net_utils::print_connection_context_short(context) << "] post " << typeid(t_parameter).name() << " -->");
+		GULPS_LOGF_L2("[{}] post {} -->", epee::net_utils::print_connection_context_short(context), typeid(t_parameter).name());
 		std::string blob;
 		epee::serialization::store_t_to_binary(arg, blob);
 		//handler_response_blocks_now(blob.size()); // XXX
@@ -179,7 +186,7 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	template <class t_parameter>
 	bool relay_post_notify(typename t_parameter::request &arg, cryptonote_connection_context &exclude_context)
 	{
-		LOG_PRINT_L2("[" << epee::net_utils::print_connection_context_short(exclude_context) << "] post relay " << typeid(t_parameter).name() << " -->");
+		GULPS_LOGF_L2("[{}] post relay {} -->", epee::net_utils::print_connection_context_short(exclude_context), typeid(t_parameter).name());
 		std::string arg_buff;
 		epee::serialization::store_t_to_binary(arg, arg_buff);
 		return m_p2p->relay_notify_to_all(t_parameter::ID, arg_buff, exclude_context);

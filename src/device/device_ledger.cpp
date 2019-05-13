@@ -61,7 +61,7 @@ namespace ledger
 #ifdef WITH_DEVICE_LEDGER
 
 //#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "device.ledger"
+//#define RYO_DEFAULT_LOG_CATEGORY
 
 /* ===================================================================== */
 /* ===                           Debug                              ==== */

@@ -191,7 +191,7 @@ std::string obj_to_json_str(T &obj)
 	std::stringstream ss;
 	json_archive<true> ar(ss, true);
 	bool r = ::serialization::serialize(ar, obj);
-	CHECK_AND_ASSERT_MES(r, "", "obj_to_json_str failed: serialization::serialize returned false");
+	GULPS_CHECK_AND_ASSERT_MES(r, "", "obj_to_json_str failed: serialization::serialize returned false");
 	return ss.str();
 }
 //---------------------------------------------------------------
@@ -206,6 +206,6 @@ bool is_valid_decomposed_amount(uint64_t amount);
 void get_hash_stats(uint64_t &tx_hashes_calculated, uint64_t &tx_hashes_cached, uint64_t &block_hashes_calculated, uint64_t &block_hashes_cached);
 
 #define CHECKED_GET_SPECIFIC_VARIANT(variant_var, specific_type, variable_name, fail_return_val)                                                                                              \
-	CHECK_AND_ASSERT_MES(variant_var.type() == typeid(specific_type), fail_return_val, "wrong variant type: " << variant_var.type().name() << ", expected " << typeid(specific_type).name()); \
+	GULPS_CHECK_AND_ASSERT_MES(variant_var.type() == typeid(specific_type), fail_return_val, "wrong variant type: " , variant_var.type().name() , ", expected " , typeid(specific_type).name()); \
 	specific_type &variable_name = boost::get<specific_type>(variant_var);
 }

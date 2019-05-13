@@ -23,6 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "ptb_stg_jsn"
 
 #pragma once
 #include "file_io_utils.h"
@@ -31,6 +35,8 @@
 #include <boost/lexical_cast.hpp>
 
 #define EPEE_JSON_RECURSION_LIMIT_INTERNAL 100
+
+#include "common/gulps.hpp"	
 
 namespace epee
 {
@@ -42,18 +48,18 @@ namespace json
 #define CHECK_ISSPACE()                                                                \
 	if(!isspace(*it))                                                                  \
 	{                                                                                  \
-		ASSERT_MES_AND_THROW("Wrong JSON character at: " << std::string(it, buf_end)); \
+		GULPS_ASSERT_MES_AND_THROW("Wrong JSON character at: ", std::string(it, buf_end)); \
 	}
 
 /*inline void parse_error()
       {
-        ASSERT_MES_AND_THROW("json parse error");
+        GULPS_ASSERT_MES_AND_THROW("json parse error");
       }*/
 template <class t_storage>
 inline void run_handler(typename t_storage::hsection current_section,
 	std::string::const_iterator& sec_buf_begin, std::string::const_iterator buf_end, t_storage& stg, unsigned int recursion)
 {
-	CHECK_AND_ASSERT_THROW_MES(recursion < EPEE_JSON_RECURSION_LIMIT_INTERNAL, "Wrong JSON data: recursion limitation (" << EPEE_JSON_RECURSION_LIMIT_INTERNAL << ") exceeded");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(recursion < EPEE_JSON_RECURSION_LIMIT_INTERNAL, "Wrong JSON data: recursion limitation (", EPEE_JSON_RECURSION_LIMIT_INTERNAL, ") exceeded");
 	std::string::const_iterator sub_element_start;
 	std::string name;
 	typename t_storage::harray h_array = nullptr;
@@ -169,13 +175,13 @@ inline void run_handler(typename t_storage::hsection current_section,
 					state = match_state_wonder_after_value;
 				}
 				else
-					ASSERT_MES_AND_THROW("Unknown value keyword " << word);
+					GULPS_ASSERT_MES_AND_THROW("Unknown value keyword ", word);
 			}
 			else if(*it == '{')
 			{
 				//sub section here
 				typename t_storage::hsection new_sec = stg.open_section(name, current_section, true);
-				CHECK_AND_ASSERT_THROW_MES(new_sec, "Failed to insert new section in json: " << std::string(it, buf_end));
+				GULPS_CHECK_AND_ASSERT_THROW_MES(new_sec, "Failed to insert new section in json: ", std::string(it, buf_end));
 				run_handler(new_sec, it, buf_end, stg, recursion + 1);
 				state = match_state_wonder_after_value;
 			}
@@ -201,7 +207,7 @@ inline void run_handler(typename t_storage::hsection current_section,
 		case match_state_wonder_array:
 			if(*it == '[')
 			{
-				ASSERT_MES_AND_THROW("array of array not suppoerted yet :( sorry");
+				GULPS_ASSERT_MES_AND_THROW("array of array not suppoerted yet :( sorry");
 				//mean array of array
 			}
 			if(*it == '{')
@@ -209,7 +215,7 @@ inline void run_handler(typename t_storage::hsection current_section,
 				//mean array of sections
 				typename t_storage::hsection new_sec = nullptr;
 				h_array = stg.insert_first_section(name, new_sec, current_section);
-				CHECK_AND_ASSERT_THROW_MES(h_array && new_sec, "failed to create new section");
+				GULPS_CHECK_AND_ASSERT_THROW_MES(h_array && new_sec, "failed to create new section");
 				run_handler(new_sec, it, buf_end, stg, recursion + 1);
 				state = match_state_array_after_value;
 				array_md = array_mode_sections;
@@ -220,7 +226,7 @@ inline void run_handler(typename t_storage::hsection current_section,
 				std::string val;
 				match_string2(it, buf_end, val);
 				h_array = stg.insert_first_value(name, val, current_section);
-				CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values entry");
+				GULPS_CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values entry");
 				state = match_state_array_after_value;
 				array_md = array_mode_string;
 			}
@@ -234,13 +240,13 @@ inline void run_handler(typename t_storage::hsection current_section,
 				{
 					int64_t nval = boost::lexical_cast<int64_t>(val); //bool res = string_tools::string_to_num_fast(val, nval);
 					h_array = stg.insert_first_value(name, nval, current_section);
-					CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values section entry");
+					GULPS_CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values section entry");
 				}
 				else
 				{
 					double nval = boost::lexical_cast<double>(val); //bool res = string_tools::string_to_num_fast(val, nval);
 					h_array = stg.insert_first_value(name, nval, current_section);
-					CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values section entry");
+					GULPS_CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values section entry");
 				}
 
 				state = match_state_array_after_value;
@@ -258,19 +264,19 @@ inline void run_handler(typename t_storage::hsection current_section,
 				if(boost::iequals(word, "true"))
 				{
 					h_array = stg.insert_first_value(name, true, current_section);
-					CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values section entry");
+					GULPS_CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values section entry");
 					state = match_state_array_after_value;
 					array_md = array_mode_booleans;
 				}
 				else if(boost::iequals(word, "false"))
 				{
 					h_array = stg.insert_first_value(name, false, current_section);
-					CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values section entry");
+					GULPS_CHECK_AND_ASSERT_THROW_MES(h_array, " failed to insert values section entry");
 					state = match_state_array_after_value;
 					array_md = array_mode_booleans;
 				}
 				else
-					ASSERT_MES_AND_THROW("Unknown value keyword " << word)
+					GULPS_ASSERT_MES_AND_THROW("Unknown value keyword ", word)
 			}
 			else
 				CHECK_ISSPACE();
@@ -295,7 +301,7 @@ inline void run_handler(typename t_storage::hsection current_section,
 				{
 					typename t_storage::hsection new_sec = NULL;
 					bool res = stg.insert_next_section(h_array, new_sec);
-					CHECK_AND_ASSERT_THROW_MES(res && new_sec, "failed to insert next section");
+					GULPS_CHECK_AND_ASSERT_THROW_MES(res && new_sec, "failed to insert next section");
 					run_handler(new_sec, it, buf_end, stg, recursion + 1);
 					state = match_state_array_after_value;
 				}
@@ -308,7 +314,7 @@ inline void run_handler(typename t_storage::hsection current_section,
 					std::string val;
 					match_string2(it, buf_end, val);
 					bool res = stg.insert_next_value(h_array, val);
-					CHECK_AND_ASSERT_THROW_MES(res, "failed to insert values");
+					GULPS_CHECK_AND_ASSERT_THROW_MES(res, "failed to insert values");
 					state = match_state_array_after_value;
 				}
 				else
@@ -333,7 +339,7 @@ inline void run_handler(typename t_storage::hsection current_section,
 						double nval = boost::lexical_cast<double>(val); //string_tools::string_to_num_fast(val, nval);
 						insert_res = stg.insert_next_value(h_array, nval);
 					}
-					CHECK_AND_ASSERT_THROW_MES(insert_res, "Failed to insert next value");
+					GULPS_CHECK_AND_ASSERT_THROW_MES(insert_res, "Failed to insert next value");
 					state = match_state_array_after_value;
 					array_md = array_mode_numbers;
 				}
@@ -348,29 +354,29 @@ inline void run_handler(typename t_storage::hsection current_section,
 					if(boost::iequals(word, "true"))
 					{
 						bool r = stg.insert_next_value(h_array, true);
-						CHECK_AND_ASSERT_THROW_MES(r, " failed to insert values section entry");
+						GULPS_CHECK_AND_ASSERT_THROW_MES(r, " failed to insert values section entry");
 						state = match_state_array_after_value;
 					}
 					else if(boost::iequals(word, "false"))
 					{
 						bool r = stg.insert_next_value(h_array, false);
-						CHECK_AND_ASSERT_THROW_MES(r, " failed to insert values section entry");
+						GULPS_CHECK_AND_ASSERT_THROW_MES(r, " failed to insert values section entry");
 						state = match_state_array_after_value;
 					}
 					else
-						ASSERT_MES_AND_THROW("Unknown value keyword " << word);
+						GULPS_ASSERT_MES_AND_THROW("Unknown value keyword ", word);
 				}
 				else
 					CHECK_ISSPACE();
 				break;
 			case array_mode_undifined:
 			default:
-				ASSERT_MES_AND_THROW("Bad array state");
+				GULPS_ASSERT_MES_AND_THROW("Bad array state");
 			}
 			break;
 		case match_state_error:
 		default:
-			ASSERT_MES_AND_THROW("WRONG JSON STATE");
+			GULPS_ASSERT_MES_AND_THROW("WRONG JSON STATE");
 		}
 	}
 }
@@ -414,12 +420,12 @@ inline bool load_from_json(const std::string &buff_json, t_storage &stg)
 	}
 	catch(const std::exception &ex)
 	{
-		MERROR("Failed to parse json, what: " << ex.what());
+		GULPS_ERRORF("Failed to parse json, what: {}", ex.what());
 		return false;
 	}
 	catch(...)
 	{
-		MERROR("Failed to parse json");
+		GULPS_ERROR("Failed to parse json");
 		return false;
 	}
 }

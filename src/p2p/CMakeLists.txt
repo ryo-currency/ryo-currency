@@ -64,5 +64,6 @@ target_link_libraries(p2p
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_SERIALIZATION_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})

@@ -41,6 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "crybas_hfork"
 
 #include <algorithm>
 #include <cstdio>
@@ -49,8 +50,10 @@
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "hardfork.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "hardfork"
+
+#include "common/gulps.hpp"
+
+
 
 using namespace cryptonote;
 
@@ -212,10 +215,10 @@ void HardFork::init()
 	}
 	if(populate)
 	{
-		MINFO("The DB has no hard fork info, reparsing from start");
+		GULPS_INFO("The DB has no hard fork info, reparsing from start");
 		height = 1;
 	}
-	MDEBUG("reorganizing from " << height);
+	GULPS_LOGF_L1("reorganizing from {}", height);
 	if(populate)
 	{
 		reorganize_from_chain_height(height);
@@ -226,7 +229,7 @@ void HardFork::init()
 	{
 		rescan_from_chain_height(height);
 	}
-	MDEBUG("reorganization done");
+	GULPS_LOG_L1("reorganization done");
 }
 
 uint8_t HardFork::get_block_version(uint64_t height) const

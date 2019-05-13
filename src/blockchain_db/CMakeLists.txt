@@ -84,5 +84,6 @@ target_link_libraries(blockchain_db
     ${BDB_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})

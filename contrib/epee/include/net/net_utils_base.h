@@ -23,19 +23,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "net"
 
 #ifndef _NET_UTILS_BASE_H_
 #define _NET_UTILS_BASE_H_
 
-#include "misc_log_ex.h"
 #include "serialization/keyvalue_serialization.h"
 #include <boost/asio/io_service.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <type_traits>
 #include <typeinfo>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "net"
+#include "common/gulps.hpp"	
 
 #ifndef MAKE_IP
 #define MAKE_IP(a1, a2, a3, a4) (a1 | (a2 << 8) | (a3 << 16) | (a4 << 24))
@@ -197,14 +199,14 @@ class network_address
 			const_cast<network_address &>(this_ref) = ipv4_network_address{0, 0};
 			auto &addr = this_ref.template as_mutable<ipv4_network_address>();
 			if(epee::serialization::selector<is_store>::serialize(addr, stg, hparent_section, "addr"))
-				MDEBUG("Found as addr: " << this_ref.str());
+				GULPS_LOGF_L1("Found as addr: {}", this_ref.str());
 			else if(epee::serialization::selector<is_store>::serialize(addr, stg, hparent_section, "template as<ipv4_network_address>()"))
-				MDEBUG("Found as template as<ipv4_network_address>(): " << this_ref.str());
+				GULPS_LOGF_L1("Found as template as<ipv4_network_address>(): {}", this_ref.str());
 			else if(epee::serialization::selector<is_store>::serialize(addr, stg, hparent_section, "template as_mutable<ipv4_network_address>()"))
-				MDEBUG("Found as template as_mutable<ipv4_network_address>(): " << this_ref.str());
+				GULPS_LOGF_L1("Found as template as_mutable<ipv4_network_address>(): {}", this_ref.str());
 			else
 			{
-				MWARNING("Address not found");
+				GULPS_WARN("Address not found");
 				return false;
 			}
 		}
@@ -217,7 +219,7 @@ class network_address
 		break;
 	}
 	default:
-		MERROR("Unsupported network address type: " << (unsigned)type);
+		GULPS_ERROR("Unsupported network address type: ", (unsigned)type);
 		return false;
 	}
 	END_KV_SERIALIZE_MAP()
@@ -334,32 +336,12 @@ struct i_service_endpoint
 std::string print_connection_context(const connection_context_base &ctx);
 std::string print_connection_context_short(const connection_context_base &ctx);
 
-inline MAKE_LOGGABLE(connection_context_base, ct, os)
+inline std::ostream &operator<<(std::ostream &os, const connection_context_base &ct)
 {
-	os << "[" << epee::net_utils::print_connection_context_short(ct) << "] ";
-	return os;
+	os << "[" << epee::net_utils::print_connection_context_short(ct).c_str() << "] ";
+	return os;	
 }
 
-#define LOG_ERROR_CC(ct, message) MERROR(ct << message)
-#define LOG_WARNING_CC(ct, message) MWARNING(ct << message)
-#define LOG_INFO_CC(ct, message) MINFO(ct << message)
-#define LOG_DEBUG_CC(ct, message) MDEBUG(ct << message)
-#define LOG_TRACE_CC(ct, message) MTRACE(ct << message)
-#define LOG_CC(level, ct, message) MLOG(level, ct << message)
-
-#define LOG_PRINT_CC_L0(ct, message) LOG_PRINT_L0(ct << message)
-#define LOG_PRINT_CC_L1(ct, message) LOG_PRINT_L1(ct << message)
-#define LOG_PRINT_CC_L2(ct, message) LOG_PRINT_L2(ct << message)
-#define LOG_PRINT_CC_L3(ct, message) LOG_PRINT_L3(ct << message)
-#define LOG_PRINT_CC_L4(ct, message) LOG_PRINT_L4(ct << message)
-
-#define LOG_PRINT_CCONTEXT_L0(message) LOG_PRINT_CC_L0(context, message)
-#define LOG_PRINT_CCONTEXT_L1(message) LOG_PRINT_CC_L1(context, message)
-#define LOG_PRINT_CCONTEXT_L2(message) LOG_PRINT_CC_L2(context, message)
-#define LOG_PRINT_CCONTEXT_L3(message) LOG_PRINT_CC_L3(context, message)
-#define LOG_ERROR_CCONTEXT(message) LOG_ERROR_CC(context, message)
-
-#define CHECK_AND_ASSERT_MES_CC(condition, return_val, err_message) CHECK_AND_ASSERT_MES(condition, return_val, "[" << epee::net_utils::print_connection_context_short(context) << "]" << err_message)
 }
 }
 

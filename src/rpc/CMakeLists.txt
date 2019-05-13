@@ -118,6 +118,7 @@ target_link_libraries(rpc_base
     ${Boost_REGEX_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})
 
@@ -130,10 +131,13 @@ target_link_libraries(rpc
     epee
     ${Boost_REGEX_LIBRARY}
     ${Boost_THREAD_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})
 
 target_link_libraries(daemon_messages
+  LINK_PUBLIC
+    fmt::fmt-header-only
   LINK_PRIVATE
     cryptonote_core
     cryptonote_protocol
@@ -141,6 +145,8 @@ target_link_libraries(daemon_messages
     ${EXTRA_LIBRARIES})
 
 target_link_libraries(daemon_rpc_server
+  LINK_PUBLIC
+    fmt::fmt-header-only
   LINK_PRIVATE
     rpc
     cryptonote_core

@@ -41,11 +41,12 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "wallet_args"
+
 #include "wallet/wallet_args.h"
 
 #include "common/i18n.h"
 #include "common/util.h"
-#include "misc_log_ex.h"
 #include "string_tools.h"
 #include "version.h"
 #include <boost/filesystem/operations.hpp>
@@ -58,8 +59,9 @@
 #include <boost/locale.hpp>
 #endif
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.wallet2"
+#include "common/gulps.hpp"
+
+#define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
 
 // workaround for a suspected bug in pthread/kernel on MacOS X
 #ifdef __APPLE__
@@ -67,27 +69,6 @@
 #else
 #define DEFAULT_MAX_CONCURRENCY 0
 #endif
-
-namespace
-{
-class Print
-{
-  public:
-	Print(const std::function<void(const std::string &, bool)> &p, bool em = false) : print(p), emphasis(em) {}
-	~Print() { print(ss.str(), emphasis); }
-	template <typename T>
-	std::ostream &operator<<(const T &t)
-	{
-		ss << t;
-		return ss;
-	}
-
-  private:
-	const std::function<void(const std::string &, bool)> &print;
-	std::stringstream ss;
-	bool emphasis;
-};
-}
 
 namespace wallet_args
 {
@@ -106,13 +87,14 @@ const char *tr(const char *str)
 	return i18n_translate(str, "wallet_args");
 }
 
+gulps_log_level log_scr, log_dsk;
+
 boost::optional<boost::program_options::variables_map> main(
 	int argc, char **argv,
 	const char *const usage,
 	const char *const notice,
 	boost::program_options::options_description desc_params,
 	const boost::program_options::positional_options_description &positional_options,
-	const std::function<void(const std::string &, bool)> &print,
 	const char *default_log_name,
 	int &error_code,
 	bool log_to_console)
@@ -128,11 +110,10 @@ boost::optional<boost::program_options::variables_map> main(
 #endif
 
 	error_code = 1;
-
-	const command_line::arg_descriptor<std::string> arg_log_level = {"log-level", "0-4 or categories", ""};
-	const command_line::arg_descriptor<std::size_t> arg_max_log_file_size = {"max-log-file-size", "Specify maximum log file size [B]", MAX_LOG_FILE_SIZE};
+	const command_line::arg_descriptor<std::string> arg_log_level = {"log-level", "Screen log level, 0-4 or categories", ""};
+	const command_line::arg_descriptor<std::string> arg_file_level = {"log-file-level", "File log level, 0-4 or categories", ""};
+	const command_line::arg_descriptor<std::string> arg_log_file = {"log-file", wallet_args::tr("Specify log file"), default_log_name};
 	const command_line::arg_descriptor<uint32_t> arg_max_concurrency = {"max-concurrency", wallet_args::tr("Max number of threads to use for a parallel job"), DEFAULT_MAX_CONCURRENCY};
-	const command_line::arg_descriptor<std::string> arg_log_file = {"log-file", wallet_args::tr("Specify log file"), ""};
 	const command_line::arg_descriptor<std::string> arg_config_file = {"config-file", wallet_args::tr("Config file"), "", true};
 
 	std::string lang = i18n_get_language();
@@ -147,7 +128,7 @@ boost::optional<boost::program_options::variables_map> main(
 
 	command_line::add_arg(desc_params, arg_log_file);
 	command_line::add_arg(desc_params, arg_log_level);
-	command_line::add_arg(desc_params, arg_max_log_file_size);
+	command_line::add_arg(desc_params, arg_file_level);
 	command_line::add_arg(desc_params, arg_max_concurrency);
 	command_line::add_arg(desc_params, arg_config_file);
 
@@ -156,22 +137,23 @@ boost::optional<boost::program_options::variables_map> main(
 	po::options_description desc_all;
 	desc_all.add(desc_general).add(desc_params);
 	po::variables_map vm;
+	std::unique_ptr<gulps::gulps_output> file_out;
 	bool r = command_line::handle_error_helper(desc_all, [&]() {
 		auto parser = po::command_line_parser(argc, argv).options(desc_all).positional(positional_options);
 		po::store(parser.run(), vm);
 
 		if(command_line::get_arg(vm, command_line::arg_help))
 		{
-			Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL;
-			Print(print) << wallet_args::tr("This is the command line ryo wallet. It needs to connect to a ryo daemon to work correctly.") << ENDL;
-			Print(print) << wallet_args::tr("Usage:") << ENDL << "  " << usage;
-			Print(print) << desc_all;
+			GULPS_PRINT_OK("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")\n\n");
+			GULPS_PRINT_OK(wallet_args::tr("This is the command line ryo wallet. It needs to connect to a ryo daemon to work correctly."), "\n\n");
+			GULPS_PRINT_OK(wallet_args::tr("Usage:"), "\n  ", usage);
+			GULPS_PRINT_OK(desc_all,"\n");
 			error_code = 0;
 			return false;
 		}
 		else if(command_line::get_arg(vm, command_line::arg_version))
 		{
-			Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")";
+			GULPS_PRINT_OK("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")");
 			error_code = 0;
 			return false;
 		}
@@ -187,7 +169,35 @@ boost::optional<boost::program_options::variables_map> main(
 			}
 			else
 			{
-				MERROR(wallet_args::tr("Can't find config file ") << config);
+				GULPS_ERROR(wallet_args::tr("Can't find config file "), config);
+				return false;
+			}
+		}
+
+		if(!command_line::is_arg_defaulted(vm, arg_log_level))
+		{
+			if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
+			{
+				GULPS_ERROR(wallet_args::tr("Failed to parse filter string "), command_line::get_arg(vm, arg_log_level).c_str());
+				return false;
+			}
+		}
+
+		if(!command_line::is_arg_defaulted(vm, arg_file_level))
+		{
+			if(!log_dsk.parse_cat_string(command_line::get_arg(vm, arg_file_level).c_str()))
+			{
+				GULPS_ERROR(wallet_args::tr("Failed to parse filter string "), command_line::get_arg(vm, arg_file_level).c_str());
+				return false;
+			}
+
+			try
+			{
+				file_out = std::unique_ptr<gulps::gulps_output>(new gulps::gulps_async_file_output(command_line::get_arg(vm, arg_log_file)));
+			}
+			catch(const std::exception& ex)
+			{
+				GULPS_ERROR(wallet_args::tr("Could not open file '"), command_line::get_arg(vm, arg_log_file), "' error: ", ex.what());
 				return false;
 			}
 		}
@@ -199,32 +209,37 @@ boost::optional<boost::program_options::variables_map> main(
 	if(!r)
 		return boost::none;
 
-	std::string log_path;
-	if(!command_line::is_arg_defaulted(vm, arg_log_file))
-		log_path = command_line::get_arg(vm, arg_log_file);
-	else
-		log_path = mlog_get_default_log_path(default_log_name);
-	mlog_configure(log_path, log_to_console, command_line::get_arg(vm, arg_max_log_file_size));
-	if(!command_line::is_arg_defaulted(vm, arg_log_level))
+	if(log_scr.is_active())
 	{
-		mlog_set_log(command_line::get_arg(vm, arg_log_level).c_str());
+		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
+		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
+				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
+					return false;
+				if(printed)
+					return false;
+				return log_scr.match_msg(msg);
+				});
+		gulps::inst().add_output(std::move(out));
 	}
 
+	if(log_dsk.is_active())
+	{
+		file_out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
+				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
+					return false;
+				return log_dsk.match_msg(msg);
+				});
+		gulps::inst().add_output(std::move(file_out));
+	}
+
+	// Check for extra screen logs
 	if(notice)
-		Print(print) << notice << ENDL;
+		GULPS_PRINT_OK(notice, "\n\n");
 
 	if(!command_line::is_arg_defaulted(vm, arg_max_concurrency))
 		tools::set_max_concurrency(command_line::get_arg(vm, arg_max_concurrency));
 
-	Print(print) << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")";
-
-	if(!command_line::is_arg_defaulted(vm, arg_log_level))
-		MINFO("Setting log level = " << command_line::get_arg(vm, arg_log_level));
-	else
-		MINFO("Setting log levels = " << getenv("RYO_LOGS"));
-	MINFO(wallet_args::tr("Logging to: ") << log_path);
-
-	Print(print) << boost::format(wallet_args::tr("Logging to %s")) % log_path;
+	GULPS_PRINT_OK("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")");
 
 	error_code = 0;
 	return {std::move(vm)};

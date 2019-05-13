@@ -1,5 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
-// Portions copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018, Ryo Currency Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
@@ -41,22 +40,81 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#pragma once
+#pragma once 
 
-#include "targetver.h"
+#include <queue>
+#include <list>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
-#if !defined(__GNUC__)
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-#include <stdlib.h>
-#endif
+template <typename T>
+class thdq
+{
+public:
+	thdq() : lck_(mutex_, std::defer_lock) {}
+	
+	bool pop(T& item)
+	{
+		std::unique_lock<std::mutex> mlock(mutex_);
+		while (queue_.empty() && !finish) { cond_.wait(mlock); }
+		bool ret = false;
+		if(!queue_.empty())
+		{
+			item = std::move(queue_.front());
+			queue_.pop();
+			ret = true;
+		}
+		return ret;
+	}
 
-#include <stdio.h>
+	bool wait_for_pop()
+	{
+		lck_.lock();
+		while (queue_.empty() && !finish) { cond_.wait(lck_); }
+		bool has_pop = !queue_.empty();
+		if(!has_pop) lck_.unlock();
+		return has_pop;
+	}
 
-#define BOOST_FILESYSTEM_VERSION 3
-#define ENABLE_RELEASE_LOGGING
-#include "log_opt_defs.h"
-#include "common/gulps.hpp"
+	T pop()
+	{
+		T item = std::move(queue_.front());
+		queue_.pop();
+		lck_.unlock();
+		return item;
+	}
+
+	void push(const T& item)
+	{
+		std::unique_lock<std::mutex> mlock(mutex_);
+		if(finish) return;
+		queue_.push(item);
+		mlock.unlock();
+		cond_.notify_one();
+	}
+
+	void push(T&& item)
+	{
+		std::unique_lock<std::mutex> mlock(mutex_);
+		if(finish) return;
+		queue_.push(std::move(item));
+		mlock.unlock();
+		cond_.notify_one();
+	}
+
+	void set_finish_flag()
+	{
+		std::unique_lock<std::mutex> mlock(mutex_);
+		finish = true;
+		cond_.notify_one();
+	}
+
+private:
+	std::queue<T> queue_;
+	std::mutex mutex_;
+	std::condition_variable cond_;
+	std::unique_lock<std::mutex> lck_;
+	bool finish = false;
+};

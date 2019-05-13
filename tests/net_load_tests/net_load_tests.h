@@ -147,7 +147,7 @@ class open_close_test_helper
 		size_t idx = m_next_opened_conn_idx.fetch_add(1, std::memory_order_relaxed);
 		if(idx >= m_connections.size())
 		{
-			LOG_PRINT_L0("ERROR: connections overflow");
+			std::cout << "ERROR: connections overflow" << std::endl;
 			exit(1);
 		}
 		m_connections[idx] = connection_id;
@@ -172,17 +172,17 @@ class open_close_test_helper
 		size_t idx = m_next_closed_conn_idx.fetch_add(1, std::memory_order_relaxed);
 		if(m_next_opened_conn_idx.load(std::memory_order_relaxed) <= idx)
 		{
-			LOG_PRINT_L0("Not enough opened connections");
+			std::cout << "Not enough opened connections" << std::endl;
 			return false;
 		}
 		if(m_connections[idx].is_nil())
 		{
-			LOG_PRINT_L0("Connection isn't opened");
+			std::cout << "Connection isn't opened" << std::endl;
 			return false;
 		}
 		if(!m_tcp_server.get_config_object().close(m_connections[idx]))
 		{
-			LOG_PRINT_L0("Close connection error: " << m_connections[idx]);
+			std::cout << "Close connection error: " << m_connections[idx] << std::endl;
 			if(!ignore_close_fails)
 			{
 				return false;

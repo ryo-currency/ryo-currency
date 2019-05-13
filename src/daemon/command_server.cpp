@@ -48,8 +48,7 @@
 #include "version.h"
 #include <boost/algorithm/string.hpp>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
+
 
 namespace daemonize
 {

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef HAVE_READLINE
+
 #include <sstream>
 #include <streambuf>
 #include <vector>
@@ -43,3 +45,11 @@ class suspend_readline
 	bool m_restart;
 };
 }
+
+#define PAUSE_READLINE() rdln::suspend_readline pause_readline;
+
+#else
+
+#define PAUSE_READLINE()
+
+#endif

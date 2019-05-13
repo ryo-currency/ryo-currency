@@ -55,8 +55,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "WalletAPI"
+
 
 namespace epee
 {

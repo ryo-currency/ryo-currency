@@ -36,6 +36,7 @@
 #include "include_base_utils.h"
 #include "wallet/api/subaddress.h"
 #include "wallet/wallet2.h"
+#include "common/gulps.hpp"
 
 class WalletSubaddress : public ::testing::Test
 {
@@ -48,7 +49,7 @@ class WalletSubaddress : public ::testing::Test
 		}
 		catch(const std::exception &e)
 		{
-			LOG_ERROR("failed to generate wallet: " << e.what());
+			std::cout << "failed to generate wallet: " << e.what() << std::endl;
 			throw e;
 		}
 
