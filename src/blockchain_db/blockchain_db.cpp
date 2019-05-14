@@ -41,6 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#define GULPS_CAT_MAJOR "blockchain_db"
 
 #include <boost/range/adaptor/reversed.hpp>
 #include <unordered_set>
@@ -56,6 +57,8 @@
 #include "berkeleydb/db_bdb.h"
 #endif
 
+#include "common/gulps.hpp"
+
 static const char *db_types[] = {
 	"lmdb",
 #ifdef BERKELEY_DB
@@ -63,8 +66,7 @@ static const char *db_types[] = {
 #endif
 	NULL};
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "blockchain.db"
+
 
 using epee::string_tools::pod_to_hex;
 
@@ -137,7 +139,7 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 	{
 		// should only need to compute hash for miner transactions
 		tx_hash = get_transaction_hash(tx);
-		LOG_PRINT_L3("null tx_hash_ptr - needed to compute: " << tx_hash);
+		GULPS_LOG_L3("null tx_hash_ptr - needed to compute: ", tx_hash);
 	}
 	else
 	{
@@ -157,7 +159,7 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 		}
 		else
 		{
-			LOG_PRINT_L1("Unsupported input type, removing key images and aborting transaction addition");
+			GULPS_LOG_L1("Unsupported input type, removing key images and aborting transaction addition");
 			for(const txin_v &tx_input : tx.vin)
 			{
 				if(tx_input.type() == typeid(txin_to_key))
@@ -195,7 +197,7 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 			if(tx.vout[i].amount != 0)
 			{
 				//Better be safe than sorry
-				LOG_PRINT_L1("Unsupported index type, removing key images and aborting transaction addition");
+				GULPS_LOG_L1("Unsupported index type, removing key images and aborting transaction addition");
 				for(const txin_v &tx_input : tx.vin)
 				{
 					if(tx_input.type() == typeid(txin_to_key))
@@ -347,23 +349,8 @@ void BlockchainDB::reset_stats()
 
 void BlockchainDB::show_stats()
 {
-	LOG_PRINT_L1(ENDL
-				 << "*********************************"
-				 << ENDL
-				 << "num_calls: " << num_calls
-				 << ENDL
-				 << "time_blk_hash: " << time_blk_hash << "ms"
-				 << ENDL
-				 << "time_tx_exists: " << time_tx_exists << "ms"
-				 << ENDL
-				 << "time_add_block1: " << time_add_block1 << "ms"
-				 << ENDL
-				 << "time_add_transaction: " << time_add_transaction << "ms"
-				 << ENDL
-				 << "time_commit1: " << time_commit1 << "ms"
-				 << ENDL
-				 << "*********************************"
-				 << ENDL);
+	GULPS_LOGF_L1("\n*********************************\nnum_calls: {}\ntime_blk_hash: {}ms\ntime_tx_exists: {}ms\ntime_add_block1: {}ms\ntime_add_transaction: {}ms\ntime_commit1: {}ms\n*********************************\n",
+				num_calls,	time_blk_hash, time_tx_exists , time_add_block1, time_add_transaction, time_commit1);
 }
 
 void BlockchainDB::fixup()
@@ -498,7 +485,7 @@ void BlockchainDB::fixup()
 
 	if(is_read_only())
 	{
-		LOG_PRINT_L1("Database is opened read only - skipping fixup check");
+		GULPS_LOG_L1("Database is opened read only - skipping fixup check");
 		return;
 	}
 
@@ -522,7 +509,7 @@ void BlockchainDB::fixup()
 		epee::string_tools::hex_to_pod(kis, ki);
 		if(!has_key_image(ki))
 		{
-			LOG_PRINT_L1("Fixup: adding missing spent key " << ki);
+			GULPS_LOG_L1("Fixup: adding missing spent key ", ki);
 			add_spent_key(ki);
 		}
 	}

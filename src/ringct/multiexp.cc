@@ -43,17 +43,15 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Adapted from Python code by Sarang Noether
+#define GULPS_CAT_MAJOR "multiexp"
 
 #include "common/perf_timer.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 extern "C" {
 #include "crypto/crypto-ops.h"
 }
 #include "multiexp.h"
 #include "rctOps.h"
-
-#undef MONERO_DEFAULT_LOG_CATEGORY
-#define MONERO_DEFAULT_LOG_CATEGORY "multiexp"
 
 //#define MULTIEXP_PERF(x) x
 #define MULTIEXP_PERF(x)
@@ -119,7 +117,7 @@ static inline rct::key div2(const rct::key &k)
 
 static inline rct::key pow2(size_t n)
 {
-	CHECK_AND_ASSERT_THROW_MES(n < 256, "Invalid pow2 argument");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(n < 256, "Invalid pow2 argument");
 	rct::key res = rct::zero();
 	res[n >> 3] |= 1 << (n & 7);
 	return res;
@@ -151,7 +149,7 @@ rct::key bos_coster_heap_conv(std::vector<MultiexpData> data)
 	MULTIEXP_PERF(PERF_TIMER_START_UNIT(bos_coster, 1000000));
 	MULTIEXP_PERF(PERF_TIMER_START_UNIT(setup, 1000000));
 	size_t points = data.size();
-	CHECK_AND_ASSERT_THROW_MES(points > 1, "Not enough points");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(points > 1, "Not enough points");
 	std::vector<size_t> heap(points);
 	for(size_t n = 0; n < points; ++n)
 		heap[n] = n;
@@ -226,7 +224,7 @@ rct::key bos_coster_heap_conv_robust(std::vector<MultiexpData> data)
 	MULTIEXP_PERF(PERF_TIMER_START_UNIT(bos_coster, 1000000));
 	MULTIEXP_PERF(PERF_TIMER_START_UNIT(setup, 1000000));
 	size_t points = data.size();
-	CHECK_AND_ASSERT_THROW_MES(points > 0, "Not enough points");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(points > 0, "Not enough points");
 	std::vector<size_t> heap;
 	heap.reserve(points);
 	for(size_t n = 0; n < points; ++n)
@@ -345,7 +343,7 @@ static rct::key get_exponent(const rct::key &base, size_t idx)
 	static const std::string salt("bulletproof");
 	std::string hashed = std::string((const char *)base.bytes, sizeof(base)) + salt + tools::get_varint_data(idx);
 	const rct::key e = rct::hashToPoint(rct::hash2rct(crypto::cn_fast_hash(hashed.data(), hashed.size())));
-	CHECK_AND_ASSERT_THROW_MES(!(e == rct::identity()), "Exponent is point at infinity");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(!(e == rct::identity()), "Exponent is point at infinity");
 	return e;
 }
 
@@ -355,9 +353,9 @@ multiexp_cache::multiexp_cache()
 	for(size_t i = 0; i < maxN * maxM; ++i)
 	{
 		Hi_cache[i] = get_exponent(rct::H, i * 2);
-		CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&Hi_p3_cache[i], Hi_cache[i].bytes) == 0, "ge_frombytes_vartime failed");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&Hi_p3_cache[i], Hi_cache[i].bytes) == 0, "ge_frombytes_vartime failed");
 		Gi_cache[i] = get_exponent(rct::H, i * 2 + 1);
-		CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&Gi_p3_cache[i], Gi_cache[i].bytes) == 0, "ge_frombytes_vartime failed");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&Gi_p3_cache[i], Gi_cache[i].bytes) == 0, "ge_frombytes_vartime failed");
 
 		data.push_back({rct::zero(), Gi_cache[i]});
 		data.push_back({rct::zero(), Hi_cache[i]});
@@ -366,12 +364,12 @@ multiexp_cache::multiexp_cache()
 	s_cache.init_cache(data, STRAUS_SIZE_LIMIT);
 	p_cache.init_cache(data, 0, false);
 
-	MINFO("Hi/Gi cache size: " << (sizeof(Hi_cache) + sizeof(Gi_cache)) / 1024 << " kB");
-	MINFO("Hi_p3/Gi_p3 cache size: " << (sizeof(Hi_p3_cache) + sizeof(Gi_p3_cache)) / 1024 << " kB");
-	MINFO("Straus cache size: " << sizeof(straus_cache) / 1024 << " kB");
-	MINFO("Pippenger cache size: " << sizeof(pippenger_cache) / 1024 << " kB");
+	GULPS_INFOF("Hi/Gi cache size: {} kB", (sizeof(Hi_cache) + sizeof(Gi_cache)) / 1024 );
+	GULPS_INFOF("Hi_p3/Gi_p3 cache size: {} kB", (sizeof(Hi_p3_cache) + sizeof(Gi_p3_cache)) / 1024 );
+	GULPS_INFOF("Straus cache size: {} kB", sizeof(straus_cache) / 1024 );
+	GULPS_INFOF("Pippenger cache size: {} kB", sizeof(pippenger_cache) / 1024 );
 	size_t cache_size = (sizeof(Hi_cache) + sizeof(Hi_p3_cache)) * 2 + sizeof(straus_cache) + sizeof(pippenger_cache);
-	MINFO("Total cache size: " << cache_size / 1024 << "kB");
+	GULPS_INFOF("Total cache size: {}kB", cache_size / 1024 );
 }
 
 void straus_cache::init_cache(const std::vector<MultiexpData> &data, size_t N)
@@ -379,7 +377,7 @@ void straus_cache::init_cache(const std::vector<MultiexpData> &data, size_t N)
 	MULTIEXP_PERF(PERF_TIMER_START_UNIT(multiples, 1000000));
 	if (N == 0)
 		N = data.size();
-	CHECK_AND_ASSERT_THROW_MES(N <= data.size(), "Bad cache base data");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(N <= data.size(), "Bad cache base data");
 	ge_p1p1 p1;
 	ge_p3 p3;
 
@@ -405,8 +403,8 @@ void straus_cache::init_cache(const std::vector<MultiexpData> &data, size_t N)
 
 rct::key straus_cache::straus(const std::vector<MultiexpData> &data, size_t STEP) const
 {
-	CHECK_AND_ASSERT_THROW_MES(cache != nullptr, "null cache");
-	CHECK_AND_ASSERT_THROW_MES(cache == NULL || size >= data.size(), "Cache is too small");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(cache != nullptr, "null cache");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(cache == NULL || size >= data.size(), "Cache is too small");
 	MULTIEXP_PERF(PERF_TIMER_UNIT(straus, 1000000));
 	STEP = STEP ? STEP : 192;
 
@@ -512,7 +510,7 @@ void pippenger_cache::init_cache(const std::vector<MultiexpData> &data, size_t N
 	MULTIEXP_PERF(PERF_TIMER_START_UNIT(pippenger_init_cache, 1000000));
 	if(N == 0)
 		N = data.size();
-	CHECK_AND_ASSERT_THROW_MES(N <= data.size(), "Bad cache base data");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(N <= data.size(), "Bad cache base data");
 
 	size = N;
 	if(cache == nullptr || alloc_size < N)
@@ -533,13 +531,13 @@ void pippenger_cache::init_cache(const std::vector<MultiexpData> &data, size_t N
 
 rct::key pippenger_cache::pippenger(const std::vector<MultiexpData> &data, aligned_ptr<ge_p3[]>& buckets, size_t c) const
 {
-	CHECK_AND_ASSERT_THROW_MES(cache != nullptr, "null cache");
-	CHECK_AND_ASSERT_THROW_MES(size >= data.size(), "Cache is too small");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(cache != nullptr, "null cache");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(size >= data.size(), "Cache is too small");
 
 	if(c == 0)
 		c = get_pippenger_c(data.size());
 
-	CHECK_AND_ASSERT_THROW_MES(c <= 9, "c is too large");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(c <= 9, "c is too large");
 
 	ge_p3 result = ge_p3_identity;
 
@@ -586,7 +584,7 @@ rct::key pippenger_cache::pippenger(const std::vector<MultiexpData> &data, align
 					bucket |= 1 << j;
 			if(bucket == 0)
 				continue;
-			CHECK_AND_ASSERT_THROW_MES(bucket < (1u << c), "bucket overflow");
+			GULPS_CHECK_AND_ASSERT_THROW_MES(bucket < (1u << c), "bucket overflow");
 			if(!ge_p3_is_point_at_infinity(&buckets[bucket]))
 			{
 				add(buckets[bucket], pp_offset(i));
@@ -614,8 +612,8 @@ rct::key pippenger_cache::pippenger(const std::vector<MultiexpData> &data, align
 /* Given two scalar arrays, construct a vector commitment */
 rct::key bp_cache::vector_exponent(const rct::keyV &a, const rct::keyV &b)
 {
-	CHECK_AND_ASSERT_THROW_MES(a.size() == b.size(), "Incompatible sizes of a and b");
-	CHECK_AND_ASSERT_THROW_MES(a.size() <= maxN * maxM, "Incompatible sizes of a and maxN");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(a.size() == b.size(), "Incompatible sizes of a and b");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(a.size() <= maxN * maxM, "Incompatible sizes of a and maxN");
 
 	clear_pad(a.size()*2);
 	for(size_t i = 0; i < a.size(); ++i)
@@ -630,10 +628,10 @@ rct::key bp_cache::vector_exponent(const rct::keyV &a, const rct::keyV &b)
 /* Compute a custom vector-scalar commitment */
 rct::key bp_cache::vector_exponent_custom(const rct::keyV &A, const rct::keyV &B, const rct::keyV &a, const rct::keyV &b)
 {
-	CHECK_AND_ASSERT_THROW_MES(A.size() == B.size(), "Incompatible sizes of A and B");
-	CHECK_AND_ASSERT_THROW_MES(a.size() == b.size(), "Incompatible sizes of a and b");
-	CHECK_AND_ASSERT_THROW_MES(a.size() == A.size(), "Incompatible sizes of a and A");
-	CHECK_AND_ASSERT_THROW_MES(a.size() <= maxN * maxM, "Incompatible sizes of a and maxN");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(A.size() == B.size(), "Incompatible sizes of A and B");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(a.size() == b.size(), "Incompatible sizes of a and b");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(a.size() == A.size(), "Incompatible sizes of a and A");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(a.size() <= maxN * maxM, "Incompatible sizes of a and maxN");
 
 	clear_pad(a.size()*2);
 	for(size_t i = 0; i < a.size(); ++i)

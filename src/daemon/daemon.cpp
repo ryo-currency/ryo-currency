@@ -43,9 +43,9 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#define GULPS_CAT_MAJOR "daemon"
 
 #include "daemon/daemon.h"
-#include "misc_log_ex.h"
 #include "rpc/daemon_handler.h"
 #include "rpc/zmq_server.h"
 #include <boost/algorithm/string/split.hpp>
@@ -63,12 +63,11 @@
 #include "daemon/rpc.h"
 #include "version.h"
 
+#include "common/gulps.hpp"	
+
 using namespace epee;
 
 #include <functional>
-
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
 
 namespace daemonize
 {
@@ -173,7 +172,7 @@ bool t_daemon::run(bool interactive)
 
 		if(!zmq_server.addTCPSocket(zmq_rpc_bind_address, zmq_rpc_bind_port))
 		{
-			LOG_ERROR(std::string("Failed to add TCP Socket (") + zmq_rpc_bind_address + ":" + zmq_rpc_bind_port + ") to ZMQ RPC Server");
+			GULPS_ERRORF("Failed to add TCP Socket ({}:{}) to ZMQ RPC Server", zmq_rpc_bind_address, zmq_rpc_bind_port);
 
 			if(rpc_commands)
 				rpc_commands->stop_handling();
@@ -184,10 +183,10 @@ bool t_daemon::run(bool interactive)
 			return false;
 		}
 
-		MINFO("Starting ZMQ server...");
+		GULPS_INFO("Starting ZMQ server...");
 		zmq_server.run();
 
-		MINFO(std::string("ZMQ server started at ") + zmq_rpc_bind_address + ":" + zmq_rpc_bind_port + ".");
+		GULPS_INFOF("ZMQ server started at {}:{}.", zmq_rpc_bind_address, zmq_rpc_bind_port);
 
 		mp_internals->p2p.run(); // blocks until p2p goes down
 
@@ -199,17 +198,17 @@ bool t_daemon::run(bool interactive)
 		for(auto &rpc : mp_internals->rpcs)
 			rpc->stop();
 		mp_internals->core.get().get_miner().stop();
-		MGINFO("Node stopped.");
+		GULPS_GLOBAL_PRINT("Node stopped.");
 		return true;
 	}
 	catch(std::exception const &ex)
 	{
-		MFATAL("Uncaught exception! " << ex.what());
+		GULPS_ERRORF("Uncaught exception! {}", ex.what());
 		return false;
 	}
 	catch(...)
 	{
-		MFATAL("Uncaught exception!");
+		GULPS_ERROR("Uncaught exception!");
 		return false;
 	}
 }

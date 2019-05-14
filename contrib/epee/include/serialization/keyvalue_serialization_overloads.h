@@ -32,7 +32,7 @@
 #include <list>
 #include <set>
 #include <vector>
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 
 namespace epee
 {
@@ -65,7 +65,7 @@ static bool unserialize_t_val_as_blob(t_type &d, t_storage &stg, typename t_stor
 	std::string blob;
 	if(!stg.get_value(pname, blob, hparent_section))
 		return false;
-	CHECK_AND_ASSERT_MES(blob.size() == sizeof(d), false, "unserialize_t_val_as_blob: size of " << typeid(t_type).name() << " = " << sizeof(t_type) << ", but stored blod size = " << blob.size() << ", value name = " << pname);
+	GULPS_CHECK_AND_ASSERT_MES(blob.size() == sizeof(d), false, "unserialize_t_val_as_blob: size of " , typeid(t_type).name() , " = " , sizeof(t_type) , ", but stored blod size = " , blob.size() , ", value name = " , pname);
 	d = *(const t_type *)blob.data();
 	return true;
 }
@@ -74,7 +74,7 @@ template <class serializible_type, class t_storage>
 static bool serialize_t_obj(const serializible_type &obj, t_storage &stg, typename t_storage::hsection hparent_section, const char *pname)
 {
 	typename t_storage::hsection hchild_section = stg.open_section(pname, hparent_section, true);
-	CHECK_AND_ASSERT_MES(hchild_section, false, "serialize_t_obj: failed to open/create section " << pname);
+	GULPS_CHECK_AND_ASSERT_MES(hchild_section, false, "serialize_t_obj: failed to open/create section " , pname);
 	return obj.store(stg, hchild_section);
 }
 //-------------------------------------------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ static bool serialize_stl_container_t_val(const stl_container &container, t_stor
 		return true;
 	typename stl_container::const_iterator it = container.begin();
 	typename t_storage::harray hval_array = stg.insert_first_value(pname, *it, hparent_section);
-	CHECK_AND_ASSERT_MES(hval_array, false, "failed to insert first value to storage");
+	GULPS_CHECK_AND_ASSERT_MES(hval_array, false, "failed to insert first value to storage");
 	it++;
 	for(; it != container.end(); it++)
 		stg.insert_next_value(hval_array, *it);
@@ -160,9 +160,9 @@ static bool unserialize_stl_container_pod_val_as_blob(stl_container &container, 
 	{
 		size_t loaded_size = buff.size();
 		typename stl_container::value_type *pelem = (typename stl_container::value_type *)buff.data();
-		CHECK_AND_ASSERT_MES(!(loaded_size % sizeof(typename stl_container::value_type)),
+		GULPS_CHECK_AND_ASSERT_MES(!(loaded_size % sizeof(typename stl_container::value_type)),
 							 false,
-							 "size in blob " << loaded_size << " not have not zero modulo for sizeof(value_type) = " << sizeof(typename stl_container::value_type));
+							 "size in blob " , loaded_size , " not have not zero modulo for sizeof(value_type) = " , sizeof(typename stl_container::value_type));
 		size_t count = (loaded_size / sizeof(typename stl_container::value_type));
 		for(size_t i = 0; i < count; i++)
 			container.insert(container.end(), *(pelem++));
@@ -179,7 +179,7 @@ static bool serialize_stl_container_t_obj(const stl_container &container, t_stor
 	typename stl_container::const_iterator it = container.begin();
 	typename t_storage::hsection hchild_section = nullptr;
 	typename t_storage::harray hsec_array = stg.insert_first_section(pname, hchild_section, hparent_section);
-	CHECK_AND_ASSERT_MES(hsec_array && hchild_section, false, "failed to insert first section with section name " << pname);
+	GULPS_CHECK_AND_ASSERT_MES(hsec_array && hchild_section, false, "failed to insert first section with section name " , pname);
 	res = it->store(stg, hchild_section);
 	it++;
 	for(; it != container.end(); it++)

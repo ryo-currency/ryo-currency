@@ -23,11 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#undef GULPS_CAT_MAJOR
+#define GULPS_CAT_MAJOR "tcp_serv"
 
 #pragma comment(lib, "Ws2_32.lib")
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net"
+#include "common/gulps.hpp"	
+
+
 
 namespace epee
 {
@@ -54,7 +57,7 @@ bool cp_server_impl<TProtocol>::init_server(int port_no)
 	int err = ::WSAStartup(MAKEWORD(2, 2), &wsad);
 	if(err != 0 || LOBYTE(wsad.wVersion) != 2 || HIBYTE(wsad.wVersion) != 2)
 	{
-		LOG_ERROR("Could not find a usable WinSock DLL, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+		GULPS_LOG_ERRORF("Could not find a usable WinSock DLL, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		return false;
 	}
 
@@ -64,7 +67,7 @@ bool cp_server_impl<TProtocol>::init_server(int port_no)
 	if(INVALID_SOCKET == m_listen_socket)
 	{
 		err = ::WSAGetLastError();
-		LOG_ERROR("Failed to create socket, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+		GULPS_LOG_ERRORF("Failed to create socket, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		return false;
 	}
 
@@ -73,7 +76,7 @@ bool cp_server_impl<TProtocol>::init_server(int port_no)
 	if(SOCKET_ERROR == err)
 	{
 		err = ::WSAGetLastError();
-		LOG_PRINT("Failed to setsockopt(SO_REUSEADDR), err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"", LOG_LEVEL_1);
+		GULPS_LOGF_L1("Failed to setsockopt(SO_REUSEADDR), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		deinit_server();
 		return false;
 	}
@@ -88,7 +91,7 @@ bool cp_server_impl<TProtocol>::init_server(int port_no)
 	if(SOCKET_ERROR == err)
 	{
 		err = ::WSAGetLastError();
-		LOG_PRINT("Failed to Bind, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"", LOG_LEVEL_1);
+		GULPS_LOGF_L1("Failed to Bind, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		deinit_server();
 		return false;
 	}
@@ -97,7 +100,7 @@ bool cp_server_impl<TProtocol>::init_server(int port_no)
 	if(INVALID_HANDLE_VALUE == m_completion_port)
 	{
 		err = ::WSAGetLastError();
-		LOG_PRINT("Failed to CreateIoCompletionPort, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"", LOG_LEVEL_1);
+		GULPS_LOGF_L1("Failed to CreateIoCompletionPort, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		deinit_server();
 		return false;
 	}
@@ -123,7 +126,7 @@ static int CALLBACK CPConditionFunc(
 		return CF_REJECT;*/
 	/*if(pthis->get_active_connections_num()>=FD_SETSIZE-1)
 	{
-		LOG_PRINT("Maximum connections count overfull.", LOG_LEVEL_2);
+		GULPS_LOG_L2("Maximum connections count overfull.");
 		return CF_REJECT;
 	}*/
 
@@ -150,7 +153,7 @@ unsigned CALLBACK cp_server_impl<TProtocol>::worker_thread(void *param)
 template <class TProtocol>
 bool cp_server_impl<TProtocol>::worker_thread_member()
 {
-	LOG_PRINT("Worker thread STARTED", LOG_LEVEL_1);
+	GULPS_LOG_L1("Worker thread STARTED");
 	bool stop_handling = false;
 	while(!stop_handling)
 	{
@@ -166,7 +169,7 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 			{
 				// check return code for error
 				int err = GetLastError();
-				LOG_PRINT("GetQueuedCompletionStatus failed with error " << err << " " << log_space::get_win32_err_descr(err), LOG_LEVEL_1);
+				GULPS_LOGF_L1("GetQueuedCompletionStatus failed with error {} {}", err , log_space::get_win32_err_descr(err));
 
 				if(pio_data)
 					::InterlockedExchange(&pio_data->m_is_in_use, 0);
@@ -185,13 +188,13 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 		}
 		if(!pconnection || !pio_data)
 		{
-			LOG_PRINT("BIG FAIL: pconnection or pio_data is empty: pconnection=" << pconnection << " pio_data=" << pio_data, LOG_LEVEL_0);
+			GULPS_PRINTF("BIG FAIL: pconnection or pio_data is empty: pconnection={} pio_data={}", pconnection, pio_data);
 			break;
 		}
 
 		if(::InterlockedCompareExchange(&pconnection->m_connection_shutwoned, 0, 0))
 		{
-			LOG_ERROR("InterlockedCompareExchange(&pconnection->m_connection_shutwoned, 0, 0)");
+			GULPS_LOG_ERROR("InterlockedCompareExchange(&pconnection->m_connection_shutwoned, 0, 0)");
 			//DebugBreak();
 		}
 
@@ -199,7 +202,7 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 		{
 			if(!pconnection)
 			{
-				LOG_ERROR("op_type=op_type_stop, but pconnection is empty!!!");
+				GULPS_LOG_ERROR("op_type=op_type_stop, but pconnection is empty!!!");
 				continue;
 			}
 			shutdown_connection(pconnection);
@@ -233,7 +236,7 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 			int res = 0;
 			while(true)
 			{
-				LOG_PRINT("Prepearing data for WSARecv....", LOG_LEVEL_3);
+				GULPS_LOG_L3("Prepearing data for WSARecv....");
 				ZeroMemory(&pio_data->m_overlapped, sizeof(OVERLAPPED));
 				pio_data->DataBuf.len = pio_data->TotalBuffBytes;
 				pio_data->DataBuf.buf = pio_data->Buffer;
@@ -242,7 +245,7 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 				DWORD bytes_recvd = 0;
 				DWORD flags = 0;
 
-				LOG_PRINT("Calling WSARecv....", LOG_LEVEL_3);
+				GULPS_LOG_L3("Calling WSARecv....");
 				::InterlockedExchange(&pio_data->m_is_in_use, 1);
 				res = WSARecv(pconnection->m_sock, &(pio_data->DataBuf), 1, &bytes_recvd, &flags, &(pio_data->m_overlapped), NULL);
 				if(res == SOCKET_ERROR)
@@ -250,10 +253,10 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 					int err = ::WSAGetLastError();
 					if(WSA_IO_PENDING == err)
 					{ //go pending, ok
-						LOG_PRINT("WSARecv return WSA_IO_PENDING", LOG_LEVEL_3);
+						GULPS_LOG_L3("WSARecv return WSA_IO_PENDING");
 						break;
 					}
-					LOG_ERROR("BIG FAIL: WSARecv error code not correct, res=" << res << " last_err=" << err);
+					GULPS_LOG_ERRORF("BIG FAIL: WSARecv error code not correct, res={} last_err={}", res, err );
 					::InterlockedExchange(&pio_data->m_is_in_use, 0);
 					pconnection->query_shutdown();
 					break;
@@ -264,14 +267,14 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 					if(!bytes_recvd)
 					{
 						::InterlockedExchange(&pio_data->m_is_in_use, 0);
-						LOG_PRINT("WSARecv return 0, bytes_recvd=0, graceful close.", LOG_LEVEL_3);
+						GULPS_LOG_L3("WSARecv return 0, bytes_recvd=0, graceful close.");
 						int err = ::WSAGetLastError();
-						//LOG_ERROR("BIG FAIL: WSARecv error code not correct, res=" << res << " last_err=" << err);
+						//GULPS_LOG_ERRORF("BIG FAIL: WSARecv error code not correct, res={} last_err={}", res, err );
 						//pconnection->query_shutdown();
 						break;
 					}else
 					{
-						LOG_PRINT("WSARecv return immediatily 0, bytes_recvd=" << bytes_recvd, LOG_LEVEL_3);
+						GULPS_LOGF_L3("WSARecv return immediatily 0, bytes_recvd={}", bytes_recvd);
 						//pconnection->m_tprotocol_handler.handle_recv(pio_data->Buffer, bytes_recvd);
 					}
 				}*/
@@ -279,7 +282,7 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 		}
 	}
 
-	LOG_PRINT("Worker thread STOPED", LOG_LEVEL_1);
+	GULPS_LOG_L1("Worker thread STOPED");
 	::InterlockedDecrement(&m_worker_thread_counter);
 	return true;
 }
@@ -291,19 +294,19 @@ bool cp_server_impl<TProtocol>::shutdown_connection(connection<TProtocol> *pconn
 
 	if(!pconn)
 	{
-		LOG_ERROR("Attempt to remove null pptr connection!");
+		GULPS_LOG_ERROR("Attempt to remove null pptr connection!");
 		return false;
 	}
 	else
 	{
-		LOG_PRINT("Shutting down connection (" << pconn << ")", LOG_LEVEL_3);
+		GULPS_LOGF_L3("Shutting down connection ({})", pconn );
 	}
 	m_connections_lock.lock();
 	connections_container::iterator it = m_connections.find(pconn->m_sock);
 	m_connections_lock.unlock();
 	if(it == m_connections.end())
 	{
-		LOG_ERROR("Failed to find closing socket=" << pconn->m_sock);
+		GULPS_LOG_ERRORF("Failed to find closing socket={}", pconn->m_sock);
 		return false;
 	}
 	SOCKET sock = it->second->m_sock;
@@ -313,7 +316,7 @@ bool cp_server_impl<TProtocol>::shutdown_connection(connection<TProtocol> *pconn
 	}
 	size_t close_sock_wait_count = 0;
 	{
-		LOG_PRINT("Entered to 'in_use wait zone'", LOG_LEVEL_3);
+		GULPS_LOG_L3("Entered to 'in_use wait zone'");
 		PROFILE_FUNC("[shutdown_connection] wait for in_use");
 		while(::InterlockedCompareExchange(&it->second->m_precv_data->m_is_in_use, 1, 1))
 		{
@@ -321,14 +324,14 @@ bool cp_server_impl<TProtocol>::shutdown_connection(connection<TProtocol> *pconn
 			Sleep(100);
 			close_sock_wait_count++;
 		}
-		LOG_PRINT("First step to 'in_use wait zone'", LOG_LEVEL_3);
+		GULPS_LOG_L3("First step to 'in_use wait zone'");
 
 		while(::InterlockedCompareExchange(&it->second->m_psend_data->m_is_in_use, 1, 1))
 		{
 			Sleep(100);
 			close_sock_wait_count++;
 		}
-		LOG_PRINT("Leaved 'in_use wait zone'", LOG_LEVEL_3);
+		GULPS_LOG_L3("Leaved 'in_use wait zone'");
 	}
 
 	::closesocket(it->second->m_sock);
@@ -337,7 +340,7 @@ bool cp_server_impl<TProtocol>::shutdown_connection(connection<TProtocol> *pconn
 	m_connections_lock.lock();
 	m_connections.erase(it);
 	m_connections_lock.unlock();
-	LOG_PRINT("Socked " << sock << " closed, wait_count=" << close_sock_wait_count, LOG_LEVEL_2);
+	GULPS_LOGF_L2("Socked {} closed, wait_count={}", sock , close_sock_wait_count);
 	return true;
 }
 //-------------------------------------------------------------
@@ -348,7 +351,7 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 	if(SOCKET_ERROR == err)
 	{
 		err = ::WSAGetLastError();
-		LOG_ERROR("Failed to listen, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+		GULPS_LOG_ERRORF("Failed to listen, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		return false;
 	}
 
@@ -366,7 +369,7 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 		//::CloseHandle(h_thread);
 	}
 
-	LOG_PRINT("Numbers of worker threads started: " << threads_count, LOG_LEVEL_1);
+	GULPS_LOGF_L1("Numbers of worker threads started: {}", threads_count);
 
 	m_stop = false;
 	while(!m_stop)
@@ -387,7 +390,7 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 		if(SOCKET_ERROR == select_res)
 		{
 			err = ::WSAGetLastError();
-			LOG_ERROR("Failed to select, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+			GULPS_LOG_ERRORF("Failed to select, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 			return false;
 		}
 		if(!select_res)
@@ -410,17 +413,17 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 				if(m_stop)
 					break;
 				int err = ::WSAGetLastError();
-				LOG_PRINT("Failed to WSAAccept, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"", LOG_LEVEL_2);
+				GULPS_LOGF_L2("Failed to WSAAccept, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 				continue;
 			}
-			LOG_PRINT("Accepted connection (new socket=" << new_sock << ")", LOG_LEVEL_2);
+			GULPS_LOGF_L2("Accepted connection (new socket={})", new_sock );
 			{
 				PROFILE_FUNC("[run_server] Add new connection");
 				add_new_connection(new_sock, adr_from.sin_addr.s_addr, adr_from.sin_port);
 			}
 		}
 	}
-	LOG_PRINT("Closing connections(" << m_connections.size() << ") and waiting...", LOG_LEVEL_2);
+	GULPS_LOGF_L2("Closing connections({}) and waiting...", m_connections.size() );
 	m_connections_lock.lock();
 	for(connections_container::iterator it = m_connections.begin(); it != m_connections.end(); it++)
 	{
@@ -434,9 +437,9 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 		::Sleep(100);
 		wait_count++;
 	}
-	LOG_PRINT("Connections closed OK (wait_count=" << wait_count << ")", LOG_LEVEL_2);
+	GULPS_LOGF_L2("Connections closed OK (wait_count={})", wait_count );
 
-	LOG_PRINT("Stopping worker threads(" << m_worker_thread_counter << ").", LOG_LEVEL_2);
+	GULPS_LOGF_L2("Stopping worker threads({}).", m_worker_thread_counter );
 	for(int i = 0; i < m_worker_thread_counter; i++)
 	{
 		::PostQueuedCompletionStatus(m_completion_port, 0, 0, 0);
@@ -449,7 +452,7 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 		wait_count++;
 	}
 
-	LOG_PRINT("Net Server STOPPED, wait_count = " << wait_count, LOG_LEVEL_1);
+	GULPS_LOGF_L1("Net Server STOPPED, wait_count = {}", wait_count);
 	return true;
 }
 //-------------------------------------------------------------
@@ -458,7 +461,7 @@ bool cp_server_impl<TProtocol>::add_new_connection(SOCKET new_sock, const networ
 {
 	PROFILE_FUNC("[add_new_connection]");
 
-	LOG_PRINT("Add new connection zone: entering lock", LOG_LEVEL_3);
+	GULPS_LOG_L3("Add new connection zone: entering lock");
 	m_connections_lock.lock();
 
 	boost::shared_ptr<connection<TProtocol>> ptr;
@@ -466,7 +469,7 @@ bool cp_server_impl<TProtocol>::add_new_connection(SOCKET new_sock, const networ
 
 	connection<TProtocol> &conn = *ptr.get();
 	m_connections[new_sock] = ptr;
-	LOG_PRINT("Add new connection zone: leaving lock", LOG_LEVEL_3);
+	GULPS_LOG_L3("Add new connection zone: leaving lock");
 	m_connections_lock.unlock();
 	conn.init_buffers();
 	conn.m_sock = new_sock;
@@ -480,7 +483,7 @@ bool cp_server_impl<TProtocol>::add_new_connection(SOCKET new_sock, const networ
 	//if(NULL == ::CreateIoCompletionPort((HANDLE)new_sock, m_completion_port, (ULONG_PTR)&conn, 0))
 	//{
 	//	int err = ::GetLastError();
-	//	LOG_PRINT("Failed to CreateIoCompletionPort(associate socket and completion port), err = " << err << " \"" << socket_errors::get_socket_error_text(err) <<"\"", LOG_LEVEL_2);
+	//	GULPS_LOGF_L2("Failed to CreateIoCompletionPort(associate socket and completion port), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 	//	return false;
 	//}
 
@@ -512,7 +515,7 @@ bool cp_server_impl<TProtocol>::add_new_connection(SOCKET new_sock, const networ
 				{
 					break;
 				}
-				LOG_ERROR("BIG FAIL: WSARecv error code not correct, res=" << res << " last_err=" << err << " " << log_space::get_win32_err_descr(err));
+				GULPS_LOG_ERRORF("BIG FAIL: WSARecv error code not correct, res={} last_err={} {}", res , err , log_space::get_win32_err_descr(err));
 				::InterlockedExchange(&conn.m_precv_data->m_is_in_use, 0);
 				conn.query_shutdown();
 				//shutdown_connection(&conn);
@@ -553,7 +556,7 @@ bool cp_server_impl<TProtocol>::deinit_server()
 		if(SOCKET_ERROR == res)
 		{
 			int err = ::WSAGetLastError();
-			LOG_ERROR("Failed to closesocket(), err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+			GULPS_LOG_ERRORF("Failed to closesocket(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		}
 		m_listen_socket = INVALID_SOCKET;
 	}
@@ -562,7 +565,7 @@ bool cp_server_impl<TProtocol>::deinit_server()
 	if(SOCKET_ERROR == res)
 	{
 		int err = ::WSAGetLastError();
-		LOG_ERROR("Failed to WSACleanup(), err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+		GULPS_LOG_ERRORF("Failed to WSACleanup(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 	}
 	m_initialized = false;
 

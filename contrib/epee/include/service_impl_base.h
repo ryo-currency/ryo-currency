@@ -23,11 +23,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#define GULPS_CAT_MAJOR "srv_imp_base"
 
 #ifndef _SERVICE_IMPL_BASE_H_
 #define _SERVICE_IMPL_BASE_H_
 
 #pragma comment(lib, "advapi32.lib")
+
+#include "common/gulps.hpp"	
 
 namespace epee
 {
@@ -101,7 +104,7 @@ inline service_impl_base *&service_impl_base::instance()
 //-----------------------------------------------------------------------------
 inline bool service_impl_base::install()
 {
-	CHECK_AND_ASSERT(!m_service, false);
+	GULPS_CHECK_AND_ASSERT(!m_service, false);
 	const char *psz_descr = get_description();
 	SERVICE_FAILURE_ACTIONSA *fail_acts = get_failure_actions();
 
@@ -117,9 +120,7 @@ inline bool service_impl_base::install()
 			if(!m_manager)
 			{
 				int err = GetLastError();
-				LOG_ERROR(
-					"Failed to OpenSCManager(), last err="
-					<< log_space::get_win32_err_descr(err));
+				GULPS_LOGF_ERROR("Failed to OpenSCManager(), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -129,9 +130,7 @@ inline bool service_impl_base::install()
 		if(!m_service)
 		{
 			int err = GetLastError();
-			LOG_ERROR(
-				"Failed to CreateService(), last err="
-				<< log_space::get_win32_err_descr(err));
+			GULPS_LOGF_ERROR("Failed to CreateService(), last err={}", log_space::get_win32_err_descr(err));
 			break;
 		}
 
@@ -142,9 +141,7 @@ inline bool service_impl_base::install()
 										&sd))
 			{
 				int err = GetLastError();
-				LOG_ERROR(
-					"Failed to ChangeServiceConfig2(SERVICE_CONFIG_DESCRIPTION), last err="
-					<< log_space::get_win32_err_descr(err));
+				GULPS_LOGF_ERROR("Failed to ChangeServiceConfig2(SERVICE_CONFIG_DESCRIPTION), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -155,22 +152,20 @@ inline bool service_impl_base::install()
 										fail_acts))
 			{
 				int err = GetLastError();
-				LOG_ERROR(
-					"Failed to ChangeServiceConfig2(SERVICE_CONFIG_FAILURE_ACTIONS), last err="
-					<< log_space::get_win32_err_descr(err));
+				GULPS_LOGF_ERROR("Failed to ChangeServiceConfig2(SERVICE_CONFIG_FAILURE_ACTIONS), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
-		LOG_PRINT("Installed succesfully.", LOG_LEVEL_0);
+		GULPS_PRINT("Installed succesfully.");
 		return true;
 	}
-	LOG_PRINT("Failed to install.", LOG_LEVEL_0);
+	GULPS_PRINT("Failed to install.");
 	return false;
 }
 //-----------------------------------------------------------------------------
 inline bool service_impl_base::remove()
 {
-	CHECK_AND_ASSERT(!m_service, false);
+	GULPS_CHECK_AND_ASSERT(!m_service, false);
 
 	while(TRUE)
 	{
@@ -180,9 +175,7 @@ inline bool service_impl_base::remove()
 			if(!m_manager)
 			{
 				int err = GetLastError();
-				LOG_ERROR(
-					"Failed to OpenSCManager(), last err="
-					<< log_space::get_win32_err_descr(err));
+				GULPS_LOGF_ERROR("Failed to OpenSCManager(), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -193,9 +186,7 @@ inline bool service_impl_base::remove()
 			if(!m_service)
 			{
 				int err = GetLastError();
-				LOG_ERROR(
-					"Failed to OpenService(), last err="
-					<< log_space::get_win32_err_descr(err));
+				GULPS_LOGF_ERROR("Failed to OpenService(), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -208,9 +199,7 @@ inline bool service_impl_base::remove()
 				continue;
 			else if(err != ERROR_SERVICE_NOT_ACTIVE)
 			{
-				LOG_ERROR(
-					"Failed to ControlService(SERVICE_CONTROL_STOP), last err="
-					<< log_space::get_win32_err_descr(err));
+				GULPS_LOGF_ERROR("Failed to ControlService(SERVICE_CONTROL_STOP), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -218,13 +207,11 @@ inline bool service_impl_base::remove()
 		if(!::DeleteService(m_service))
 		{
 			int err = ::GetLastError();
-			LOG_ERROR(
-				"Failed to ControlService(SERVICE_CONTROL_STOP), last err="
-				<< log_space::get_win32_err_descr(err));
+			GULPS_LOGF_ERROR("Failed to ControlService(SERVICE_CONTROL_STOP), last err={}", log_space::get_win32_err_descr(err));
 			break;
 		}
 
-		LOG_PRINT("Removed successfully.", LOG_LEVEL_0);
+		GULPS_PRINT("Removed successfully.");
 		break;
 	}
 
@@ -238,7 +225,7 @@ inline bool service_impl_base::init()
 //-----------------------------------------------------------------------------
 inline bool service_impl_base::run_service()
 {
-	CHECK_AND_ASSERT(!m_service, false);
+	GULPS_CHECK_AND_ASSERT(!m_service, false);
 
 	long error_code = 0;
 
@@ -248,24 +235,19 @@ inline bool service_impl_base::run_service()
 	service_table->lpServiceName = (char *)get_name();
 	service_table->lpServiceProc = service_entry;
 
-	LOG_PRINT("[+] Start service control dispatcher for \"" << get_name() << "\"",
-			  LOG_LEVEL_1);
+	GULPS_LOG_L1("[+] Start service control dispatcher for \"{}\"", get_name());
 
 	error_code = 1;
 	BOOL res = ::StartServiceCtrlDispatcherA(service_table);
 	if(!res)
 	{
 		int err = GetLastError();
-		LOG_PRINT(
-			"[+] Error starting service control dispatcher, err="
-				<< log_space::get_win32_err_descr(err),
-			LOG_LEVEL_1);
+		GULPS_LOG_L1("[+] Error starting service control dispatcher, err={}", log_space::get_win32_err_descr(err));
 		return false;
 	}
 	else
 	{
-		LOG_PRINT("[+] End service control dispatcher for \"" << get_name() << "\"",
-				  LOG_LEVEL_1);
+		GULPS_LOG_L1("[+] End service control dispatcher for \"{}\"", get_name());
 	}
 	return true;
 }
@@ -273,7 +255,7 @@ inline bool service_impl_base::run_service()
 inline DWORD __stdcall service_impl_base::_service_handler(DWORD control,
 														   DWORD event, void *pdata, void *pcontext)
 {
-	CHECK_AND_ASSERT(pcontext, ERROR_CALL_NOT_IMPLEMENTED);
+	GULPS_CHECK_AND_ASSERT(pcontext, ERROR_CALL_NOT_IMPLEMENTED);
 
 	service_impl_base *pservice = (service_impl_base *)pcontext;
 	return pservice->service_handler(control, event, pdata);
@@ -282,10 +264,10 @@ inline DWORD __stdcall service_impl_base::_service_handler(DWORD control,
 inline void __stdcall service_impl_base::service_entry(DWORD argc, char **pargs)
 {
 	service_impl_base *pme = instance();
-	LOG_PRINT("instance: " << pme, LOG_LEVEL_4);
+	GULPS_LOG_L3("instance: ");
 	if(!pme)
 	{
-		LOG_ERROR("Error: at service_entry() pme = NULL");
+		GULPS_LOG_ERROR("Error: at service_entry() pme = NULL");
 		return;
 	}
 	pme->m_status_handle = ::RegisterServiceCtrlHandlerExA(pme->get_name(),

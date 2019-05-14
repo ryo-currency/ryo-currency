@@ -94,7 +94,8 @@ target_link_libraries(unit_tests
     ${Boost_THREAD_LIBRARY}
     ${GTEST_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 set_property(TARGET unit_tests
   PROPERTY
     FOLDER "tests")

@@ -120,7 +120,8 @@ target_link_libraries(daemon
     ${CMAKE_THREAD_LIBS_INIT}
     ${ZMQ_LIB}
     ${GNU_READLINE_LIBRARY}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 set_property(TARGET daemon
   PROPERTY
     OUTPUT_NAME "ryod")

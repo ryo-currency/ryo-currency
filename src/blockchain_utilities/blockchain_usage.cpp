@@ -42,6 +42,8 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#define GULPS_CAT_MAJOR "blockch_usage"
+
 #include "cryptonote_core/blockchain.h"
 #include "blockchain_db/blockchain_db.h"
 #include "blockchain_db/db_types.h"
@@ -53,8 +55,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "bcutil"
+#include "common/gulps.hpp"
+
+
 
 namespace po = boost::program_options;
 using namespace epee;
@@ -97,6 +100,8 @@ struct reference
 	reference(uint64_t h, uint64_t rs, uint64_t p) : height(h), ring_size(rs), position(p) {}
 };
 
+gulps_log_level log_scr;
+
 int main(int argc, char *argv[])
 {
 #ifdef WIN32
@@ -109,7 +114,7 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 
 	epee::string_tools::set_module_name_and_folder(argv[0]);
 
@@ -155,21 +160,54 @@ int main(int argc, char *argv[])
 	});
 	if(!r)
 		return 1;
+	
+	gulps::inst().set_thread_tag("BLOCKCH_USAGE");
+	
+	//Temp error output
+	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
+	auto temp_handle = gulps::inst().add_output(std::move(out));
 
+	if(!command_line::is_arg_defaulted(vm, arg_log_level))
+	{
+		if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
+		{
+			GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, arg_log_level).c_str());
+			return 1;
+		}
+	}
+	else
+	{
+		if(!log_scr.parse_cat_string(std::to_string(log_level).c_str()))
+		{
+			GULPS_ERRORF("Failed to parse filter string {}", log_level);
+			return 1;
+		}
+	}
+
+	gulps::inst().remove_output(temp_handle);
+
+	if(log_scr.is_active())
+	{
+		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
+		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
+					return false;
+				if(printed)
+					return false;
+				return log_scr.match_msg(msg);
+				});
+		gulps::inst().add_output(std::move(out));
+	}
+	
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
-		std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
-		std::cout << desc_options << std::endl;
+		GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")");
+		GULPS_PRINT(desc_options);
 		return 0;
 	}
 
-	mlog_configure(mlog_get_default_log_path("ryo-blockchain-usage.log"), true);
-	if(!command_line::is_arg_defaulted(vm, arg_log_level))
-		mlog_set_log(command_line::get_arg(vm, arg_log_level).c_str());
-	else
-		mlog_set_log(std::string(std::to_string(log_level) + ",bcutil:INFO").c_str());
-
-	LOG_PRINT_L0("Starting...");
+	GULPS_PRINT("Starting...");
 
 	bool opt_testnet = command_line::get_arg(vm, cryptonote::arg_testnet_on);
 	bool opt_stagenet = command_line::get_arg(vm, cryptonote::arg_stagenet_on);
@@ -179,7 +217,7 @@ int main(int argc, char *argv[])
 	std::string db_type = command_line::get_arg(vm, arg_database);
 	if(!cryptonote::blockchain_valid_db_type(db_type))
 	{
-		std::cerr << "Invalid database type: " << db_type << std::endl;
+		GULPS_ERROR("Invalid database type: ", db_type);
 		return 1;
 	}
 
@@ -194,7 +232,7 @@ int main(int argc, char *argv[])
 	//   Blockchain* core_storage = new Blockchain(NULL);
 	// because unlike blockchain_storage constructor, which takes a pointer to
 	// tx_memory_pool, Blockchain's constructor takes tx_memory_pool object.
-	LOG_PRINT_L0("Initializing source blockchain (BlockchainDB)");
+	GULPS_PRINT("Initializing source blockchain (BlockchainDB)");
 	const std::string input = command_line::get_arg(vm, arg_input);
 	std::unique_ptr<Blockchain> core_storage;
 	tx_memory_pool m_mempool(*core_storage);
@@ -202,13 +240,13 @@ int main(int argc, char *argv[])
 	BlockchainDB *db = new_db(db_type);
 	if(db == NULL)
 	{
-		LOG_ERROR("Attempted to use non-existent database type: " << db_type);
+		GULPS_LOG_ERROR("Attempted to use non-existent database type: ", db_type);
 		throw std::runtime_error("Attempting to use non-existent database type");
 	}
-	LOG_PRINT_L0("database: " << db_type);
+	GULPS_PRINT("database: " , db_type);
 
 	const std::string filename = input;
-	LOG_PRINT_L0("Loading blockchain from folder " << filename << " ...");
+	GULPS_PRINT("Loading blockchain from folder " , filename , " ...");
 
 	try
 	{
@@ -216,21 +254,21 @@ int main(int argc, char *argv[])
 	}
 	catch(const std::exception &e)
 	{
-		LOG_PRINT_L0("Error opening database: " << e.what());
+		GULPS_ERROR("Error opening database: " , e.what());
 		return 1;
 	}
 	r = core_storage->init(db, net_type);
 
-	CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
-	LOG_PRINT_L0("Source blockchain storage initialized OK");
+	GULPS_CHECK_AND_ASSERT_MES(r, 1, "Failed to initialize source blockchain storage");
+	GULPS_PRINT("Source blockchain storage initialized OK");
 
-	LOG_PRINT_L0("Building usage patterns...");
+	GULPS_PRINT("Building usage patterns...");
 
 	size_t done = 0;
 	std::unordered_map<output_data, std::list<reference>> outputs;
 	std::unordered_map<uint64_t, uint64_t> indices;
 
-	LOG_PRINT_L0("Reading blockchain from " << input);
+	GULPS_PRINT("Reading blockchain from " , input);
 	core_storage->for_all_transactions([&](const crypto::hash &hash, const cryptonote::transaction &tx) -> bool {
 		const bool coinbase = tx.vin.size() == 1 && tx.vin[0].type() == typeid(txin_gen);
 		const uint64_t height = core_storage->get_db().get_tx_block_height(hash);
@@ -274,11 +312,11 @@ int main(int argc, char *argv[])
 	for(const auto &c : counts)
 	{
 		float percent = 100.f * c.second / total;
-		MINFO(std::to_string(c.second) << " outputs used " << c.first << " times (" << percent << "%)");
+		GULPS_INFOF("{} outputs used {} times ({}%)", c.second, c.first, percent);
 	}
 
-	LOG_PRINT_L0("Blockchain usage exported OK");
+	GULPS_PRINT("Blockchain usage exported OK");
 	return 0;
 
-	CATCH_ENTRY("Export error", 1);
+	GULPS_CATCH_ENTRY("Export error", 1);
 }

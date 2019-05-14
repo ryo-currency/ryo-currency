@@ -73,8 +73,8 @@ ryo_add_library(mnemonics
 target_link_libraries(mnemonics
   PUBLIC
     epee
-    easylogging
     ${Boost_SYSTEM_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     common
     ${Boost_LOCALE_LIBRARY}

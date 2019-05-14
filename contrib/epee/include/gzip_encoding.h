@@ -106,7 +106,7 @@ class content_encoding_gzip : public i_sub_handler
 
 			int flag = Z_SYNC_FLUSH;
 			int ret = inflate(&m_zstream_in, flag);
-			CHECK_AND_ASSERT_MES(ret >= 0 || m_zstream_in.avail_out || m_is_deflate_mode, false, "content_encoding_gzip::update_in() Failed to inflate. err = " << ret);
+			GULPS_CHECK_AND_ASSERT_MES(ret >= 0 || m_zstream_in.avail_out || m_is_deflate_mode, false, "content_encoding_gzip::update_in() Failed to inflate. err = " , ret);
 
 			if(Z_STREAM_END == ret)
 				m_is_stream_ended = true;
@@ -126,7 +126,7 @@ class content_encoding_gzip : public i_sub_handler
 				ret = inflate(&m_zstream_in, Z_NO_FLUSH);
 				if(ret != Z_OK)
 				{
-					LOCAL_ASSERT(0);
+					GULPS_LOCAL_ASSERT(0);
 					m_pre_decode.swap(piece_of_transfer);
 					return false;
 				}
@@ -136,7 +136,7 @@ class content_encoding_gzip : public i_sub_handler
 				ret = inflate(&m_zstream_in, Z_NO_FLUSH);
 				if(ret != Z_OK)
 				{
-					LOCAL_ASSERT(0);
+					GULPS_LOCAL_ASSERT(0);
 					m_pre_decode.swap(piece_of_transfer);
 					return false;
 				}

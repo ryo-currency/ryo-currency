@@ -269,7 +269,7 @@ bool gen_ring_signature_big::generate(std::vector<test_event_entry> &events) con
 		std::vector<cryptonote::block> chain;
 		map_hash2tx_t mtx;
 		bool r = find_block_chain(events, chain, mtx, get_block_hash(blk_i));
-		CHECK_AND_NO_ASSERT_MES(r, false, "failed to call find_block_chain");
+		GULPS_CHECK_AND_NO_ASSERT_MES(r, false, "failed to call find_block_chain");
 		std::cout << i << ": " << get_balance(accounts[i], chain, mtx) << std::endl;
 	}
 

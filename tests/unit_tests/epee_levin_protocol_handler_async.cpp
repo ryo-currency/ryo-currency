@@ -127,7 +127,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
 {
   public:
 	test_connection(boost::asio::io_service &io_service, test_levin_protocol_handler_config &protocol_config)
-		: m_io_service(io_service), m_protocol_handler(this, protocol_config, m_context), m_send_return(true)
+		: m_io_service(io_service), m_send_return(true), m_protocol_handler(this, protocol_config, m_context)
 	{
 	}
 
@@ -186,10 +186,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
 	bool send_return() const { return m_send_return; }
 	void send_return(bool v) { m_send_return = v; }
 
-  public:
-	test_levin_protocol_handler m_protocol_handler;
-
-  private:
+private:
 	boost::asio::io_service &m_io_service;
 	test_levin_connection_context m_context;
 
@@ -199,6 +196,9 @@ class test_connection : public epee::net_utils::i_service_endpoint
 	std::string m_last_send_data;
 
 	bool m_send_return;
+
+public:
+	test_levin_protocol_handler m_protocol_handler;
 };
 
 class async_protocol_handler_test : public ::testing::Test

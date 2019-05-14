@@ -31,6 +31,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* rfree: implementation for throttle details */
+#define GULPS_CAT_MAJOR "net_tht_det"
 
 #include <atomic>
 #include <boost/asio.hpp>
@@ -52,7 +53,6 @@
 #include "syncobj.h"
 
 #include "misc_language.h"
-#include "misc_log_ex.h"
 #include "net/net_utils_base.h"
 #include "pragma_comp_defs.h"
 #include <algorithm>
@@ -74,8 +74,9 @@
 // TODO:
 #include "net/network_throttle-detail.hpp"
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net.throttle"
+#include "common/gulps.hpp"	
+
+
 
 // ################################################################################################
 // ################################################################################################
@@ -151,7 +152,7 @@ void network_throttle::set_name(const std::string &name)
 void network_throttle::set_target_speed(network_speed_kbps target)
 {
 	m_target_speed = target * 1024;
-	MINFO("Setting LIMIT: " << target << " kbps");
+	GULPS_INFOF("Setting LIMIT: {} kbps", target);
 }
 
 network_speed_kbps network_throttle::get_target_speed()
@@ -173,7 +174,7 @@ void network_throttle::tick()
 	// TODO optimize when moving few slots at once
 	while((!m_any_packet_yet) || (last_sample_time_slot < current_sample_time_slot))
 	{
-		_dbg3("Moving counter buffer by 1 second " << last_sample_time_slot << " < " << current_sample_time_slot << " (last time " << m_last_sample_time << ")");
+		GULPS_LOGF_L1("Moving counter buffer by 1 second {} < {} (last time {})", last_sample_time_slot, current_sample_time_slot, m_last_sample_time);
 		// rotate buffer
 		for(size_t i = m_history.size() - 1; i >= 1; --i)
 			m_history[i] = m_history[i - 1];
@@ -211,13 +212,11 @@ void network_throttle::_handle_trafic_exact(size_t packet_size, size_t orginal_s
 	oss << "]" << std::ends;
 	std::string history_str = oss.str();
 
-	MTRACE("Throttle " << m_name << ": packet of ~" << packet_size << "b "
-					   << " (from " << orginal_size << " b)"
-					   << " Speed AVG=" << std::setw(4) << ((long int)(cts.average / 1024)) << "[w=" << cts.window << "]"
-					   << " " << std::setw(4) << ((long int)(cts2.average / 1024)) << "[w=" << cts2.window << "]"
-					   << " / "
-					   << " Limit=" << ((long int)(m_target_speed / 1024)) << " KiB/sec "
-					   << " " << history_str);
+	GULPS_LOGF_L2("Throttle {}: packet of ~{}b  (from {} b) Speed AVG={:>4}[w={}] {:>4}[w={}]  /  Limit={} KiB/sec {}", m_name, packet_size,
+					   orginal_size,
+					   ((long int)(cts.average / 1024)), cts.window,
+					   ((long int)(cts2.average / 1024)), cts2.window,
+					  ((long int)(m_target_speed / 1024)), history_str);
 }
 
 void network_throttle::handle_trafic_tcp(size_t packet_size)
@@ -243,7 +242,7 @@ void network_throttle::logger_handle_net(const std::string &filename, double tim
 		file.open(filename.c_str(), std::ios::app | std::ios::out);
 		file.precision(6);
 		if(!file.is_open())
-			_warn("Can't open file " << filename);
+			GULPS_WARN("Can't open file ", filename);
 		file << static_cast<int>(time) << " " << static_cast<double>(size / 1024) << "\n";
 		file.close();
 	}
@@ -317,17 +316,20 @@ void network_throttle::calculate_times(size_t packet_size, calculate_times_struc
 			oss << sample.m_size << " ";
 		oss << "]" << std::ends;
 		std::string history_str = oss.str();
-		MTRACE((cts.delay > 0 ? "SLEEP" : "")
-			   << "dbg " << m_name << ": "
-			   << "speed is A=" << std::setw(8) << cts.average << " vs "
-			   << "Max=" << std::setw(8) << M << " "
-			   << " so sleep: "
-			   << "D=" << std::setw(8) << cts.delay << " sec "
-			   << "E=" << std::setw(8) << E << " (Enow=" << std::setw(8) << Enow << ") "
-			   << "M=" << std::setw(8) << M << " W=" << std::setw(8) << cts.window << " "
-			   << "R=" << std::setw(8) << cts.recomendetDataSize << " Wgood" << std::setw(8) << Wgood << " "
-			   << "History: " << std::setw(8) << history_str << " "
-			   << "m_last_sample_time=" << std::setw(8) << m_last_sample_time);
+		GULPS_LOGF_L2("{} dbg {}: speed is A={:>8} vs Max={:>8}  so sleep: D={:>8} sec E={:>8} (Enow={:>8}) M={:>8} W={:>8} R={:>8} Wgood {:>8} History: {:>8} m_last_sample_time={:>8}",
+			   (cts.delay > 0 ? "SLEEP" : ""),
+			   m_name,
+			   cts.average,
+			   M,
+			   cts.delay,
+			   E,
+			   Enow,
+			   M,
+			   cts.window,
+			   cts.recomendetDataSize,
+			   Wgood,
+			   history_str,
+			   m_last_sample_time);
 	}
 }
 

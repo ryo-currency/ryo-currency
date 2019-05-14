@@ -43,12 +43,14 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Adapted from Python code by Sarang Noether
+#undef GULPS_CAT_MAJOR
+#define GULPS_CAT_MAJOR "multiexp"
 
 #pragma once
 
 #include "cryptonote_config.h"
 #include "crypto/crypto.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include "rctTypes.h"
 #include <vector>
 #include <boost/align/aligned_delete.hpp>
@@ -89,7 +91,7 @@ struct MultiexpData
 	MultiexpData(const rct::key &s, const ge_p3 &p) : scalar(s), point(p) {}
 	MultiexpData(const rct::key &s, const rct::key &p) : scalar(s)
 	{
-		CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&point, p.bytes) == 0, "ge_frombytes_vartime failed");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&point, p.bytes) == 0, "ge_frombytes_vartime failed");
 	}
 };
 

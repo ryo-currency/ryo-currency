@@ -67,7 +67,8 @@ target_link_libraries(performance_tests
     epee
     ${Boost_CHRONO_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 set_property(TARGET performance_tests
   PROPERTY
     FOLDER "tests")

@@ -45,8 +45,7 @@
 #pragma once
 #include <boost/program_options.hpp>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
+
 
 namespace daemonize
 {

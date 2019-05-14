@@ -57,14 +57,14 @@ bool gen_rct_tx_validation_base::generate_with(std::vector<test_event_entry> &ev
 	for(size_t n = 0; n < 4; ++n)
 	{
 		miner_accounts[n].generate_new(false);
-		CHECK_AND_ASSERT_MES(generator.construct_block_manually(blocks[n], *prev_block, miner_accounts[n],
+		GULPS_CHECK_AND_ASSERT_MES(generator.construct_block_manually(blocks[n], *prev_block, miner_accounts[n],
 																test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp | test_generator::bf_hf_version,
 																2, 2, prev_block->timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
 																crypto::hash(), 0, transaction(), std::vector<crypto::hash>(), 0, 0, 2),
 							 false, "Failed to generate block");
 		events.push_back(blocks[n]);
 		prev_block = blocks + n;
-		LOG_PRINT_L0("Initial miner tx " << n << ": " << obj_to_json_str(blocks[n].miner_tx));
+		std::cout << "Initial miner tx " << n << ": " << obj_to_json_str(blocks[n].miner_tx) << std::endl;
 	}
 
 	// rewind
@@ -74,7 +74,7 @@ bool gen_rct_tx_validation_base::generate_with(std::vector<test_event_entry> &ev
 		for(size_t i = 0; i < CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW; ++i)
 		{
 			cryptonote::block blk;
-			CHECK_AND_ASSERT_MES(generator.construct_block_manually(blk, blk_last, miner_account,
+			GULPS_CHECK_AND_ASSERT_MES(generator.construct_block_manually(blk, blk_last, miner_account,
 																	test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp | test_generator::bf_hf_version,
 																	2, 2, blk_last.timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
 																	crypto::hash(), 0, transaction(), std::vector<crypto::hash>(), 0, 0, 2),
@@ -124,7 +124,7 @@ bool gen_rct_tx_validation_base::generate_with(std::vector<test_event_entry> &ev
 		std::unordered_map<crypto::public_key, cryptonote::subaddress_index> subaddresses;
 		subaddresses[miner_accounts[n].get_keys().m_account_address.m_spend_public_key] = {0, 0};
 		bool r = construct_tx_and_get_tx_key(miner_accounts[n].get_keys(), subaddresses, sources, destinations, cryptonote::account_public_address{}, nullptr, rct_txes[n], 0, tx_key, additional_tx_keys, true);
-		CHECK_AND_ASSERT_MES(r, false, "failed to construct transaction");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to construct transaction");
 		events.push_back(rct_txes[n]);
 		starting_rct_tx_hashes.push_back(get_transaction_hash(rct_txes[n]));
 
@@ -132,7 +132,7 @@ bool gen_rct_tx_validation_base::generate_with(std::vector<test_event_entry> &ev
 		{
 			crypto::key_derivation derivation;
 			bool r = crypto::generate_key_derivation(destinations[o].addr.m_view_public_key, tx_key, derivation);
-			CHECK_AND_ASSERT_MES(r, false, "Failed to generate key derivation");
+			GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to generate key derivation");
 			crypto::secret_key amount_key;
 			crypto::derivation_to_scalar(derivation, o, amount_key);
 			if(rct_txes[n].rct_signatures.type == rct::RCTTypeSimple || rct_txes[n].rct_signatures.type == rct::RCTTypeBulletproof)
@@ -141,7 +141,7 @@ bool gen_rct_tx_validation_base::generate_with(std::vector<test_event_entry> &ev
 				rct::decodeRct(rct_txes[n].rct_signatures, rct::sk2rct(amount_key), o, rct_tx_masks[o + n * 4], hw::get_device("default"));
 		}
 
-		CHECK_AND_ASSERT_MES(generator.construct_block_manually(blk_txes[n], blk_last, miner_account,
+		GULPS_CHECK_AND_ASSERT_MES(generator.construct_block_manually(blk_txes[n], blk_last, miner_account,
 																test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp | test_generator::bf_tx_hashes | test_generator::bf_hf_version | test_generator::bf_max_outs,
 																4, 4, blk_last.timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
 																crypto::hash(), 0, transaction(), starting_rct_tx_hashes, 0, 6, 4),
@@ -155,7 +155,7 @@ bool gen_rct_tx_validation_base::generate_with(std::vector<test_event_entry> &ev
 		for(size_t i = 0; i < CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW; ++i)
 		{
 			cryptonote::block blk;
-			CHECK_AND_ASSERT_MES(generator.construct_block_manually(blk, blk_last, miner_account,
+			GULPS_CHECK_AND_ASSERT_MES(generator.construct_block_manually(blk, blk_last, miner_account,
 																	test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp | test_generator::bf_hf_version | test_generator::bf_max_outs,
 																	4, 4, blk_last.timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
 																	crypto::hash(), 0, transaction(), std::vector<crypto::hash>(), 0, 6, 4),
@@ -229,7 +229,7 @@ bool gen_rct_tx_validation_base::generate_with(std::vector<test_event_entry> &ev
 	std::unordered_map<crypto::public_key, cryptonote::subaddress_index> subaddresses;
 	subaddresses[miner_accounts[0].get_keys().m_account_address.m_spend_public_key] = {0, 0};
 	bool r = construct_tx_and_get_tx_key(miner_accounts[0].get_keys(), subaddresses, sources, destinations, cryptonote::account_public_address{}, nullptr, tx, 0, tx_key, additional_tx_keys, true);
-	CHECK_AND_ASSERT_MES(r, false, "failed to construct transaction");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to construct transaction");
 
 	if(post_tx)
 		post_tx(tx);
@@ -237,7 +237,7 @@ bool gen_rct_tx_validation_base::generate_with(std::vector<test_event_entry> &ev
 	if(!valid)
 		DO_CALLBACK(events, "mark_invalid_tx");
 	events.push_back(tx);
-	LOG_PRINT_L0("Test tx: " << obj_to_json_str(tx));
+	std::cout << "Test tx: " << obj_to_json_str(tx) << std::endl;
 
 	return true;
 }

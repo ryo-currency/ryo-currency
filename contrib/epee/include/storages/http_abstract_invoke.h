@@ -24,6 +24,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "h_abs_inv"
 
 #pragma once
 #include "net/http_base.h"
@@ -32,6 +36,8 @@
 #include <boost/utility/string_ref.hpp>
 #include <chrono>
 #include <string>
+
+#include "common/gulps.hpp"	
 
 namespace epee
 {
@@ -50,19 +56,20 @@ bool invoke_http_json(const boost::string_ref uri, const t_request &out_struct, 
 	const http::http_response_info *pri = NULL;
 	if(!transport.invoke(uri, method, req_param, timeout, std::addressof(pri), std::move(additional_params)))
 	{
-		LOG_PRINT_L1("Failed to invoke http request to  " << uri);
+		GULPS_LOG_L1("Failed to invoke http request to  ", uri);
 		return false;
 	}
 
 	if(!pri)
 	{
-		LOG_PRINT_L1("Failed to invoke http request to  " << uri << ", internal error (null response ptr)");
+		GULPS_LOG_L1("Failed to invoke http request to  ", uri, " internal error (null response ptr)");
 		return false;
 	}
 
 	if(pri->m_response_code != 200)
 	{
-		LOG_PRINT_L1("Failed to invoke http request to  " << uri << ", wrong response code: " << pri->m_response_code);
+		//GULPS_LOGF_L1("Failed to invoke http request to  {}, wrong response code: {}", uri , pri->m_response_code);
+		GULPS_LOG_L1("Failed to invoke http request to  ", uri, " wrong response code: ", pri->m_response_code);
 		return false;
 	}
 
@@ -79,19 +86,19 @@ bool invoke_http_bin(const boost::string_ref uri, const t_request &out_struct, t
 	const http::http_response_info *pri = NULL;
 	if(!transport.invoke(uri, method, req_param, timeout, std::addressof(pri)))
 	{
-		LOG_PRINT_L1("Failed to invoke http request to  " << uri);
+		GULPS_LOG_L1("Failed to invoke http request to  ", uri);
 		return false;
 	}
 
 	if(!pri)
 	{
-		LOG_PRINT_L1("Failed to invoke http request to  " << uri << ", internal error (null response ptr)");
+		GULPS_LOG_L1("Failed to invoke http request to  ", uri, " internal error (null response ptr)");
 		return false;
 	}
 
 	if(pri->m_response_code != 200)
 	{
-		LOG_PRINT_L1("Failed to invoke http request to  " << uri << ", wrong response code: " << pri->m_response_code);
+		GULPS_LOG_L1("Failed to invoke http request to  ", uri, " wrong response code: ", pri->m_response_code);
 		return false;
 	}
 
@@ -113,7 +120,7 @@ bool invoke_http_json_rpc(const boost::string_ref uri, std::string method_name, 
 	}
 	if(resp_t.error.code || resp_t.error.message.size())
 	{
-		LOG_ERROR("RPC call of \"" << req_t.method << "\" returned error: " << resp_t.error.code << ", message: " << resp_t.error.message);
+		GULPS_LOGF_ERROR("RPC call of \"{}\" returned error: {}, message: {}", req_t.method, resp_t.error.code, resp_t.error.message);
 		return false;
 	}
 	result_struct = resp_t.result;
