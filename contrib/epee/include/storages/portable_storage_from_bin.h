@@ -66,11 +66,11 @@ struct throwable_buffer_reader
 		recursuion_limitation_guard(size_t &counter) : m_counter_ref(counter)
 		{
 			++m_counter_ref;
-			CHECK_AND_ASSERT_THROW_MES(m_counter_ref < EPEE_PORTABLE_STORAGE_RECURSION_LIMIT_INTERNAL, "Wrong blob data in portable storage: recursion limitation (" << EPEE_PORTABLE_STORAGE_RECURSION_LIMIT_INTERNAL << ") exceeded");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(m_counter_ref < EPEE_PORTABLE_STORAGE_RECURSION_LIMIT_INTERNAL, "Wrong blob data in portable storage: recursion limitation (", EPEE_PORTABLE_STORAGE_RECURSION_LIMIT_INTERNAL, ") exceeded");
 		}
 		~recursuion_limitation_guard() noexcept(false)
 		{
-			CHECK_AND_ASSERT_THROW_MES(m_counter_ref != 0, "Internal error: m_counter_ref == 0 while ~recursuion_limitation_guard()");
+			GULPS_CHECK_AND_ASSERT_THROW_MES(m_counter_ref != 0, "Internal error: m_counter_ref == 0 while ~recursuion_limitation_guard()");
 			--m_counter_ref;
 		}
 	};
@@ -94,7 +94,7 @@ inline throwable_buffer_reader::throwable_buffer_reader(const void *ptr, size_t 
 inline void throwable_buffer_reader::read(void *target, size_t count)
 {
 	RECURSION_LIMITATION();
-	CHECK_AND_ASSERT_THROW_MES(m_count >= count, " attempt to read " << count << " bytes from buffer with " << m_count << " bytes remained");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(m_count >= count, " attempt to read ", count, " bytes from buffer with ", m_count, " bytes remained");
 	memcpy(target, m_ptr, count);
 	m_ptr += count;
 	m_count -= count;
@@ -171,14 +171,14 @@ inline storage_entry throwable_buffer_reader::load_storage_array_entry(uint8_t t
 	case SERIALIZE_TYPE_ARRAY:
 		return read_ae<array_entry>();
 	default:
-		CHECK_AND_ASSERT_THROW_MES(false, "unknown entry_type code = " << type);
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "unknown entry_type code = ", type);
 	}
 }
 
 inline size_t throwable_buffer_reader::read_varint()
 {
 	RECURSION_LIMITATION();
-	CHECK_AND_ASSERT_THROW_MES(m_count >= 1, "empty buff, expected place for varint");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(m_count >= 1, "empty buff, expected place for varint");
 	size_t v = 0;
 	uint8_t size_mask = (*(uint8_t *)m_ptr) & PORTABLE_RAW_SIZE_MARK_MASK;
 	switch(size_mask)
@@ -196,7 +196,7 @@ inline size_t throwable_buffer_reader::read_varint()
 		v = read<uint64_t>();
 		break;
 	default:
-		CHECK_AND_ASSERT_THROW_MES(false, "unknown varint size_mask = " << size_mask);
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "unknown varint size_mask = ", size_mask);
 	}
 	v >>= 2;
 	return v;
@@ -235,7 +235,7 @@ inline storage_entry throwable_buffer_reader::read_se<array_entry>()
 	RECURSION_LIMITATION();
 	uint8_t ent_type = 0;
 	read(ent_type);
-	CHECK_AND_ASSERT_THROW_MES(ent_type & SERIALIZE_FLAG_ARRAY, "wrong type sequenses");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(ent_type & SERIALIZE_FLAG_ARRAY, "wrong type sequenses");
 	return load_storage_array_entry(ent_type);
 }
 
@@ -276,7 +276,7 @@ inline storage_entry throwable_buffer_reader::load_storage_entry()
 	case SERIALIZE_TYPE_ARRAY:
 		return read_se<array_entry>();
 	default:
-		CHECK_AND_ASSERT_THROW_MES(false, "unknown entry_type code = " << ent_type);
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "unknown entry_type code = ", ent_type);
 	}
 }
 inline void throwable_buffer_reader::read(section &sec)
@@ -296,8 +296,8 @@ inline void throwable_buffer_reader::read(std::string &str)
 {
 	RECURSION_LIMITATION();
 	size_t len = read_varint();
-	CHECK_AND_ASSERT_THROW_MES(len < MAX_STRING_LEN_POSSIBLE, "to big string len value in storage: " << len);
-	CHECK_AND_ASSERT_THROW_MES(m_count >= len, "string len count value " << len << " goes out of remain storage len " << m_count);
+	GULPS_CHECK_AND_ASSERT_THROW_MES(len < MAX_STRING_LEN_POSSIBLE, "to big string len value in storage: ", len);
+	GULPS_CHECK_AND_ASSERT_THROW_MES(m_count >= len, "string len count value ", len, " goes out of remain storage len ", m_count);
 	//do this manually to avoid double memory write in huge strings (first time at resize, second at read)
 	str.assign((const char *)m_ptr, len);
 	m_ptr += len;
@@ -307,7 +307,7 @@ inline void throwable_buffer_reader::read(std::string &str)
 inline void throwable_buffer_reader::read(array_entry &ae)
 {
 	RECURSION_LIMITATION();
-	CHECK_AND_ASSERT_THROW_MES(false, "Reading array entry is not supported");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(false, "Reading array entry is not supported");
 }
 }
 }

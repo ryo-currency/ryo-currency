@@ -56,6 +56,8 @@ ryo_add_library(serialization
   ${serialization_headers}
   ${serialization_private_headers})
 target_link_libraries(serialization
+  LINK_PUBLIC
+    fmt::fmt-header-only
   LINK_PRIVATE
     cryptonote_core
     cryptonote_protocol

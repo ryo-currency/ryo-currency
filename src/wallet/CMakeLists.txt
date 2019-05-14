@@ -80,6 +80,7 @@ target_link_libraries(wallet
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_REGEX_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})
 
@@ -115,7 +116,8 @@ target_link_libraries(wallet_rpc_server
     ${ICU_LIBRARIES}
     ${Boost_THREAD_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 set_property(TARGET wallet_rpc_server
   PROPERTY
     OUTPUT_NAME "ryo-wallet-rpc")

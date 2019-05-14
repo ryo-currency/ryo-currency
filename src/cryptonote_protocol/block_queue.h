@@ -53,8 +53,7 @@
 #include <string>
 #include "crypto/hash.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "cn.block_queue"
+
 
 namespace cryptonote
 {

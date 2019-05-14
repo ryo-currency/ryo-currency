@@ -84,6 +84,7 @@ target_link_libraries(cryptonote_core
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${Blocks}
     ${EXTRA_LIBRARIES})

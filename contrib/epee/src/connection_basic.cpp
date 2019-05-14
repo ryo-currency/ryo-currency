@@ -31,6 +31,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* rfree: implementation for the non-template base, can be used by connection<> template class in abstract_tcp_server2 file  */
+#define GULPS_CAT_MAJOR "conn_basics"
 
 #include "net/connection_basic.hpp"
 
@@ -54,7 +55,6 @@
 #include "syncobj.h"
 
 #include "misc_language.h"
-#include "misc_log_ex.h"
 #include "net/net_utils_base.h"
 #include "pragma_comp_defs.h"
 #include <algorithm>
@@ -79,8 +79,9 @@
 // TODO:
 #include "net/network_throttle-detail.hpp"
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net.p2p"
+#include "common/gulps.hpp"	
+
+
 
 // ################################################################################################
 // local (TU local) headers
@@ -165,7 +166,7 @@ connection_basic::connection_basic(boost::asio::io_service &io_service, std::ato
 	{
 	};
 
-	_note("Spawned connection p2p#" << mI->m_peer_number << " to " << remote_addr_str << " currently we have sockets count:" << m_ref_sock_count);
+	GULPS_LOGF_L1("Spawned connection p2p#{} to {} currently we have sockets count:{}", mI->m_peer_number, remote_addr_str, m_ref_sock_count);
 }
 
 connection_basic::~connection_basic() noexcept(false)
@@ -180,7 +181,7 @@ connection_basic::~connection_basic() noexcept(false)
 	catch(...)
 	{
 	};
-	_note("Destructing connection p2p#" << mI->m_peer_number << " to " << remote_addr_str);
+	GULPS_LOGF_L1("Destructing connection p2p#{} to {}", mI->m_peer_number, remote_addr_str);
 }
 
 void connection_basic::set_rate_up_limit(uint64_t limit)
@@ -247,7 +248,7 @@ void connection_basic::sleep_before_packet(size_t packet_size, int phase, int q_
 	{ // rate limiting
 		if(m_was_shutdown)
 		{
-			_dbg2("m_was_shutdown - so abort sleep");
+			GULPS_LOG_L1("m_was_shutdown - so abort sleep");
 			return;
 		}
 
@@ -260,7 +261,7 @@ void connection_basic::sleep_before_packet(size_t packet_size, int phase, int q_
 		if(delay > 0)
 		{
 			long int ms = (long int)(delay * 1000);
-			MTRACE("Sleeping in " << __FUNCTION__ << " for " << ms << " ms before packet_size=" << packet_size); // debug sleep
+			GULPS_LOGF_L2("Sleeping in {} for {}  ms before packet_size={}", __FUNCTION__, ms, packet_size); // debug sleep
 			boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 		}
 	} while(delay > 0);
@@ -280,14 +281,14 @@ void connection_basic::set_start_time()
 void connection_basic::do_send_handler_write(const void *ptr, size_t cb)
 {
 	// No sleeping here; sleeping is done once and for all in connection<t_protocol_handler>::handle_write
-	MTRACE("handler_write (direct) - before ASIO write, for packet=" << cb << " B (after sleep)");
+	GULPS_LOGF_L2("handler_write (direct) - before ASIO write, for packet={}" , cb);
 	set_start_time();
 }
 
 void connection_basic::do_send_handler_write_from_queue(const boost::system::error_code &e, size_t cb, int q_len)
 {
 	// No sleeping here; sleeping is done once and for all in connection<t_protocol_handler>::handle_write
-	MTRACE("handler_write (after write, from queue=" << q_len << ") - before ASIO write, for packet=" << cb << " B (after sleep)");
+	GULPS_LOGF_L2("handler_write (after write, from queue={}) - before ASIO write, for packet={} B (after sleep)", q_len, cb);
 
 	set_start_time();
 }

@@ -27,6 +27,10 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "lan_base"
 
 /*!
  * \file language_base.h
@@ -37,10 +41,11 @@
 #ifndef LANGUAGE_BASE_H
 #define LANGUAGE_BASE_H
 
-#include "misc_log_ex.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "common/gulps.hpp"
 
 /*!
  * \namespace Language
@@ -102,7 +107,7 @@ class Base
 			if((*it).size() < unique_prefix_length)
 			{
 				if(flags & ALLOW_SHORT_WORDS)
-					MWARNING(language_name << " word '" << *it << "' is shorter than its prefix length, " << unique_prefix_length);
+					GULPS_LOG_L2("{} word {}' is shorter than its prefix length, {}'", language_name,  *it, unique_prefix_length);
 				else
 					throw std::runtime_error("Too short word in " + language_name + " word list: " + *it);
 			}
@@ -118,7 +123,7 @@ class Base
 			if(trimmed_word_map.find(trimmed) != trimmed_word_map.end())
 			{
 				if(flags & ALLOW_DUPLICATE_PREFIXES)
-					MWARNING("Duplicate prefix in " << language_name << " word list: " << trimmed);
+					GULPS_WARN("Duplicate prefix in ", language_name, " word list: ", trimmed);
 				else
 					throw std::runtime_error("Duplicate prefix in " + language_name + " word list: " + trimmed);
 			}

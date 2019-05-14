@@ -52,8 +52,7 @@
 #include "cryptonote_protocol/cryptonote_protocol_defs.h"
 #include "wallet_rpc_server_error_codes.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.rpc"
+
 
 namespace tools
 {

@@ -1,12 +1,19 @@
 #ifndef JSONRPC_SERVER_HANDLERS_MAP_H
 #define JSONRPC_SERVER_HANDLERS_MAP_H
 
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "jsrpc_serv"
+
 #include "jsonrpc_protocol_handler.h"
 #include "jsonrpc_structs.h"
 #include "serialization/keyvalue_serialization.h"
 #include "storages/portable_storage_base.h"
 #include "storages/portable_storage_template_helper.h"
 #include <string>
+
+#include "common/gulps.hpp"	
 
 #define BEGIN_JSONRPC2_MAP(t_connection_context)                                                        \
 	bool handle_rpc_request(const std::string &req_data,                                                \
@@ -57,7 +64,7 @@
 	epee::serialization::store_t_to_json(resp, resp_data, 0, false); \
 	resp_data += "\n";                                               \
 	uint64_t ticks3 = epee::misc_utils::get_tick_count();            \
-	LOG_PRINT("[" << method_name << "] processed with " << ticks1 - ticks << "/" << ticks2 - ticks1 << "/" << ticks3 - ticks2 << "ms", LOG_LEVEL_2);
+	GULPS_LOG_L2("[{}] processed with {}/{}/{}ms", method_name, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2);
 
 #define MAP_JSONRPC2_WE(method_name, callback_f, command_type)                                                                   \
 	else if(callback_name == method_name)                                                                                        \

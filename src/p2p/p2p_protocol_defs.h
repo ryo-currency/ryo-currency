@@ -43,6 +43,10 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "p2p_proto_defs"
 
 #pragma once
 
@@ -56,6 +60,9 @@
 #ifdef ALLOW_DEBUG_COMMANDS
 #include "crypto/crypto.h"
 #endif
+
+#include "common/gulps.hpp"	
+
 
 namespace nodetool
 {
@@ -221,7 +228,7 @@ struct COMMAND_HANDSHAKE_T
 					local_peerlist.push_back(peerlist_entry_base<network_address_old>({{ipv4.ip(), ipv4.port()}, p.id, p.last_seen}));
 				}
 				else
-					MDEBUG("Not including in legacy peer list: " << p.adr.str());
+					GULPS_LOG_L1("Not including in legacy peer list: ", p.adr.str());
 			}
 			epee::serialization::selector<is_store>::serialize_stl_container_pod_val_as_blob(local_peerlist, stg, hparent_section, "local_peerlist");
 		}
@@ -279,7 +286,7 @@ struct COMMAND_TIMED_SYNC_T
 					local_peerlist.push_back(peerlist_entry_base<network_address_old>({{ipv4.ip(), ipv4.port()}, p.id, p.last_seen}));
 				}
 				else
-					MDEBUG("Not including in legacy peer list: " << p.adr.str());
+					GULPS_LOG_L1("Not including in legacy peer list: ", p.adr.str());
 			}
 			epee::serialization::selector<is_store>::serialize_stl_container_pod_val_as_blob(local_peerlist, stg, hparent_section, "local_peerlist");
 		}

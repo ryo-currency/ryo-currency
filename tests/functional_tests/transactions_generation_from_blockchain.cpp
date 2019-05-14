@@ -29,8 +29,9 @@
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
 #include "include_base_utils.h"
-using namespace epee;
+#include "common/gulps.hpp"
 #include "wallet/wallet2.h"
+using namespace epee;
 
 using namespace cryptonote;
 
@@ -41,7 +42,7 @@ bool transactions_generation_from_blockchain(std::string& blockchain_folder_path
   tx_memory_pool pool;
   blockchain_storage bchs(pool);
   bool r = bchs.init(blockchain_folder_path);
-  CHECK_AND_ASSERT_MES(r, false, "failed to load blockchain");
+  GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to load blockchain");
 
   //amount = 3000000000000
   //key_offsets = 1,2,3,4,5,10,12,27,31,33,34
@@ -123,7 +124,7 @@ bool make_tx(blockchain_storage& bch)
     //lets make last output to odd money
     dsts.resize(dsts.size()+1);
     cryptonote::tx_destination_entry& destination = dsts.back();
-    CHECK_AND_ASSERT_MES(found_money > needed_money, false, "internal error found_money=" << found_money << " !> needed_money=" << needed_money);
+    GULPS_CHECK_AND_ASSERT_MES(found_money > needed_money, false, "internal error found_money=" << found_money << " !> needed_money=" << needed_money);
     destination.amount = found_money - needed_money;
   }
 
@@ -139,7 +140,7 @@ bool make_tx(blockchain_storage& bch)
   req.tx_as_hex = epee::string_tools::buff_to_hex_nodelimer(tx_to_blob(tx));
   COMMAND_RPC_SEND_RAW_TX::response daemon_send_resp;
   r = net_utils::http::invoke_http_json_remote_command(m_daemon_address + "/sendrawtransaction", req, daemon_send_resp, m_http_client);
-  CHECK_AND_ASSERT_MES(r, false, "failed to send transaction");
+  GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to send transaction");
   if(daemon_send_resp.status != CORE_RPC_STATUS_OK)
   {
     std::cout << "daemon failed to accept generated transaction" << ENDL;

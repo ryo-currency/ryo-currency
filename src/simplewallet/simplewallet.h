@@ -65,8 +65,7 @@
 #include "cryptonote_basic/cryptonote_basic_impl.h"
 #include "wallet/wallet2.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.simplewallet"
+
 
 /*!
  * \namespace cryptonote
@@ -120,6 +119,9 @@ class simple_wallet : public tools::i_wallet2_callback
 	bool new_wallet_dev(const boost::program_options::variables_map &vm, const std::string &device_name);
 	bool open_wallet(const boost::program_options::variables_map &vm);
 	bool close_wallet();
+
+	typedef bool (simple_wallet::*wallet_cmd_fun)(const std::vector<std::string> &args);
+	bool check_simple_variable(const std::vector<std::string> &args, const char* name, wallet_cmd_fun fun, const char* help);
 
 	bool viewkey(const std::vector<std::string> &args = std::vector<std::string>());
 	bool spendkey(const std::vector<std::string> &args = std::vector<std::string>());
@@ -324,7 +326,7 @@ class simple_wallet : public tools::i_wallet2_callback
 			}
 			else
 			{
-				LOG_ERROR("Failed to get current blockchain height: " << err);
+				GULPS_LOG_ERROR("Failed to get current blockchain height: ", err);
 			}
 		}
 

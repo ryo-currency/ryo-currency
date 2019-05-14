@@ -31,6 +31,7 @@
 #include <cstdint>
 
 #include "wallet/wallet2.h"
+#include "common/gulps.hpp"
 
 static const struct
 {
@@ -62,7 +63,7 @@ static void make_wallet(unsigned int idx, tools::wallet2 &wallet)
 	}
 	catch(const std::exception &e)
 	{
-		MFATAL("Error creating test wallet: " << e.what());
+		GULPS_ERROR("Error creating test wallet: ", e.what());
 		ASSERT_TRUE(0);
 	}
 }

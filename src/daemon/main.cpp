@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
+#define GULPS_CAT_MAJOR "main_daemon"
 
 #include "blockchain_db/db_types.h"
 #include "common/command_line.h"
@@ -56,7 +57,6 @@
 #include "daemon/daemon.h"
 #include "daemon/executor.h"
 #include "daemonizer/daemonizer.h"
-#include "misc_log_ex.h"
 #include "p2p/net_node.h"
 #include "rpc/core_rpc_server.h"
 #include "rpc/rpc_args.h"
@@ -66,11 +66,14 @@
 #include "common/stack_trace.h"
 #endif // STACK_TRACE
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
+#include "common/gulps.hpp"	
+
+
 
 namespace po = boost::program_options;
 namespace bf = boost::filesystem;
+
+gulps_log_level log_scr, log_dsk;
 
 int main(int argc, char* argv[])
 {
@@ -83,6 +86,13 @@ int main(int argc, char* argv[])
 		argv = argptrs.data();
 	}
 #endif
+
+	gulps::inst().set_thread_tag("RYOD_MAIN");
+
+	// Temporary output
+	std::unique_ptr<gulps::gulps_output> gout_ptr(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
+	gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { if(msg.lvl != gulps::LEVEL_INFO ) return !printed; return false; });
+	uint64_t temp_out_id = gulps::inst().add_output(std::move(gout_ptr));
 
 	try
 	{
@@ -108,11 +118,12 @@ int main(int argc, char* argv[])
 
 			// Settings
 			command_line::add_arg(core_settings, daemon_args::arg_log_file);
+			command_line::add_arg(core_settings, daemon_args::arg_log_file_level);
 			command_line::add_arg(core_settings, daemon_args::arg_log_level);
-			command_line::add_arg(core_settings, daemon_args::arg_max_log_file_size);
 			command_line::add_arg(core_settings, daemon_args::arg_max_concurrency);
 			command_line::add_arg(core_settings, daemon_args::arg_zmq_rpc_bind_ip);
 			command_line::add_arg(core_settings, daemon_args::arg_zmq_rpc_bind_port);
+			command_line::add_arg(core_settings, daemon_args::arg_display_timestamps);
 
 			daemonizer::init_options(hidden_options, visible_options);
 			daemonize::t_executor::init_options(core_settings);
@@ -145,24 +156,23 @@ int main(int argc, char* argv[])
 
 		if(command_line::get_arg(vm, command_line::arg_help))
 		{
-			std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL << ENDL;
-			std::cout << "Usage: " + std::string{argv[0]} + " [options|settings] [daemon_command...]" << std::endl
-					  << std::endl;
-			std::cout << visible_options << std::endl;
+			GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
+			GULPS_PRINTF("\nUsage: {} [options|settings] [daemon_command...]\n\n", std::string{argv[0]});
+			GULPS_PRINT(visible_options);
 			return 0;
 		}
 
-		// Monero Version
+		// Ryo Version
 		if(command_line::get_arg(vm, command_line::arg_version))
 		{
-			std::cout << "Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")" << ENDL;
+			GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
 			return 0;
 		}
 
 		// OS
 		if(command_line::get_arg(vm, daemon_args::arg_os_version))
 		{
-			std::cout << "OS: " << tools::get_os_version_string() << ENDL;
+			GULPS_PRINT("OS: ", tools::get_os_version_string());
 			return 0;
 		}
 
@@ -178,13 +188,13 @@ int main(int argc, char* argv[])
 			catch(const std::exception &e)
 			{
 				// log system isn't initialized yet
-				std::cerr << "Error parsing config file: " << e.what() << std::endl;
+				GULPS_ERRORF("Error parsing config file: {}", e.what());
 				throw;
 			}
 		}
 		else if(!command_line::is_arg_defaulted(vm, daemon_args::arg_config_file))
 		{
-			std::cerr << "Can't find config file " << config << std::endl;
+			GULPS_ERROR("Can't find config file ", config);
 			return 1;
 		}
 
@@ -192,7 +202,7 @@ int main(int argc, char* argv[])
 		const bool stagenet = command_line::get_arg(vm, cryptonote::arg_stagenet_on);
 		if(testnet && stagenet)
 		{
-			std::cerr << "Can't specify more than one of --tesnet and --stagenet" << ENDL;
+			GULPS_ERROR("Can't specify more than one of --tesnet and --stagenet");
 			return 1;
 		}
 
@@ -201,7 +211,7 @@ int main(int argc, char* argv[])
 		// verify that blockchaindb type is valid
 		if(!cryptonote::blockchain_valid_db_type(db_type))
 		{
-			std::cout << "Invalid database type (" << db_type << "), available types are: " << cryptonote::blockchain_db_types(", ") << std::endl;
+			GULPS_PRINTF("Invalid database type ({}), available types are: {}", db_type, cryptonote::blockchain_db_types(", "));
 			return 0;
 		}
 
@@ -229,16 +239,28 @@ int main(int argc, char* argv[])
 		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_log_file))
 			log_file_path = command_line::get_arg(vm, daemon_args::arg_log_file);
 		log_file_path = bf::absolute(log_file_path, relative_path_base);
-		mlog_configure(log_file_path.string(), true, command_line::get_arg(vm, daemon_args::arg_max_log_file_size));
 
-		// Set log level
+		tools::create_directories_if_necessary(data_dir.string());
+
 		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_log_level))
 		{
-			mlog_set_log(command_line::get_arg(vm, daemon_args::arg_log_level).c_str());
+			if(!log_scr.parse_cat_string(command_line::get_arg(vm, daemon_args::arg_log_level).c_str()))
+			{
+				GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, daemon_args::arg_log_level).c_str());
+				return 1;
+			}
 		}
+		else
+			log_scr.parse_cat_string("");
 
-		// after logs initialized
-		tools::create_directories_if_necessary(data_dir.string());
+		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_log_file_level))
+		{
+			if(!log_dsk.parse_cat_string(command_line::get_arg(vm, daemon_args::arg_log_file_level).c_str()))
+			{
+				GULPS_ERROR("Failed to parse filter string ", command_line::get_arg(vm, daemon_args::arg_log_file_level).c_str());
+				return 1;
+			}
+		}
 
 		// If there are positional options, we're running a daemon command
 		{
@@ -254,12 +276,12 @@ int main(int argc, char* argv[])
 				uint16_t rpc_port;
 				if(!epee::string_tools::get_ip_int32_from_string(rpc_ip, rpc_ip_str))
 				{
-					std::cerr << "Invalid IP: " << rpc_ip_str << std::endl;
+					GULPS_ERROR("Invalid IP: ", rpc_ip_str);
 					return 1;
 				}
 				if(!epee::string_tools::get_xtype_from_string(rpc_port, rpc_port_str))
 				{
-					std::cerr << "Invalid port: " << rpc_port_str << std::endl;
+					GULPS_ERROR("Invalid port: ", rpc_port_str);
 					return 1;
 				}
 
@@ -275,7 +297,7 @@ int main(int argc, char* argv[])
 						});
 					if(!login)
 					{
-						std::cerr << "Failed to obtain password" << std::endl;
+						GULPS_ERROR("Failed to obtain password");
 						return 1;
 					}
 				}
@@ -287,7 +309,7 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					std::cerr << "Unknown command: " << command.front() << std::endl;
+					GULPS_ERRORF("Unknown command: {}", command.front());
 					return 1;
 				}
 			}
@@ -300,20 +322,52 @@ int main(int argc, char* argv[])
 		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_max_concurrency))
 			tools::set_max_concurrency(command_line::get_arg(vm, daemon_args::arg_max_concurrency));
 
-		// logging is now set up
-		MGINFO("Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL << ")");
+		gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
+		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
+			if(msg.out == gulps::OUT_USER_1)
+				return true;
+			return false;
+		});
+		gulps::inst().add_output(std::move(gout_ptr));
 
-		MINFO("Moving from main() into the daemonize now.");
+		// OS
+		if(command_line::get_arg(vm, daemon_args::arg_display_timestamps))
+		{
+			gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
+		}
+		else
+		{
+			gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
+		}
+		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+			if(printed)
+				return false;
+			return log_scr.match_msg(msg);
+		}); 
+		gulps::inst().add_output(std::move(gout_ptr));
+
+		if(log_dsk.is_active())
+		{
+			gout_ptr.reset(new gulps::gulps_async_file_output(log_file_path.string()));
+			gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return log_dsk.match_msg(msg); });
+			gulps::inst().add_output(std::move(gout_ptr));
+		}	
+		gulps::inst().remove_output(temp_out_id);
+
+		// logging is now set up
+		GULPS_GLOBALF_PRINT("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
+		
+		GULPS_INFO("Moving from main() into the daemonize now.");
 
 		return daemonizer::daemonize(argc, argv, daemonize::t_executor{}, vm) ? 0 : 1;
 	}
 	catch(std::exception const &ex)
 	{
-		LOG_ERROR("Exception in main! " << ex.what());
+		GULPS_LOGF_ERROR("Exception in main! {}", ex.what());
 	}
 	catch(...)
 	{
-		LOG_ERROR("Exception in main!");
+		GULPS_LOG_ERROR("Exception in main!");
 	}
 	return 1;
 }

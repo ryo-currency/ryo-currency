@@ -125,7 +125,7 @@ bool test_generator::construct_block(cryptonote::block &blk, uint64_t height, co
 	{
 		uint64_t fee = 0;
 		bool r = get_tx_fee(tx, fee);
-		CHECK_AND_ASSERT_MES(r, false, "wrong transaction passed to construct_block");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "wrong transaction passed to construct_block");
 		total_fee += fee;
 		txs_size += get_object_blobsize(tx);
 	}
@@ -153,7 +153,7 @@ bool test_generator::construct_block(cryptonote::block &blk, uint64_t height, co
 			}
 			else
 			{
-				CHECK_AND_ASSERT_MES(target_block_size < actual_block_size, false, "Unexpected block size");
+				GULPS_CHECK_AND_ASSERT_MES(target_block_size < actual_block_size, false, "Unexpected block size");
 				delta = actual_block_size - target_block_size;
 				blk.miner_tx.extra.resize(blk.miner_tx.extra.size() - delta);
 				actual_block_size = txs_size + get_object_blobsize(blk.miner_tx);
@@ -163,7 +163,7 @@ bool test_generator::construct_block(cryptonote::block &blk, uint64_t height, co
 				}
 				else
 				{
-					CHECK_AND_ASSERT_MES(actual_block_size < target_block_size, false, "Unexpected block size");
+					GULPS_CHECK_AND_ASSERT_MES(actual_block_size < target_block_size, false, "Unexpected block size");
 					blk.miner_tx.extra.resize(blk.miner_tx.extra.size() + delta, 0);
 					target_block_size = txs_size + get_object_blobsize(blk.miner_tx);
 				}
@@ -550,7 +550,7 @@ bool construct_miner_tx_manually(size_t height, uint64_t already_generated_coins
 	uint64_t block_reward;
 	if(!get_block_reward(MAINNET, 0, 0, already_generated_coins, block_reward, 1))
 	{
-		LOG_PRINT_L0("Block is too big");
+		std::cout << "Block is too big" << std::endl;
 		return false;
 	}
 	block_reward += fee;
@@ -683,7 +683,7 @@ bool test_chain_unit_base::verify(const std::string &cb_name, cryptonote::core &
 	auto cb_it = m_callbacks.find(cb_name);
 	if(cb_it == m_callbacks.end())
 	{
-		LOG_ERROR("Failed to find callback " << cb_name);
+		std::cout << "Failed to find callback " << cb_name << std::endl;
 		return false;
 	}
 	return cb_it->second(c, ev_index, events);

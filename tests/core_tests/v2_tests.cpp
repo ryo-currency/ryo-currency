@@ -52,7 +52,7 @@ bool gen_v2_tx_validation_base::generate_with(std::vector<test_event_entry> &eve
 	for(size_t n = 0; n < 4; ++n)
 	{
 		miner_accounts[n].generate_new(false);
-		CHECK_AND_ASSERT_MES(generator.construct_block_manually(blocks[n], *prev_block, miner_accounts[n],
+		GULPS_CHECK_AND_ASSERT_MES(generator.construct_block_manually(blocks[n], *prev_block, miner_accounts[n],
 																test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp,
 																2, 2, prev_block->timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
 																crypto::hash(), 0, transaction(), std::vector<crypto::hash>(), 0, 0),
@@ -68,7 +68,7 @@ bool gen_v2_tx_validation_base::generate_with(std::vector<test_event_entry> &eve
 		for(size_t i = 0; i < CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW; ++i)
 		{
 			cryptonote::block blk;
-			CHECK_AND_ASSERT_MES(generator.construct_block_manually(blk, blk_last, miner_account,
+			GULPS_CHECK_AND_ASSERT_MES(generator.construct_block_manually(blk, blk_last, miner_account,
 																	test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp,
 																	2, 2, blk_last.timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
 																	crypto::hash(), 0, transaction(), std::vector<crypto::hash>(), 0, 0),
@@ -112,7 +112,7 @@ bool gen_v2_tx_validation_base::generate_with(std::vector<test_event_entry> &eve
 
 	transaction tx;
 	bool r = construct_tx(miner_accounts[0].get_keys(), sources, destinations, boost::none, nullptr, tx, 0);
-	CHECK_AND_ASSERT_MES(r, false, "failed to construct transaction");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to construct transaction");
 	if(!valid)
 		DO_CALLBACK(events, "mark_invalid_tx");
 	events.push_back(tx);

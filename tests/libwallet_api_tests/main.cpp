@@ -218,8 +218,8 @@ TEST_F(WalletManagerTest, WalletManagerOpensWallet)
 
 TEST_F(WalletManagerTest, WalletMaxAmountAsString)
 {
-	LOG_PRINT_L3("max amount: " << Ryo::Wallet::displayAmount(
-					 Ryo::Wallet::maximumAllowedAmount()));
+	std::cout << "max amount: " << Ryo::Wallet::displayAmount(
+					 Ryo::Wallet::maximumAllowedAmount()) << std::endl;
 }
 
 TEST_F(WalletManagerTest, WalletAmountFromString)
@@ -238,11 +238,11 @@ void open_wallet_helper(Ryo::WalletManager *wmgr, Ryo::Wallet **wallet, const st
 {
 	if(mutex)
 		mutex->lock();
-	LOG_PRINT_L3("opening wallet in thread: " << boost::this_thread::get_id());
+	std::cout << "opening wallet in thread: " << boost::this_thread::get_id() << std::endl;
 	*wallet = wmgr->openWallet(WALLET_NAME, pass, Ryo::NetworkType::TESTNET);
-	LOG_PRINT_L3("wallet address: " << (*wallet)->mainAddress());
-	LOG_PRINT_L3("wallet status: " << (*wallet)->status());
-	LOG_PRINT_L3("closing wallet in thread: " << boost::this_thread::get_id());
+	std::cout << "wallet address: " << (*wallet)->mainAddress() << std::endl;
+	std::cout << "wallet status: " << (*wallet)->status() << std::endl;
+	std::cout << "closing wallet in thread: " << boost::this_thread::get_id() << std::endl;
 	if(mutex)
 		mutex->unlock();
 }

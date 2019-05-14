@@ -23,8 +23,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
+#ifdef GULPS_CAT_MAJOR
+	#undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "pars_bs_utls"
 
 #pragma once
+
+#include "common/gulps.hpp"	
+
 
 namespace epee
 {
@@ -132,7 +139,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 				break;
 			default:
 				val.push_back(*it);
-				LOG_PRINT_L0("Unknown escape sequence :\"\\" << *it << "\"");
+				GULPS_PRINTF("Unknown escape sequence :\"\\{}\"", *it);
 			}
 			escape_mode = false;
 		}
@@ -150,7 +157,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 			val.push_back(*it);
 		}
 	}
-	ASSERT_MES_AND_THROW("Failed to match string in json entry: " << std::string(star_end_string, buf_end));
+	GULPS_ASSERT_MES_AND_THROW("Failed to match string in json entry: ", std::string(star_end_string, buf_end));
 }
 inline bool match_string(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {
@@ -187,10 +194,10 @@ inline void match_number2(std::string::const_iterator &star_end_string, std::str
 				return;
 			}
 			else
-				ASSERT_MES_AND_THROW("wrong number in json entry: " << std::string(star_end_string, buf_end));
+				GULPS_ASSERT_MES_AND_THROW("wrong number in json entry: ", std::string(star_end_string, buf_end));
 		}
 	}
-	ASSERT_MES_AND_THROW("wrong number in json entry: " << std::string(star_end_string, buf_end));
+	GULPS_ASSERT_MES_AND_THROW("wrong number in json entry: ", std::string(star_end_string, buf_end));
 }
 inline bool match_number(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {
@@ -221,10 +228,10 @@ inline void match_word2(std::string::const_iterator &star_end_string, std::strin
 				return;
 			}
 			else
-				ASSERT_MES_AND_THROW("failed to match word number in json entry: " << std::string(star_end_string, buf_end));
+				GULPS_ASSERT_MES_AND_THROW("failed to match word number in json entry: ", std::string(star_end_string, buf_end));
 		}
 	}
-	ASSERT_MES_AND_THROW("failed to match word number in json entry: " << std::string(star_end_string, buf_end));
+	GULPS_ASSERT_MES_AND_THROW("failed to match word number in json entry: ", std::string(star_end_string, buf_end));
 }
 inline bool match_word(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {

@@ -41,19 +41,17 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#ifdef GULPS_CAT_MAJOR
+    #undef GULPS_CAT_MAJOR
+#endif
+#define GULPS_CAT_MAJOR "scpd_msg_wrt"
 
 #pragma once
 
-#include "misc_log_ex.h"
+#include "readline_buffer.h"
 #include <iostream>
 
-#ifdef HAVE_READLINE
-#include "readline_buffer.h"
-#define PAUSE_READLINE() \
-	rdln::suspend_readline pause_readline;
-#else
-#define PAUSE_READLINE()
-#endif
+#include "common/gulps.hpp"
 
 namespace tools
 {
@@ -66,14 +64,13 @@ class scoped_message_writer
   private:
 	bool m_flush;
 	std::stringstream m_oss;
-	epee::console_colors m_color;
-	bool m_bright;
-	el::Level m_log_level;
+	gulps::color m_color;
+	gulps::level m_log_level;
 
   public:
 	scoped_message_writer(
-		epee::console_colors color = epee::console_color_default, bool bright = false, std::string &&prefix = std::string(), el::Level log_level = el::Level::Info)
-		: m_flush(true), m_color(color), m_bright(bright), m_log_level(log_level)
+		gulps::color color = gulps::COLOR_WHITE, std::string &&prefix = std::string(), gulps::level log_level = gulps::LEVEL_INFO)
+		: m_flush(true), m_color(color), m_log_level(log_level)
 	{
 		m_oss << prefix;
 	}
@@ -111,37 +108,25 @@ class scoped_message_writer
 		{
 			m_flush = false;
 
-			MCLOG_FILE(m_log_level, "msgwriter", m_oss.str());
-
-			if(epee::console_color_default == m_color)
-			{
-				std::cout << m_oss.str();
-			}
-			else
-			{
-				PAUSE_READLINE();
-				set_console_color(m_color, m_bright);
-				std::cout << m_oss.str();
-				epee::reset_console_color();
-			}
-			std::cout << std::endl;
+			GULPS_OUTPUT(gulps::OUT_LOG_0, m_log_level, GULPS_CAT_MAJOR, "msgwriter", m_color, m_oss.str());
+			GULPS_PRINT_CLR(m_color, m_oss.str());
 		}
 	}
 };
 
 inline scoped_message_writer success_msg_writer(bool color = true)
 {
-	return scoped_message_writer(color ? epee::console_color_green : epee::console_color_default, false, std::string(), el::Level::Info);
+	return scoped_message_writer(color ? gulps::COLOR_GREEN : gulps::COLOR_WHITE, std::string(), gulps::LEVEL_PRINT);
 }
 
-inline scoped_message_writer msg_writer(epee::console_colors color = epee::console_color_default)
+inline scoped_message_writer msg_writer(gulps::color color = gulps::COLOR_WHITE)
 {
-	return scoped_message_writer(color, false, std::string(), el::Level::Info);
+	return scoped_message_writer(color, std::string(), gulps::LEVEL_PRINT);
 }
 
 inline scoped_message_writer fail_msg_writer()
 {
-	return scoped_message_writer(epee::console_color_red, true, "Error: ", el::Level::Error);
+	return scoped_message_writer(gulps::COLOR_RED, "Error: ", gulps::LEVEL_ERROR);
 }
 
 } // namespace tools

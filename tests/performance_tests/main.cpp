@@ -66,12 +66,12 @@ namespace po = boost::program_options;
 
 int main(int argc, char **argv)
 {
-	//TRY_ENTRY();
+	//GULPS_TRY_ENTRY();
 	tools::on_startup();
 	set_process_affinity(1);
 	set_thread_high_priority();
 
-	mlog_configure(mlog_get_default_log_path("performance_tests.log"), true);
+	
 
 	po::options_description desc_options("Command line options");
 	const command_line::arg_descriptor<std::string> arg_filter = {"filter", "Regular expression filter for which tests to run"};
@@ -509,5 +509,5 @@ int main(int argc, char **argv)
 	std::cout << "Tests finished. Elapsed time: " << timer.elapsed_ms() / 1000 << " sec" << std::endl;
 
 	return 0;
-	//CATCH_ENTRY_L0("main", 1);
+	//GULPS_CATCH_ENTRY_L0("main", 1);
 }

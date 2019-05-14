@@ -51,7 +51,7 @@ inline bool pack(std::string &target)
 		zstream.avail_out = (uInt)result_packed_buff.size();
 
 		ret = deflate(&zstream, Z_FINISH);
-		CHECK_AND_ASSERT_MES(ret >= 0, false, "Failed to deflate. err = " << ret);
+		GULPS_CHECK_AND_ASSERT_MES(ret >= 0, false, "Failed to deflate. err = ", ret);
 
 		if(result_packed_buff.size() != zstream.avail_out)
 			result_packed_buff.resize(result_packed_buff.size() - zstream.avail_out);
@@ -91,7 +91,7 @@ inline bool unpack(std::string &target)
 		ret = inflate(&zstream, Z_NO_FLUSH);
 		if(ret != Z_OK)
 		{
-			LOCAL_ASSERT(0);
+			GULPS_LOCAL_ASSERT(0);
 			return false;
 		}
 
@@ -101,7 +101,7 @@ inline bool unpack(std::string &target)
 		ret = inflate(&zstream, Z_SYNC_FLUSH);
 		if(ret != Z_OK && ret != Z_STREAM_END)
 		{
-			LOCAL_ASSERT(0);
+			GULPS_LOCAL_ASSERT(0);
 			return false;
 		}
 

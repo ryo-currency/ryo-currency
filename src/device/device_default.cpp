@@ -173,7 +173,7 @@ crypto::public_key device_default::get_subaddress_spend_public_key(const crypton
 
 std::vector<crypto::public_key> device_default::get_subaddress_spend_public_keys(const cryptonote::account_keys &keys, uint32_t account, uint32_t begin, uint32_t end)
 {
-	CHECK_AND_ASSERT_THROW_MES(begin <= end, "begin > end");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(begin <= end, "begin > end");
 
 	std::vector<crypto::public_key> pkeys;
 	pkeys.reserve(end - begin);
@@ -181,7 +181,7 @@ std::vector<crypto::public_key> device_default::get_subaddress_spend_public_keys
 
 	ge_p3 p3;
 	ge_cached cached;
-	CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&p3, (const unsigned char *)keys.m_account_address.m_spend_public_key.data) == 0,
+	GULPS_CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&p3, (const unsigned char *)keys.m_account_address.m_spend_public_key.data) == 0,
 							   "ge_frombytes_vartime failed to convert spend public key");
 	ge_p3_to_cached(&cached, &p3);
 
@@ -409,10 +409,10 @@ bool device_default::mlsag_hash(const rct::keyV &toHash, rct::key &c_old)
 
 bool device_default::mlsag_sign(const rct::key &c, const rct::keyV &xx, const rct::keyV &alpha, const size_t rows, const size_t dsRows, rct::keyV &ss)
 {
-	CHECK_AND_ASSERT_THROW_MES(dsRows <= rows, "dsRows greater than rows");
-	CHECK_AND_ASSERT_THROW_MES(xx.size() == rows, "xx size does not match rows");
-	CHECK_AND_ASSERT_THROW_MES(alpha.size() == rows, "alpha size does not match rows");
-	CHECK_AND_ASSERT_THROW_MES(ss.size() == rows, "ss size does not match rows");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(dsRows <= rows, "dsRows greater than rows");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(xx.size() == rows, "xx size does not match rows");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(alpha.size() == rows, "alpha size does not match rows");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(ss.size() == rows, "ss size does not match rows");
 	for(size_t j = 0; j < rows; j++)
 	{
 		sc_mulsub(ss[j].bytes, c.bytes, xx[j].bytes, alpha[j].bytes);

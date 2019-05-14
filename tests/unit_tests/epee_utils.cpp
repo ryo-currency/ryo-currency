@@ -638,7 +638,7 @@ TEST(NetUtils, NetworkAddress)
 static bool is_local(const char *s)
 {
 	uint32_t ip;
-	CHECK_AND_ASSERT_THROW_MES(epee::string_tools::get_ip_int32_from_string(ip, s), std::string("Invalid IP address: ") + s);
+	GULPS_CHECK_AND_ASSERT_THROW_MES(epee::string_tools::get_ip_int32_from_string(ip, s), std::string("Invalid IP address: ") + s);
 	return epee::net_utils::is_ip_local(ip);
 }
 

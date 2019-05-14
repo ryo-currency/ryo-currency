@@ -113,3 +113,6 @@ local.properties
 
 # VS Code
 .vscode
+
+# Document
+doc
