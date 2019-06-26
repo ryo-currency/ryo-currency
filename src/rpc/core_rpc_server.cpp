@@ -74,6 +74,8 @@ using namespace epee;
 #define MAX_RESTRICTED_FAKE_OUTS_COUNT 40
 #define MAX_RESTRICTED_GLOBAL_FAKE_OUTS_COUNT 5000
 
+extern gulps_log_level log_scr;
+
 namespace
 {
 void add_reason(std::string &reasons, const char *reason)
@@ -998,14 +1000,17 @@ bool core_rpc_server::on_set_log_level(const COMMAND_RPC_SET_LOG_LEVEL::request 
 		return true;
 	}
 
-	res.status = "Error: not implemented"; //\todo
+	log_scr.parse_cat_string(std::to_string(req.level).c_str());
+	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
 bool core_rpc_server::on_set_log_categories(const COMMAND_RPC_SET_LOG_CATEGORIES::request &req, COMMAND_RPC_SET_LOG_CATEGORIES::response &res)
 {
 	PERF_TIMER(on_set_log_categories);
-	res.status =  "Error: not implemented"; //\todo
+
+	log_scr.parse_cat_string(req.categories.c_str());
+	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------

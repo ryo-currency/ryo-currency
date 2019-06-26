@@ -74,7 +74,7 @@ class stream_writer
 {
 public:
 	template<typename T, typename... Args>
-	static inline std::string write(const T& v, Args... args) 
+	static inline std::string write(const T& v, Args... args)
 	{
 		std::stringstream ss;
 		ss << v;
@@ -92,7 +92,7 @@ private:
 	static inline void do_op(std::stringstream& ss) { }
 
 	template<typename T, typename... Args>
-	static inline void do_op(std::stringstream& ss, const T& v, Args... args) 
+	static inline void do_op(std::stringstream& ss, const T& v, Args... args)
 	{
 		ss << v;
 		do_op(ss, args...);
@@ -148,7 +148,7 @@ public:
 		OUT_LOG_1,
 		OUT_LOG_2
 	};
-	
+
 	static inline const char* out_to_str(output out)
 	{
 		switch(out)
@@ -200,7 +200,7 @@ public:
 		bool printed = false;
 		bool logged = false;
 
-		message(output out, level lvl, const char* major, const char* minor, const char* path, int64_t line, std::string&& txt, color clr = COLOR_WHITE, bool add_newline = true) : 
+		message(output out, level lvl, const char* major, const char* minor, const char* path, int64_t line, std::string&& txt, color clr = COLOR_WHITE, bool add_newline = true) :
 			time(std::time(nullptr)), lvl(lvl), out(out), cat_major(major), cat_minor(minor), src_path(path), src_line(line),
 			thread_id(gulps::inst().get_thread_tag()), text(std::move(txt)), clr(clr)
 		{
@@ -208,7 +208,7 @@ public:
 
 			if(src_path.find(pre) == 0)
 				src_path.erase(0, pre.size());
-	
+
 			if(add_newline && text.back() != '\n')
 				text += '\n';
 		}
@@ -218,7 +218,7 @@ public:
 			switch(mode)
 			{
 			case TIMESTAMP_LOG:
-				header = fmt::format("{:%Y-%m-%d %H:%M:%S} [{}/{}] {} {}.{} {}:{} ", 
+				header = fmt::format("{:%Y-%m-%d %H:%M:%S} [{}/{}] {} {}.{} {}:{} ",
 					fmt::localtime(time), level_to_str(lvl), out_to_str(out), thread_id, cat_major, cat_minor, src_path, src_line);
 				break;
 
@@ -300,7 +300,7 @@ public:
 		gulps_output& operator=(gulps_output&& ) = delete;
 		gulps_output(gulps_output& ) = delete;
 		gulps_output& operator=(gulps_output& ) = delete;
-		
+
 		std::vector<filter_fun> filters;
 	};
 
@@ -333,7 +333,7 @@ public:
 			std::cout.flush();
 #endif
 		}
-		
+
 		static bool is_stdout_a_tty()
 		{
 #if defined(WIN32)
@@ -471,7 +471,7 @@ public:
 		{
 			write_output(msg);
 		}
-	
+
 		~gulps_file_output()
 		{
 			log_message(message(OUT_LOG_2, LEVEL_TRACE, "log_shutdown", fname.c_str(), __FILE__, __LINE__, "Log file shutting down."));
@@ -502,7 +502,7 @@ public:
 	class gulps_async_file_output : public gulps_file_output
 	{
 	public:
-		gulps_async_file_output(const std::string& name) : 
+		gulps_async_file_output(const std::string& name) :
 			gulps_file_output(name), thd(&gulps_async_file_output::output_main, this)
 		{
 		}
@@ -566,15 +566,15 @@ public:
 	}
 
 	//Returned value is a handle unique to that output. It can be used to remove it.
-	uint64_t add_output(std::unique_ptr<gulps_output> output) 
-	{ 
+	uint64_t add_output(std::unique_ptr<gulps_output> output)
+	{
 		std::unique_lock<std::mutex> lck(gulps_global);
-		outputs.insert(std::make_pair(next_handle, std::move(output))); 
-		return next_handle++; 
+		outputs.insert(std::make_pair(next_handle, std::move(output)));
+		return next_handle++;
 	}
 
 	void remove_output(uint64_t handle)
-	{ 
+	{
 		std::unique_lock<std::mutex> lck(gulps_global);
 		outputs.erase(handle);
 	}
@@ -595,7 +595,7 @@ public:
 	}
 
 private:
-	gulps() 
+	gulps()
 	{
 		path_prefix = __FILE__;
 		size_t pos;
@@ -643,12 +643,12 @@ private:
 
 public:
 	gulps_log_level() {}
-	
+
 	static const char* get_default_log_level()
 	{
 		return "*:WARN";
 	}
-	
+
 	const std::string& get_current_cat_str() const
 	{
 		return current_cat_str;
@@ -657,7 +657,7 @@ public:
 	bool parse_cat_string(const char* str)
 	{
 		std::unique_lock<std::mutex> lck(cat_mutex);
-	
+
 		if(strlen(str) == 0)
 			str = get_default_log_level();
 		current_cat_str = str;
@@ -671,8 +671,8 @@ public:
 			{"TRACE", gulps::LEVEL_TRACE},
 			{"TRACE2", gulps::LEVEL_TRACE2}
 		};
-		
-		static const std::unordered_map<std::string, std::string> aliased_levels = { 
+
+		static const std::unordered_map<std::string, std::string> aliased_levels = {
 			{"0", "*:PRINT"},
 			{"1", "*:WARN"},
 			{"2", "*:INFO"},
@@ -682,6 +682,8 @@ public:
 
 		std::vector<std::string> vcats, vcat;
 		boost::split(vcats, str, boost::is_any_of(","), boost::token_compress_on);
+
+		std::vector<cat_pair> log_cats_tmp;
 
 		for(const std::string& scat : vcats)
 		{
@@ -702,18 +704,20 @@ public:
 
 			gulps::level level = it->second;
 			if(vcat[0] != "*")
-				log_cats.emplace_back(std::move(vcat[0]), level);
+				log_cats_tmp.emplace_back(std::move(vcat[0]), level);
 			else
 				wildcard_level = level;
 		}
 
+		// replace old log lvl with new levels
+		log_cats.swap(log_cats_tmp);
 		active = true;
 		return true;
 	}
 
 	bool is_active() const { return active; }
 
-	bool match_msg(const gulps::message& msg) 
+	bool match_msg(const gulps::message& msg)
 	{
 		std::unique_lock<std::mutex> lck(cat_mutex);
 
@@ -847,7 +851,7 @@ namespace debug
 #define GULPS_PRINT(clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, clr, fstr, __VA_ARGS__)*/
 
 #define GULPS_SET_THREAD_NAME(x) gulps::inst().set_thread_tag(x)
-	
+
 #ifndef GULPS_LOCAL_ASSERT
 #include <assert.h>
 #if(defined _MSC_VER)
@@ -930,7 +934,7 @@ do                                                            \
 		return fail_ret_val;                                  \
 	};                                                        \
 } while(0)
-		
+
 #define GULPS_CHECK_AND_NO_ASSERT_MES(expr, fail_ret_val, ...) GULPS_CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, 0, __VA_ARGS__)
 
 #define GULPS_CHECK_AND_NO_ASSERT_MES_L1(expr, fail_ret_val, ... ) GULPS_CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, 1, __VA_ARGS__)
@@ -944,7 +948,7 @@ do                                             \
 		return;                                \
 	};                                         \
 } while(0)
-		
+
 #define GULPS_CHECK_AND_ASSERT_MES2(expr, ...)) \
 	do                                       \
 	{                                        \
