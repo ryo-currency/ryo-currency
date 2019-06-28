@@ -66,7 +66,7 @@
 #include "common/stack_trace.h"
 #endif // STACK_TRACE
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -339,11 +339,11 @@ int main(int argc, char* argv[])
 		{
 			gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
 		}
-		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 			if(printed)
 				return false;
 			return log_scr.match_msg(msg);
-		}); 
+		});
 		gulps::inst().add_output(std::move(gout_ptr));
 
 		if(log_dsk.is_active())
@@ -351,12 +351,12 @@ int main(int argc, char* argv[])
 			gout_ptr.reset(new gulps::gulps_async_file_output(log_file_path.string()));
 			gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return log_dsk.match_msg(msg); });
 			gulps::inst().add_output(std::move(gout_ptr));
-		}	
+		}
 		gulps::inst().remove_output(temp_out_id);
 
 		// logging is now set up
 		GULPS_GLOBALF_PRINT("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
-		
+
 		GULPS_INFO("Moving from main() into the daemonize now.");
 
 		return daemonizer::daemonize(argc, argv, daemonize::t_executor{}, vm) ? 0 : 1;

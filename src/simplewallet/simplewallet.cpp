@@ -139,6 +139,12 @@ enum TransferType
 	TransferLocked,
 };
 
+namespace wallet_args
+{
+// provided by wallet_args.cpp
+extern gulps_log_level log_scr;
+}
+
 namespace
 {
 const std::array<const char *const, 5> allowed_priority_strings = {{"default", "unimportant", "normal", "elevated", "priority"}};
@@ -2446,9 +2452,12 @@ bool simple_wallet::set_log(const std::vector<std::string> &args)
 		GULPS_PRINT_FAIL(tr("usage: set_log <log_level_number_0-4> | <categories>"));
 		return true;
 	}
-	//if(!args.empty())
-	//	mlog_set_log(args[0].c_str());
-	//GULPS_PRINT_OK("New log categories: ", mlog_get_categories());
+
+    if(wallet_args::log_scr.parse_cat_string(args[0].c_str()))
+        GULPS_PRINT_OK("New log categories: ", args[0]);
+    else
+        GULPS_PRINT_FAIL(tr("Wrong log level or category.\nusage: set_log <log_level_number_0-4> | <categories>"));
+
 	return true;
 }
 //----------------------------------------------------------------------------------------------------
