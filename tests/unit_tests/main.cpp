@@ -49,6 +49,9 @@ namespace po = boost::program_options;
 
 boost::filesystem::path unit_test::data_dir;
 
+// is not used by the test but must be defined to fulfill linker dependencies of core_rpc-server
+gulps_log_level log_scr;
+
 namespace nodetool
 {
 template class node_server<cryptonote::t_cryptonote_protocol_handler<cryptonote::core>>;
@@ -64,7 +67,7 @@ int main(int argc, char **argv)
 
 	tools::on_startup();
 	epee::string_tools::set_module_name_and_folder(argv[0]);
-	
+
 	debug::get_set_enable_assert(true, false);
 
 	::testing::InitGoogleTest(&argc, argv);
