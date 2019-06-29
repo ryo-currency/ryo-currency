@@ -1010,6 +1010,7 @@ bool core_rpc_server::on_set_log_categories(const COMMAND_RPC_SET_LOG_CATEGORIES
 	PERF_TIMER(on_set_log_categories);
 
 	log_scr.parse_cat_string(req.categories.c_str());
+	res.categories = log_scr.get_current_cat_str();
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
