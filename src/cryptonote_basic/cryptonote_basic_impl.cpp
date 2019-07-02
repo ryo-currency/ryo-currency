@@ -138,42 +138,24 @@ template bool get_dev_fund_amount<TESTNET>(uint64_t height, uint64_t& amount);
 template bool get_dev_fund_amount<STAGENET>(uint64_t height, uint64_t& amount);
 
 //-----------------------------------------------------------------------------------------------
+uint64_t get_base_reward_tabular(uint64_t height, uint64_t already_generated_coins)
+{
+	uint64_t interval_num = std::min(uint64_t(height / COIN_EMISSION_HEIGHT_INTERVAL), uint64_t(COIN_EMISSION_STEPS.size() - 1llu));
+
+	uint64_t base_reward = 0;
+	if(height == 0)
+		base_reward = GENESIS_BLOCK_REWARD;
+	else if(already_generated_coins < MONEY_SUPPLY)
+		base_reward = COIN_EMISSION_STEPS[interval_num];
+	else
+		base_reward = FINAL_SUBSIDY;
+
+	return base_reward;
+}
+
 bool get_block_reward(network_type nettype, size_t median_size, size_t current_block_size, uint64_t already_generated_coins, uint64_t &reward, uint64_t height)
 {
-	uint64_t base_reward;
-	uint64_t round_factor = 10000000; // 1 * pow(10, 7)
-	if(height > 0)
-	{
-		if(height < (PEAK_COIN_EMISSION_HEIGHT + COIN_EMISSION_HEIGHT_INTERVAL))
-		{
-			uint64_t interval_num = height / COIN_EMISSION_HEIGHT_INTERVAL;
-			double money_supply_pct = 0.1888 + interval_num * (0.023 + interval_num * 0.0032);
-			base_reward = ((uint64_t)(MONEY_SUPPLY * money_supply_pct)) >> EMISSION_SPEED_FACTOR;
-		}
-		else
-		{
-			base_reward = (MONEY_SUPPLY - already_generated_coins) >> EMISSION_SPEED_FACTOR;
-		}
-	}
-	else
-	{
-		base_reward = GENESIS_BLOCK_REWARD;
-	}
-
-	if(base_reward < FINAL_SUBSIDY)
-	{
-		if(MONEY_SUPPLY > already_generated_coins)
-		{
-			base_reward = FINAL_SUBSIDY;
-		}
-		else
-		{
-			base_reward = FINAL_SUBSIDY / 2;
-		}
-	}
-
-	// rounding (floor) base reward
-	base_reward = base_reward / round_factor * round_factor;
+	uint64_t base_reward = get_base_reward_tabular(height, already_generated_coins);
 
 	//make it soft
 	if(median_size < common_config::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE)

@@ -49,6 +49,7 @@
 #include <assert.h>
 #include <boost/uuid/uuid.hpp>
 #include <string>
+#include <array>
 
 #define CRYPTONOTE_DNS_TIMEOUT_MS 20000
 
@@ -127,8 +128,19 @@
 // coin emission change interval/speed configs
 #define COIN_EMISSION_MONTH_INTERVAL 6																										// months to change emission speed
 #define COIN_EMISSION_HEIGHT_INTERVAL ((uint64_t)(COIN_EMISSION_MONTH_INTERVAL * (30.4375 * 24 * 3600) / common_config::DIFFICULTY_TARGET)) // calculated to # of heights to change emission speed
-#define PEAK_COIN_EMISSION_YEAR 4
-#define PEAK_COIN_EMISSION_HEIGHT ((uint64_t)(((12 * 30.4375 * 24 * 3600) / common_config::DIFFICULTY_TARGET) * PEAK_COIN_EMISSION_YEAR)) // = (# of heights emmitted per year) * PEAK_COIN_EMISSION_YEAR
+
+static constexpr std::array<uint64_t, 48> COIN_EMISSION_STEPS = {{
+	32000000000, 36450000000, 41970000000, 48590000000, 56280000000,
+	65070000000, 65070000000, 60820000000, 56840000000, 53130000000,
+	49660000000, 46420000000, 43390000000, 40550000000, 37910000000,
+	35430000000, 33120000000, 30950000000, 28930000000, 27040000000,
+	25280000000, 23630000000, 22080000000, 20640000000, 19290000000,
+	18030000000, 16850000000, 15750000000, 14720000000, 13760000000,
+	12860000000, 12020000000, 11240000000, 10500000000, 9820000000,
+	9180000000, 8580000000, 8020000000, 7490000000, 7000000000,
+	6540000000, 6120000000, 5720000000, 5340000000, 4990000000,
+	4670000000, 4360000000, 4080000000
+}};
 
 #define TX_FORK_ID_STR "ryo-currency"
 
@@ -284,8 +296,8 @@ struct config<MAINNET>
 	static constexpr uint16_t RPC_DEFAULT_PORT = 12211;
 	static constexpr uint16_t ZMQ_RPC_DEFAULT_PORT = 12212;
 
-	//Random UUID generated from radioactive cs-137 ( http://www.fourmilab.ch/hotbits/how3.html ) it gives me a nice warm feeling =) 
-	static constexpr boost::uuids::uuid NETWORK_ID = { { 0xcd, 0xac, 0x50, 0x2e, 0xb3, 0x74, 0x8f, 0xf2, 0x0f, 0xb7, 0x72, 0x18, 0x0f, 0x73, 0x24, 0x13 } }; 
+	//Random UUID generated from radioactive cs-137 ( http://www.fourmilab.ch/hotbits/how3.html ) it gives me a nice warm feeling =)
+	static constexpr boost::uuids::uuid NETWORK_ID = { { 0xcd, 0xac, 0x50, 0x2e, 0xb3, 0x74, 0x8f, 0xf2, 0x0f, 0xb7, 0x72, 0x18, 0x0f, 0x73, 0x24, 0x13 } };
 
 	static constexpr const char *GENESIS_TX =
 		"023c01ff0001808098d0daf1d00f028be379aa57a70fa19c0ee5765fdc3d2aae0b1034158f4963e157d9042c24fbec21013402fc7071230f1f86f33099119105a7b1f64a898526060ab871e685059c223100";
@@ -312,16 +324,16 @@ struct config<TESTNET>
 	static constexpr uint64_t RYO_LONG_INTEGRATED_ADDRESS_BASE58_PREFIX = 0x29e192; // RYoE
 	static constexpr uint64_t RYO_LONG_SUBADDRESS_BASE58_PREFIX = 0x30e192;			// RYoU
 
-	static constexpr uint16_t P2P_DEFAULT_PORT = 13310; 
-	static constexpr uint16_t RPC_DEFAULT_PORT = 13311; 
-	static constexpr uint16_t ZMQ_RPC_DEFAULT_PORT = 13312; 
- 
-	static constexpr boost::uuids::uuid NETWORK_ID = { { 0x6f, 0x81, 0x7d, 0x7e, 0xa2, 0x0b, 0x71, 0x77, 0x22, 0xc8, 0xd2, 0xff, 0x02, 0x5d, 0xe9, 0x92 } }; 
+	static constexpr uint16_t P2P_DEFAULT_PORT = 13310;
+	static constexpr uint16_t RPC_DEFAULT_PORT = 13311;
+	static constexpr uint16_t ZMQ_RPC_DEFAULT_PORT = 13312;
+
+	static constexpr boost::uuids::uuid NETWORK_ID = { { 0x6f, 0x81, 0x7d, 0x7e, 0xa2, 0x0b, 0x71, 0x77, 0x22, 0xc8, 0xd2, 0xff, 0x02, 0x5d, 0xe9, 0x92 } };
 
 	static constexpr const char *GENESIS_TX =
 		"023c01ff0001808098d0daf1d00f028be379aa57a70fa19c0ee5765fdc3d2aae0b1034158f4963e157d9042c24fbec21013402fc7071230f1f86f33099119105a7b1f64a898526060ab871e685059c223100";
 	static constexpr uint32_t GENESIS_NONCE = 10001;
-	
+
 	////////////////////// Dev fund constants
 	// How ofen do we add the dev reward
 	static constexpr uint64_t DEV_FUND_PERIOD = 15 * 24; // 1 day
@@ -343,16 +355,16 @@ struct config<STAGENET>
 	static constexpr uint64_t RYO_LONG_INTEGRATED_ADDRESS_BASE58_PREFIX = 0x1fbbe192; // RYosE
 	static constexpr uint64_t RYO_LONG_SUBADDRESS_BASE58_PREFIX = 0xe3c2192;		  // RYosU
 
-	static constexpr uint16_t P2P_DEFAULT_PORT = 14410; 
-	static constexpr uint16_t RPC_DEFAULT_PORT = 14411; 
-	static constexpr uint16_t ZMQ_RPC_DEFAULT_PORT = 14412; 
- 
-	static constexpr boost::uuids::uuid NETWORK_ID = { { 0x15, 0x77, 0x3a, 0x26, 0x42, 0xa0, 0x3f, 0xf3, 0xe5, 0x79, 0x72, 0x8d, 0x4e, 0x5a, 0xf2, 0x98 } }; 
+	static constexpr uint16_t P2P_DEFAULT_PORT = 14410;
+	static constexpr uint16_t RPC_DEFAULT_PORT = 14411;
+	static constexpr uint16_t ZMQ_RPC_DEFAULT_PORT = 14412;
+
+	static constexpr boost::uuids::uuid NETWORK_ID = { { 0x15, 0x77, 0x3a, 0x26, 0x42, 0xa0, 0x3f, 0xf3, 0xe5, 0x79, 0x72, 0x8d, 0x4e, 0x5a, 0xf2, 0x98 } };
 
 	static constexpr const char *GENESIS_TX =
 		"013c01ff0001ffffffffffff0302df5d56da0c7d643ddd1ce61901c7bdc5fb1738bfe39fbe69c28a3a7032729c0f2101168d0c4ca86fb55a4cf6a36d31431be1c53a3bd7411bb24e8832410289fa6f3b";
 	static constexpr uint32_t GENESIS_NONCE = 10002;
-	
+
 	////////////////////// Dev fund constants
 	// How ofen do we add the dev reward
 	static constexpr uint64_t DEV_FUND_PERIOD = 15 * 24; // 1 day

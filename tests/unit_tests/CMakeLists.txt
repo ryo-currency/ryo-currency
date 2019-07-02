@@ -42,6 +42,7 @@ set(unit_tests_sources
   crypto.cpp
   device.cpp
   dns_resolver.cpp
+  emission_curve.cpp
   epee_boosted_tcp_server.cpp
   epee_levin_protocol_handler_async.cpp
   epee_utils.cpp
