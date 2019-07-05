@@ -177,7 +177,7 @@ std::vector<crypto::public_key> device_default::get_subaddress_spend_public_keys
 
 	std::vector<crypto::public_key> pkeys;
 	pkeys.reserve(end - begin);
-	cryptonote::subaddress_index index = {account, begin};
+	cryptonote::subaddress_index index(account, begin);
 
 	ge_p3 p3;
 	ge_cached cached;

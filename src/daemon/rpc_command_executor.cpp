@@ -1448,7 +1448,7 @@ bool t_rpc_command_executor::ban(const std::string &ip, time_t seconds)
 	std::string fail_message = "Unsuccessful";
 	epee::json_rpc::error error_resp;
 
-	cryptonote::COMMAND_RPC_SETBANS::ban ban;
+	cryptonote::COMMAND_RPC_SETBANS::ban_data ban;
 	if(!epee::string_tools::get_ip_int32_from_string(ban.ip, ip))
 	{
 		GULPS_PRINT_FAIL( "Invalid IP");
@@ -1484,7 +1484,7 @@ bool t_rpc_command_executor::unban(const std::string &ip)
 	std::string fail_message = "Unsuccessful";
 	epee::json_rpc::error error_resp;
 
-	cryptonote::COMMAND_RPC_SETBANS::ban ban;
+	cryptonote::COMMAND_RPC_SETBANS::ban_data ban;
 	if(!epee::string_tools::get_ip_int32_from_string(ban.ip, ip))
 	{
 		GULPS_PRINT_FAIL( "Invalid IP");

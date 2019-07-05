@@ -2032,7 +2032,7 @@ bool wallet_rpc_server::on_get_address_book(const wallet_rpc::COMMAND_RPC_GET_AD
 	{
 		uint64_t idx = 0;
 		for(const auto &entry : ab)
-			res.entries.push_back(wallet_rpc::COMMAND_RPC_GET_ADDRESS_BOOK_ENTRY::entry{idx++, get_public_address_as_str(m_wallet->nettype(), entry.m_is_subaddress, entry.m_address), epee::string_tools::pod_to_hex(entry.m_payment_id), entry.m_description});
+			res.entries.push_back({idx++, get_public_address_as_str(m_wallet->nettype(), entry.m_is_subaddress, entry.m_address), epee::string_tools::pod_to_hex(entry.m_payment_id), entry.m_description});
 	}
 	else
 	{
@@ -2045,7 +2045,7 @@ bool wallet_rpc_server::on_get_address_book(const wallet_rpc::COMMAND_RPC_GET_AD
 				return false;
 			}
 			const auto &entry = ab[idx];
-			res.entries.push_back(wallet_rpc::COMMAND_RPC_GET_ADDRESS_BOOK_ENTRY::entry{idx, get_public_address_as_str(m_wallet->nettype(), entry.m_is_subaddress, entry.m_address), epee::string_tools::pod_to_hex(entry.m_payment_id), entry.m_description});
+			res.entries.push_back({idx, get_public_address_as_str(m_wallet->nettype(), entry.m_is_subaddress, entry.m_address), epee::string_tools::pod_to_hex(entry.m_payment_id), entry.m_description});
 		}
 	}
 	return true;
