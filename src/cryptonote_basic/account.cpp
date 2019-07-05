@@ -86,16 +86,6 @@ void account_keys::set_device(hw::device &hwdev)
 }
 
 //-----------------------------------------------------------------
-account_base::account_base()
-{
-	set_null();
-}
-//-----------------------------------------------------------------
-void account_base::set_null()
-{
-	m_keys = account_keys();
-}
-//-----------------------------------------------------------------
 void account_base::forget_spend_key()
 {
 	m_keys.m_spend_secret_key = crypto::secret_key();

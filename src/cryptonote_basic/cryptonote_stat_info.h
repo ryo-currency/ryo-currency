@@ -57,7 +57,7 @@ struct core_stat_info
 	uint64_t alternative_blocks;
 	std::string top_block_id_str;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(core_stat_info)
 	KV_SERIALIZE(tx_pool_size)
 	KV_SERIALIZE(blockchain_height)
 	KV_SERIALIZE(mining_speed)

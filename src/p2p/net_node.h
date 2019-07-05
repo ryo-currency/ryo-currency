@@ -305,7 +305,7 @@ class node_server : public epee::levin::levin_commands_handler<p2p_connection_co
 		uint64_t m_peer_id;
 		uint32_t m_support_flags;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(config)
 		KV_SERIALIZE(m_net_config)
 		KV_SERIALIZE(m_peer_id)
 		KV_SERIALIZE(m_support_flags)

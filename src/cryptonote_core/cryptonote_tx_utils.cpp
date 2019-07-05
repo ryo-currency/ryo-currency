@@ -166,7 +166,7 @@ crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination
 	if(allow_any_key && change_addr)
 		return change_addr->m_view_public_key;
 
-	account_public_address addr = {null_pkey, null_pkey};
+	account_public_address addr(null_pkey, null_pkey);
 	size_t count = 0;
 	for(const auto &i : destinations)
 	{

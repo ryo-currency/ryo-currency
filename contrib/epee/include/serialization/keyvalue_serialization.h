@@ -42,8 +42,16 @@ namespace epee
 /************************************************************************/
 /* Serialize map declarations                                           */
 /************************************************************************/
-#define BEGIN_KV_SERIALIZE_MAP()                                                                                 \
+#define BEGIN_KV_SERIALIZE_MAP(class_name)                                                                       \
   public:                                                                                                        \
+	class_name(bool non_first = true)                                                                            \
+	{                                                                                                            \
+		if(non_first)                                                                                            \
+		{                                                                                                        \
+			static typename std::remove_pointer<decltype(this)>::type y(false);                                           \
+			*this = y;                                                                                           \
+		}                                                                                                        \
+	}                                                                                                            \
 	template <class t_storage>                                                                                   \
 	bool store(t_storage &st, typename t_storage::hsection hparent_section = nullptr) const                      \
 	{                                                                                                            \
@@ -64,7 +72,7 @@ namespace epee
 		catch(const std::exception &err)                                                                         \
 		{                                                                                                        \
 			(void)(err);                                                                                         \
-			GULPS_ERRORF("Exception on unserializing: {}", err.what());                                             \
+			GULPS_ERRORF("Exception on unserializing: {}", err.what());                                          \
 			return false;                                                                                        \
 		}                                                                                                        \
 	}                                                                                                            \

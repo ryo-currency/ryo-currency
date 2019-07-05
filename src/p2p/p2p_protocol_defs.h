@@ -80,10 +80,12 @@ static inline std::string peerid_to_string(peerid_type peer_id)
 
 struct network_address_old
 {
+	network_address_old(uint32_t ip, uint32_t port) : ip(ip), port(port)  {}
+
 	uint32_t ip;
 	uint32_t port;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(network_address_old)
 	KV_SERIALIZE(ip)
 	KV_SERIALIZE(port)
 	END_KV_SERIALIZE_MAP()
@@ -92,11 +94,13 @@ struct network_address_old
 template <typename AddressType>
 struct peerlist_entry_base
 {
+	peerlist_entry_base(AddressType adr, const peerid_type id, const int64_t last_seen) : adr(adr), id(id), last_seen(last_seen) {}
+  
 	AddressType adr;
 	peerid_type id;
 	int64_t last_seen;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(peerlist_entry_base)
 	KV_SERIALIZE(adr)
 	KV_SERIALIZE(id)
 	KV_SERIALIZE(last_seen)
@@ -111,7 +115,7 @@ struct anchor_peerlist_entry_base
 	peerid_type id;
 	int64_t first_seen;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(anchor_peerlist_entry_base)
 	KV_SERIALIZE(adr)
 	KV_SERIALIZE(id)
 	KV_SERIALIZE(first_seen)
@@ -126,7 +130,7 @@ struct connection_entry_base
 	peerid_type id;
 	bool is_income;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(connection_entry_base)
 	KV_SERIALIZE(adr)
 	KV_SERIALIZE(id)
 	KV_SERIALIZE(is_income)
@@ -151,7 +155,7 @@ inline std::string print_peerlist_to_string(const std::list<peerlist_entry> &pl)
 
 struct network_config
 {
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(network_config)
 	KV_SERIALIZE(max_out_connection_count)
 	KV_SERIALIZE(max_in_connection_count)
 	KV_SERIALIZE(handshake_interval)
@@ -176,7 +180,7 @@ struct basic_node_data
 	uint32_t my_port;
 	peerid_type peer_id;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(basic_node_data)
 	KV_SERIALIZE_VAL_POD_AS_BLOB(network_id)
 	KV_SERIALIZE(peer_id)
 	KV_SERIALIZE(local_time)
@@ -199,7 +203,7 @@ struct COMMAND_HANDSHAKE_T
 		basic_node_data node_data;
 		t_playload_type payload_data;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(node_data)
 		KV_SERIALIZE(payload_data)
 		END_KV_SERIALIZE_MAP()
@@ -211,7 +215,7 @@ struct COMMAND_HANDSHAKE_T
 		t_playload_type payload_data;
 		std::list<peerlist_entry> local_peerlist_new;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(node_data)
 		KV_SERIALIZE(payload_data)
 		if(is_store)
@@ -258,7 +262,7 @@ struct COMMAND_TIMED_SYNC_T
 	struct request
 	{
 		t_playload_type payload_data;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(payload_data)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -269,7 +273,7 @@ struct COMMAND_TIMED_SYNC_T
 		t_playload_type payload_data;
 		std::list<peerlist_entry> local_peerlist_new;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(local_time)
 		KV_SERIALIZE(payload_data)
 		if(is_store)
@@ -298,7 +302,7 @@ struct COMMAND_TIMED_SYNC_T
 				std::list<peerlist_entry_base<network_address_old>> local_peerlist;
 				epee::serialization::selector<is_store>::serialize_stl_container_pod_val_as_blob(local_peerlist, stg, hparent_section, "local_peerlist");
 				for(const auto &p : local_peerlist)
-					((response &)this_ref).local_peerlist_new.push_back(peerlist_entry({epee::net_utils::ipv4_network_address(p.adr.ip, p.adr.port), p.id, p.last_seen}));
+					((response &)this_ref).local_peerlist_new.push_back({epee::net_utils::ipv4_network_address(p.adr.ip, p.adr.port), p.id, p.last_seen});
 			}
 		}
 		END_KV_SERIALIZE_MAP()
@@ -324,7 +328,7 @@ struct COMMAND_PING
 	{
 		/*actually we don't need to send any real data*/
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -333,7 +337,7 @@ struct COMMAND_PING
 		std::string status;
 		peerid_type peer_id;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(peer_id)
 		END_KV_SERIALIZE_MAP()
@@ -350,7 +354,7 @@ struct proof_of_trust
 	uint64_t time;
 	crypto::signature sign;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(proof_of_trust)
 	KV_SERIALIZE(peer_id)
 	KV_SERIALIZE(time)
 	KV_SERIALIZE_VAL_POD_AS_BLOB(sign)
@@ -365,7 +369,7 @@ struct COMMAND_REQUEST_STAT_INFO_T
 	struct request
 	{
 		proof_of_trust tr;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(tr)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -378,7 +382,7 @@ struct COMMAND_REQUEST_STAT_INFO_T
 		uint64_t incoming_connections_count;
 		payload_stat_info payload_info;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(version)
 		KV_SERIALIZE(os_version)
 		KV_SERIALIZE(connections_count)
@@ -398,7 +402,7 @@ struct COMMAND_REQUEST_NETWORK_STATE
 	struct request
 	{
 		proof_of_trust tr;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(tr)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -410,7 +414,7 @@ struct COMMAND_REQUEST_NETWORK_STATE
 		std::list<connection_entry> connections_list;
 		peerid_type my_id;
 		uint64_t local_time;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(local_peerlist_white)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(local_peerlist_gray)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(connections_list)
@@ -429,7 +433,7 @@ struct COMMAND_REQUEST_PEER_ID
 
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -437,7 +441,7 @@ struct COMMAND_REQUEST_PEER_ID
 	{
 		peerid_type my_id;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(my_id)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -452,7 +456,7 @@ struct COMMAND_REQUEST_SUPPORT_FLAGS
 
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -460,7 +464,7 @@ struct COMMAND_REQUEST_SUPPORT_FLAGS
 	{
 		uint32_t support_flags;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(support_flags)
 		END_KV_SERIALIZE_MAP()
 	};

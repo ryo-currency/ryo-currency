@@ -18,7 +18,7 @@ struct request
 	epee::serialization::storage_entry id;
 	t_param params;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(request)
 	KV_SERIALIZE(jsonrpc)
 	KV_SERIALIZE(id)
 	KV_SERIALIZE(method)
@@ -30,7 +30,7 @@ struct error
 {
 	int64_t code;
 	std::string message;
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(error)
 	KV_SERIALIZE(code)
 	KV_SERIALIZE(message)
 	END_KV_SERIALIZE_MAP()
@@ -38,13 +38,13 @@ struct error
 
 struct dummy_error
 {
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(dummy_error)
 	END_KV_SERIALIZE_MAP()
 };
 
 struct dummy_result
 {
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(dummy_result)
 	END_KV_SERIALIZE_MAP()
 };
 
@@ -55,7 +55,7 @@ struct response
 	t_param result;
 	epee::serialization::storage_entry id;
 	t_error error;
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(response)
 	KV_SERIALIZE(jsonrpc)
 	KV_SERIALIZE(id)
 	KV_SERIALIZE(result)
@@ -69,7 +69,7 @@ struct response<t_param, dummy_error>
 	std::string jsonrpc;
 	t_param result;
 	epee::serialization::storage_entry id;
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(response)
 	KV_SERIALIZE(jsonrpc)
 	KV_SERIALIZE(id)
 	KV_SERIALIZE(result)
@@ -82,7 +82,7 @@ struct response<dummy_result, t_error>
 	std::string jsonrpc;
 	t_error error;
 	epee::serialization::storage_entry id;
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(response)
 	KV_SERIALIZE(jsonrpc)
 	KV_SERIALIZE(id)
 	KV_SERIALIZE(error)

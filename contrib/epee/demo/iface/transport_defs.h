@@ -10,7 +10,7 @@ struct some_test_subdata
 {
 	std::string m_str;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(some_test_subdata)
 	KV_SERIALIZE(m_str)
 	END_KV_SERIALIZE_MAP()
 };
@@ -44,7 +44,7 @@ struct some_test_data
 	epee::serialization::storage_entry m_storage_entry_int;
 	epee::serialization::storage_entry m_storage_entry_string;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(some_test_data)
 	KV_SERIALIZE(m_str)
 	KV_SERIALIZE(m_uint64)
 	KV_SERIALIZE(m_uint32)
@@ -86,7 +86,7 @@ struct COMMAND_EXAMPLE_1
 		std::string example_string_data;
 		some_test_data sub;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(example_string_data)
 		KV_SERIALIZE(sub)
 		END_KV_SERIALIZE_MAP()
@@ -97,7 +97,7 @@ struct COMMAND_EXAMPLE_1
 		bool m_success;
 		std::list<some_test_data> subs;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(m_success)
 		KV_SERIALIZE(subs)
 		END_KV_SERIALIZE_MAP()
@@ -112,7 +112,7 @@ struct COMMAND_EXAMPLE_2
 	{
 		std::string example_string_data2;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(example_string_data2)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -121,7 +121,7 @@ struct COMMAND_EXAMPLE_2
 	{
 		bool m_success;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(m_success)
 		END_KV_SERIALIZE_MAP()
 	};

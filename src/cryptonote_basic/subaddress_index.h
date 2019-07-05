@@ -53,6 +53,8 @@ namespace cryptonote
 {
 struct subaddress_index
 {
+	subaddress_index(uint32_t maj, uint32_t min) { major = maj; minor = min; }
+  
 	uint32_t major;
 	uint32_t minor;
 	bool operator==(const subaddress_index &rhs) const { return !memcmp(this, &rhs, sizeof(subaddress_index)); }
@@ -64,7 +66,7 @@ struct subaddress_index
 	FIELD(minor)
 	END_SERIALIZE()
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(subaddress_index)
 	KV_SERIALIZE(major)
 	KV_SERIALIZE(minor)
 	END_KV_SERIALIZE_MAP()

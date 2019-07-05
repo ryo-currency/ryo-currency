@@ -73,6 +73,8 @@ namespace cryptonote
 
 struct integrated_address
 {
+	integrated_address(account_public_address adr, crypto::hash8 payment_id) : adr(adr), payment_id(payment_id) {}
+    
 	account_public_address adr;
 	crypto::hash8 payment_id;
 
@@ -81,7 +83,7 @@ struct integrated_address
 	FIELD(payment_id)
 	END_SERIALIZE()
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(integrated_address)
 	KV_SERIALIZE(adr)
 	KV_SERIALIZE(payment_id)
 	END_KV_SERIALIZE_MAP()
@@ -89,13 +91,15 @@ struct integrated_address
 
 struct kurz_address
 {
+	kurz_address(crypto::public_key m_public_key) : m_public_key(m_public_key) {}
+	
 	crypto::public_key m_public_key;
 
 	BEGIN_SERIALIZE_OBJECT()
 	FIELD(m_public_key)
 	END_SERIALIZE()
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(kurz_address)
 	KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE(m_public_key)
 	END_KV_SERIALIZE_MAP()
 };
@@ -227,7 +231,7 @@ std::string get_public_address_as_str(bool subaddress, account_public_address co
 		else
 			address_prefix = config<NETTYPE>::RYO_KURZ_ADDRESS_BASE58_PREFIX;
 
-		kurz_address kadr = {adr.m_spend_public_key};
+		kurz_address kadr(adr.m_spend_public_key);
 		return tools::base58::encode_addr(address_prefix, t_serializable_object_to_blob(kadr));
 	}
 	else
@@ -251,7 +255,7 @@ std::string get_account_integrated_address_as_str(account_public_address const &
 {
 	uint64_t integrated_address_prefix = config<NETTYPE>::RYO_LONG_INTEGRATED_ADDRESS_BASE58_PREFIX;
 
-	integrated_address iadr = {adr, payment_id};
+	integrated_address iadr(adr, payment_id);
 	return tools::base58::encode_addr(integrated_address_prefix, t_serializable_object_to_blob(iadr));
 }
 
