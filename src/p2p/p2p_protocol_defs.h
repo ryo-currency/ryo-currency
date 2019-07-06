@@ -61,7 +61,7 @@
 #include "crypto/crypto.h"
 #endif
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 namespace nodetool
@@ -95,7 +95,7 @@ template <typename AddressType>
 struct peerlist_entry_base
 {
 	peerlist_entry_base(AddressType adr, const peerid_type id, const int64_t last_seen) : adr(adr), id(id), last_seen(last_seen) {}
-  
+
 	AddressType adr;
 	peerid_type id;
 	int64_t last_seen;
@@ -302,7 +302,7 @@ struct COMMAND_TIMED_SYNC_T
 				std::list<peerlist_entry_base<network_address_old>> local_peerlist;
 				epee::serialization::selector<is_store>::serialize_stl_container_pod_val_as_blob(local_peerlist, stg, hparent_section, "local_peerlist");
 				for(const auto &p : local_peerlist)
-					((response &)this_ref).local_peerlist_new.push_back({epee::net_utils::ipv4_network_address(p.adr.ip, p.adr.port), p.id, p.last_seen});
+					((response &)this_ref).local_peerlist_new.emplace_back(peerlist_entry{epee::net_utils::ipv4_network_address(p.adr.ip, p.adr.port), p.id, p.last_seen});
 			}
 		}
 		END_KV_SERIALIZE_MAP()
@@ -316,7 +316,7 @@ struct COMMAND_TIMED_SYNC_T
 struct COMMAND_PING
 {
 	/*
-      Used to make "callback" connection, to be sure that opponent node 
+      Used to make "callback" connection, to be sure that opponent node
       have accessible connection point. Only other nodes can add peer to peerlist,
       and ONLY in case when peer has accepted connection and answered to ping.
     */

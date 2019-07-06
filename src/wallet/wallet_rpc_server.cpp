@@ -782,7 +782,7 @@ bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::requ
 			mixin = m_wallet->adjust_mixin(req.mixin);
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
-		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, check_pid(pid), 
+		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, check_pid(pid),
 				req.account_index, req.subaddr_indices, m_trusted_daemon);
 		if(ptx_vector.empty())
 		{
@@ -843,10 +843,10 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
 		GULPS_LOG_L2("on_transfer_split calling create_transactions_2");
-		
-		std::vector<wallet2::pending_tx> ptx_vector = 
+
+		std::vector<wallet2::pending_tx> ptx_vector =
 			m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, check_pid(pid), req.account_index, req.subaddr_indices, m_trusted_daemon);
-		
+
 		GULPS_LOG_L2("on_transfer_split called create_transactions_2");
 
 		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
@@ -896,7 +896,7 @@ bool wallet_rpc_server::on_sweep_all(const wallet_rpc::COMMAND_RPC_SWEEP_ALL::re
 			mixin = m_wallet->adjust_mixin(req.mixin);
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
-		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_all(req.below_amount, dsts[0].addr, dsts[0].is_subaddress, 
+		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_all(req.below_amount, dsts[0].addr, dsts[0].is_subaddress,
 				mixin, req.unlock_time, priority, check_pid(pid), req.account_index, req.subaddr_indices, m_trusted_daemon);
 
 		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
@@ -2032,7 +2032,7 @@ bool wallet_rpc_server::on_get_address_book(const wallet_rpc::COMMAND_RPC_GET_AD
 	{
 		uint64_t idx = 0;
 		for(const auto &entry : ab)
-			res.entries.push_back({idx++, get_public_address_as_str(m_wallet->nettype(), entry.m_is_subaddress, entry.m_address), epee::string_tools::pod_to_hex(entry.m_payment_id), entry.m_description});
+			res.entries.emplace_back(wallet_rpc::COMMAND_RPC_GET_ADDRESS_BOOK_ENTRY::entry{idx++, get_public_address_as_str(m_wallet->nettype(), entry.m_is_subaddress, entry.m_address), epee::string_tools::pod_to_hex(entry.m_payment_id), entry.m_description});
 	}
 	else
 	{
@@ -2045,7 +2045,7 @@ bool wallet_rpc_server::on_get_address_book(const wallet_rpc::COMMAND_RPC_GET_AD
 				return false;
 			}
 			const auto &entry = ab[idx];
-			res.entries.push_back({idx, get_public_address_as_str(m_wallet->nettype(), entry.m_is_subaddress, entry.m_address), epee::string_tools::pod_to_hex(entry.m_payment_id), entry.m_description});
+			res.entries.emplace_back(wallet_rpc::COMMAND_RPC_GET_ADDRESS_BOOK_ENTRY::entry{idx, get_public_address_as_str(m_wallet->nettype(), entry.m_is_subaddress, entry.m_address), epee::string_tools::pod_to_hex(entry.m_payment_id), entry.m_description});
 		}
 	}
 	return true;
@@ -2982,14 +2982,14 @@ int main(int argc, char **argv)
 
 	const auto arg_wallet_file = wallet_args::arg_wallet_file();
 	const auto arg_from_json = wallet_args::arg_generate_from_json();
-	
+
 	gulps::inst().set_thread_tag("WALLET_RPC");
 
 	//Temp error output
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
 	auto temp_handle = gulps::inst().add_output(std::move(out));
-	
+
 	po::options_description desc_params(wallet_args::tr("Wallet options"));
 	tools::wallet2::init_options(desc_params);
 	command_line::add_arg(desc_params, arg_rpc_bind_port);
@@ -3000,7 +3000,7 @@ int main(int argc, char **argv)
 	command_line::add_arg(desc_params, arg_from_json);
 	command_line::add_arg(desc_params, arg_wallet_dir);
 	command_line::add_arg(desc_params, arg_prompt_for_password);
-	
+
 	int vm_error_code = 1;
 	const auto vm = wallet_args::main(
 		argc, argv,
@@ -3012,7 +3012,7 @@ int main(int argc, char **argv)
 		vm_error_code,
 		true);
 	if(!vm)
-	{	
+	{
 		return vm_error_code;
 	}
 
@@ -3029,7 +3029,7 @@ int main(int argc, char **argv)
 			GULPS_ERROR(tools::wallet_rpc_server::tr("Can't specify more than one of --testnet and --stagenet"));
 			return 1;
 		}
-		
+
 		if(testnet)
 			net_type = cryptonote::TESTNET;
 		else if(stagenet)
