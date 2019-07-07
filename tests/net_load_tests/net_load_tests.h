@@ -227,7 +227,7 @@ struct CMD_CLOSE_ALL_CONNECTIONS
 
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 };
@@ -241,7 +241,7 @@ struct CMD_START_OPEN_CLOSE_TEST
 		uint64_t open_request_target;
 		uint64_t max_opened_conn_count;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(open_request_target)
 		KV_SERIALIZE(max_opened_conn_count)
 		END_KV_SERIALIZE_MAP()
@@ -249,7 +249,7 @@ struct CMD_START_OPEN_CLOSE_TEST
 
 	struct response
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		END_KV_SERIALIZE_MAP()
 	};
 };
@@ -260,7 +260,7 @@ struct CMD_GET_STATISTICS
 
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -270,7 +270,7 @@ struct CMD_GET_STATISTICS
 		uint64_t new_connection_counter;
 		uint64_t close_connection_counter;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(opened_connections_count)
 		KV_SERIALIZE(new_connection_counter)
 		KV_SERIALIZE(close_connection_counter)
@@ -291,13 +291,13 @@ struct CMD_RESET_STATISTICS
 
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
 	struct response
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		END_KV_SERIALIZE_MAP()
 	};
 };
@@ -308,7 +308,7 @@ struct CMD_SHUTDOWN
 
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 };
@@ -321,7 +321,7 @@ struct CMD_SEND_DATA_REQUESTS
 	{
 		uint64_t request_size;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(request_size)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -336,7 +336,7 @@ struct CMD_DATA_REQUEST
 		std::string data;
 		uint64_t response_size;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(data)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -345,7 +345,7 @@ struct CMD_DATA_REQUEST
 	{
 		std::string data;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(data)
 		END_KV_SERIALIZE_MAP()
 	};

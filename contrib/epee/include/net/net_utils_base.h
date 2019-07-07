@@ -73,7 +73,7 @@ class ipv4_network_address
 	static constexpr uint8_t get_type_id() noexcept { return ID; }
 
 	static const uint8_t ID = 1;
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(ipv4_network_address)
 	KV_SERIALIZE(m_ip)
 	KV_SERIALIZE(m_port)
 	END_KV_SERIALIZE_MAP()
@@ -157,7 +157,7 @@ class network_address
 		virtual uint8_t get_type_id() const override { return value.get_type_id(); }
 	};
 
-	std::shared_ptr<interface> self;
+	std::shared_ptr<interface> self = nullptr;
 
 	template <typename Type>
 	Type &as_mutable() const
@@ -171,7 +171,6 @@ class network_address
 	}
 
   public:
-	network_address() : self(nullptr) {}
 	template <typename T>
 	network_address(const T &src)
 		: self(std::make_shared<implementation<T>>(src)) {}
@@ -186,7 +185,7 @@ class network_address
 	template <typename Type>
 	const Type &as() const { return as_mutable<const Type>(); }
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(network_address)
 	uint8_t type = is_store ? this_ref.get_type_id() : 0;
 	if(!epee::serialization::selector<is_store>::serialize(type, stg, hparent_section, "type"))
 		return false;
