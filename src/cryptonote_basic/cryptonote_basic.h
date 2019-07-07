@@ -454,6 +454,9 @@ struct block : public block_header
 /************************************************************************/
 struct account_public_address
 {
+	account_public_address(const crypto::public_key m_spend_public_key, const  crypto::public_key m_view_public_key) : m_spend_public_key(m_spend_public_key), 
+			      m_view_public_key(m_view_public_key) {}
+  
 	crypto::public_key m_spend_public_key;
 	crypto::public_key m_view_public_key;
 
@@ -462,7 +465,7 @@ struct account_public_address
 	FIELD(m_view_public_key)
 	END_SERIALIZE()
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(account_public_address)
 	KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE(m_spend_public_key)
 	KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE(m_view_public_key)
 	END_KV_SERIALIZE_MAP()

@@ -42,7 +42,7 @@ struct port_test_struct_sub
 {
 	std::string m_str;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(port_test_struct_sub)
 	KV_SERIALIZE_VAL(m_str)
 	END_KV_SERIALIZE_MAP()
 };
@@ -83,7 +83,7 @@ struct port_test_struct
 	port_test_struct_sub m_subobj;
 	std::list<port_test_struct> m_list_of_self;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(port_test_struct)
 	KV_SERIALIZE_VAL(m_str)
 	KV_SERIALIZE_VAL(m_uint64)
 	KV_SERIALIZE_VAL(m_uint32)

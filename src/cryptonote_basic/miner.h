@@ -131,7 +131,7 @@ class miner
 	{
 		uint64_t current_extra_message_index;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(miner_config)
 		KV_SERIALIZE(current_extra_message_index)
 		END_KV_SERIALIZE_MAP()
 	};

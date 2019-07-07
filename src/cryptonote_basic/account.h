@@ -65,7 +65,7 @@ struct account_keys
 	crypto::secret_key_16 m_short_seed;
 	hw::device *m_device = &hw::get_device("default");
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(account_keys)
 	KV_SERIALIZE(m_account_address)
 	KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE(m_spend_secret_key)
 	KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE(m_view_secret_key)
@@ -85,7 +85,6 @@ struct account_keys
 class account_base
 {
   public:
-	account_base();
 
 	inline crypto::secret_key_16 generate_new(uint8_t acc_opt)
 	{
@@ -141,7 +140,7 @@ class account_base
 
 	static constexpr uint64_t EARLIEST_TIMESTAMP = 1483228800; // 01-01-2017 00:00
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(account_base)
 	KV_SERIALIZE(m_keys)
 	KV_SERIALIZE(m_creation_timestamp)
 	KV_SERIALIZE(m_acc_opt)
@@ -149,9 +148,8 @@ class account_base
 
   private:
 	crypto::secret_key_16 generate();
-	void set_null();
 
-	account_keys m_keys;
+	account_keys m_keys = account_keys();
 	uint64_t m_creation_timestamp;
 	uint8_t m_acc_opt;
 };

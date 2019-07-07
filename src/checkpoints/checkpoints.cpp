@@ -68,7 +68,7 @@ struct t_hashline
 {
 	uint64_t height;  //!< the height of the checkpoint
 	std::string hash; //!< the hash for the checkpoint
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(t_hashline)
 	KV_SERIALIZE(height)
 	KV_SERIALIZE(hash)
 	END_KV_SERIALIZE_MAP()
@@ -80,7 +80,7 @@ struct t_hashline
 struct t_hash_json
 {
 	std::vector<t_hashline> hashlines; //!< the checkpoint lines from the file
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(t_hash_json)
 	KV_SERIALIZE(hashlines)
 	END_KV_SERIALIZE_MAP()
 };
