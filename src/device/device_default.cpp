@@ -153,6 +153,12 @@ bool device_default::derive_subaddress_public_key(const crypto::public_key &out_
 {
 	return crypto::derive_subaddress_public_key(out_key, derivation, output_index, derived_key);
 }
+#ifdef HAVE_EC_64
+bool device_default::derive_subaddress_public_key_64(const crypto::public_key &out_key, const crypto::key_derivation &derivation, const std::size_t output_index, crypto::public_key &derived_key)
+{
+	return crypto::derive_subaddress_public_key_64(out_key, derivation, output_index, derived_key);
+}
+#endif
 
 crypto::public_key device_default::get_subaddress_spend_public_key(const cryptonote::account_keys &keys, const cryptonote::subaddress_index &index)
 {

@@ -43,6 +43,7 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set(crypto_sources
+  ${ASM_FILE}
   chacha.c
   crypto-ops-data.c
   crypto-ops.c
@@ -57,6 +58,12 @@ set(crypto_sources
   pow_hash/cn_slow_hash_intel_avx2.cpp
   pow_hash/cn_slow_hash_hard_arm.cpp)
 
+if(HAVE_EC_64)
+  list(APPEND crypto_sources 
+    ecops64/ecops64-c.c
+    ecops64/ecops64-data.c
+    ecops64/ecops64.asm)
+endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
@@ -79,6 +86,11 @@ set(crypto_private_headers
   keccak.h
   random.hpp
   pow_hash/cn_slow_hash.hpp)
+
+if(HAVE_EC_64)
+  list(APPEND crypto_private_headers 
+    ecops64/ecops64.h)
+endif()
 
 ryo_private_headers(cncrypto
   ${crypto_private_headers})

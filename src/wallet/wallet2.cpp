@@ -997,7 +997,11 @@ void wallet2::check_acc_out_precomp(const tx_out &o, const crypto::key_derivatio
 		GULPS_LOG_ERROR("wrong type id in transaction out");
 		return;
 	}
+#ifdef HAVE_EC_64
+	tx_scan_info.received = is_out_to_acc_precomp_64(m_subaddresses, boost::get<txout_to_key>(o.target).key, derivation, additional_derivations, i, hwdev);
+#else
 	tx_scan_info.received = is_out_to_acc_precomp(m_subaddresses, boost::get<txout_to_key>(o.target).key, derivation, additional_derivations, i, hwdev);
+#endif
 	if(tx_scan_info.received)
 	{
 		tx_scan_info.money_transfered = o.amount; // may be 0 for ringct outputs
@@ -8045,7 +8049,7 @@ std::string wallet2::get_reserve_proof(const boost::optional<std::pair<uint32_t,
 									  error::wallet_internal_error, "Failed to generate key derivation");
 			crypto::public_key subaddress_spendkey;
 			THROW_WALLET_EXCEPTION_IF(!derive_subaddress_public_key(td.get_public_key(), derivation, proof.index_in_tx, subaddress_spendkey),
-									  error::wallet_internal_error, "Failed to derive subaddress public key");
+						  error::wallet_internal_error, "Failed to derive subaddress public key");
 			if(m_subaddresses.count(subaddress_spendkey) == 1)
 				break;
 			THROW_WALLET_EXCEPTION_IF(additional_tx_pub_keys.empty(), error::wallet_internal_error,
