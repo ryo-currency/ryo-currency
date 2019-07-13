@@ -40,6 +40,7 @@ set(unit_tests_sources
   checkpoints.cpp
   command_line.cpp
   crypto.cpp
+  crypto2.cpp
   device.cpp
   dns_resolver.cpp
   emission_curve.cpp
