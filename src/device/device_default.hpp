@@ -98,6 +98,9 @@ class device_default : public hw::device
 	/*                               SUB ADDRESS                               */
 	/* ======================================================================= */
 	bool derive_subaddress_public_key(const crypto::public_key &pub, const crypto::key_derivation &derivation, const std::size_t output_index, crypto::public_key &derived_pub) override;
+#ifdef HAVE_EC_64
+	bool derive_subaddress_public_key_64(const crypto::public_key &pub, const crypto::key_derivation &derivation, const std::size_t output_index, crypto::public_key &derived_pub) override;
+#endif
 	crypto::public_key get_subaddress_spend_public_key(const cryptonote::account_keys &keys, const cryptonote::subaddress_index &index) override;
 	std::vector<crypto::public_key> get_subaddress_spend_public_keys(const cryptonote::account_keys &keys, uint32_t account, uint32_t begin, uint32_t end) override;
 	cryptonote::account_public_address get_subaddress(const cryptonote::account_keys &keys, const cryptonote::subaddress_index &index) override;
@@ -127,7 +130,7 @@ class device_default : public hw::device
 
 	bool encrypt_payment_id(crypto::hash8 &payment_id, const crypto::public_key &public_key, const crypto::secret_key &secret_key) override;
 	bool encrypt_payment_id(crypto::uniform_payment_id &payment_id, const crypto::public_key &public_key, const crypto::secret_key &secret_key) override;
-	
+
 	bool ecdhEncode(rct::ecdhTuple &unmasked, const rct::key &sharedSec) override;
 	bool ecdhDecode(rct::ecdhTuple &masked, const rct::key &sharedSec) override;
 

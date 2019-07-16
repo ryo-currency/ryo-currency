@@ -397,7 +397,7 @@ bool parse_tx_extra(const std::vector<uint8_t> &tx_extra, std::vector<tx_extra_f
 		tx_extra_field field;
 		bool r = ::do_serialize(ar, field);
 
-		GULPS_CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field! n= ", tx_extra_fields.size(), " extra = ", 
+		GULPS_CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field! n= ", tx_extra_fields.size(), " extra = ",
 			string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
 
 		tx_extra_fields.push_back(field);
@@ -705,6 +705,7 @@ bool is_out_to_acc(const account_keys &acc, const txout_to_key &out_key, const c
 	}
 	return false;
 }
+
 //---------------------------------------------------------------
 boost::optional<subaddress_receive_info> is_out_to_acc_precomp(const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, const crypto::public_key &out_key, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t output_index, hw::device &hwdev)
 {
@@ -725,6 +726,29 @@ boost::optional<subaddress_receive_info> is_out_to_acc_precomp(const std::unorde
 	}
 	return boost::none;
 }
+
+#ifdef HAVE_EC_64
+boost::optional<subaddress_receive_info> is_out_to_acc_precomp_64(const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, const crypto::public_key &out_key, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t output_index, hw::device &hwdev)
+{
+	// try the shared tx pubkey
+	crypto::public_key subaddress_spendkey;
+	hwdev.derive_subaddress_public_key_64(out_key, derivation, output_index, subaddress_spendkey);
+	auto found = subaddresses.find(subaddress_spendkey);
+	if(found != subaddresses.end())
+		return subaddress_receive_info{found->second, derivation};
+	// try additional tx pubkeys if available
+	if(!additional_derivations.empty())
+	{
+		GULPS_CHECK_AND_ASSERT_MES(output_index < additional_derivations.size(), boost::none, "wrong number of additional derivations");
+		hwdev.derive_subaddress_public_key_64(out_key, additional_derivations[output_index], output_index, subaddress_spendkey);
+		found = subaddresses.find(subaddress_spendkey);
+		if(found != subaddresses.end())
+			return subaddress_receive_info{found->second, additional_derivations[output_index]};
+	}
+	return boost::none;
+}
+#endif
+
 //---------------------------------------------------------------
 bool lookup_acc_outs(const account_keys &acc, const transaction &tx, std::vector<size_t> &outs, uint64_t &money_transfered)
 {
