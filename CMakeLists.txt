@@ -68,6 +68,54 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 set(CMAKE_C_STANDARD 11)
 
+# helper function to generate options
+function(ryo_option name description default)
+  set(USE_${name} ${default} CACHE STRING "${description}")
+  set_property(CACHE USE_${name} PROPERTY
+    STRINGS "ON;TRUE;AUTO;OFF;FALSE")
+  if(HAVE_${name})
+    set(HAVE_${name} TRUE PARENT_SCOPE)
+  else()
+    set(HAVE_${name} PARENT_SCOPE)
+  endif()
+endfunction()
+
+# detect 64bit x86 architecture and set ARCH_X86_64
+if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+  set(ARCH_X86_64 TRUE)
+elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "amd64")
+  set(ARCH_X86_64 TRUE)
+elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
+  # cmake reports AMD64 on Windows, but we might be building for 32-bit.
+  if (CMAKE_CL_64)
+  set(ARCH_X86_64 TRUE)
+  endif()
+endif()
+
+################################################################################
+### ELLIPTIC CURVE
+ryo_option(EC_64 "use optimized x86 64bit elliptic curve implementation" AUTO)
+# check if x86_64 elliptic curve implementation can be used
+if(USE_EC_64 STREQUAL AUTO)
+  enable_language(ASM_NASM OPTIONAL)
+  if(ARCH_X86_64 AND CMAKE_ASM_NASM_COMPILER) 
+    set(HAVE_EC_64 TRUE)
+  endif()
+elseif(USE_EC_64)
+  enable_language(ASM_NASM)
+  if(NOT CMAKE_ASM_NASM_COMPILER_LOADED)
+    message(FATAL_ERROR "Could not load NASM compiler.")
+  endif()
+  set(HAVE_EC_64 TRUE)
+endif()
+
+if(HAVE_EC_64)
+  message(STATUS "Using 64bit elliptic curve implementation for x68_64")
+  add_definitions("-DHAVE_EC_64")
+endif()
+
+### ELLIPTIC CURVE
+################################################################################
 
 function (die msg)
   if (NOT WIN32)

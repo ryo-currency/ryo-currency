@@ -171,6 +171,10 @@ class crypto_ops
 	friend void derive_secret_key(const key_derivation &, std::size_t, const secret_key &, secret_key &);
 	static bool derive_subaddress_public_key(const public_key &, const key_derivation &, std::size_t, public_key &);
 	friend bool derive_subaddress_public_key(const public_key &, const key_derivation &, std::size_t, public_key &);
+#ifdef HAVE_EC_64
+	static bool derive_subaddress_public_key_64(const public_key &, const key_derivation &, std::size_t, public_key &);
+	friend bool derive_subaddress_public_key_64(const public_key &, const key_derivation &, std::size_t, public_key &);
+#endif
 	static void generate_signature(const hash &, const public_key &, const secret_key &, signature &);
 	friend void generate_signature(const hash &, const public_key &, const secret_key &, signature &);
 	static bool check_signature(const hash &, const public_key &, const signature &);
@@ -276,6 +280,12 @@ inline bool derive_subaddress_public_key(const public_key &out_key, const key_de
 {
 	return crypto_ops::derive_subaddress_public_key(out_key, derivation, output_index, result);
 }
+#ifdef HAVE_EC_64
+inline bool derive_subaddress_public_key_64(const public_key &out_key, const key_derivation &derivation, std::size_t output_index, public_key &result)
+{
+	return crypto_ops::derive_subaddress_public_key_64(out_key, derivation, output_index, result);
+}
+#endif
 
 /* Generation and checking of a standard signature.
    */
@@ -288,7 +298,7 @@ inline bool check_signature(const hash &prefix_hash, const public_key &pub, cons
 	return crypto_ops::check_signature(prefix_hash, pub, sig);
 }
 
-/* Generation and checking of a tx proof; given a tx pubkey R, the recipient's view pubkey A, and the key 
+/* Generation and checking of a tx proof; given a tx pubkey R, the recipient's view pubkey A, and the key
    * derivation D, the signature proves the knowledge of the tx secret key r such that R=r*G and D=r*A
    * When the recipient's address is a subaddress, the tx pubkey R is defined as R=r*B where B is the recipient's spend pubkey
    */
@@ -371,13 +381,13 @@ const static crypto::public_key null_pkey = boost::value_initialized<crypto::pub
 const static crypto::secret_key null_skey = boost::value_initialized<crypto::secret_key>();
 }
 
-namespace fmt 
+namespace fmt
 {
 template <>
 struct formatter<crypto::public_key> : formatter<string_view>
 {
 	template <typename FormatContext>
-	auto format(const crypto::public_key &pk, FormatContext &ctx)  -> decltype(ctx.out())  
+	auto format(const crypto::public_key &pk, FormatContext &ctx)  -> decltype(ctx.out())
 	{
 		return formatter<string_view>::format(epee::string_tools::pod_to_hex(pk), ctx);
 	}
