@@ -999,6 +999,14 @@ void wallet2::check_acc_out_precomp(const tx_out &o, const crypto::key_derivatio
 	}
 #ifdef HAVE_EC_64
 	tx_scan_info.received = is_out_to_acc_precomp_64(m_subaddresses, boost::get<txout_to_key>(o.target).key, derivation, additional_derivations, i, hwdev);
+	if(tx_scan_info.received)
+	{
+		//Extra check on the baseline version. 
+		tx_scan_info.received = is_out_to_acc_precomp(m_subaddresses, boost::get<txout_to_key>(o.target).key, derivation, additional_derivations, i, hwdev);
+		if(!tx_scan_info.received)
+			GULPS_LOG_ERROR("ERROR! Results of precomp_64 and precomp differ!");
+		assert(tx_scan_info.received);
+	}
 #else
 	tx_scan_info.received = is_out_to_acc_precomp(m_subaddresses, boost::get<txout_to_key>(o.target).key, derivation, additional_derivations, i, hwdev);
 #endif
