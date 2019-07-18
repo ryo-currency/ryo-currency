@@ -331,6 +331,23 @@ bool crypto_ops::derive_subaddress_public_key(const public_key &out_key, const k
 
 #ifdef HAVE_EC_64
 
+bool crypto_ops::generate_key_derivation_64(const public_key &key1, const secret_key &key2, key_derivation &derivation)
+{
+	ge64_p3 point;
+	ge64_p2 point2;
+	ge64_p1p1 point3;
+	assert(sc_check(&key2) == 0);
+	if(ge64_frombytes_vartime(&point, &key1) != 0)
+	{
+		return false;
+	}
+	ge64_scalarmult(&point2, &unwrap(key2), &point);
+	ge64_mul8(&point3, &point2);
+	ge64_p1p1_to_p2(&point2, &point3);
+	ge64_tobytes(&derivation, &point2);
+	return true;
+}
+
 bool crypto_ops::derive_subaddress_public_key_64(const public_key& out_key, const key_derivation& derivation, const std::size_t output_index, public_key &derived_key)
 {
 	ec_scalar scalar;
