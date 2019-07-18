@@ -1138,7 +1138,12 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 
 		hwdev_lock.lock();
 		hwdev.set_mode(hw::device::TRANSACTION_PARSE);
-		if(!hwdev.generate_key_derivation(tx_pub_key, keys.m_view_secret_key, derivation))
+#ifdef HAVE_EC_64
+		bool derivation_result = hwdev.generate_key_derivation_64(tx_pub_key, keys.m_view_secret_key, derivation);
+#else
+		bool derivation_result = hwdev.generate_key_derivation(tx_pub_key, keys.m_view_secret_key, derivation);
+#endif
+		if(!derivation_result)
 		{
 			GULPS_WARN("Failed to generate key derivation from tx pubkey, skipping");
 			static_assert(sizeof(derivation) == sizeof(rct::key), "Mismatched sizes of key_derivation and rct::key");
@@ -1154,7 +1159,12 @@ void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote
 		for(size_t i = 0; i < additional_tx_pub_keys.size(); ++i)
 		{
 			additional_derivations.push_back({});
-			if(!hwdev.generate_key_derivation(additional_tx_pub_keys[i], keys.m_view_secret_key, additional_derivations.back()))
+#ifdef HAVE_EC_64
+			derivation_result = hwdev.generate_key_derivation_64(additional_tx_pub_keys[i], keys.m_view_secret_key, additional_derivations.back());
+#else
+			derivation_result = hwdev.generate_key_derivation(additional_tx_pub_keys[i], keys.m_view_secret_key, additional_derivations.back());
+#endif
+			if(!derivation_result)
 			{
 				GULPS_WARN("Failed to generate key derivation from tx pubkey, skipping");
 				additional_derivations.pop_back();
