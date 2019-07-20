@@ -286,6 +286,12 @@ bool device_default::generate_key_derivation(const crypto::public_key &key1, con
 {
 	return crypto::generate_key_derivation(key1, key2, derivation);
 }
+#ifdef HAVE_EC_64
+bool device_default::generate_key_derivation_64(const crypto::public_key &key1, const crypto::secret_key &key2, crypto::key_derivation &derivation)
+{
+	return crypto::generate_key_derivation_64(key1, key2, derivation);
+}
+#endif
 
 bool device_default::derivation_to_scalar(const crypto::key_derivation &derivation, const size_t output_index, crypto::ec_scalar &res)
 {

@@ -172,6 +172,8 @@ class crypto_ops
 	static bool derive_subaddress_public_key(const public_key &, const key_derivation &, std::size_t, public_key &);
 	friend bool derive_subaddress_public_key(const public_key &, const key_derivation &, std::size_t, public_key &);
 #ifdef HAVE_EC_64
+	static bool generate_key_derivation_64(const public_key &, const secret_key &, key_derivation &);
+	friend bool generate_key_derivation_64(const public_key &, const secret_key &, key_derivation &);
 	static bool derive_subaddress_public_key_64(const public_key &, const key_derivation &, std::size_t, public_key &);
 	friend bool derive_subaddress_public_key_64(const public_key &, const key_derivation &, std::size_t, public_key &);
 #endif
@@ -281,6 +283,11 @@ inline bool derive_subaddress_public_key(const public_key &out_key, const key_de
 	return crypto_ops::derive_subaddress_public_key(out_key, derivation, output_index, result);
 }
 #ifdef HAVE_EC_64
+inline bool generate_key_derivation_64(const public_key &key1, const secret_key &key2, key_derivation &derivation)
+{
+	return crypto_ops::generate_key_derivation_64(key1, key2, derivation);
+}
+
 inline bool derive_subaddress_public_key_64(const public_key &out_key, const key_derivation &derivation, std::size_t output_index, public_key &result)
 {
 	return crypto_ops::derive_subaddress_public_key_64(out_key, derivation, output_index, result);
