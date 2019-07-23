@@ -196,7 +196,7 @@ class signal_handler
 		else
 		{
 			GULPS_CAT_MAJOR("cmn_util");
-			GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_RED, "Got control signal {}. Exiting without saving...", type);
+			GULPSF_GLOBAL_PRINT_CLR(gulps::COLOR_RED, "Got control signal {}. Exiting without saving...", type);
 			return FALSE;
 		}
 		return TRUE;

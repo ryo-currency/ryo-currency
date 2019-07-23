@@ -311,7 +311,7 @@ bool core_rpc_server::on_get_blocks(const COMMAND_RPC_GET_BLOCKS_FAST::request &
 		}
 	}
 
-	GULPS_LOGF_L1("on_get_blocks: {} blocks, {} txes, pruned size {}, unpruned size {}", bs.size() , ntxes , pruned_size , unpruned_size);
+	GULPSF_LOG_L1("on_get_blocks: {} blocks, {} txes, pruned size {}, unpruned size {}", bs.size() , ntxes , pruned_size , unpruned_size);
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -337,7 +337,7 @@ bool core_rpc_server::on_get_alt_blocks_hashes(const COMMAND_RPC_GET_ALT_BLOCKS_
 		res.blks_hashes.push_back(epee::string_tools::pod_to_hex(get_block_hash(blk)));
 	}
 
-	GULPS_LOGF_L1("on_get_alt_blocks_hashes: {} blocks ", blks.size() );
+	GULPSF_LOG_L1("on_get_alt_blocks_hashes: {} blocks ", blks.size() );
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -435,7 +435,7 @@ bool core_rpc_server::on_get_random_outs(const COMMAND_RPC_GET_RANDOM_OUTPUTS_FO
 		ss << "\n";
 	});
 	std::string s = ss.str();
-	GULPS_LOGF_L2("COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS: \n{}", s);
+	GULPSF_LOG_L2("COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS: \n{}", s);
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -531,7 +531,7 @@ bool core_rpc_server::on_get_random_rct_outs(const COMMAND_RPC_GET_RANDOM_RCT_OU
 	});
 	ss << "\n";
 	std::string s = ss.str();
-	GULPS_LOGF_L2("COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS: \n{}", s);
+	GULPSF_LOG_L2("COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS: \n{}", s);
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -550,7 +550,7 @@ bool core_rpc_server::on_get_indexes(const COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_IND
 		return true;
 	}
 	res.status = CORE_RPC_STATUS_OK;
-	GULPS_LOGF_L2("COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_INDEXES: [{}]", res.o_indexes.size() );
+	GULPSF_LOG_L2("COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_INDEXES: [{}]", res.o_indexes.size() );
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -585,7 +585,7 @@ bool core_rpc_server::on_get_transactions(const COMMAND_RPC_GET_TRANSACTIONS::re
 		res.status = "Failed";
 		return true;
 	}
-	GULPS_LOGF_L2("Found {}/{} transactions on the blockchain", txs.size() , vh.size() );
+	GULPSF_LOG_L2("Found {}/{} transactions on the blockchain", txs.size() , vh.size() );
 
 	// try the pool for any missing txes
 	size_t found_in_pool = 0;
@@ -644,7 +644,7 @@ bool core_rpc_server::on_get_transactions(const COMMAND_RPC_GET_TRANSACTIONS::re
 			}
 			txs = sorted_txs;
 		}
-		GULPS_LOGF_L2("Found {}/{} transactions in the pool", found_in_pool , vh.size() );
+		GULPSF_LOG_L2("Found {}/{} transactions in the pool", found_in_pool , vh.size() );
 	}
 
 	std::list<std::string>::const_iterator txhi = req.txs_hashes.begin();
@@ -703,7 +703,7 @@ bool core_rpc_server::on_get_transactions(const COMMAND_RPC_GET_TRANSACTIONS::re
 		res.missed_tx.push_back(string_tools::pod_to_hex(miss_tx));
 	}
 
-	GULPS_LOGF_L2("{} transactions found, {} not found", res.txs.size(), res.missed_tx.size());
+	GULPSF_LOG_L2("{} transactions found, {} not found", res.txs.size(), res.missed_tx.size());
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -787,7 +787,7 @@ bool core_rpc_server::on_send_raw_tx(const COMMAND_RPC_SEND_RAW_TX::request &req
 	std::string tx_blob;
 	if(!string_tools::parse_hexstr_to_binbuff(req.tx_as_hex, tx_blob))
 	{
-		GULPS_PRINTF("[on_send_raw_tx]: Failed to parse tx from hexbuff: {}", req.tx_as_hex);
+		GULPSF_PRINT("[on_send_raw_tx]: Failed to parse tx from hexbuff: {}", req.tx_as_hex);
 		res.status = "Failed";
 		return true;
 	}
@@ -817,11 +817,11 @@ bool core_rpc_server::on_send_raw_tx(const COMMAND_RPC_SEND_RAW_TX::request &req
 		const std::string punctuation = res.reason.empty() ? "" : ": ";
 		if(tvc.m_verifivation_failed)
 		{
-			GULPS_PRINTF("[on_send_raw_tx]: tx verification failed{} {}", punctuation, res.reason);
+			GULPSF_PRINT("[on_send_raw_tx]: tx verification failed{} {}", punctuation, res.reason);
 		}
 		else
 		{
-			GULPS_PRINTF("[on_send_raw_tx]: Failed to process tx {} {}", punctuation, res.reason);
+			GULPSF_PRINT("[on_send_raw_tx]: Failed to process tx {} {}", punctuation, res.reason);
 		}
 		return true;
 	}
@@ -1322,7 +1322,7 @@ bool core_rpc_server::use_bootstrap_daemon_if_necessary(const invoke_http_mode &
 		ok = ok && getheight_res.status == CORE_RPC_STATUS_OK;
 
 		m_should_use_bootstrap_daemon = ok && top_height + 10 < getheight_res.height;
-		GULPS_INFOF("{} the bootstrap daemon (our height: {} , bootstrap daemon's height: {})", (m_should_use_bootstrap_daemon ? "Using" : "Not using"), top_height, getheight_res.height);
+		GULPSF_INFO("{} the bootstrap daemon (our height: {} , bootstrap daemon's height: {})", (m_should_use_bootstrap_daemon ? "Using" : "Not using"), top_height, getheight_res.height);
 	}
 	if(!m_should_use_bootstrap_daemon)
 		return false;
@@ -1990,11 +1990,11 @@ bool core_rpc_server::on_update(const COMMAND_RPC_UPDATE::request &req, COMMAND_
         GULPS_ERROR("Download from {} does not match the expected hash", res.auto_uri );
         return false;
       }
-      GULPS_INFOF("New version downloaded to {}", path);
+      GULPSF_INFO("New version downloaded to {}", path);
     }
     else
     {
-      GULPS_LOGF_L1("We already have {} with expected hash", path );
+      GULPSF_LOG_L1("We already have {} with expected hash", path );
     }
     res.path = path.string();
 

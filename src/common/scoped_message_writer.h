@@ -105,7 +105,7 @@ class scoped_message_writer
 		{
 			m_flush = false;
 
-			GULPS_OUTPUT(gulps::OUT_LOG_0, m_log_level, gulps_scoped_major_cat::c_str(), "msgwriter", m_color, m_oss.str());
+			GULPS_OUTPUT(gulps::OUT_LOG_0, m_log_level, gulps_major_cat::c_str(), "msgwriter", m_color, m_oss.str());
 			GULPS_PRINT_CLR(m_color, m_oss.str());
 		}
 	}

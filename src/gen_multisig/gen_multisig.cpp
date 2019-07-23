@@ -65,9 +65,9 @@
 #include "common/gulps.hpp"
 
 #define GULPS_PRINT_FAIL(...) GULPS_ERROR(tr("Error: "), __VA_ARGS__)
-#define GULPS_PRINTF_FAIL(...) GULPS_ERRORF(tr("Error: "), __VA_ARGS__)
+#define GULPSF_PRINT_FAIL(...) GULPSF_ERROR(tr("Error: "), __VA_ARGS__)
 #define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
-#define GULPS_PRINTF_OK(...) GULPS_PRINTF(__VA_ARGS__)
+#define GULPSF_PRINT_OK(...) GULPSF_PRINT(__VA_ARGS__)
 
 using namespace std;
 using namespace epee;
@@ -100,7 +100,7 @@ const command_line::arg_descriptor<std::vector<std::string>> arg_command = {"com
 
 static bool generate_multisig(uint32_t threshold, uint32_t total, const std::string &basename, network_type nettype, bool create_address_file)
 {
-	GULPS_PRINTF_OK(genms::tr("Generating {} {}/{} multisig wallets"), total, threshold, total);
+	GULPSF_PRINT_OK(genms::tr("Generating {} {}/{} multisig wallets"), total, threshold, total);
 
 	const auto pwd_container = tools::password_container::prompt(true, "Enter password for new multisig wallets");
 
@@ -173,7 +173,7 @@ static bool generate_multisig(uint32_t threshold, uint32_t total, const std::str
 		}
 
 		std::string address = wallets[0]->get_account().get_public_address_str(wallets[0]->nettype());
-		GULPS_PRINTF_OK(genms::tr("Generated multisig wallets for address {}\n{}"), address, ss.str());
+		GULPSF_PRINT_OK(genms::tr("Generated multisig wallets for address {}\n{}"), address, ss.str());
 	}
 	catch(const std::exception &e)
 	{
@@ -267,7 +267,7 @@ int main(int argc, char *argv[])
 	}
 	if(threshold <= 1 || threshold > total)
 	{
-		GULPS_PRINTF_FAIL( (genms::tr("Error: expected N > 1 and N <= M, but got N=={} and M=={}")), threshold, total);
+		GULPSF_PRINT_FAIL( (genms::tr("Error: expected N > 1 and N <= M, but got N=={} and M=={}")), threshold, total);
 		return 1;
 	}
 	if(!(*vm)["filename-base"].defaulted() && !command_line::get_arg(*vm, arg_filename_base).empty())

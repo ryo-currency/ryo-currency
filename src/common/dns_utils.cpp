@@ -236,7 +236,7 @@ DNSResolver::DNSResolver() : m_data(new DNSResolverData())
 		dns_public_addr = tools::dns_utils::parse_dns_public(res);
 		if(!dns_public_addr.empty())
 		{
-			GULPS_INFOF("Using public DNS server(s): {} (TCP)", boost::join(dns_public_addr, ", "));
+			GULPSF_INFO("Using public DNS server(s): {} (TCP)", boost::join(dns_public_addr, ", "));
 			use_dns_public = 1;
 		}
 		else
@@ -265,7 +265,7 @@ DNSResolver::DNSResolver() : m_data(new DNSResolverData())
 	const char * const *ds = ::get_builtin_ds();
 	while (*ds)
 	{
-		GULPS_INFOF("adding trust anchor: {}", *ds);
+		GULPSF_INFO("adding trust anchor: {}", *ds);
 		ub_ctx_add_ta(m_data->m_ub_context, string_copy(*ds++));
 	}
 }
@@ -426,12 +426,12 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
 		if(!avail[cur_index])
 		{
 			records[cur_index].clear();
-			GULPS_LOGF_L2("DNSSEC not available for checkpoint update at URL: {}, skipping.", url);
+			GULPSF_LOG_L2("DNSSEC not available for checkpoint update at URL: {}, skipping.", url);
 		}
 		if(!valid[cur_index])
 		{
 			records[cur_index].clear();
-			GULPS_LOGF_L2("DNSSEC validation failed for checkpoint update at URL: {}, skipping.", url);
+			GULPSF_LOG_L2("DNSSEC validation failed for checkpoint update at URL: {}, skipping.", url);
 		}
 
 		cur_index++;
@@ -494,13 +494,13 @@ std::vector<std::string> parse_dns_public(const char *s)
 	{
 		for(size_t i = 0; i < sizeof(DEFAULT_DNS_PUBLIC_ADDR) / sizeof(DEFAULT_DNS_PUBLIC_ADDR[0]); ++i)
 			dns_public_addr.push_back(DEFAULT_DNS_PUBLIC_ADDR[i]);
-			GULPS_LOGF_L0("Using default public DNS server(s):{}  (TCP)", boost::join(dns_public_addr, ", "));
+			GULPSF_LOG_L0("Using default public DNS server(s):{}  (TCP)", boost::join(dns_public_addr, ", "));
 	}
 	else if(sscanf(s, "tcp://%u.%u.%u.%u%c", &ip0, &ip1, &ip2, &ip3, &c) == 4)
 	{
 		if(ip0 > 255 || ip1 > 255 || ip2 > 255 || ip3 > 255)
 		{
-			GULPS_ERRORF("Invalid IP: {}, using default", s);
+			GULPSF_ERROR("Invalid IP: {}, using default", s);
 		}
 		else
 		{

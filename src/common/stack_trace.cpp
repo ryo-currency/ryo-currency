@@ -160,16 +160,16 @@ void log_stack_trace(const char *msg)
 			break;
 		if(unw_get_reg(&cur, UNW_REG_IP, &ip) < 0)
 		{
-			GULPS_LOGF_L0("{:<4}", level);
+			GULPSF_LOG_L0("{:<4}", level);
 			continue;
 		}
 		if(unw_get_proc_name(&cur, sym, sizeof(sym), &off) < 0)
 		{
-			GULPS_LOGF_L0("{:<4}{:<20#0.x}", level, ip);
+			GULPSF_LOG_L0("{:<4}{:<20#0.x}", level, ip);
 			continue;
 		}
 		dsym = abi::__cxa_demangle(sym, NULL, NULL, &status);
-		GULPS_LOGF_L0("{:<4}{:<20#0.x} {#0.x} + {#0.x}", level, ip, (!status && dsym ? dsym : sym), off);
+		GULPSF_LOG_L0("{:<4}{:<20#0.x} {#0.x} + {#0.x}", level, ip, (!status && dsym ? dsym : sym), off);
 		free(dsym);
 	}
 #else

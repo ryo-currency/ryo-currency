@@ -152,7 +152,7 @@ void cryptonote_protocol_handler_base::handler_response_blocks_now(size_t packet
 {
 	using namespace epee::net_utils;
 	double delay = 0; // will be calculated
-	GULPS_LOGF_L1("Packet size: {}", packet_size);
+	GULPSF_LOG_L1("Packet size: {}", packet_size);
 	do
 	{ // rate limiting
 		//XXX
@@ -176,7 +176,7 @@ void cryptonote_protocol_handler_base::handler_response_blocks_now(size_t packet
 		{
 			//delay += rand2*0.1;
 			long int ms = (long int)(delay * 1000);
-			GULPS_LOGF_L1("Sleeping for {} ms before packet_size=", ms, packet_size); // XXX debug sleep
+			GULPSF_LOG_L1("Sleeping for {} ms before packet_size=", ms, packet_size); // XXX debug sleep
 			boost::this_thread::sleep(boost::posix_time::milliseconds(ms));			   // TODO randomize sleeps
 		}
 	} while(delay > 0);

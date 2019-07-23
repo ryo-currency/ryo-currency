@@ -218,7 +218,7 @@ void HardFork::init()
 		GULPS_INFO("The DB has no hard fork info, reparsing from start");
 		height = 1;
 	}
-	GULPS_LOGF_L1("reorganizing from {}", height);
+	GULPSF_LOG_L1("reorganizing from {}", height);
 	if(populate)
 	{
 		reorganize_from_chain_height(height);

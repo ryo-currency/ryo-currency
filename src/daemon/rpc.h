@@ -73,28 +73,28 @@ class t_rpc final
 		boost::program_options::variables_map const &vm, t_core &core, t_p2p &p2p, const bool restricted, const cryptonote::network_type nettype, const std::string &port, const std::string &description)
 		: m_server{core.get(), p2p.get()}, m_description{description}
 	{
-		GULPS_GLOBALF_PRINT("Initializing {} RPC server...", m_description);
+		GULPSF_GLOBAL_PRINT("Initializing {} RPC server...", m_description);
 
 		if(!m_server.init(vm, restricted, nettype, port))
 		{
 			throw std::runtime_error("Failed to initialize " + m_description + " RPC server.");
 		}
-		GULPS_GLOBALF_PRINT("{} RPC server initialized OK on port: {}", m_description, m_server.get_binded_port());
+		GULPSF_GLOBAL_PRINT("{} RPC server initialized OK on port: {}", m_description, m_server.get_binded_port());
 	}
 
 	void run()
 	{
-		GULPS_GLOBALF_PRINT("Starting {} RPC server...",m_description);
+		GULPSF_GLOBAL_PRINT("Starting {} RPC server...",m_description);
 		if(!m_server.run(2, false))
 		{
 			throw std::runtime_error("Failed to start " + m_description + " RPC server.");
 		}
-		GULPS_GLOBALF_PRINT("{} RPC server started ok", m_description);
+		GULPSF_GLOBAL_PRINT("{} RPC server started ok", m_description);
 	}
 
 	void stop()
 	{
-		GULPS_GLOBALF_PRINT("Stopping {} RPC server...", m_description);
+		GULPSF_GLOBAL_PRINT("Stopping {} RPC server...", m_description);
 		m_server.send_stop_signal();
 		m_server.timed_wait_server_stop(5000);
 	}
@@ -106,14 +106,14 @@ class t_rpc final
 
 	~t_rpc()
 	{
-		GULPS_GLOBALF_PRINT("Deinitializing {} RPC server...", m_description);
+		GULPSF_GLOBAL_PRINT("Deinitializing {} RPC server...", m_description);
 		try
 		{
 			m_server.deinit();
 		}
 		catch(...)
 		{
-			GULPS_ERRORF("Failed to deinitialize {} RPC server...", m_description);
+			GULPSF_ERROR("Failed to deinitialize {} RPC server...", m_description);
 		}
 	}
 };

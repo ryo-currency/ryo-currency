@@ -147,7 +147,7 @@ struct convert_to_integral<std::string, uint64_t, false>
 	static void convert(const std::string &from, uint64_t &to)
 	{
 		GULPS_CAT_MAJOR("val_conv");
-		GULPS_LOGF_L2("Converting std::string to uint64_t. Source: {}", from);
+		GULPSF_LOG_L2("Converting std::string to uint64_t. Source: {}", from);
 		// String only contains digits
 		if(std::all_of(from.begin(), from.end(), ::isdigit))
 			to = boost::lexical_cast<uint64_t>(from);

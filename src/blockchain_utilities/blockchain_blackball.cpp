@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 	{
 		if(!log_scr.parse_cat_string(std::to_string(log_level).c_str()))
 		{
-			GULPS_ERRORF("Failed to parse filter string {}", log_level);
+			GULPSF_ERROR("Failed to parse filter string {}", log_level);
 			return 1;
 		}
 	}
@@ -333,7 +333,7 @@ int main(int argc, char *argv[])
 		std::string filename = inputs[n];
 		while(boost::ends_with(filename, "/") || boost::ends_with(filename, "\\"))
 			filename.pop_back();
-		GULPS_PRINTF("Loading blockchain from folder {} ..." , filename);
+		GULPSF_PRINT("Loading blockchain from folder {} ..." , filename);
 
 		try
 		{
@@ -400,7 +400,7 @@ int main(int argc, char *argv[])
 				if(ring_size == 1)
 				{
 					const crypto::public_key pkey = core_storage[n]->get_output_key(txin.amount, txin.key_offsets[0]);
-					GULPS_INFOF("Blackballing output {}, due to being used in a 1-ring", pkey);
+					GULPSF_INFO("Blackballing output {}, due to being used in a 1-ring", pkey);
 					ringdb.blackball(pkey);
 					newly_spent.insert(output_data(txin.amount, txin.key_offsets[0]));
 					spent.insert(output_data(txin.amount, txin.key_offsets[0]));
@@ -427,7 +427,7 @@ int main(int argc, char *argv[])
 						else if(common.size() == 1)
 						{
 							const crypto::public_key pkey = core_storage[n]->get_output_key(txin.amount, common[0]);
-							GULPS_INFOF("Blackballing output {}, due to being used in rings with a single common element" , pkey);
+							GULPSF_INFO("Blackballing output {}, due to being used in rings with a single common element" , pkey);
 							ringdb.blackball(pkey);
 							newly_spent.insert(output_data(txin.amount, common[0]));
 							spent.insert(output_data(txin.amount, common[0]));
@@ -450,7 +450,7 @@ int main(int argc, char *argv[])
 
 	while(!newly_spent.empty())
 	{
-		GULPS_PRINTF("Secondary pass due to {} newly found spent outputs" , newly_spent.size());
+		GULPSF_PRINT("Secondary pass due to {} newly found spent outputs" , newly_spent.size());
 		std::unordered_set<output_data> work_spent = std::move(newly_spent);
 		newly_spent.clear();
 
@@ -472,7 +472,7 @@ int main(int argc, char *argv[])
 				if(known == absolute.size() - 1)
 				{
 					const crypto::public_key pkey = core_storage[0]->get_output_key(od.amount, last_unknown);
-					GULPS_INFOF("Blackballing output {}, due to being used in a {}-ring where all other outputs are known to be spent", pkey, absolute.size());
+					GULPSF_INFO("Blackballing output {}, due to being used in a {}-ring where all other outputs are known to be spent", pkey, absolute.size());
 					ringdb.blackball(pkey);
 					newly_spent.insert(output_data(od.amount, last_unknown));
 					spent.insert(output_data(od.amount, last_unknown));

@@ -5368,7 +5368,7 @@ uint32_t wallet2::adjust_priority(uint32_t priority)
 
 			// estimate how 'full' the last N blocks are
 			const size_t P = 100 * block_size_sum / (N * full_reward_zone);
-			GULPS_LOGF_L0("The last {} blocks fill roughly {}% of the full reward zone.", N, P);
+			GULPSF_LOG_L0("The last {} blocks fill roughly {}% of the full reward zone.", N, P);
 			if(P > 80)
 			{
 				GULPS_LOG_L0("We don't use the low priority because recent blocks are quite full.");
@@ -9126,7 +9126,7 @@ size_t wallet2::import_multisig(std::vector<cryptonote::blobdata> blobs)
 		std::vector<tools::wallet2::multisig_info> i;
 		boost::archive::portable_binary_iarchive ar(iss);
 		ar >> i;
-		GULPS_LOGF_L0("{} outputs found", i.size());
+		GULPSF_LOG_L0("{} outputs found", i.size());
 		info.push_back(std::move(i));
 	}
 

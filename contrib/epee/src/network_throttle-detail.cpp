@@ -151,7 +151,7 @@ void network_throttle::set_name(const std::string &name)
 void network_throttle::set_target_speed(network_speed_kbps target)
 {
 	m_target_speed = target * 1024;
-	GULPS_INFOF("Setting LIMIT: {} kbps", target);
+	GULPSF_INFO("Setting LIMIT: {} kbps", target);
 }
 
 network_speed_kbps network_throttle::get_target_speed()
@@ -173,7 +173,7 @@ void network_throttle::tick()
 	// TODO optimize when moving few slots at once
 	while((!m_any_packet_yet) || (last_sample_time_slot < current_sample_time_slot))
 	{
-		GULPS_LOGF_L1("Moving counter buffer by 1 second {} < {} (last time {})", last_sample_time_slot, current_sample_time_slot, m_last_sample_time);
+		GULPSF_LOG_L1("Moving counter buffer by 1 second {} < {} (last time {})", last_sample_time_slot, current_sample_time_slot, m_last_sample_time);
 		// rotate buffer
 		for(size_t i = m_history.size() - 1; i >= 1; --i)
 			m_history[i] = m_history[i - 1];
@@ -211,7 +211,7 @@ void network_throttle::_handle_trafic_exact(size_t packet_size, size_t orginal_s
 	oss << "]" << std::ends;
 	std::string history_str = oss.str();
 
-	GULPS_LOGF_L2("Throttle {}: packet of ~{}b  (from {} b) Speed AVG={:>4}[w={}] {:>4}[w={}]  /  Limit={} KiB/sec {}", m_name, packet_size,
+	GULPSF_LOG_L2("Throttle {}: packet of ~{}b  (from {} b) Speed AVG={:>4}[w={}] {:>4}[w={}]  /  Limit={} KiB/sec {}", m_name, packet_size,
 					   orginal_size,
 					   ((long int)(cts.average / 1024)), cts.window,
 					   ((long int)(cts2.average / 1024)), cts2.window,
@@ -315,7 +315,7 @@ void network_throttle::calculate_times(size_t packet_size, calculate_times_struc
 			oss << sample.m_size << " ";
 		oss << "]" << std::ends;
 		std::string history_str = oss.str();
-		GULPS_LOGF_L2("{} dbg {}: speed is A={:>8} vs Max={:>8}  so sleep: D={:>8} sec E={:>8} (Enow={:>8}) M={:>8} W={:>8} R={:>8} Wgood {:>8} History: {:>8} m_last_sample_time={:>8}",
+		GULPSF_LOG_L2("{} dbg {}: speed is A={:>8} vs Max={:>8}  so sleep: D={:>8} sec E={:>8} (Enow={:>8}) M={:>8} W={:>8} R={:>8} Wgood {:>8} History: {:>8} m_last_sample_time={:>8}",
 			   (cts.delay > 0 ? "SLEEP" : ""),
 			   m_name,
 			   cts.average,

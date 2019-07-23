@@ -181,7 +181,7 @@ bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_has
 	size_t tx_size_limit = common_config::TRANSACTION_SIZE_LIMIT;
 	if(!kept_by_block && blob_size > tx_size_limit)
 	{
-		GULPS_LOGF_L1("transaction is too big: {} bytes, maximum size: {}", blob_size, tx_size_limit);
+		GULPSF_LOG_L1("transaction is too big: {} bytes, maximum size: {}", blob_size, tx_size_limit);
 		tvc.m_verifivation_failed = true;
 		tvc.m_too_big = true;
 		return false;
@@ -195,7 +195,7 @@ bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_has
 		if(have_tx_keyimges_as_spent(tx))
 		{
 			mark_double_spend(tx);
-			GULPS_LOGF_L1("Transaction with id= {} used already spent key images", id );
+			GULPSF_LOG_L1("Transaction with id= {} used already spent key images", id );
 			tvc.m_verifivation_failed = true;
 			tvc.m_double_spend = true;
 			return false;
@@ -204,7 +204,7 @@ bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_has
 
 	if(!m_blockchain.check_tx_outputs(tx, tvc))
 	{
-		GULPS_LOGF_L1("Transaction with id= {} has at least one invalid output", id );
+		GULPSF_LOG_L1("Transaction with id= {} has at least one invalid output", id );
 		tvc.m_verifivation_failed = true;
 		tvc.m_invalid_output = true;
 		return false;
@@ -249,7 +249,7 @@ bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_has
 			}
 			catch(const std::exception &e)
 			{
-				GULPS_ERRORF("transaction already exists at inserting in memory pool: {}" , e.what());
+				GULPSF_ERROR("transaction already exists at inserting in memory pool: {}" , e.what());
 				return false;
 			}
 			tvc.m_verifivation_impossible = true;
@@ -292,7 +292,7 @@ bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_has
 		}
 		catch(const std::exception &e)
 		{
-			GULPS_ERRORF("internal error: transaction already exists at inserting in memory pool: {}" , e.what());
+			GULPSF_ERROR("internal error: transaction already exists at inserting in memory pool: {}" , e.what());
 			return false;
 		}
 		tvc.m_added_to_pool = true;
@@ -304,7 +304,7 @@ bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_has
 	tvc.m_verifivation_failed = false;
 	m_txpool_size += blob_size;
 
-	GULPS_INFOF("Transaction added to pool: txid {} bytes: {} fee/byte: {}", id , blob_size , (fee / (double)blob_size));
+	GULPSF_INFO("Transaction added to pool: txid {} bytes: {} fee/byte: {}", id , blob_size , (fee / (double)blob_size));
 
 	prune(m_txpool_max_size);
 
@@ -369,21 +369,21 @@ void tx_memory_pool::prune(size_t bytes)
 				return;
 			}
 			// remove first, in case this throws, so key images aren't removed
-			GULPS_INFOF("Pruning tx {} from txpool: size: {}, fee/byte: {}", txid , it->first.second , it->first.first);
+			GULPSF_INFO("Pruning tx {} from txpool: size: {}, fee/byte: {}", txid , it->first.second , it->first.first);
 			m_blockchain.remove_txpool_tx(txid);
 			m_txpool_size -= txblob.size();
 			remove_transaction_keyimages(tx);
-			GULPS_INFOF("Pruned tx {} from txpool: size: {}, fee/byte: {}", txid , it->first.second , it->first.first);
+			GULPSF_INFO("Pruned tx {} from txpool: size: {}, fee/byte: {}", txid , it->first.second , it->first.first);
 			m_txs_by_fee_and_receive_time.erase(it--);
 		}
 		catch(const std::exception &e)
 		{
-			GULPS_ERRORF("Error while pruning txpool: {}" , e.what());
+			GULPSF_ERROR("Error while pruning txpool: {}" , e.what());
 			return;
 		}
 	}
 	if(m_txpool_size > bytes)
-		GULPS_INFOF("Pool size after pruning is larger than limit: {}/{}", m_txpool_size, bytes);
+		GULPSF_INFO("Pool size after pruning is larger than limit: {}/{}", m_txpool_size, bytes);
 }
 //---------------------------------------------------------------------------------
 bool tx_memory_pool::insert_key_images(const transaction &tx, bool kept_by_block)
@@ -471,7 +471,7 @@ bool tx_memory_pool::take_tx(const crypto::hash &id, transaction &tx, size_t &bl
 	}
 	catch(const std::exception &e)
 	{
-		GULPS_ERRORF("Failed to remove tx from txpool: {}" , e.what());
+		GULPSF_ERROR("Failed to remove tx from txpool: {}" , e.what());
 		return false;
 	}
 
@@ -503,11 +503,11 @@ bool tx_memory_pool::remove_stuck_transactions()
 		if((tx_age > CRYPTONOTE_MEMPOOL_TX_LIVETIME && !meta.kept_by_block) ||
 		   (tx_age > CRYPTONOTE_MEMPOOL_TX_FROM_ALT_BLOCK_LIVETIME && meta.kept_by_block))
 		{
-			GULPS_LOGF_L1("Tx {} removed from tx pool due to outdated, age: {}", txid, tx_age);
+			GULPSF_LOG_L1("Tx {} removed from tx pool due to outdated, age: {}", txid, tx_age);
 			auto sorted_it = find_tx_in_sorted_container(txid);
 			if(sorted_it == m_txs_by_fee_and_receive_time.end())
 			{
-				GULPS_LOGF_L1("Removing tx {} from tx pool, but it was not found in the sorted txs container!", txid );
+				GULPSF_LOG_L1("Removing tx {} from tx pool, but it was not found in the sorted txs container!", txid );
 			}
 			else
 			{
@@ -606,7 +606,7 @@ void tx_memory_pool::set_relayed(const std::list<std::pair<crypto::hash, crypton
 		}
 		catch(const std::exception &e)
 		{
-			GULPS_ERRORF("Failed to update txpool transaction metadata: {}" , e.what());
+			GULPSF_ERROR("Failed to update txpool transaction metadata: {}" , e.what());
 			// continue
 		}
 	}
@@ -800,7 +800,7 @@ bool tx_memory_pool::get_transactions_and_spent_keys_info(std::vector<tx_info> &
 				}
 				catch(const std::exception &e)
 				{
-					GULPS_ERRORF("Failed to get tx meta from txpool: {}" , e.what());
+					GULPSF_ERROR("Failed to get tx meta from txpool: {}" , e.what());
 					return false;
 				}
 			}
@@ -1035,7 +1035,7 @@ void tx_memory_pool::mark_double_spend(const transaction &tx)
 					}
 					catch(const std::exception &e)
 					{
-						GULPS_ERRORF("Failed to update tx meta: {}" , e.what());
+						GULPSF_ERROR("Failed to update tx meta: {}" , e.what());
 						// continue, not fatal
 					}
 				}
@@ -1096,7 +1096,7 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 	size_t max_total_size = (200 * median_size) / 100 - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
 	std::unordered_set<crypto::key_image> k_images;
 
-	GULPS_LOGF_L2("Filling block template, median size {}, {} txes in the pool", median_size, m_txs_by_fee_and_receive_time.size());
+	GULPSF_LOG_L2("Filling block template, median size {}, {} txes in the pool", median_size, m_txs_by_fee_and_receive_time.size());
 
 	LockedTXN lock(m_blockchain);
 
@@ -1108,7 +1108,7 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 			GULPS_ERROR("  failed to find tx meta");
 			continue;
 		}
-		GULPS_LOGF_L2("Considering {}, size {}, current block size {}/{}, current coinbase {}", tx_hash.second, meta.blob_size, total_size, max_total_size, print_money(best_coinbase));
+		GULPSF_LOG_L2("Considering {}, size {}, current block size {}/{}, current coinbase {}", tx_hash.second, meta.blob_size, total_size, max_total_size, print_money(best_coinbase));
 
 		// Can not exceed maximum block size
 		if(max_total_size < total_size + meta.blob_size)
@@ -1153,7 +1153,7 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 			}
 			catch(const std::exception &e)
 			{
-				GULPS_ERRORF("Failed to update tx meta: {}" , e.what());
+				GULPSF_ERROR("Failed to update tx meta: {}" , e.what());
 				// continue, not fatal
 			}
 		}
@@ -1173,11 +1173,11 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 		fee += meta.fee;
 		best_coinbase = coinbase;
 		append_key_images(k_images, tx);
-		GULPS_LOGF_L2("  added, new block size {}/{}, coinbase {}", total_size, max_total_size, print_money(best_coinbase));
+		GULPSF_LOG_L2("  added, new block size {}/{}, coinbase {}", total_size, max_total_size, print_money(best_coinbase));
 	}
 
 	expected_reward = best_coinbase;
-	GULPS_LOGF_L2("Block template filled with {} txes, size {}/{}, coinbase {} (including {} in fees)", bl.tx_hashes.size(),
+	GULPSF_LOG_L2("Block template filled with {} txes, size {}/{}, coinbase {} (including {} in fees)", bl.tx_hashes.size(),
 												total_size, max_total_size , print_money(best_coinbase), print_money(fee));
 	return true;
 }
@@ -1194,12 +1194,12 @@ size_t tx_memory_pool::validate()
 		m_txpool_size += meta.blob_size;
 		if(meta.blob_size > tx_size_limit)
 		{
-			GULPS_LOGF_L1("Transaction {}, is too big ({}bytes), removing it from pool", txid, meta.blob_size);
+			GULPSF_LOG_L1("Transaction {}, is too big ({}bytes), removing it from pool", txid, meta.blob_size);
 			remove.insert(txid);
 		}
 		else if(m_blockchain.have_tx(txid))
 		{
-			GULPS_LOGF_L1("Transaction {} is in the blockchain, removing it from pool", txid );
+			GULPSF_LOG_L1("Transaction {} is in the blockchain, removing it from pool", txid );
 			remove.insert(txid);
 		}
 		return true;
@@ -1228,7 +1228,7 @@ size_t tx_memory_pool::validate()
 				auto sorted_it = find_tx_in_sorted_container(txid);
 				if(sorted_it == m_txs_by_fee_and_receive_time.end())
 				{
-					GULPS_LOGF_L1("Removing tx {} from tx pool, but it was not found in the sorted txs container!", txid );
+					GULPSF_LOG_L1("Removing tx {} from tx pool, but it was not found in the sorted txs container!", txid );
 				}
 				else
 				{

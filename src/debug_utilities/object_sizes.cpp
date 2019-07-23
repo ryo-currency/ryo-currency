@@ -70,7 +70,7 @@ class size_logger
 	{
 		GULPS_CAT_MAJOR("obj_sizes");
 		for(const auto &i : types)
-			GULPS_PRINTF("{}\t{}",i.first, i.second);
+			GULPSF_PRINT("{}\t{}",i.first, i.second);
 	}
 	void add(const char *type, size_t size) { types.insert(std::make_pair(size, type)); }
   private:

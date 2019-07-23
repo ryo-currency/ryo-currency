@@ -417,7 +417,7 @@ inline bool load_from_json(const std::string &buff_json, t_storage &stg)
 	}
 	catch(const std::exception &ex)
 	{
-		GULPS_ERRORF("Failed to parse json, what: {}", ex.what());
+		GULPSF_ERROR("Failed to parse json, what: {}", ex.what());
 		return false;
 	}
 	catch(...)

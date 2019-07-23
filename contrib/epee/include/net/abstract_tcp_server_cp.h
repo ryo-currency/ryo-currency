@@ -162,7 +162,7 @@ class cp_server_impl //: public abstract_handler
 				if(WSA_IO_PENDING == err)
 					return true;
 			}
-			GULPS_ERRORF("BIG FAIL: WSASend error code not correct, res={} las_err={}", res, err);
+			GULPSF_ERROR("BIG FAIL: WSASend error code not correct, res={} las_err={}", res, err);
 			::InterlockedExchange(&m_psend_data->m_is_in_use, 0);
 			query_shutdown();
 			//closesocket(m_psend_data);
@@ -174,7 +174,7 @@ class cp_server_impl //: public abstract_handler
 			if(!bytes_sent || bytes_sent != cb)
 			{
 				int err = ::WSAGetLastError();
-				GULPS_ERRORF("BIG FAIL: WSASend immediatly complete? but bad results, res={} last_err={}", res, err);
+				GULPSF_ERROR("BIG FAIL: WSASend immediatly complete? but bad results, res={} last_err={}", res, err);
 				query_shutdown();
 				return false;
 			}

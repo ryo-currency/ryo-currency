@@ -518,7 +518,7 @@ bool create_directories_if_necessary(const std::string &path)
 	}
 	else
 	{
-		GULPS_LOGF_L2("Can't create directory: {}, err {}", path, ec.message());
+		GULPSF_LOG_L2("Can't create directory: {}, err {}", path, ec.message());
 	}
 
 	return res;
@@ -561,7 +561,7 @@ static bool unbound_built_with_threads()
 	// if no threads, bails out early with UB_NOERROR, otherwise fails with UB_AFTERFINAL id already finalized
 	bool with_threads = ub_ctx_async(ctx, 1) != 0; // UB_AFTERFINAL is not defined in public headers, check any error
 	ub_ctx_delete(ctx);
-	GULPS_LOGF_L0("libunbound was built {} threads",  (with_threads ? "with" : "without") );
+	GULPSF_LOG_L0("libunbound was built {} threads",  (with_threads ? "with" : "without") );
 	return with_threads;
 }
 
@@ -686,12 +686,12 @@ bool is_local_address(const std::string &address)
 	epee::net_utils::http::url_content u_c;
 	if(!epee::net_utils::parse_url(address, u_c))
 	{
-		GULPS_WARNF("Failed to determine whether address '{}' is local, assuming not",  address );
+		GULPSF_WARN("Failed to determine whether address '{}' is local, assuming not",  address );
 		return false;
 	}
 	if(u_c.host.empty())
 	{
-		GULPS_WARNF("Failed to determine whether address '{}' is local, assuming not",  address );
+		GULPSF_WARN("Failed to determine whether address '{}' is local, assuming not",  address );
 		return false;
 	}
 
@@ -705,13 +705,13 @@ bool is_local_address(const std::string &address)
 		const boost::asio::ip::tcp::endpoint &ep = *i;
 		if(ep.address().is_loopback())
 		{
-			GULPS_LOGF_L0("Address '{}' is local",  address );
+			GULPSF_LOG_L0("Address '{}' is local",  address );
 			return true;
 		}
 		++i;
 	}
 
-	GULPS_LOGF_L0("Address '{}' is not local",  address );
+	GULPSF_LOG_L0("Address '{}' is not local",  address );
 	return false;
 }
 int vercmp(const char *v0, const char *v1)

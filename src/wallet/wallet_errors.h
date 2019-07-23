@@ -767,12 +767,12 @@ void throw_wallet_ex(std::string &&cat_major, std::string &&cat_minor, std::stri
 	do                                                                                                         \
 	{                                                                                                          \
 		GULPS_LOG_ERROR("THROW EXCEPTION: ", #err_type);                                                           \
-		tools::error::throw_wallet_ex<err_type>(gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), std::string(__FILE__ ":" STRINGIZE(__LINE__)), ##__VA_ARGS__); \
+		tools::error::throw_wallet_ex<err_type>(gulps_major_cat::c_str(), gulps_minor_cat::c_str(), std::string(__FILE__ ":" STRINGIZE(__LINE__)), ##__VA_ARGS__); \
 	} while(0)
 
 #define THROW_WALLET_EXCEPTION_IF(cond, err_type, ...)                                                         \
 	if(cond)                                                                                                   \
 	{                                                                                                          \
 		GULPS_LOG_ERROR(#cond, ". THROW EXCEPTION: ", #err_type);                                                \
-		tools::error::throw_wallet_ex<err_type>(gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), std::string(__FILE__ ":" STRINGIZE(__LINE__)), ##__VA_ARGS__); \
+		tools::error::throw_wallet_ex<err_type>(gulps_major_cat::c_str(), gulps_minor_cat::c_str(), std::string(__FILE__ ":" STRINGIZE(__LINE__)), ##__VA_ARGS__); \
 	}

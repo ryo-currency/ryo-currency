@@ -39,7 +39,7 @@
 							 epee::net_utils::http::http_response_info &response,                                                                \
 							 context_type &m_conn_context)                                                                                       \
 	{                                                                                                                                            \
-		{GULPS_CAT_MAJOR("http_serv"); GULPS_LOGF_L2("HTTP [{}] {}", m_conn_context.m_remote_address.host_str(), query_info.m_http_method_str, query_info.m_URI);} \
+		{GULPS_CAT_MAJOR("http_serv"); GULPSF_LOG_L2("HTTP [{}] {}", m_conn_context.m_remote_address.host_str(), query_info.m_http_method_str, query_info.m_URI);} \
 		response.m_response_code = 200;                                                                                                          \
 		response.m_response_comment = "Ok";                                                                                                      \
 		if(!handle_http_request_map(query_info, response, m_conn_context))                                                                       \
@@ -78,7 +78,7 @@
 		boost::value_initialized<command_type::response> resp;                                                                 \
 		if(!callback_f(static_cast<command_type::request &>(req), static_cast<command_type::response &>(resp)))                \
 		{                                                                                                                      \
-			GULPS_ERRORF("Failed to {}()", #callback_f);                                                                    \
+			GULPSF_ERROR("Failed to {}()", #callback_f);                                                                    \
 			response_info.m_response_code = 500;                                                                               \
 			response_info.m_response_comment = "Internal Server Error";                                                        \
 			return true;                                                                                                       \
@@ -88,7 +88,7 @@
 		uint64_t ticks3 = epee::misc_utils::get_tick_count();                                                                  \
 		response_info.m_mime_tipe = "application/json";                                                                        \
 		response_info.m_header_info.m_content_type = " application/json";                                                      \
-		GULPS_LOGF_L1("{} processed with {}/{}/{}ms", s_pattern, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2); \
+		GULPSF_LOG_L1("{} processed with {}/{}/{}ms", s_pattern, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2); \
 	}
 
 #define MAP_URI_AUTO_JON2(s_pattern, callback_f, command_type) MAP_URI_AUTO_JON2_IF(s_pattern, callback_f, command_type, true)
@@ -106,7 +106,7 @@
 		boost::value_initialized<command_type::response> resp;                                                                   \
 		if(!callback_f(static_cast<command_type::request &>(req), static_cast<command_type::response &>(resp)))                  \
 		{                                                                                                                        \
-			GULPS_ERRORF("Failed to {}()", #callback_f);                                                                      \
+			GULPSF_ERROR("Failed to {}()", #callback_f);                                                                      \
 			response_info.m_response_code = 500;                                                                                 \
 			response_info.m_response_comment = "Internal Server Error";                                                          \
 			return true;                                                                                                         \
@@ -116,7 +116,7 @@
 		uint64_t ticks3 = epee::misc_utils::get_tick_count();                                                                    \
 		response_info.m_mime_tipe = " application/octet-stream";                                                                 \
 		response_info.m_header_info.m_content_type = " application/octet-stream";                                                \
-		GULPS_LOGF_L1("{}() processed with {}/{}/{}ms", s_pattern, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2); \
+		GULPSF_LOG_L1("{}() processed with {}/{}/{}ms", s_pattern, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2); \
 	}
 
 #define CHAIN_URI_MAP2(callback)                             \
@@ -185,7 +185,7 @@
 	uint64_t ticks3 = epee::misc_utils::get_tick_count();             \
 	response_info.m_mime_tipe = "application/json";                   \
 	response_info.m_header_info.m_content_type = " application/json"; \
-	{GULPS_CAT_MAJOR("http_serv"); GULPS_LOGF_L1("{}[{}] processed with {}/{}/{}ms", query_info.m_URI, method_name, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2);}
+	{GULPS_CAT_MAJOR("http_serv"); GULPSF_LOG_L1("{}[{}] processed with {}/{}/{}ms", query_info.m_URI, method_name, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2);}
 
 #define MAP_JON_RPC_WE_IF(method_name, callback_f, command_type, cond)                                                            \
 	else if((callback_name == method_name) && (cond))                                                                             \

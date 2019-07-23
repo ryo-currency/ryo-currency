@@ -346,7 +346,7 @@ void BlockchainDB::reset_stats()
 
 void BlockchainDB::show_stats()
 {
-	GULPS_LOGF_L1("\n*********************************\nnum_calls: {}\ntime_blk_hash: {}ms\ntime_tx_exists: {}ms\ntime_add_block1: {}ms\ntime_add_transaction: {}ms\ntime_commit1: {}ms\n*********************************\n",
+	GULPSF_LOG_L1("\n*********************************\nnum_calls: {}\ntime_blk_hash: {}ms\ntime_tx_exists: {}ms\ntime_add_block1: {}ms\ntime_add_transaction: {}ms\ntime_commit1: {}ms\n*********************************\n",
 				num_calls,	time_blk_hash, time_tx_exists , time_add_block1, time_add_transaction, time_commit1);
 }
 
