@@ -107,7 +107,7 @@ void set_performance_timer_log_level(gulps::level level)
 {
 	if(level != gulps::LEVEL_DEBUG && level != gulps::LEVEL_TRACE && level != gulps::LEVEL_INFO && level != gulps::LEVEL_WARN && level != gulps::LEVEL_ERROR)
 	{
-		GULPS_ERRORF("Wrong log level: {}, using Debug", gulps::level_to_str(level));
+		GULPSF_ERROR("Wrong log level: {}, using Debug", gulps::level_to_str(level));
 		level = gulps::LEVEL_DEBUG;
 	}
 	performance_timer_log_level = level;

@@ -65,7 +65,7 @@ bool invoke_http_json(const boost::string_ref uri, const t_request &out_struct, 
 
 	if(pri->m_response_code != 200)
 	{
-		//GULPS_LOGF_L1("Failed to invoke http request to  {}, wrong response code: {}", uri , pri->m_response_code);
+		//GULPSF_LOG_L1("Failed to invoke http request to  {}, wrong response code: {}", uri , pri->m_response_code);
 		GULPS_LOG_L1("Failed to invoke http request to  ", uri, " wrong response code: ", pri->m_response_code);
 		return false;
 	}
@@ -119,7 +119,7 @@ bool invoke_http_json_rpc(const boost::string_ref uri, std::string method_name, 
 	}
 	if(resp_t.error.code || resp_t.error.message.size())
 	{
-		GULPS_LOGF_ERROR("RPC call of \"{}\" returned error: {}, message: {}", req_t.method, resp_t.error.code, resp_t.error.message);
+		GULPSF_LOG_ERROR("RPC call of \"{}\" returned error: {}, message: {}", req_t.method, resp_t.error.code, resp_t.error.message);
 		return false;
 	}
 	result_struct = resp_t.result;

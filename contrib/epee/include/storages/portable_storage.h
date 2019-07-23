@@ -147,7 +147,7 @@ inline bool portable_storage::load_from_binary(const binarybuffer &source)
 	m_root.m_entries.clear();
 	if(source.size() < sizeof(storage_block_header))
 	{
-		GULPS_ERRORF("portable_storage: wrong binary format, packet size = {} less than expected sizeof(storage_block_header)={}", source.size() , sizeof(storage_block_header));
+		GULPSF_ERROR("portable_storage: wrong binary format, packet size = {} less than expected sizeof(storage_block_header)={}", source.size() , sizeof(storage_block_header));
 		return false;
 	}
 	storage_block_header *pbuff = (storage_block_header *)source.data();
@@ -159,7 +159,7 @@ inline bool portable_storage::load_from_binary(const binarybuffer &source)
 	}
 	if(pbuff->m_ver != PORTABLE_STORAGE_FORMAT_VER)
 	{
-		GULPS_ERRORF("portable_storage: wrong binary format - unknown format ver = {}", pbuff->m_ver);
+		GULPSF_ERROR("portable_storage: wrong binary format - unknown format ver = {}", pbuff->m_ver);
 		return false;
 	}
 	GULPS_TRY_ENTRY();

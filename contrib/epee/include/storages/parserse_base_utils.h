@@ -136,7 +136,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 				break;
 			default:
 				val.push_back(*it);
-				GULPS_PRINTF("Unknown escape sequence :\"\\{}\"", *it);
+				GULPSF_PRINT("Unknown escape sequence :\"\\{}\"", *it);
 			}
 			escape_mode = false;
 		}

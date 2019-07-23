@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
 	{
 		if(!log_scr.parse_cat_string(std::to_string(log_level).c_str()))
 		{
-			GULPS_ERRORF("Failed to parse filter string {}", log_level);
+			GULPSF_ERROR("Failed to parse filter string {}", log_level);
 			return 1;
 		}
 	}
@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
 	for(const auto &c : counts)
 	{
 		float percent = 100.f * c.second / total;
-		GULPS_INFOF("{} outputs used {} times ({}%)", c.second, c.first, percent);
+		GULPSF_INFO("{} outputs used {} times ({}%)", c.second, c.first, percent);
 	}
 
 	GULPS_PRINT("Blockchain usage exported OK");

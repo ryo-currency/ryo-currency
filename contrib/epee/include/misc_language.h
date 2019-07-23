@@ -43,13 +43,13 @@ namespace epee
 	catch(const std::exception &e)                                   \
 	{                                                                \
 		GULPS_CAT_MAJOR("msc_lang"); \
-		GULPS_ERRORF("EXCEPTION: {}, mes: {}", where_, e.what()); \
+		GULPSF_ERROR("EXCEPTION: {}, mes: {}", where_, e.what()); \
 		return ret_val;                                              \
 	}                                                                \
 	catch(...)                                                       \
 	{                                                                \
 		GULPS_CAT_MAJOR("msc_lang"); \
-		GULPS_ERRORF("EXCEPTION: {}", where_);                          \
+		GULPSF_ERROR("EXCEPTION: {}", where_);                          \
 		return ret_val;                                              \
 	}
 

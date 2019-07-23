@@ -182,7 +182,7 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 #ifdef _WIN32
 			GULPS_ERROR(tr("Failed to create directory "),  m_wallet_dir);
 #else
-			GULPS_ERRORF(tr("Failed to create directory {}: {}"), m_wallet_dir, strerror(errno));
+			GULPSF_ERROR(tr("Failed to create directory {}: {}"), m_wallet_dir, strerror(errno));
 #endif
 			return false;
 		}
@@ -193,7 +193,7 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 		if(rpc_config->login)
 		{
 			const cryptonote::rpc_args::descriptors arg{};
-			GULPS_ERRORF(tr("Cannot specify --{} and --{}"), arg_disable_rpc_login.name, arg.rpc_login.name);
+			GULPSF_ERROR(tr("Cannot specify --{} and --{}"), arg_disable_rpc_login.name, arg.rpc_login.name);
 			return false;
 		}
 	}
@@ -211,7 +211,7 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 			rpc_login_file = tools::private_file::create(temp);
 			if(!rpc_login_file.handle())
 			{
-				GULPS_ERRORF(tr("Failed to create file {}. Check permissions or remove file"), temp);
+				GULPSF_ERROR(tr("Failed to create file {}. Check permissions or remove file"), temp);
 				return false;
 			}
 			std::fputs(http_login->username.c_str(), rpc_login_file.handle());

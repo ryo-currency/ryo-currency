@@ -72,7 +72,7 @@ class http_server_impl_base : public net_utils::http::i_http_server_handler<t_co
 
 		m_net_server.get_config_object().m_user = std::move(user);
 
-		GULPS_GLOBALF_PRINT("Binding on {}:{}", bind_ip , bind_port);
+		GULPSF_GLOBAL_PRINT("Binding on {}:{}", bind_ip , bind_port);
 		bool res = m_net_server.init_server(bind_port, bind_ip);
 		if(!res)
 		{
@@ -85,7 +85,7 @@ class http_server_impl_base : public net_utils::http::i_http_server_handler<t_co
 	bool run(size_t threads_count, bool wait = true)
 	{
 		//go to loop
-		GULPS_INFOF("Run net_service loop( {} threads)...", threads_count );
+		GULPSF_INFO("Run net_service loop( {} threads)...", threads_count );
 		if(!m_net_server.run_server(threads_count, wait))
 		{
 			GULPS_LOG_ERROR("Failed to run net tcp server!");

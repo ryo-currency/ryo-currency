@@ -264,7 +264,7 @@ bool handle_error_helper(const boost::program_options::options_description &desc
 	}
 	catch(const std::exception &e)
 	{
-		GULPS_ERRORF("Failed to parse arguments: {}", e.what());
+		GULPSF_ERROR("Failed to parse arguments: {}", e.what());
 		GULPS_PRINT(desc);
 		return false;
 	}

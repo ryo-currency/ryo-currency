@@ -165,7 +165,7 @@ connection_basic::connection_basic(boost::asio::io_service &io_service, std::ato
 	{
 	};
 
-	GULPS_LOGF_L1("Spawned connection p2p#{} to {} currently we have sockets count:{}", mI->m_peer_number, remote_addr_str, m_ref_sock_count);
+	GULPSF_LOG_L1("Spawned connection p2p#{} to {} currently we have sockets count:{}", mI->m_peer_number, remote_addr_str, m_ref_sock_count);
 }
 
 connection_basic::~connection_basic() noexcept(false)
@@ -180,7 +180,7 @@ connection_basic::~connection_basic() noexcept(false)
 	catch(...)
 	{
 	};
-	GULPS_LOGF_L1("Destructing connection p2p#{} to {}", mI->m_peer_number, remote_addr_str);
+	GULPSF_LOG_L1("Destructing connection p2p#{} to {}", mI->m_peer_number, remote_addr_str);
 }
 
 void connection_basic::set_rate_up_limit(uint64_t limit)
@@ -260,7 +260,7 @@ void connection_basic::sleep_before_packet(size_t packet_size, int phase, int q_
 		if(delay > 0)
 		{
 			long int ms = (long int)(delay * 1000);
-			GULPS_LOGF_L2("Sleeping in {} for {}  ms before packet_size={}", __FUNCTION__, ms, packet_size); // debug sleep
+			GULPSF_LOG_L2("Sleeping in {} for {}  ms before packet_size={}", __FUNCTION__, ms, packet_size); // debug sleep
 			boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 		}
 	} while(delay > 0);
@@ -280,14 +280,14 @@ void connection_basic::set_start_time()
 void connection_basic::do_send_handler_write(const void *ptr, size_t cb)
 {
 	// No sleeping here; sleeping is done once and for all in connection<t_protocol_handler>::handle_write
-	GULPS_LOGF_L2("handler_write (direct) - before ASIO write, for packet={}" , cb);
+	GULPSF_LOG_L2("handler_write (direct) - before ASIO write, for packet={}" , cb);
 	set_start_time();
 }
 
 void connection_basic::do_send_handler_write_from_queue(const boost::system::error_code &e, size_t cb, int q_len)
 {
 	// No sleeping here; sleeping is done once and for all in connection<t_protocol_handler>::handle_write
-	GULPS_LOGF_L2("handler_write (after write, from queue={}) - before ASIO write, for packet={} B (after sleep)", q_len, cb);
+	GULPSF_LOG_L2("handler_write (after write, from queue={}) - before ASIO write, for packet={} B (after sleep)", q_len, cb);
 
 	set_start_time();
 }

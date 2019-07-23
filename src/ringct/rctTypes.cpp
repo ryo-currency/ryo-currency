@@ -65,7 +65,7 @@ void dp(key a)
 	GULPS_PRINT("\"");
 	for(j = 0; j < 32; j++)
 	{
-		GULPS_PRINTF("{0:x}", (unsigned char)a.bytes[j]);
+		GULPSF_PRINT("{0:x}", (unsigned char)a.bytes[j]);
 	}
 	GULPS_PRINT("\"");
 	GULPS_PRINT("\n");
@@ -73,7 +73,7 @@ void dp(key a)
 
 void dp(bool a)
 {
-	GULPS_PRINTF(" ... {} ... ", a ? "true" : "false");
+	GULPSF_PRINT(" ... {} ... ", a ? "true" : "false");
 	GULPS_PRINT("\n");
 }
 
@@ -83,7 +83,7 @@ void dp(const char *a, int l)
 	GULPS_PRINT("\"");
 	for(j = 0; j < l; j++)
 	{
-		GULPS_PRINTF("{0:x}", (unsigned char)a[j]);
+		GULPSF_PRINT("{0:x}", (unsigned char)a[j]);
 	}
 	GULPS_PRINT("\"");
 	GULPS_PRINT("\n");
@@ -125,7 +125,7 @@ void dp(ryo_amount vali)
 
 void dp(int vali)
 {
-	GULPS_PRINTF("x: {}\n", vali);
+	GULPSF_PRINT("x: {}\n", vali);
 	GULPS_PRINT("\n");
 }
 void dp(bits amountb)
@@ -139,7 +139,7 @@ void dp(bits amountb)
 
 void dp(const char *st)
 {
-	GULPS_PRINTF("{}\n", st);
+	GULPSF_PRINT("{}\n", st);
 }
 
 //Various Conversions

@@ -328,7 +328,7 @@ class async_console_handler
 
 			if(prompt.back() != ' ')
 				prompt += ' ';
-			gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(),
+			gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(),
 					"cmd_prompt", __FILE__, __LINE__, std::move(prompt), gulps::COLOR_BOLD_YELLOW, false));
 		}
 	}
@@ -384,7 +384,7 @@ class async_console_handler
 			}
 			catch(const std::exception &ex)
 			{
-				GULPS_ERRORF("Exception at [console_handler], what={}", ex.what());
+				GULPSF_ERROR("Exception at [console_handler], what={}", ex.what());
 			}
 		}
 		if(exit_handler)

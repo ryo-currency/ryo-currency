@@ -53,7 +53,7 @@ inline bool http_ssl_invoke(const std::string &url, const std::string usr, const
 	if(!hinet)
 	{
 		int err = ::GetLastError();
-		GULPS_PRINTF("Failed to call InternetOpenA, \nError: {} {}", err , log_space::get_win32_err_descr(err));
+		GULPSF_PRINT("Failed to call InternetOpenA, \nError: {} {}", err , log_space::get_win32_err_descr(err));
 		return false;
 	}
 
@@ -89,7 +89,7 @@ inline bool http_ssl_invoke(const std::string &url, const std::string usr, const
 					//ERROR_INTERNET_INVALID_CA 45
 					//ERROR_INTERNET_INVALID_URL              (INTERNET_ERROR_BASE + 5)
 					int err = ::GetLastError();
-					GULPS_PRINTF("Failed to call HttpSendRequestA, \nError: {}", log_space::get_win32_err_descr(err));
+					GULPSF_PRINT("Failed to call HttpSendRequestA, \nError: {}", log_space::get_win32_err_descr(err));
 					break;
 				}
 
@@ -102,12 +102,12 @@ inline bool http_ssl_invoke(const std::string &url, const std::string usr, const
 					//ERROR_INTERNET_INVALID_CA 45
 					//ERROR_INTERNET_INVALID_URL              (INTERNET_ERROR_BASE + 5)
 					int err = ::GetLastError();
-					GULPS_PRINTF("Failed to call HttpQueryInfo, \nError: {}", log_space::get_win32_err_descr(err));
+					GULPSF_PRINT("Failed to call HttpQueryInfo, \nError: {}", log_space::get_win32_err_descr(err));
 					break;
 				}
 				if(code < 200 || code > 299)
 				{
-					GULPS_PRINTF("Wrong server response, HttpQueryInfo returned statuse code{}", code);
+					GULPSF_PRINT("Wrong server response, HttpQueryInfo returned statuse code{}", code);
 					break;
 				}
 
@@ -119,7 +119,7 @@ inline bool http_ssl_invoke(const std::string &url, const std::string usr, const
 					if(!res)
 					{
 						int err = ::GetLastError();
-						GULPS_PRINTF("Failed to call InternetReadFile, \nError: {}", log_space::get_win32_err_descr(err));
+						GULPSF_PRINT("Failed to call InternetReadFile, \nError: {}", log_space::get_win32_err_descr(err));
 						break;
 					}
 					if(readed)
@@ -140,7 +140,7 @@ inline bool http_ssl_invoke(const std::string &url, const std::string usr, const
 				if(!res)
 				{
 					int err = ::GetLastError();
-					GULPS_PRINTF("Failed to call InternetCloseHandle, \nError: {}", log_space::get_win32_err_descr(err));
+					GULPSF_PRINT("Failed to call InternetCloseHandle, \nError: {}", log_space::get_win32_err_descr(err));
 				}
 
 				break;
@@ -150,7 +150,7 @@ inline bool http_ssl_invoke(const std::string &url, const std::string usr, const
 		{
 			//ERROR_INTERNET_INVALID_CA
 			int err = ::GetLastError();
-			GULPS_PRINTF("Failed to call InternetOpenUrlA, \nError: {}", log_space::get_win32_err_descr(err));
+			GULPSF_PRINT("Failed to call InternetOpenUrlA, \nError: {}", log_space::get_win32_err_descr(err));
 			return false;
 		}
 
@@ -158,20 +158,20 @@ inline bool http_ssl_invoke(const std::string &url, const std::string usr, const
 		if(!res)
 		{
 			int err = ::GetLastError();
-			GULPS_PRINTF("Failed to call InternetCloseHandle, \nError: {}", log_space::get_win32_err_descr(err));
+			GULPSF_PRINT("Failed to call InternetCloseHandle, \nError: {}", log_space::get_win32_err_descr(err));
 		}
 	}
 	else
 	{
 		int err = ::GetLastError();
-		GULPS_PRINTF("Failed to call InternetConnectA({}, port {} \nError: {}", string_encoding::convert_to_ansii(url_obj.GetHostName()) , port , log_space::get_win32_err_descr(err));
+		GULPSF_PRINT("Failed to call InternetConnectA({}, port {} \nError: {}", string_encoding::convert_to_ansii(url_obj.GetHostName()) , port , log_space::get_win32_err_descr(err));
 	}
 
 	res = ::InternetCloseHandle(hinet);
 	if(!res)
 	{
 		int err = ::GetLastError();
-		GULPS_PRINTF("Failed to call InternetCloseHandle, \nError: {}", log_space::get_win32_err_descr(err));
+		GULPSF_PRINT("Failed to call InternetCloseHandle, \nError: {}", log_space::get_win32_err_descr(err));
 	}
 	return final_res;
 }

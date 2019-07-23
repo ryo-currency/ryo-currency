@@ -60,7 +60,7 @@ bool check_updates(const std::string &software, const std::string &buildtag, std
     std::vector<std::string> records;
     bool found = false;
 
-    GULPS_LOGF_L0("Checking updates for {} {}", buildtag, software);
+    GULPSF_LOG_L0("Checking updates for {} {}", buildtag, software);
 
     // All four MoneroPulse domains have DNSSEC on and valid
     static const std::vector<std::string> dns_urls = {
@@ -103,13 +103,13 @@ bool check_updates(const std::string &software, const std::string &buildtag, std
         if (cmp > 0)
           continue;
         if (cmp == 0 && hash != fields[3])
-          GULPS_WARNF("Two matches found for {} verion {} on {}", software, version, buildtag);
+          GULPSF_WARN("Two matches found for {} verion {} on {}", software, version, buildtag);
       }
 
       version = fields[2];
       hash = fields[3];
 
-      GULPS_INFOF("Found new version {} with has {}", version, hash);
+      GULPSF_INFO("Found new version {} with has {}", version, hash);
       found = true;
     }
     return found;

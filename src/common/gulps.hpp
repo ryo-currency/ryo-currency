@@ -748,72 +748,72 @@ namespace debug
 #define GULPS_CSTR(...) \
   [] { using Cat = GULPS_CSTR_TYPE(__VA_ARGS__); return Cat{}.c_str(); }()
 
-#define GULPS_CAT_MAJOR(...) using gulps_scoped_major_cat = GULPS_CSTR_TYPE(__VA_ARGS__)
-#define GULPS_CAT_MINOR(...) using gulps_scoped_minor_cat = GULPS_CSTR_TYPE(__VA_ARGS__)
+#define GULPS_CAT_MAJOR(...) using gulps_major_cat = GULPS_CSTR_TYPE(__VA_ARGS__)
+#define GULPS_CAT_MINOR(...) using gulps_minor_cat = GULPS_CSTR_TYPE(__VA_ARGS__)
 
 GULPS_CAT_MINOR("");
 
 #define GULPS_OUTPUT(out, lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, maj, min, __FILE__, __LINE__, stream_writer::write(__VA_ARGS__), clr))
 #define GULPS_OUTPUTF(out, lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, maj, min, __FILE__, __LINE__, fmt::format(__VA_ARGS__), clr))
 
-#define GULPS_PRINT_NOLF(...) gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), "input_line",  \
+#define GULPS_PRINT_NOLF(...) gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), "input_line",  \
 		__FILE__, __LINE__, stream_writer::write(__VA_ARGS__), gulps::COLOR_WHITE, false));
 
-#define GULPS_PRINT(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_PRINT_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), clr, __VA_ARGS__)
-#define GULPS_ERROR(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_RED, __VA_ARGS__)
-#define GULPS_WARN(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
-#define GULPS_INFO(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_INFO_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO,  gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), clr, __VA_ARGS__)
+#define GULPS_PRINT(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINT_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
+#define GULPS_ERROR(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPS_WARN(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
+#define GULPS_INFO(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_INFO_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
 
 
-#define GULPS_DEBUG_PRINT(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_ERROR(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_WARN(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_WARN, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_L0(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_L1(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_L2(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOG_L3(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_DEBUG_PRINT(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_ERROR(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_WARN(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_L0(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_L1(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_L2(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_LOG_L3(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
 
-#define GULPS_PRINTF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_PRINTF_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), clr, __VA_ARGS__)
-#define GULPS_ERRORF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR,  gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_RED, __VA_ARGS__)
-#define GULPS_WARNF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
-#define GULPS_INFOF(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_INFOF_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO,  gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), clr, __VA_ARGS__)
+#define GULPSF_PRINT(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_PRINT_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
+#define GULPSF_ERROR(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPSF_WARN(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
+#define GULPSF_INFO(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_INFO_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
 
 
-#define GULPS_DEBUG_PRINTF(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_ERROR(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_WARN(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_WARN, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L0(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L1(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L2(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_LOGF_L3(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_DEBUG_PRINT(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_LOG_ERROR(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_LOG_WARN(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_LOG_L0(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_LOG_L1(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_LOG_L2(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_LOG_L3(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
 
-#define GULPS_CAT_PRINT(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT_PRINT_CLR(clr, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps_scoped_major_cat::c_str(), min, clr, __VA_ARGS__)
-#define GULPS_CAT_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
-#define GULPS_CAT_WARN(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
-#define GULPS_CAT_INFO(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT_INFO_CLR(clr, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), min, clr, __VA_ARGS__)
+#define GULPS_CAT_PRINT(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_PRINT_CLR(clr, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps_major_cat::c_str(), min, clr, __VA_ARGS__)
+#define GULPS_CAT_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPS_CAT_WARN(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), min, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
+#define GULPS_CAT_INFO(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_INFO_CLR(clr, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), min, clr, __VA_ARGS__)
 
-#define GULPS_CAT_DEBUG_PRINT(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT_LOG_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT_LOG_WARN(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_WARN, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT_LOG_L0(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT_LOG_L1(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT_LOG_L2(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT_LOG_L3(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_DEBUG_PRINT(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_LOG_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_LOG_WARN(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_LOG_L0(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_LOG_L1(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_LOG_L2(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_CAT_LOG_L3(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
 
-#define GULPS_CATF_PRINT(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CATF_PRINT_CLR(clr, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), min, clr, __VA_ARGS__)
-#define GULPS_CATF_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
-#define GULPS_CATF_WARN(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
-#define GULPS_CATF_INFO(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CATF_INFO_CLR(clr, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), min, clr, __VA_ARGS__)
+#define GULPSF_CAT_PRINT(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_CAT_PRINT_CLR(clr, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), min, clr, __VA_ARGS__)
+#define GULPSF_CAT_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPSF_CAT_WARN(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), min, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
+#define GULPSF_CAT_INFO(min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_CAT_INFO_CLR(clr, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), min, clr, __VA_ARGS__)
 
-#define GULPS_CATF_LOG_L1(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_scoped_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_CAT_LOG_L1(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
 
 
 #define GULPS_CAT2_PRINT(maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
@@ -830,28 +830,28 @@ GULPS_CAT_MINOR("");
 #define GULPS_CAT2_LOG_L2(maj, min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_CAT2_LOG_L3(maj, min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
 
-#define GULPS_CAT2F_LOG_ERROR(maj, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR, maj, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPSF_CAT2_LOG_ERROR(maj, min, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR, maj, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
 
 #define GULPS_VERIFY_ERR_TX(...) GULPS_CAT2_LOG_ERROR("verify", "tx", __VA_ARGS__)
 #define GULPS_VERIFY_ERR_BLK(...) GULPS_CAT2_LOG_ERROR("verify", "block", __VA_ARGS__)
 
-#define GULPS_VERIFYF_ERR_TX(...) GULPS_CAT2F_LOG_ERROR("verify", "tx", __VA_ARGS__)
-#define GULPS_VERIFYF_ERR_BLK(...) GULPS_CAT2F_LOG_ERROR("verify", "block", __VA_ARGS__)
+#define GULPSF_VERIFY_ERR_TX(...) GULPSF_CAT2_LOG_ERROR("verify", "tx", __VA_ARGS__)
+#define GULPSF_VERIFY_ERR_BLK(...) GULPSF_CAT2_LOG_ERROR("verify", "block", __VA_ARGS__)
 
 #define GULPS_GLOBAL_PRINT(...) GULPS_CAT_PRINT_CLR(gulps::COLOR_CYAN, "global", __VA_ARGS__)
-#define GULPS_GLOBALF_PRINT(...) GULPS_CATF_PRINT_CLR(gulps::COLOR_CYAN, "global", __VA_ARGS__)
+#define GULPSF_GLOBAL_PRINT(...) GULPSF_CAT_PRINT_CLR(gulps::COLOR_CYAN, "global", __VA_ARGS__)
 
 #define GULPS_GLOBAL_PRINT_CLR(clr, ...) GULPS_CAT_PRINT_CLR(clr, "global", __VA_ARGS__)
-#define GULPS_GLOBALF_PRINT_CLR(clr, ...) GULPS_CATF_PRINT_CLR(clr, "global", __VA_ARGS__)
+#define GULPSF_GLOBAL_PRINT_CLR(clr, ...) GULPSF_CAT_PRINT_CLR(clr, "global", __VA_ARGS__)
 
 /*
-#define GULPS_ERROR(...) GULPS_OUTPUT(gulps::LEVEL_ERROR, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), fmt::color::red, __VA_ARGS__)
-#define GULPS_WARN(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_WARN, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), fmt::color::orange, fstr, __VA_ARGS__)
-#define GULPS_INFO(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_INFO, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), fmt::color::white, fstr, __VA_ARGS__)
-#define GULPS_DEBUG0(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_LOG_0, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), fmt::color::white, fstr, __VA_ARGS__)
-#define GULPS_DEBUG1(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_1, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), fmt::color::white, fstr, __VA_ARGS__)
-#define GULPS_DEBUG2(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_2, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), fmt::color::white, fstr, __VA_ARGS__)
-#define GULPS_PRINT(clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), clr, fstr, __VA_ARGS__)*/
+#define GULPS_ERROR(...) GULPS_OUTPUT(gulps::LEVEL_ERROR, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), fmt::color::red, __VA_ARGS__)
+#define GULPS_WARN(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_WARN, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), fmt::color::orange, fstr, __VA_ARGS__)
+#define GULPS_INFO(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_INFO, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), fmt::color::white, fstr, __VA_ARGS__)
+#define GULPS_DEBUG0(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_LOG_0, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), fmt::color::white, fstr, __VA_ARGS__)
+#define GULPS_DEBUG1(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_1, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), fmt::color::white, fstr, __VA_ARGS__)
+#define GULPS_DEBUG2(fstr, ...) GULPS_OUTPUT(gulps::LEVEL_DEBUG_2, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), fmt::color::white, fstr, __VA_ARGS__)
+#define GULPS_PRINT(clr, fstr, ...) GULPS_OUTPUT(gulps::LEVEL_OUTPUT_0, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, fstr, __VA_ARGS__)*/
 
 #define GULPS_SET_THREAD_NAME(x) gulps::inst().set_thread_tag(x)
 

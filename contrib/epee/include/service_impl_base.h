@@ -120,7 +120,7 @@ inline bool service_impl_base::install()
 			if(!m_manager)
 			{
 				int err = GetLastError();
-				GULPS_LOGF_ERROR("Failed to OpenSCManager(), last err={}", log_space::get_win32_err_descr(err));
+				GULPSF_LOG_ERROR("Failed to OpenSCManager(), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -130,7 +130,7 @@ inline bool service_impl_base::install()
 		if(!m_service)
 		{
 			int err = GetLastError();
-			GULPS_LOGF_ERROR("Failed to CreateService(), last err={}", log_space::get_win32_err_descr(err));
+			GULPSF_LOG_ERROR("Failed to CreateService(), last err={}", log_space::get_win32_err_descr(err));
 			break;
 		}
 
@@ -141,7 +141,7 @@ inline bool service_impl_base::install()
 										&sd))
 			{
 				int err = GetLastError();
-				GULPS_LOGF_ERROR("Failed to ChangeServiceConfig2(SERVICE_CONFIG_DESCRIPTION), last err={}", log_space::get_win32_err_descr(err));
+				GULPSF_LOG_ERROR("Failed to ChangeServiceConfig2(SERVICE_CONFIG_DESCRIPTION), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -152,7 +152,7 @@ inline bool service_impl_base::install()
 										fail_acts))
 			{
 				int err = GetLastError();
-				GULPS_LOGF_ERROR("Failed to ChangeServiceConfig2(SERVICE_CONFIG_FAILURE_ACTIONS), last err={}", log_space::get_win32_err_descr(err));
+				GULPSF_LOG_ERROR("Failed to ChangeServiceConfig2(SERVICE_CONFIG_FAILURE_ACTIONS), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -175,7 +175,7 @@ inline bool service_impl_base::remove()
 			if(!m_manager)
 			{
 				int err = GetLastError();
-				GULPS_LOGF_ERROR("Failed to OpenSCManager(), last err={}", log_space::get_win32_err_descr(err));
+				GULPSF_LOG_ERROR("Failed to OpenSCManager(), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -186,7 +186,7 @@ inline bool service_impl_base::remove()
 			if(!m_service)
 			{
 				int err = GetLastError();
-				GULPS_LOGF_ERROR("Failed to OpenService(), last err={}", log_space::get_win32_err_descr(err));
+				GULPSF_LOG_ERROR("Failed to OpenService(), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -199,7 +199,7 @@ inline bool service_impl_base::remove()
 				continue;
 			else if(err != ERROR_SERVICE_NOT_ACTIVE)
 			{
-				GULPS_LOGF_ERROR("Failed to ControlService(SERVICE_CONTROL_STOP), last err={}", log_space::get_win32_err_descr(err));
+				GULPSF_LOG_ERROR("Failed to ControlService(SERVICE_CONTROL_STOP), last err={}", log_space::get_win32_err_descr(err));
 				break;
 			}
 		}
@@ -207,7 +207,7 @@ inline bool service_impl_base::remove()
 		if(!::DeleteService(m_service))
 		{
 			int err = ::GetLastError();
-			GULPS_LOGF_ERROR("Failed to ControlService(SERVICE_CONTROL_STOP), last err={}", log_space::get_win32_err_descr(err));
+			GULPSF_LOG_ERROR("Failed to ControlService(SERVICE_CONTROL_STOP), last err={}", log_space::get_win32_err_descr(err));
 			break;
 		}
 

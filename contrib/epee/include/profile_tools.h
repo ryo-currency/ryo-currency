@@ -61,7 +61,7 @@ namespace epee
 	{                                                                              \
 		GULPS_CAT_MAJOR("prof_tools"); \
 		uint64_t delta = epee::misc_utils::get_tick_count() - _____way_point_time; \
-		GULPS_LOGF_L1("Way point {}: {}", name, delta);                             \
+		GULPSF_LOG_L1("Way point {}: {}", name, delta);                             \
 		_____way_point_time = misc_utils::get_tick_count();                        \
 	}
 #define WAY_POINT2(name, avrg_obj)                                                 \
@@ -69,7 +69,7 @@ namespace epee
 		uint64_t delta = epee::misc_utils::get_tick_count() - _____way_point_time; \
 		avrg_obj.push(delta);                                                      \
 		GULPS_CAT_MAJOR("prof_tools"); \
-		GULPS_LOGF_L1("Way point {}: {}", name, delta);                             \
+		GULPSF_LOG_L1("Way point {}: {}", name, delta);                             \
 		_____way_point_time = misc_utils::get_tick_count();                        \
 	}
 
@@ -93,7 +93,7 @@ struct local_call_account
 	~local_call_account()
 	{
 		GULPS_CAT_MAJOR("prof_tools");
-		GULPS_INFOF("PROFILE {}:av_time:\t{} sum_time:\t{} call_count:\t{}", m_pname , (m_count_of_call ? (m_summary_time_used / m_count_of_call) : 0) , m_summary_time_used , m_count_of_call);
+		GULPSF_INFO("PROFILE {}:av_time:\t{} sum_time:\t{} call_count:\t{}", m_pname , (m_count_of_call ? (m_summary_time_used / m_count_of_call) : 0) , m_summary_time_used , m_count_of_call);
 	}
 
 	size_t m_count_of_call;

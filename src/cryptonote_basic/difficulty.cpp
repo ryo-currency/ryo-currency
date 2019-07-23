@@ -244,14 +244,14 @@ difficulty_type next_difficulty_v2(std::vector<std::uint64_t> timestamps, std::v
 			}
 			time_spans.push_back(time_span);
 
-			GULPS_LOGF_L3("Timespan {}: {}:{}:{} ({})", i, (time_span / 60) / 60, (time_span > 3600 ? (time_span % 3600) / 60 : time_span / 60), time_span % 60, time_span );
+			GULPSF_LOG_L3("Timespan {}: {}:{}:{} ({})", i, (time_span / 60) / 60, (time_span > 3600 ? (time_span % 3600) / 60 : time_span / 60), time_span % 60, time_span );
 
 		}
 		timespan_median = epee::misc_utils::median(time_spans);
 	}
 
 	uint64_t timespan_length = length - cut_begin * 2 - 1;
-	GULPS_LOGF_L2("Timespan Median: {}, Timespan Average: {}", timespan_median, total_timespan / timespan_length);
+	GULPSF_LOG_L2("Timespan Median: {}, Timespan Average: {}", timespan_median, total_timespan / timespan_length);
 
 	uint64_t total_timespan_median = timespan_median > 0 ? timespan_median * timespan_length : total_timespan * 7 / 10;
 	uint64_t adjusted_total_timespan = (total_timespan * 8 + total_timespan_median * 3) / 10; //  0.8A + 0.3M (the median of a poisson distribution is 70% of the mean, so 0.25A = 0.25/0.7 = 0.285M)
@@ -277,7 +277,7 @@ difficulty_type next_difficulty_v2(std::vector<std::uint64_t> timestamps, std::v
 	uint64_t next_diff = (low + adjusted_total_timespan - 1) / adjusted_total_timespan;
 	if(next_diff < 1)
 		next_diff = 1;
-	GULPS_LOGF_L2("Total timespan: {}, Adjusted total timespan: {}, Total work: {}, Next diff: {}, Hashrate (H/s): {}", total_timespan, adjusted_total_timespan, total_work, next_diff, next_diff / target_seconds);
+	GULPSF_LOG_L2("Total timespan: {}, Adjusted total timespan: {}, Total work: {}, Next diff: {}, Hashrate (H/s): {}", total_timespan, adjusted_total_timespan, total_work, next_diff, next_diff / target_seconds);
 	return next_diff;
 }
 
@@ -320,7 +320,7 @@ difficulty_type next_difficulty_v3(const std::vector<std::uint64_t> &timestamps,
 	// 99/100 adds a small bias towards decreasing diff, unlike zawy we do it in a separate step to avoid an overflow at 6GH/s
 	next_D = (next_D * 99ull) / 100ull;
 
-	GULPS_LOGF_L2("diff sum: {} L {} sizes {} {} next_D {}",(cumulative_difficulties[N] - cumulative_difficulties[0]), L, timestamps.size(), cumulative_difficulties.size(), next_D);
+	GULPSF_LOG_L2("diff sum: {} L {} sizes {} {} next_D {}",(cumulative_difficulties[N] - cumulative_difficulties[0]), L, timestamps.size(), cumulative_difficulties.size(), next_D);
 	return next_D;
 }
 

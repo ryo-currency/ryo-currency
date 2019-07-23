@@ -171,7 +171,7 @@ bool t_daemon::run(bool interactive)
 
 		if(!zmq_server.addTCPSocket(zmq_rpc_bind_address, zmq_rpc_bind_port))
 		{
-			GULPS_ERRORF("Failed to add TCP Socket ({}:{}) to ZMQ RPC Server", zmq_rpc_bind_address, zmq_rpc_bind_port);
+			GULPSF_ERROR("Failed to add TCP Socket ({}:{}) to ZMQ RPC Server", zmq_rpc_bind_address, zmq_rpc_bind_port);
 
 			if(rpc_commands)
 				rpc_commands->stop_handling();
@@ -185,7 +185,7 @@ bool t_daemon::run(bool interactive)
 		GULPS_INFO("Starting ZMQ server...");
 		zmq_server.run();
 
-		GULPS_INFOF("ZMQ server started at {}:{}.", zmq_rpc_bind_address, zmq_rpc_bind_port);
+		GULPSF_INFO("ZMQ server started at {}:{}.", zmq_rpc_bind_address, zmq_rpc_bind_port);
 
 		mp_internals->p2p.run(); // blocks until p2p goes down
 
@@ -202,7 +202,7 @@ bool t_daemon::run(bool interactive)
 	}
 	catch(std::exception const &ex)
 	{
-		GULPS_ERRORF("Uncaught exception! {}", ex.what());
+		GULPSF_ERROR("Uncaught exception! {}", ex.what());
 		return false;
 	}
 	catch(...)

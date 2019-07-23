@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 	{
 		if(!log_scr.parse_cat_string(std::to_string(log_level).c_str()))
 		{
-			GULPS_ERRORF("Failed to parse filter string {}", log_level);
+			GULPSF_ERROR("Failed to parse filter string {}", log_level);
 			return 1;
 		}
 	}
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])
 
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
-		GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME, RYO_VERSION_FULL);
+		GULPSF_PRINT("Ryo '{}' ({})\n", RYO_RELEASE_NAME, RYO_VERSION_FULL);
 		GULPS_PRINT(desc_options);
 		return 0;
 	}
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
 	folder /= db->get_db_name();
 	const std::string filename = folder.string();
 
-	GULPS_PRINTF("Loading blockchain from folder {} ...", filename);
+	GULPSF_PRINT("Loading blockchain from folder {} ...", filename);
 	try
 	{
 		db->open(filename, DBF_RDONLY);

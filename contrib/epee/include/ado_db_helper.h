@@ -47,7 +47,7 @@
 	catch(const std::exception &ex)                                                                                                                                                             \
 	{                                                                                                                                                                                           \
 		GULPS_CAT_MAJOR("ado_db_help");                                                                                                                                                         \
-		GULPS_ERRORF("DB_ERROR: {}", ex.what();                                                                                                                                                 \
+		GULPSF_ERROR("DB_ERROR: {}", ex.what();                                                                                                                                                 \
 		return ret_val;                                                                                                                                                                         \
 	}                                                                                                                                                                                           \
 	catch(const _com_error &comm_err)                                                                                                                                                           \
@@ -58,7 +58,7 @@
 		pstr = comm_err.Source();                                                                                                                                                               \
 		GULPS_CAT_MAJOR("ado_db_help");                                                                                                                                                         \
 		std::string source = string_encoding::convert_to_ansii(pstr ? pstr : TEXT(""));                                                                                                         \
-		GULPS_ERRORF("COM_ERROR {}:\n\tDescriprion:{}, \n\t Message: {}\n\t Source: {}", mess_where, descr, string_encoding::convert_to_ansii(pmessage), source);                               \
+		GULPSF_ERROR("COM_ERROR {}:\n\tDescriprion:{}, \n\t Message: {}\n\t Source: {}", mess_where, descr, string_encoding::convert_to_ansii(pmessage), source);                               \
 		return ret_val;                                                                                                                                                                         \
 	}                                                                                                                                                                                           \
 	catch(...)                                                                                                                                                                                  \
@@ -969,11 +969,11 @@ class per_thread_connection_pool
 			HRESULT res = conn->Open(_bstr_t(m_connection_string.c_str()), _bstr_t(m_login.c_str()), _bstr_t(m_password.c_str()), NULL);
 			if(res != S_OK)
 			{
-				GULPS_ERRORF("Failed to connect do DB, connection str:{}", m_connection_string);
+				GULPSF_ERROR("Failed to connect do DB, connection str:{}", m_connection_string);
 				return conn;
 			}
 			CATCH_TRY_SECTION_MESS(conn, "while creating another connection");
-			GULPS_PRINTF("New DB Connection added for threadid={}", ::GetCurrentThreadId());
+			GULPSF_PRINT("New DB Connection added for threadid={}", ::GetCurrentThreadId());
 			ado_db_helper::execute_helper(conn, "set enable_seqscan=false;");
 			return conn;
 		}

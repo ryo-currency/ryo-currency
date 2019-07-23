@@ -61,11 +61,11 @@
 
 GULPS_CAT_MAJOR("rpc_cmd_exe");
 
-#define GULPS_PRINT_FAIL(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_ERROR, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_RED, "Error: ", __VA_ARGS__)
-#define GULPS_PRINT_SUCCESS(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
-#define GULPS_PRINTF_SUCCESS(...) GULPS_OUTPUTF(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
-#define GULPS_PRINT_OK(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_PRINTF_OK(...) GULPS_OUTPUTF(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINT_FAIL(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_RED, "Error: ", __VA_ARGS__)
+#define GULPS_PRINT_SUCCESS(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
+#define GULPSF_PRINT_SUCCESS(...) GULPS_OUTPUTF(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
+#define GULPS_PRINT_OK(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_PRINT_OK(...) GULPS_OUTPUTF(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
 
 namespace daemonize
 {
@@ -87,7 +87,7 @@ void print_peer(std::string const &prefix, cryptonote::peer const &peer)
 	peer_id_str >> id_str;
 	epee::string_tools::xtype_to_string(peer.port, port_str);
 	std::string addr_str = ip_str + ":" + port_str;
-	GULPS_PRINTF_OK("{:<10} {:<25} {:<25} {:<}", prefix, id_str, addr_str, elapsed);
+	GULPSF_PRINT_OK("{:<10} {:<25} {:<25} {:<}", prefix, id_str, addr_str, elapsed);
 }
 
 void print_block_header(cryptonote::block_header_response const &header)
@@ -229,7 +229,7 @@ bool t_rpc_command_executor::print_peer_list_stats()
 		}
 	}
 
-	GULPS_PRINTF_OK("White list size: {}/{} ({}%)\nGray list size: {}/{} ({}%)", res.white_list.size() , P2P_LOCAL_WHITE_PEERLIST_LIMIT , res.white_list.size() * 100.0 / P2P_LOCAL_WHITE_PEERLIST_LIMIT ,
+	GULPSF_PRINT_OK("White list size: {}/{} ({}%)\nGray list size: {}/{} ({}%)", res.white_list.size() , P2P_LOCAL_WHITE_PEERLIST_LIMIT , res.white_list.size() * 100.0 / P2P_LOCAL_WHITE_PEERLIST_LIMIT ,
 									res.gray_list.size() , P2P_LOCAL_GRAY_PEERLIST_LIMIT , res.gray_list.size() * 100.0 / P2P_LOCAL_GRAY_PEERLIST_LIMIT );
 
 	return true;
@@ -343,7 +343,7 @@ bool t_rpc_command_executor::show_difficulty()
 		}
 	}
 
-	GULPS_PRINTF_SUCCESS("BH: {}, TH: {}, DIFF: {}, HR: {} H/s", res.height,
+	GULPSF_PRINT_SUCCESS("BH: {}, TH: {}, DIFF: {}, HR: {} H/s", res.height,
 								res.top_block_hash,
 								res.difficulty,
 								res.difficulty / res.target);
@@ -469,7 +469,7 @@ bool t_rpc_command_executor::show_status()
 		}
 	}
 
-	GULPS_PRINTF_SUCCESS("Height: {}/{} ({:.1f}) on {}{}, {}, net hash {}, v{}{}, {}, {}(out)+{}(in) connections, uptime {}d {}h {}m {}s",
+	GULPSF_PRINT_SUCCESS("Height: {}/{} ({:.1f}) on {}{}, {}, net hash {}, v{}{}, {}, {}(out)+{}(in) connections, uptime {}d {}h {}m {}s",
 								(unsigned long long)ires.height,
 								(unsigned long long)net_height,
 								get_sync_percentage(ires),
@@ -514,7 +514,7 @@ bool t_rpc_command_executor::print_connections()
 		}
 	}
 
-GULPS_PRINTF_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}",
+GULPSF_PRINT_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}",
 														"Remote Host",
 														"Peer id",
 														"Support Flags",
@@ -531,7 +531,7 @@ GULPS_PRINTF_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}",
 		std::string address = info.incoming ? "INC " : "OUT ";
 		address += info.ip + ":" + info.port;
 		//std::string in_out = info.incoming ? "INC " : "OUT ";
-		GULPS_PRINTF_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}{:<}{:<}",
+		GULPSF_PRINT_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}{:<}{:<}",
 			//<< std::setw(30) << std::left << in_out
 			address,
 			epee::string_tools::pad_string(info.peer_id, 16, '0', true),
@@ -546,7 +546,7 @@ GULPS_PRINTF_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}",
 
 			(info.localhost ? "[LOCALHOST]" : ""),
 			(info.local_ip ? "[LAN]" : ""));
-		//GULPS_PRINTF_OK("{}-25s peer_id: {}-25s {}", address, info.peer_id, in_out);
+		//GULPSF_PRINT_OK("{}-25s peer_id: {}-25s {}", address, info.peer_id, in_out);
 	}
 
 	return true;
@@ -584,7 +584,7 @@ bool t_rpc_command_executor::print_blockchain_info(uint64_t start_block_index, u
 	{
 		if(!first)
 
-			GULPS_PRINTF_OK("\nheight: {}, timestamp: {}, difficulty: {}, size: {}, transactions: {}\nmajor version: {}, minor version: {}\nblock id: {}, previous block id: {}\ndifficulty: {}, nonce {}, reward {}",
+			GULPSF_PRINT_OK("\nheight: {}, timestamp: {}, difficulty: {}, size: {}, transactions: {}\nmajor version: {}, minor version: {}\nblock id: {}, previous block id: {}\ndifficulty: {}, nonce {}, reward {}",
 			header.height, header.timestamp, header.difficulty, header.block_size, header.num_txes, (unsigned)header.major_version, (unsigned)header.minor_version,
 			header.hash, header.prev_hash, header.difficulty, header.nonce, cryptonote::print_money(header.reward));
 		first = false;
@@ -617,7 +617,7 @@ bool t_rpc_command_executor::set_log_level(int8_t level)
 		}
 	}
 
-	GULPS_PRINTF_SUCCESS("Log level is now {}",  level);
+	GULPSF_PRINT_SUCCESS("Log level is now {}",  level);
 
 	return true;
 }
@@ -646,7 +646,7 @@ bool t_rpc_command_executor::set_log_categories(const std::string &categories)
 		}
 	}
 
-	GULPS_PRINTF_SUCCESS("Log categories are now {}",  res.categories);
+	GULPSF_PRINT_SUCCESS("Log categories are now {}",  res.categories);
 
 	return true;
 }
@@ -779,7 +779,7 @@ bool t_rpc_command_executor::print_transaction(crypto::hash transaction_hash,
 			if(res.txs.front().in_pool)
 				GULPS_PRINT_SUCCESS( "Found in pool");
 			else
-				GULPS_PRINTF_SUCCESS("Found in blockchain at height {}",  res.txs.front().block_height);
+				GULPSF_PRINT_SUCCESS("Found in blockchain at height {}",  res.txs.front().block_height);
 		}
 
 		const std::string &as_hex = (1 == res.txs.size()) ? res.txs.front().as_hex : res.txs_as_hex.front();
@@ -803,7 +803,7 @@ bool t_rpc_command_executor::print_transaction(crypto::hash transaction_hash,
 			}
 			else
 			{
-				GULPS_PRINTF_CLR( gulps::COLOR_GREEN, cryptonote::obj_to_json_str(tx) );
+				GULPSF_PRINT_CLR( gulps::COLOR_GREEN, cryptonote::obj_to_json_str(tx) );
 			}
 		}
 	}
@@ -885,7 +885,7 @@ bool t_rpc_command_executor::print_transaction_pool_long()
 		GULPS_PRINT_OK( "Transactions: ");
 		for(auto &tx_info : res.transactions)
 		{
-			GULPS_PRINTF_OK("id: {}\n{}\nblob_size: {}\nfee: {}\nfee/byte: {}\nreceive_time: {} ({})relayed: {}\ndo_not_relay: {}\nkept_by_block: {}\ndouble_spend_seen: {}\nmax_used_block_height: {}\nmax_used_block_id: {}\nlast_failed_height: {}\nlast_failed_id: {}"
+			GULPSF_PRINT_OK("id: {}\n{}\nblob_size: {}\nfee: {}\nfee/byte: {}\nreceive_time: {} ({})relayed: {}\ndo_not_relay: {}\nkept_by_block: {}\ndouble_spend_seen: {}\nmax_used_block_height: {}\nmax_used_block_id: {}\nlast_failed_height: {}\nlast_failed_id: {}"
 										, tx_info.id_hash
 										, tx_info.tx_json
 										, tx_info.blob_size
@@ -911,10 +911,10 @@ bool t_rpc_command_executor::print_transaction_pool_long()
 		GULPS_PRINT_OK( "\nSpent key images: ");
 		for(const cryptonote::spent_key_image_info &kinfo : res.spent_key_images)
 		{
-			GULPS_PRINTF_OK("key image: {}", kinfo.id_hash);
+			GULPSF_PRINT_OK("key image: {}", kinfo.id_hash);
 			if(kinfo.txs_hashes.size() == 1)
 			{
-				GULPS_PRINTF_OK("  tx: {}", kinfo.txs_hashes[0]);
+				GULPSF_PRINT_OK("  tx: {}", kinfo.txs_hashes[0]);
 			}
 			else if(kinfo.txs_hashes.size() == 0)
 			{
@@ -922,10 +922,10 @@ bool t_rpc_command_executor::print_transaction_pool_long()
 			}
 			else
 			{
-				GULPS_PRINTF_OK("  NOTE: key image for multiple txs: {}", kinfo.txs_hashes.size());
+				GULPSF_PRINT_OK("  NOTE: key image for multiple txs: {}", kinfo.txs_hashes.size());
 				for(const std::string &tx_id : kinfo.txs_hashes)
 				{
-					GULPS_PRINTF_OK("  tx: {}", tx_id);
+					GULPSF_PRINT_OK("  tx: {}", tx_id);
 				}
 			}
 		}
@@ -970,7 +970,7 @@ bool t_rpc_command_executor::print_transaction_pool_short()
 		const time_t now = time(NULL);
 		for(auto &tx_info : res.transactions)
 		{
-				GULPS_PRINTF_OK("id: {}\n{}\nblob_size: {}\nfee: {}\nfee/byte: {}\nreceive_time: {} ({})relayed: {}\ndo_not_relay: {}\nkept_by_block: {}\ndouble_spend_seen: {}\nmax_used_block_height: {}\nmax_used_block_id: {}\nlast_failed_height: {}\nlast_failed_id: {}"
+				GULPSF_PRINT_OK("id: {}\n{}\nblob_size: {}\nfee: {}\nfee/byte: {}\nreceive_time: {} ({})relayed: {}\ndo_not_relay: {}\nkept_by_block: {}\ndouble_spend_seen: {}\nmax_used_block_height: {}\nmax_used_block_id: {}\nlast_failed_height: {}\nlast_failed_id: {}"
 										, tx_info.id_hash
 										, tx_info.tx_json
 										, tx_info.blob_size
@@ -1042,7 +1042,7 @@ bool t_rpc_command_executor::print_transaction_pool_stats()
 		backlog_message = fmt::format("estimated {} block ({} minutes) backlog", backlog, (backlog * cryptonote::common_config::DIFFICULTY_TARGET / 60));
 	}
 
-	GULPS_PRINTF_OK("{} tx(es), {} bytes total (min {}, max {}, avg {}, median {})\nfees {} (avg {} per tx, {} per byte)\n{} double spends, {} not relayed, {} failing, {} older than 10 minutes (oldest {}), {}",
+	GULPSF_PRINT_OK("{} tx(es), {} bytes total (min {}, max {}, avg {}, median {})\nfees {} (avg {} per tx, {} per byte)\n{} double spends, {} not relayed, {} failing, {} older than 10 minutes (oldest {}), {}",
 									n_transactions , res.pool_stats.bytes_total , res.pool_stats.bytes_min , res.pool_stats.bytes_max , avg_bytes , res.pool_stats.bytes_med ,
 									cryptonote::print_money(res.pool_stats.fee_total) , cryptonote::print_money(n_transactions ? res.pool_stats.fee_total / n_transactions : 0) ,
 									cryptonote::print_money(res.pool_stats.bytes_total ? res.pool_stats.fee_total / res.pool_stats.bytes_total : 0) , res.pool_stats.num_double_spends ,
@@ -1072,7 +1072,7 @@ bool t_rpc_command_executor::print_transaction_pool_stats()
 		GULPS_PRINT_OK("   Age      Txes       Bytes");
 		for(i = 0; i < n; i++)
 		{
-			GULPS_PRINTF_OK("{}{:>8}{:>12}", get_time_hms(times[i]), res.pool_stats.histo[i].txs, res.pool_stats.histo[i].bytes);
+			GULPSF_PRINT_OK("{}{:>8}{:>12}", get_time_hms(times[i]), res.pool_stats.histo[i].txs, res.pool_stats.histo[i].bytes);
 		}
 	}
 
@@ -1223,8 +1223,8 @@ bool t_rpc_command_executor::get_limit()
 		}
 	}
 
-	GULPS_PRINTF_OK("limit-down is {} kB/s", res.limit_down );
-	GULPS_PRINTF_OK("limit-up is {} kB/s", res.limit_up );
+	GULPSF_PRINT_OK("limit-down is {} kB/s", res.limit_down );
+	GULPSF_PRINT_OK("limit-up is {} kB/s", res.limit_up );
 	return true;
 }
 
@@ -1254,8 +1254,8 @@ bool t_rpc_command_executor::set_limit(int64_t limit_down, int64_t limit_up)
 		}
 	}
 
-	GULPS_PRINTF_OK("Set limit-down to {} kB/s", res.limit_down );
-	GULPS_PRINTF_OK("Set limit-up to {} kB/s", res.limit_up );
+	GULPSF_PRINT_OK("Set limit-down to {} kB/s", res.limit_down );
+	GULPSF_PRINT_OK("Set limit-up to {} kB/s", res.limit_up );
 	return true;
 }
 
@@ -1282,7 +1282,7 @@ bool t_rpc_command_executor::get_limit_up()
 		}
 	}
 
-	GULPS_PRINTF_OK("limit-up is {} kB/s", res.limit_up );
+	GULPSF_PRINT_OK("limit-up is {} kB/s", res.limit_up );
 	return true;
 }
 
@@ -1309,7 +1309,7 @@ bool t_rpc_command_executor::get_limit_down()
 		}
 	}
 
-	GULPS_PRINTF_OK("limit-down is {} kB/s", res.limit_down );
+	GULPSF_PRINT_OK("limit-down is {} kB/s", res.limit_down );
 	return true;
 }
 
@@ -1340,7 +1340,7 @@ bool t_rpc_command_executor::out_peers(uint64_t limit)
 		}
 	}
 
-	GULPS_PRINTF_OK("Max number of out peers set to {}", limit);
+	GULPSF_PRINT_OK("Max number of out peers set to {}", limit);
 
 	return true;
 }
@@ -1403,8 +1403,8 @@ bool t_rpc_command_executor::hard_fork_info(uint8_t version)
 	}
 
 	version = version > 0 ? version : res.voting;
-	GULPS_PRINTF_OK("version {} {}, {}/{} votes, threshold {}", (uint32_t)version , (res.enabled ? "enabled" : "not enabled") , res.votes , res.window , res.threshold);
-	GULPS_PRINTF_OK("current version {}, voting for version {}", (uint32_t)res.version , (uint32_t)res.voting);
+	GULPSF_PRINT_OK("version {} {}, {}/{} votes, threshold {}", (uint32_t)version , (res.enabled ? "enabled" : "not enabled") , res.votes , res.window , res.threshold);
+	GULPSF_PRINT_OK("current version {}, voting for version {}", (uint32_t)res.version , (uint32_t)res.voting);
 
 	return true;
 }
@@ -1434,7 +1434,7 @@ bool t_rpc_command_executor::print_bans()
 
 	for(auto i = res.bans.begin(); i != res.bans.end(); ++i)
 	{
-		GULPS_PRINTF_OK("{} banned for {} seconds", epee::string_tools::get_ip_string_from_int32(i->ip), i->seconds);
+		GULPSF_PRINT_OK("{} banned for {} seconds", epee::string_tools::get_ip_string_from_int32(i->ip), i->seconds);
 	}
 
 	return true;
@@ -1575,7 +1575,7 @@ bool t_rpc_command_executor::output_histogram(const std::vector<uint64_t> &amoun
 			  [](const cryptonote::COMMAND_RPC_GET_OUTPUT_HISTOGRAM::entry &e1, const cryptonote::COMMAND_RPC_GET_OUTPUT_HISTOGRAM::entry &e2) -> bool { return e1.total_instances < e2.total_instances; });
 	for(const auto &e : res.histogram)
 	{
-		GULPS_PRINTF_OK("{} {}", e.total_instances, cryptonote::print_money(e.amount));
+		GULPSF_PRINT_OK("{} {}", e.total_instances, cryptonote::print_money(e.amount));
 	}
 
 	return true;
@@ -1608,7 +1608,7 @@ bool t_rpc_command_executor::print_coinbase_tx_sum(uint64_t height, uint64_t cou
 		}
 	}
 
-	GULPS_PRINTF_OK("Sum of coinbase transactions between block heights [{}, {}) is {} consisting of {} in emissions, and {} in fees", height , (height + count) , cryptonote::print_money(res.emission_amount + res.fee_amount)
+	GULPSF_PRINT_OK("Sum of coinbase transactions between block heights [{}, {}) is {} consisting of {} in emissions, and {} in fees", height , (height + count) , cryptonote::print_money(res.emission_amount + res.fee_amount)
 						, cryptonote::print_money(res.emission_amount)
 						, cryptonote::print_money(res.fee_amount) );
 	return true;
@@ -1653,7 +1653,7 @@ bool t_rpc_command_executor::alt_chain_info()
 	for(const auto &chain : res.chains)
 	{
 		uint64_t start_height = (chain.height - chain.length + 1);
-		GULPS_PRINTF_OK("{} blocks long, from height {} ({} deep), diff {}: {}", chain.length , start_height , (ires.height - start_height - 1)
+		GULPSF_PRINT_OK("{} blocks long, from height {} ({} deep), diff {}: {}", chain.length , start_height , (ires.height - start_height - 1)
 							, chain.difficulty , chain.block_hash);
 	}
 	return true;
@@ -1685,7 +1685,7 @@ bool t_rpc_command_executor::print_blockchain_dynamic_stats(uint64_t nblocks)
 		}
 	}
 
-	GULPS_PRINTF_OK("Height: {}, diff {}, cum. diff {}, target {} sec", ires.height , ires.difficulty , ires.cumulative_difficulty
+	GULPSF_PRINT_OK("Height: {}, diff {}, cum. diff {}, target {} sec", ires.height , ires.difficulty , ires.cumulative_difficulty
 						, ires.target);
 
 	if(nblocks > 0)
@@ -1735,7 +1735,7 @@ bool t_rpc_command_executor::print_blockchain_dynamic_stats(uint64_t nblocks)
 		avgnumtxes /= nblocks;
 		avgreward /= nblocks;
 		uint64_t median_block_size = epee::misc_utils::median(sizes);
-		GULPS_PRINTF_OK("Last {}: avg. diff {}, {} avg sec/block, avg num txes {}, avg. reward {}, median block size {}", nblocks , (uint64_t)avgdiff , (latest - earliest) / nblocks , avgnumtxes
+		GULPSF_PRINT_OK("Last {}: avg. diff {}, {} avg sec/block, avg num txes {}, avg. reward {}, median block size {}", nblocks , (uint64_t)avgdiff , (latest - earliest) / nblocks , avgnumtxes
 							, cryptonote::print_money(avgreward) , median_block_size);
 
 		unsigned int max_major = 256, max_minor = 256;
@@ -1747,12 +1747,12 @@ bool t_rpc_command_executor::print_blockchain_dynamic_stats(uint64_t nblocks)
 		for(unsigned n = 0; n <= max_major; ++n)
 			if(major_versions[n])
 				s += (s.empty() ? "" : ", ") + boost::lexical_cast<std::string>(major_versions[n]) + std::string(" v") + boost::lexical_cast<std::string>(n);
-		GULPS_PRINTF_OK("Block versions: {}", s);
+		GULPSF_PRINT_OK("Block versions: {}", s);
 		s = "";
 		for(unsigned n = 0; n <= max_minor; ++n)
 			if(minor_versions[n])
 				s += (s.empty() ? "" : ", ") + boost::lexical_cast<std::string>(minor_versions[n]) + std::string(" v") + boost::lexical_cast<std::string>(n);
-		GULPS_PRINTF_OK("Voting for: {}", s);
+		GULPSF_PRINT_OK("Voting for: {}", s);
 	}
 	return true;
 }
@@ -1788,14 +1788,14 @@ bool t_rpc_command_executor::update(const std::string &command)
 		return true;
 	}
 
-	GULPS_PRINTF_OK("Update available: v{}: {}, hash {}", res.version , res.user_uri , res.hash);
+	GULPSF_PRINT_OK("Update available: v{}: {}, hash {}", res.version , res.user_uri , res.hash);
 	if(command == "check")
 		return true;
 
 	if(!res.path.empty())
-		GULPS_PRINTF_OK("Update downloaded to: {}", res.path);
+		GULPSF_PRINT_OK("Update downloaded to: {}", res.path);
 	else
-		GULPS_PRINTF_OK("Update download failed: {}", res.status);
+		GULPSF_PRINT_OK("Update download failed: {}", res.status);
 	if(command == "download")
 		return true;
 
@@ -1857,7 +1857,7 @@ bool t_rpc_command_executor::sync_info()
 	}
 
 	uint64_t target = res.target_height < res.height ? res.height : res.target_height;
-	GULPS_PRINTF_SUCCESS("Height: {}, target: {} ({}%)", res.height, target, (100.0 * res.height / target));
+	GULPSF_PRINT_SUCCESS("Height: {}, target: {} ({}%)", res.height, target, (100.0 * res.height / target));
 	uint64_t current_download = 0;
 	for(const auto &p : res.peers)
 		current_download += p.info.current_download;
@@ -1871,23 +1871,23 @@ bool t_rpc_command_executor::sync_info()
 		for(const auto &s : res.spans)
 			if(s.rate > 0.0f && s.connection_id == p.info.connection_id)
 				nblocks += s.nblocks, size += s.size;
-		GULPS_PRINTF_SUCCESS("{} {} {} {} kB/s, {} blocks / {} MB queued", address, epee::string_tools::pad_string(p.info.peer_id, 16, '0', true), p.info.height, p.info.current_download, nblocks, size / 1e6);
+		GULPSF_PRINT_SUCCESS("{} {} {} {} kB/s, {} blocks / {} MB queued", address, epee::string_tools::pad_string(p.info.peer_id, 16, '0', true), p.info.height, p.info.current_download, nblocks, size / 1e6);
 	}
 
 	uint64_t total_size = 0;
 	for(const auto &s : res.spans)
 		total_size += s.size;
-	GULPS_PRINTF_SUCCESS("{} spand, {}  MB", std::to_string(res.spans.size()), total_size / 1e6);
+	GULPSF_PRINT_SUCCESS("{} spand, {}  MB", std::to_string(res.spans.size()), total_size / 1e6);
 	for(const auto &s : res.spans)
 	{
 		std::string address = epee::string_tools::pad_string(s.remote_address, 24);
 		if(s.size == 0)
 		{
-			GULPS_PRINTF_SUCCESS("{} {} ({} - {}) -", address, s.nblocks, s.start_block_height, (s.start_block_height + s.nblocks - 1));
+			GULPSF_PRINT_SUCCESS("{} {} ({} - {}) -", address, s.nblocks, s.start_block_height, (s.start_block_height + s.nblocks - 1));
 		}
 		else
 		{
-			GULPS_PRINTF_SUCCESS("{} {} ({} - {}, {}kB) {} kB/s ({})", address, s.nblocks, s.start_block_height, (s.start_block_height + s.nblocks - 1), (uint64_t)(s.size / 1e3), (unsigned)(s.rate / 1e3), s.speed / 100.0f);
+			GULPSF_PRINT_SUCCESS("{} {} ({} - {}, {}kB) {} kB/s ({})", address, s.nblocks, s.start_block_height, (s.start_block_height + s.nblocks - 1), (uint64_t)(s.size / 1e3), (unsigned)(s.rate / 1e3), s.speed / 100.0f);
 		}
 	}
 

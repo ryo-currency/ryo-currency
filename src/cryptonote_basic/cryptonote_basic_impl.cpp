@@ -164,7 +164,7 @@ bool get_block_reward(network_type nettype, size_t median_size, size_t current_b
 
 	if(current_block_size > 2 * median_size)
 	{
-		GULPS_ERRORF("Block cumulative size is too big: {}, expected less than {}", current_block_size, 2 * median_size);
+		GULPSF_ERROR("Block cumulative size is too big: {}, expected less than {}", current_block_size, 2 * median_size);
 		return false;
 	}
 
@@ -375,7 +375,7 @@ bool parse_hash256(const std::string str_hash, crypto::hash &hash)
 	bool res = epee::string_tools::parse_hexstr_to_binbuff(str_hash, buf);
 	if(!res || buf.size() != sizeof(crypto::hash))
 	{
-		GULPS_ERRORF("invalid hash format: <{}>", str_hash);
+		GULPSF_ERROR("invalid hash format: <{}>", str_hash);
 		return false;
 	}
 	else

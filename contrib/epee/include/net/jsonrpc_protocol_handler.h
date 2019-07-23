@@ -102,7 +102,7 @@ class jsonrpc2_connection_handler
 	virtual bool handle_recv(const void *ptr, size_t cb)
 	{
 		std::string buf((const char *)ptr, cb);
-		GULPS_PRINTF("JSONRPC2_RECV: {}\r\n{}", ptr , buf);
+		GULPSF_PRINT("JSONRPC2_RECV: {}\r\n{}", ptr , buf);
 
 		bool res = handle_buff_in(buf);
 		return res;
@@ -154,9 +154,9 @@ class jsonrpc2_connection_handler
 		GULPS_CHECK_AND_ASSERT_MES(m_config.m_phandler, false, "m_config.m_phandler is NULL!!!!");
 		std::string response_data;
 
-		GULPS_LOGF_L3("JSONRPC2_REQUEST: >> \r\n{}", request_data);
+		GULPSF_LOG_L3("JSONRPC2_REQUEST: >> \r\n{}", request_data);
 		bool rpc_result = m_config.m_phandler->handle_rpc_request(request_data, response_data, m_conn_context);
-		GULPS_LOGF_L3("JSONRPC2_RESPONSE: << \r\n{}", response_data);
+		GULPSF_LOG_L3("JSONRPC2_RESPONSE: << \r\n{}", response_data);
 
 		m_psnd_hndlr->do_send((void *)response_data.data(), response_data.size());
 		return rpc_result;

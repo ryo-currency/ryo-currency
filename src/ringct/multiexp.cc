@@ -363,12 +363,12 @@ multiexp_cache::multiexp_cache()
 	s_cache.init_cache(data, STRAUS_SIZE_LIMIT);
 	p_cache.init_cache(data, 0, false);
 
-	GULPS_INFOF("Hi/Gi cache size: {} kB", (sizeof(Hi_cache) + sizeof(Gi_cache)) / 1024 );
-	GULPS_INFOF("Hi_p3/Gi_p3 cache size: {} kB", (sizeof(Hi_p3_cache) + sizeof(Gi_p3_cache)) / 1024 );
-	GULPS_INFOF("Straus cache size: {} kB", sizeof(straus_cache) / 1024 );
-	GULPS_INFOF("Pippenger cache size: {} kB", sizeof(pippenger_cache) / 1024 );
+	GULPSF_INFO("Hi/Gi cache size: {} kB", (sizeof(Hi_cache) + sizeof(Gi_cache)) / 1024 );
+	GULPSF_INFO("Hi_p3/Gi_p3 cache size: {} kB", (sizeof(Hi_p3_cache) + sizeof(Gi_p3_cache)) / 1024 );
+	GULPSF_INFO("Straus cache size: {} kB", sizeof(straus_cache) / 1024 );
+	GULPSF_INFO("Pippenger cache size: {} kB", sizeof(pippenger_cache) / 1024 );
 	size_t cache_size = (sizeof(Hi_cache) + sizeof(Hi_p3_cache)) * 2 + sizeof(straus_cache) + sizeof(pippenger_cache);
-	GULPS_INFOF("Total cache size: {}kB", cache_size / 1024 );
+	GULPSF_INFO("Total cache size: {}kB", cache_size / 1024 );
 }
 
 void straus_cache::init_cache(const std::vector<MultiexpData> &data, size_t N)

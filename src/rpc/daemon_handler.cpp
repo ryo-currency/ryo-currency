@@ -842,7 +842,7 @@ bool DaemonHandler::getBlockHeaderByHash(const crypto::hash &hash_in, cryptonote
 
 std::string DaemonHandler::handle(const std::string &request)
 {
-	GULPS_LOGF_L1("Handling RPC request: {}", request);
+	GULPSF_LOG_L1("Handling RPC request: {}", request);
 
 	Message *resp_message = NULL;
 
@@ -893,7 +893,7 @@ std::string DaemonHandler::handle(const std::string &request)
 		delete resp_message;
 		resp_message = NULL;
 
-		GULPS_LOGF_L1("Returning RPC response: {}", response);
+		GULPSF_LOG_L1("Returning RPC response: {}", response);
 
 		return response;
 	}

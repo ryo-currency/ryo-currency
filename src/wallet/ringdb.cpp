@@ -180,7 +180,7 @@ static int resize_env(MDB_env *env, const char *db_path, size_t needed)
 			boost::filesystem::space_info si = boost::filesystem::space(path);
 			if(si.available < needed)
 			{
-				GULPS_ERRORF("!! WARNING: Insufficient free space to extend database !!: {} MB available", (si.available >> 20L) );
+				GULPSF_ERROR("!! WARNING: Insufficient free space to extend database !!: {} MB available", (si.available >> 20L) );
 				return ENOSPC;
 			}
 		}
@@ -353,9 +353,9 @@ bool ringdb::get_ring(const crypto::chacha_key &chacha_key, const crypto::key_im
 	std::string data_plaintext = decrypt(std::string((const char *)data.mv_data, data.mv_size), key_image, chacha_key);
 	outs = decompress_ring(data_plaintext);
 	GULPS_LOG_L1("Found ring for key image :", key_image);
-	GULPS_LOGF_L1("Relative: {}", boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
+	GULPSF_LOG_L1("Relative: {}", boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
 	outs = cryptonote::relative_output_offsets_to_absolute(outs);
-	GULPS_LOGF_L1("Absolute: {}", boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
+	GULPSF_LOG_L1("Absolute: {}", boost::join(outs | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
 
 	dbr = mdb_txn_commit(txn);
 	THROW_WALLET_EXCEPTION_IF(dbr, tools::error::wallet_internal_error, "Failed to commit txn getting ring from database: " + std::string(mdb_strerror(dbr)));
@@ -407,13 +407,13 @@ bool ringdb::blackball_worker(const crypto::public_key &output, int op)
 	switch(op)
 	{
 	case BLACKBALL_BLACKBALL:
-		GULPS_LOGF_L1("Blackballing output {}", output);
+		GULPSF_LOG_L1("Blackballing output {}", output);
 		dbr = mdb_put(txn, dbi_blackballs, &key, &data, MDB_NODUPDATA);
 		if(dbr == MDB_KEYEXIST)
 			dbr = 0;
 		break;
 	case BLACKBALL_UNBLACKBALL:
-		GULPS_LOGF_L1("Unblackballing output {}", output);
+		GULPSF_LOG_L1("Unblackballing output {}", output);
 		dbr = mdb_del(txn, dbi_blackballs, &key, &data);
 		if(dbr == MDB_NOTFOUND)
 			dbr = 0;
