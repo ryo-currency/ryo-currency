@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "prt_strg"
 
 #pragma once
 
@@ -38,7 +34,7 @@
 #include "portable_storage_to_json.h"
 #include "portable_storage_val_converters.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 namespace epee
 {
@@ -49,6 +45,7 @@ namespace serialization
 /************************************************************************/
 class portable_storage
 {
+  GULPS_CAT_MAJOR("prt_strg");
   public:
 	typedef epee::serialization::hsection hsection;
 	typedef epee::serialization::harray harray;

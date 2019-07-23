@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "mun_conn"
 
 #ifndef _MUNIN_CONNECTION_HANDLER_H_
 #define _MUNIN_CONNECTION_HANDLER_H_
@@ -51,7 +47,7 @@
 #define END_MUNIN_SERVICE() }
 #define MUNIN_SERVICE_PARAM(munin_var_name_str, variable) paramters_text += std::string() + munin_var_name_str ".value " + boost::lexical_cast<std::string>(variable) + "\n"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 namespace epee
 {
@@ -100,6 +96,8 @@ struct fake_send_handler : public i_service_endpoint
 /************************************************************************/
 class munin_node_server_connection_handler
 {
+  GULPS_CAT_MAJOR("mun_conn");
+
   public:
 	typedef node_server_config config_type;
 	typedef connection_context_base connection_context;
@@ -334,8 +332,8 @@ inline bool test_self()
 			node_server_config sc;
 			sc.m_services.push_back(munin_service());
 			sc.m_services.back().m_service_name = "test_service";
-			
-			sc.m_services.back().m_service_config_string =     
+
+			sc.m_services.back().m_service_config_string =
 				"graph_args --base 1000 -l 0 --vertical-label N --upper-limit 329342976\n"
 				"graph_title REPORTS STATICTICS\n"
 				"graph_category bind\n"
@@ -360,10 +358,10 @@ inline bool test_self()
 			sc.m_services.back().m_service_name = "test_service1";
 			fake_send_handler fh;
 			munin_node_server_connection_handler mh(&fh, sc);
-			
+
 			std::string buff = "list\n";
 			mh.handle_recv(buff.data(), buff.size());
-			
+
 
 			buff = "nodes\n";
 			mh.handle_recv(buff.data(), buff.size());

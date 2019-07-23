@@ -40,7 +40,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "db_lmdb"
 
 #include "db_lmdb.h"
 
@@ -57,9 +56,6 @@
 #include "ringct/rctOps.h"
 #include "string_tools.h"
 
-#include "common/gulps.hpp"
-
-
 
 #if defined(__i386) || defined(__x86_64)
 #define MISALIGNED_OK 1
@@ -74,6 +70,7 @@ using namespace crypto;
 
 namespace
 {
+GULPS_CAT_MAJOR("db_lmdb");
 
 #pragma pack(push, 1)
 // This MUST be identical to output_data_t, without the extra rct data at the end
@@ -3428,7 +3425,7 @@ void BlockchainLMDB::migrate_0_1()
 				if(i)
 				{
 					GULPS_LOGF_L0("{}/{}\r",i, z);
-					
+
 					txn.commit();
 					result = mdb_txn_begin(m_env, NULL, 0, txn);
 					if(result)
@@ -3525,7 +3522,7 @@ void BlockchainLMDB::migrate_0_1()
 				if(i)
 				{
 					GULPS_LOGF_L0("{}/{}\r",i, z);
-					
+
 					txn.commit();
 					result = mdb_txn_begin(m_env, NULL, 0, txn);
 					if(result)
@@ -3664,7 +3661,7 @@ void BlockchainLMDB::migrate_0_1()
 				if(i)
 				{
 					GULPS_LOGF_L0("{}/{}\r",i, z);
-					
+
 					txn.commit();
 					result = mdb_txn_begin(m_env, NULL, 0, txn);
 					if(result)

@@ -81,6 +81,7 @@ using namespace epee;
 
 namespace tools
 {
+GULPS_CAT_MAJOR("cmn_util");
 std::function<void(int)> signal_handler::m_handler;
 
 private_file::private_file() noexcept : m_handle(), m_filename() {}
@@ -633,7 +634,7 @@ bool on_startup()
 #ifdef __GLIBC__
 	const char *ver = gnu_get_libc_version();
 	if(!strcmp(ver, "2.25"))
-		GULPS_CAT_WARN("global", "Running with glibc ", ver, " hangs may occur - change glibc version if possible");  
+		GULPS_CAT_WARN("global", "Running with glibc ", ver, " hangs may occur - change glibc version if possible");
 #endif
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(LIBRESSL_VERSION_TEXT)
@@ -643,7 +644,7 @@ bool on_startup()
 #endif
 
 	if(!unbound_built_with_threads())
-		GULPS_CAT_WARN("global", "libunbound was not built with threads enabled - crashes may occur");  
+		GULPS_CAT_WARN("global", "libunbound was not built with threads enabled - crashes may occur");
 	return true;
 }
 void set_strict_default_file_permissions(bool strict)

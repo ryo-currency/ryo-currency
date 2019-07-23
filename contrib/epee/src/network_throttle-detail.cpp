@@ -31,7 +31,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* rfree: implementation for throttle details */
-#define GULPS_CAT_MAJOR "net_tht_det"
 
 #include <atomic>
 #include <boost/asio.hpp>
@@ -74,7 +73,7 @@
 // TODO:
 #include "net/network_throttle-detail.hpp"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 

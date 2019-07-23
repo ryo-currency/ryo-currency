@@ -42,7 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#define GULPS_CAT_MAJOR "blockch_import"
 
 #include <algorithm>
 #include <atomic>
@@ -62,7 +61,7 @@
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("blockch_import");
 
 namespace
 {

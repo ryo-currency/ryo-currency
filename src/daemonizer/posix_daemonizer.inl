@@ -41,8 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#undef GULPS_CAT_MAJOR
-#define GULPS_CAT_MAJOR "posix_dmnzer"
 
 #pragma once
 
@@ -57,6 +55,7 @@
 
 namespace daemonizer
 {
+GULPS_CAT_MAJOR("posix_dmnzer");
 extern gulps_log_level log_scr, log_dsk;
 namespace
 {
@@ -92,8 +91,8 @@ inline bool daemonize(
 	int argc, char* argv[], T_executor &&executor // universal ref
 	,
 	boost::program_options::variables_map const &vm)
-{	
-	
+{
+
 	if(command_line::has_arg(vm, arg_detach))
 	{
 		GULPS_PRINT_OK("Forking to background...");

@@ -46,6 +46,8 @@ using namespace std;
 using namespace epee;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 ////////
 // class one_block;
 

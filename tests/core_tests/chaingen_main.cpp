@@ -35,6 +35,8 @@
 
 namespace po = boost::program_options;
 
+GULPS_CAT_MAJOR("test");
+
 namespace
 {
 const command_line::arg_descriptor<std::string> arg_test_data_path = {"test_data_path", "", ""};
@@ -51,8 +53,8 @@ int main(int argc, char *argv[])
 	epee::string_tools::set_module_name_and_folder(argv[0]);
 
 	//set up logging options
-	
-	
+
+
 
 	po::options_description desc_options("Allowed options");
 	command_line::add_arg(desc_options, command_line::arg_help);

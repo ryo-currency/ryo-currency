@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "tcp_srv"
 
 #ifndef _ABSTRACT_TCP_SERVER_H_
 #define _ABSTRACT_TCP_SERVER_H_
@@ -40,7 +36,7 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -61,6 +57,7 @@ class soket_sender : public i_service_endpoint
 		if(cb != send(m_sock, (char *)ptr, (int)cb, 0))
 		{
 			int sock_err = WSAGetLastError();
+			GULPS_CAT_MAJOR("tcp_srv");
 			GULPS_LOGF_ERROR("soket_sender: Failed to send {} bytes, Error={}", cb , sock_err);
 			return false;
 		}
@@ -76,6 +73,7 @@ class soket_sender : public i_service_endpoint
 template <class THandler>
 class abstract_tcp_server
 {
+	GULPS_CAT_MAJOR("tcp_srv");
   public:
 	abstract_tcp_server();
 

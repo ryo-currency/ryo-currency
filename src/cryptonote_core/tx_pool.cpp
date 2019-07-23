@@ -43,7 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "tx_pool"
+
 
 #include <algorithm>
 #include <boost/filesystem.hpp>
@@ -66,10 +66,10 @@
 #include "common/gulps.hpp"
 
 
-
 DISABLE_VS_WARNINGS(4244 4345 4503) //'boost::foreach_detail_::or_' : decorated name length exceeded, name was truncated
 
 using namespace crypto;
+GULPS_CAT_MAJOR("tx_pool");
 
 namespace cryptonote
 {
@@ -1177,7 +1177,7 @@ bool tx_memory_pool::fill_block_template(block &bl, size_t median_size, uint64_t
 	}
 
 	expected_reward = best_coinbase;
-	GULPS_LOGF_L2("Block template filled with {} txes, size {}/{}, coinbase {} (including {} in fees)", bl.tx_hashes.size(), 
+	GULPS_LOGF_L2("Block template filled with {} txes, size {}/{}, coinbase {} (including {} in fees)", bl.tx_hashes.size(),
 												total_size, max_total_size , print_money(best_coinbase), print_money(fee));
 	return true;
 }

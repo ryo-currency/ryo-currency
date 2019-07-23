@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "daemon"
 
 #include "daemon/daemon.h"
 #include "rpc/daemon_handler.h"
@@ -63,7 +62,7 @@
 #include "daemon/rpc.h"
 #include "version.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 using namespace epee;
 

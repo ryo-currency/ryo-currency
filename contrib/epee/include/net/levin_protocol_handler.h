@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "lev_proto"
 
 #ifndef _LEVIN_PROTOCOL_HANDLER_H_
 #define _LEVIN_PROTOCOL_HANDLER_H_
@@ -34,7 +30,7 @@
 #include "levin_base.h"
 #include <boost/uuid/uuid_generators.hpp>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -57,6 +53,7 @@ struct protocl_handler_config
 template <class t_connection_context = net_utils::connection_context_base>
 class protocol_handler
 {
+	GULPS_CAT_MAJOR("lev_proto");
   public:
 	typedef t_connection_context connection_context;
 	typedef protocl_handler_config<t_connection_context> config_type;

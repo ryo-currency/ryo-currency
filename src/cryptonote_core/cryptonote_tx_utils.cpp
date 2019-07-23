@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "crtnte_tx_utils"
 
 #include "include_base_utils.h"
 #include "string_tools.h"
@@ -63,6 +62,8 @@ using namespace epee;
 #include "common/gulps.hpp"
 
 using namespace crypto;
+
+GULPS_CAT_MAJOR("crtnte_tx_utils");
 
 namespace cryptonote
 {

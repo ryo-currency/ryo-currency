@@ -46,10 +46,9 @@
 
 /*!
  * \file gen_multisig.cpp
- * 
+ *
  * \brief Generates a set of multisig wallets
  */
-#define GULPS_CAT_MAJOR "gen_multisig"
 
 #include "common/command_line.h"
 #include "common/i18n.h"
@@ -76,7 +75,7 @@ using namespace cryptonote;
 using boost::lexical_cast;
 namespace po = boost::program_options;
 
-
+GULPS_CAT_MAJOR("gen_multisig");
 
 namespace genms
 {
@@ -226,7 +225,7 @@ int main(int argc, char *argv[])
 		true);
 	if(!vm)
 		return vm_error_code;
-	
+
 	gulps::inst().remove_output(temp_handle);
 
 	bool testnet, stagenet;

@@ -44,7 +44,6 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#define GULPS_CAT_MAJOR "rpc_cmd_exe"
 
 #include "daemon/rpc_command_executor.h"
 #include "common/password.h"
@@ -60,13 +59,13 @@
 
 #include "common/gulps.hpp"
 
+GULPS_CAT_MAJOR("rpc_cmd_exe");
 
-
-#define GULPS_PRINT_FAIL(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_ERROR, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_RED, "Error: ", __VA_ARGS__)
-#define GULPS_PRINT_SUCCESS(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT,  GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
-#define GULPS_PRINTF_SUCCESS(...) GULPS_OUTPUTF(gulps::OUT_USER_1, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
-#define GULPS_PRINT_OK(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_PRINTF_OK(...) GULPS_OUTPUTF(gulps::OUT_USER_1, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINT_FAIL(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_ERROR, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_RED, "Error: ", __VA_ARGS__)
+#define GULPS_PRINT_SUCCESS(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
+#define GULPS_PRINTF_SUCCESS(...) GULPS_OUTPUTF(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_GREEN, __VA_ARGS__)
+#define GULPS_PRINT_OK(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINTF_OK(...) GULPS_OUTPUTF(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
 
 namespace daemonize
 {
@@ -842,7 +841,7 @@ bool t_rpc_command_executor::is_key_image_spent(const crypto::key_image &ki)
 
 	if(1 == res.spent_status.size())
 	{
-		GULPS_PRINT_SUCCESS(ki, ": ", (res.spent_status.front() ? "spent" : "unspent"), 
+		GULPS_PRINT_SUCCESS(ki, ": ", (res.spent_status.front() ? "spent" : "unspent"),
 							(res.spent_status.front() == cryptonote::COMMAND_RPC_IS_KEY_IMAGE_SPENT::SPENT_IN_POOL ? " (in pool)" : ""));
 	}
 	else

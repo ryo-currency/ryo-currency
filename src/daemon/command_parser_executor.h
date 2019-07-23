@@ -63,6 +63,7 @@ namespace daemonize
 
 class t_command_parser_executor final
 {
+	GULPS_CAT_MAJOR("cmd_pars_exe");
   private:
 	t_rpc_command_executor m_executor;
 

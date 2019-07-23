@@ -42,7 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#define GULPS_CAT_MAJOR "device"
 
 #include "device.hpp"
 #include "device_default.hpp"
@@ -50,7 +49,7 @@
 #include "device_ledger.hpp"
 #endif
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 namespace hw
 {
@@ -78,6 +77,7 @@ device &get_device(const std::string device_descriptor)
 	auto device = devices.registry.find(device_descriptor);
 	if(device == devices.registry.end())
 	{
+		GULPS_CAT_MAJOR("device");
 		GULPS_ERROR("device not found in registry: '", device_descriptor, "'\nknown devices:");
 
 		for(const auto &sm_pair : devices.registry)

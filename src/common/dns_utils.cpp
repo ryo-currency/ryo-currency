@@ -41,7 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "dns_utils"
 
 #include "common/dns_utils.h"
 // check local first (in the event of static or in-source compilation of libunbound)
@@ -58,7 +57,7 @@ namespace bf = boost::filesystem;
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("dns_utils");
 
 static const char *DEFAULT_DNS_PUBLIC_ADDR[] =
 {

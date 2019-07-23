@@ -43,11 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "basic_util"
-
 
 #include "include_base_utils.h"
 #include "common/gulps.hpp"
@@ -66,7 +61,7 @@
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("basic_util");
 
 namespace cryptonote
 {
@@ -74,7 +69,7 @@ namespace cryptonote
 struct integrated_address
 {
 	integrated_address(account_public_address adr, crypto::hash8 payment_id) : adr(adr), payment_id(payment_id) {}
-    
+
 	account_public_address adr;
 	crypto::hash8 payment_id;
 
@@ -92,7 +87,7 @@ struct integrated_address
 struct kurz_address
 {
 	kurz_address(crypto::public_key m_public_key) : m_public_key(m_public_key) {}
-	
+
 	crypto::public_key m_public_key;
 
 	BEGIN_SERIALIZE_OBJECT()

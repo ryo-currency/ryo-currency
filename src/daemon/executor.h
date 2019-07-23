@@ -55,6 +55,7 @@ namespace daemonize
 {
 class t_executor final
 {
+	GULPS_CAT_MAJOR("daemon_exe");
   public:
 	typedef ::daemonize::t_daemon t_daemon;
 

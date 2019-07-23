@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "wallet.rpc"
 
 #include "include_base_utils.h"
 #include <boost/algorithm/string.hpp>
@@ -87,6 +86,7 @@ boost::optional<tools::password_container> password_prompter(const char *prompt,
 	auto pwd_container = tools::password_container::prompt(verify, prompt);
 	if(!pwd_container)
 	{
+		GULPS_CAT_MAJOR("wallet.rpc");
 		GULPS_ERROR(tr("failed to read wallet password"));
 	}
 	return pwd_container;
@@ -2968,6 +2968,7 @@ bool wallet_rpc_server::on_submit_multisig(const wallet_rpc::COMMAND_RPC_SUBMIT_
 
 int main(int argc, char **argv)
 {
+	GULPS_CAT_MAJOR("wallet.rpc");
 #ifdef WIN32
 	std::vector<char*> argptrs;
 	command_line::set_console_utf8();

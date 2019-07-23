@@ -38,11 +38,14 @@ namespace epee
 {
 namespace levin
 {
+
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
 class levin_client_impl
 {
+  GULPS_CAT_MAJOR("lev_cli");
+
   public:
 	levin_client_impl();
 	virtual ~levin_client_impl();

@@ -23,12 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#undef GULPS_CAT_MAJOR
-#define GULPS_CAT_MAJOR "tcp_serv"
 
 #pragma comment(lib, "Ws2_32.lib")
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 

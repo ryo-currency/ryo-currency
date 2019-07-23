@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "lev_proto"
 
 #pragma once
 #include <boost/asio/deadline_timer.hpp>
@@ -67,6 +63,7 @@ class async_protocol_handler;
 template <class t_connection_context>
 class async_protocol_handler_config
 {
+	GULPS_CAT_MAJOR("lev_proto");
 	typedef boost::unordered_map<boost::uuids::uuid, async_protocol_handler<t_connection_context> *> connections_map;
 	critical_section m_connects_lock;
 	connections_map m_connects;
@@ -118,6 +115,7 @@ class async_protocol_handler_config
 template <class t_connection_context = net_utils::connection_context_base>
 class async_protocol_handler
 {
+	GULPS_CAT_MAJOR("lev_proto");
   public:
 	typedef t_connection_context connection_context;
 	typedef async_protocol_handler_config<t_connection_context> config_type;

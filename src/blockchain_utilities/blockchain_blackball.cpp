@@ -41,7 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "blockch_blackball"
+
 
 #include "cryptonote_core/blockchain.h"
 #include "blockchain_db/blockchain_db.h"
@@ -55,9 +55,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("blockch_blackball");
 
 namespace po = boost::program_options;
 using namespace epee;
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
 	tools::on_startup();
 
 	boost::filesystem::path output_file_path;
-	
+
 	po::options_description desc_cmd_only("Command line options");
 	po::options_description desc_cmd_sett("Command line options and settings options");
 	const command_line::arg_descriptor<std::string, false, true, 2> arg_blackball_db_dir = {
@@ -229,15 +229,15 @@ int main(int argc, char *argv[])
 	po::variables_map vm;
 	bool r = command_line::handle_error_helper(desc_options, [&]() {
 		auto parser = po::command_line_parser(argc, argv).options(desc_options).positional(positional_options);
-		po::store(parser.run(), vm);		
+		po::store(parser.run(), vm);
 		po::notify(vm);
 		return true;
 	});
 	if(!r)
 		return 1;
-	
+
 	gulps::inst().set_thread_tag("BLOCKCH_BLACKBALL");
-	
+
 	//Temp error output
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
@@ -259,13 +259,13 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-      
+
 	gulps::inst().remove_output(temp_handle);
-	
+
 	if(log_scr.is_active())
 	{
 		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
-		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
 					return false;
 				if(printed)
@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
 				});
 		gulps::inst().add_output(std::move(out));
 	}
-	
+
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
 		GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")\n)");
@@ -406,9 +406,9 @@ int main(int argc, char *argv[])
 					spent.insert(output_data(txin.amount, txin.key_offsets[0]));
 				}
 				else if(relative_rings.find(txin.k_image) != relative_rings.end())
-				{	
+				{
 					GULPS_INFO("Key image ", txin.k_image, " already seen: rings ", boost::join(relative_rings[txin.k_image] | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "), ", ", boost::join(txin.key_offsets | boost::adaptors::transformed([](uint64_t out) { return std::to_string(out); }), " "));
-					
+
 					if(relative_rings[txin.k_image] != txin.key_offsets)
 					{
 						GULPS_INFO("Rings are different");

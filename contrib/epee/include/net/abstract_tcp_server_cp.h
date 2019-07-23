@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "tcp_serv"
 
 #ifndef _LEVIN_CP_SERVER_H_
 #define _LEVIN_CP_SERVER_H_
@@ -44,7 +40,7 @@
 #include "pragma_comp_defs.h"
 #include "profile_tools.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -58,6 +54,7 @@ namespace net_utils
 template <class TProtocol>
 class cp_server_impl //: public abstract_handler
 {
+	GULPS_CAT_MAJOR("tcp_srv");
   public:
 	cp_server_impl(/*abstract_handler* phandler = NULL*/);
 	virtual ~cp_server_impl();

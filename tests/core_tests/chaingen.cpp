@@ -50,6 +50,8 @@ using namespace epee;
 using namespace crypto;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 void test_generator::get_block_chain(std::vector<block_info> &blockchain, const crypto::hash &head, size_t n) const
 {
 	crypto::hash curr = head;

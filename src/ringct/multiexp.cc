@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Adapted from Python code by Sarang Noether
-#define GULPS_CAT_MAJOR "multiexp"
 
 #include "common/perf_timer.h"
 #include "common/gulps.hpp"
@@ -89,7 +88,7 @@ extern "C" {
 
 namespace rct
 {
-
+	GULPS_CAT_MAJOR("multiexp");
 static inline bool operator<(const rct::key &k0, const rct::key &k1)
 {
 	for(int n = 31; n >= 0; --n)
@@ -410,7 +409,7 @@ rct::key straus_cache::straus(const std::vector<MultiexpData> &data, size_t STEP
 
 	MULTIEXP_PERF(PERF_TIMER_START_UNIT(setup, 1000000));
 	static constexpr unsigned int mask = (1 << STRAUS_C) - 1;
-	
+
 	ge_cached cached;
 	ge_p1p1 p1;
 	ge_p3 p3;

@@ -83,7 +83,9 @@ enum t_connection_type
 std::string to_string(t_connection_type type);
 
 class connection_basic
-{ // not-templated base class for rapid developmet of some code parts
+{
+	GULPS_CAT_MAJOR("conn_basics");
+	// not-templated base class for rapid developmet of some code parts
   public:
 	std::unique_ptr<connection_basic_pimpl> mI; // my Implementation
 

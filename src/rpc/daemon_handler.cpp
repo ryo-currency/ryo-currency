@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "daemon_handler.h"
+#include "common/gulps.hpp"
 
 // likely included by daemon_handler.h's includes,
 // but including here for clarity
@@ -56,7 +57,7 @@ namespace cryptonote
 
 namespace rpc
 {
-
+GULPS_CAT_MAJOR("rpc_args");
 void DaemonHandler::handle(const GetHeight::Request &req, GetHeight::Response &res)
 {
 	res.height = m_core.get_current_blockchain_height();
