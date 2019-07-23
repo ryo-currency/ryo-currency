@@ -18,7 +18,7 @@ namespace net_utils
 namespace jsonrpc2
 {
 
-GULPS_CAT_MAJOR("jsrpc_proto");
+GULPS_CAT_MAJOR("epee_jsrpc_proto");
 
 inline std::string &make_error_resp_json(int64_t code, const std::string &message,
 										 std::string &response_data,

@@ -82,7 +82,7 @@ class connection
 	  public i_service_endpoint,
 	  public connection_basic
 {
-	GULPS_CAT_MAJOR("tcp_srv");
+	GULPS_CAT_MAJOR("epee_tcp_srv");
   public:
 	typedef typename t_protocol_handler::connection_context t_connection_context;
 	/// Construct a connection with the given io_service.

@@ -80,7 +80,7 @@ namespace cryptonote
    */
 class simple_wallet : public tools::i_wallet2_callback
 {
-	GULPS_CAT_MAJOR("cli_wallet");
+	GULPS_CAT_MAJOR("wallet_cli");
   public:
 	static const char *tr(const char *str) { return i18n_translate(str, "cryptonote::simple_wallet"); }
 

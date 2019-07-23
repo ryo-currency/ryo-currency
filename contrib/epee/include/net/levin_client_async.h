@@ -49,7 +49,7 @@ namespace levin
 
 class levin_client_async
 {
-	GULPS_CAT_MAJOR("lev_cli");
+	GULPS_CAT_MAJOR("epee_lev_cli");
 
 	levin_commands_handler *m_pcommands_handler;
 	void (*commands_handler_destroy)(levin_commands_handler *);

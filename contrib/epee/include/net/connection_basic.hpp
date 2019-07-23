@@ -84,7 +84,7 @@ std::string to_string(t_connection_type type);
 
 class connection_basic
 {
-	GULPS_CAT_MAJOR("conn_basics");
+	GULPS_CAT_MAJOR("epee_conn_basics");
 	// not-templated base class for rapid developmet of some code parts
   public:
 	std::unique_ptr<connection_basic_pimpl> mI; // my Implementation

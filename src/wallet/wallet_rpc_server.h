@@ -64,7 +64,7 @@ namespace tools
 /************************************************************************/
 class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 {
-	GULPS_CAT_MAJOR("wallet.rpc");
+	GULPS_CAT_MAJOR("wallet_rpc");
   public:
 	typedef epee::net_utils::connection_context_base connection_context;
 

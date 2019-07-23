@@ -16,7 +16,7 @@ namespace epee
 template <class t_child_class, class t_connection_context = epee::net_utils::connection_context_base>
 class jsonrpc_server_impl_base : public net_utils::jsonrpc2::i_jsonrpc2_server_handler<t_connection_context>
 {
-	GULPS_CAT_MAJOR("jsrpc_serv);
+	GULPS_CAT_MAJOR("epee_jsrpc_serv");
   public:
 	jsonrpc_server_impl_base()
 		: m_net_server()

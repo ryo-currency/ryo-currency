@@ -96,7 +96,7 @@ struct fake_send_handler : public i_service_endpoint
 /************************************************************************/
 class munin_node_server_connection_handler
 {
-  GULPS_CAT_MAJOR("mun_conn");
+  GULPS_CAT_MAJOR("epee_mun_conn");
 
   public:
 	typedef node_server_config config_type;

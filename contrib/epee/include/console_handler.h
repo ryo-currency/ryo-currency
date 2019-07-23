@@ -289,7 +289,7 @@ bool empty_commands_handler(t_server *psrv, const std::string &command)
 
 class async_console_handler
 {
-	GULPS_CAT_MAJOR("csl_hand");
+	GULPS_CAT_MAJOR("epee_csl_hand");
   public:
 	async_console_handler()
 	{

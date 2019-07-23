@@ -44,7 +44,7 @@ namespace epee
 namespace net_utils
 {
 
-GULPS_CAT_MAJOR("net");
+GULPS_CAT_MAJOR("epee_net");
 
 class ipv4_network_address
 {

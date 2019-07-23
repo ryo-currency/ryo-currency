@@ -43,7 +43,7 @@ namespace net_utils
 namespace smtp
 {
 
-GULPS_CAT_MAJOR("smtp");
+GULPS_CAT_MAJOR("epee_smtp");
 
 using boost::asio::ip::tcp;
 using namespace boost::archive::iterators;

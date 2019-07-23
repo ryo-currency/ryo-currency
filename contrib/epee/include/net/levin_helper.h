@@ -78,7 +78,7 @@ bool pack_data_to_levin_message(const std::string &data, std::string &buff, int 
 
 bool load_levin_data_from_levin_message(std::string &levin_data, const std::string &buff, int &command)
 {
-	GULPS_CAT_MAJOR("lev_help");
+	GULPS_CAT_MAJOR("epee_lev_help");
 	if(buff.size() < sizeof(levin::bucket_head))
 	{
 		GULPS_LOG_L3("size of buff(", buff.size(), ") is too small, at load_struct_from_levin_message");
@@ -106,7 +106,7 @@ bool load_levin_data_from_levin_message(std::string &levin_data, const std::stri
 template <class t_struct>
 bool load_struct_from_levin_message(t_struct &t, const std::string &buff, int &command)
 {
-	GULPS_CAT_MAJOR("lev_help");
+	GULPS_CAT_MAJOR("epee_lev_help");
 	if(buff.size() < sizeof(levin::bucket_head))
 	{
 		GULPS_ERROR("size of buff(", buff.size(), ") is too small, at load_struct_from_levin_message");

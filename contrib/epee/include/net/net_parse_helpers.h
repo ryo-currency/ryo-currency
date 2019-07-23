@@ -73,7 +73,7 @@ inline bool parse_uri_query(const std::string &query, std::list<std::pair<std::s
 			}
 			break;
 		default:
-			GULPS_CAT_MAJOR("net");
+			GULPS_CAT_MAJOR("epee_net");
 			GULPS_ERROR("Unknown state ", (int)st);
 			return false;
 		}
@@ -107,7 +107,7 @@ inline bool parse_uri(const std::string uri, http::uri_content &content)
 	boost::smatch result;
 	if(!(boost::regex_search(uri, result, rexp_match_uri, boost::match_default) && result[0].matched))
 	{
-		GULPS_CAT_MAJOR("net");
+		GULPS_CAT_MAJOR("epee_net");
 		GULPS_LOG_L1("[PARSE URI] regex not matched for uri: ", uri);
 		content.m_path = uri;
 		return true;
@@ -142,7 +142,7 @@ inline bool parse_url(const std::string url_str, http::url_content &content)
 	boost::smatch result;
 	if(!(boost::regex_search(url_str, result, rexp_match_uri, boost::match_default) && result[0].matched))
 	{
-		GULPS_CAT_MAJOR("net");
+		GULPS_CAT_MAJOR("epee_net");
 		GULPS_LOG_L1("[PARSE URI] regex not matched for uri: ", rexp_match_uri);
 		//content.m_path = uri;
 		return true;

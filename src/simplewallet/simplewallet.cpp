@@ -108,7 +108,7 @@ using boost::lexical_cast;
 namespace po = boost::program_options;
 typedef cryptonote::simple_wallet sw;
 
-GULPS_CAT_MAJOR("cli_wallet");
+GULPS_CAT_MAJOR("wallet_cli");
 
 #define EXTENDED_LOGS_FILE "wallet_details.log"
 

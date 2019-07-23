@@ -95,7 +95,7 @@ inline uint64_t get_tick_count()
 
 inline int call_sys_cmd(const std::string &cmd)
 {
-	GULPS_CAT_MAJOR("msc_os_dep");
+	GULPS_CAT_MAJOR("epee_msc_os_dep");
 	GULPS_PRINT("# {}", cmd);
 
 	FILE *fp;

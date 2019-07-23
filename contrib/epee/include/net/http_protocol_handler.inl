@@ -47,7 +47,7 @@ namespace net_utils
 namespace http
 {
 
-GULPS_CAT_MAJOR("http_proto");
+GULPS_CAT_MAJOR("epee_http_proto");
 
 struct multipart_entry
 {

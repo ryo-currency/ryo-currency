@@ -63,7 +63,7 @@ class async_protocol_handler;
 template <class t_connection_context>
 class async_protocol_handler_config
 {
-	GULPS_CAT_MAJOR("lev_proto");
+	GULPS_CAT_MAJOR("epee_lev_proto");
 	typedef boost::unordered_map<boost::uuids::uuid, async_protocol_handler<t_connection_context> *> connections_map;
 	critical_section m_connects_lock;
 	connections_map m_connects;
@@ -115,7 +115,7 @@ class async_protocol_handler_config
 template <class t_connection_context = net_utils::connection_context_base>
 class async_protocol_handler
 {
-	GULPS_CAT_MAJOR("lev_proto");
+	GULPS_CAT_MAJOR("epee_lev_proto");
   public:
 	typedef t_connection_context connection_context;
 	typedef async_protocol_handler_config<t_connection_context> config_type;

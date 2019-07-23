@@ -40,7 +40,7 @@ namespace net_utils
 namespace http_client
 {
 
-GULPS_CAT_MAJOR("http_client");
+GULPS_CAT_MAJOR("epee_http_client");
 
 inline bool http_ssl_invoke(const std::string &url, const std::string usr, const std::string psw, std::string &http_response_body, bool use_post = false)
 {

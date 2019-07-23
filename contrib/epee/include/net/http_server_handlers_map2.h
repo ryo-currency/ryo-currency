@@ -39,7 +39,7 @@
 							 epee::net_utils::http::http_response_info &response,                                                                \
 							 context_type &m_conn_context)                                                                                       \
 	{                                                                                                                                            \
-		{GULPS_CAT_MAJOR("http_serv"); GULPSF_LOG_L2("HTTP [{}] {}", m_conn_context.m_remote_address.host_str(), query_info.m_http_method_str, query_info.m_URI);} \
+		{GULPS_CAT_MAJOR("epee_http_serv"); GULPSF_LOG_L2("HTTP [{}] {}", m_conn_context.m_remote_address.host_str(), query_info.m_http_method_str, query_info.m_URI);} \
 		response.m_response_code = 200;                                                                                                          \
 		response.m_response_comment = "Ok";                                                                                                      \
 		if(!handle_http_request_map(query_info, response, m_conn_context))                                                                       \
@@ -71,7 +71,7 @@
 		uint64_t ticks = misc_utils::get_tick_count();                                                                         \
 		boost::value_initialized<command_type::request> req;                                                                   \
 		bool parse_res = epee::serialization::load_t_from_json(static_cast<command_type::request &>(req), query_info.m_body);  \
-		GULPS_CAT_MAJOR("http_serv");                                                                                          \
+		GULPS_CAT_MAJOR("epee_http_serv");                                                                                          \
 		GULPS_CHECK_AND_ASSERT_MES(parse_res, false, "Failed to parse json: \r\n"                                              \
 												   , query_info.m_body);                                                      \
 		uint64_t ticks1 = epee::misc_utils::get_tick_count();                                                                  \
@@ -96,7 +96,7 @@
 #define MAP_URI_AUTO_BIN2(s_pattern, callback_f, command_type)                                                                   \
 	else if(query_info.m_URI == s_pattern)                                                                                       \
 	{                                                                                                                            \
-		GULPS_CAT_MAJOR("http_serv");                                                                                            \
+		GULPS_CAT_MAJOR("epee_http_serv");                                                                                            \
 		handled = true;                                                                                                          \
 		uint64_t ticks = misc_utils::get_tick_count();                                                                           \
 		boost::value_initialized<command_type::request> req;                                                                     \
@@ -185,7 +185,7 @@
 	uint64_t ticks3 = epee::misc_utils::get_tick_count();             \
 	response_info.m_mime_tipe = "application/json";                   \
 	response_info.m_header_info.m_content_type = " application/json"; \
-	{GULPS_CAT_MAJOR("http_serv"); GULPSF_LOG_L1("{}[{}] processed with {}/{}/{}ms", query_info.m_URI, method_name, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2);}
+	{GULPS_CAT_MAJOR("epee_http_serv"); GULPSF_LOG_L1("{}[{}] processed with {}/{}/{}ms", query_info.m_URI, method_name, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2);}
 
 #define MAP_JON_RPC_WE_IF(method_name, callback_f, command_type, cond)                                                            \
 	else if((callback_name == method_name) && (cond))                                                                             \

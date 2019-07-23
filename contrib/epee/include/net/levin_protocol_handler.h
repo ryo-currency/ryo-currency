@@ -53,7 +53,7 @@ struct protocl_handler_config
 template <class t_connection_context = net_utils::connection_context_base>
 class protocol_handler
 {
-	GULPS_CAT_MAJOR("lev_proto");
+	GULPS_CAT_MAJOR("epee_lev_proto");
   public:
 	typedef t_connection_context connection_context;
 	typedef protocl_handler_config<t_connection_context> config_type;

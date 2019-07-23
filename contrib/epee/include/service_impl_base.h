@@ -35,7 +35,7 @@ namespace epee
 {
 class service_impl_base
 {
-	GULPS_CAT_MAJOR("srv_imp_base");
+	GULPS_CAT_MAJOR("epee_srv_imp_base");
   public:
 	service_impl_base();
 	virtual ~service_impl_base();
