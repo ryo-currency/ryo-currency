@@ -87,7 +87,7 @@ struct profile_entry
 
 class profiler_manager
 {
-	GULPS_CAT_MAJOR("ado_db_help");                                                                                                                                                         \
+	GULPS_CAT_MAJOR("ado_db_help");
   public:
 	typedef std::map<std::string, profile_entry> sqls_map;
 	profiler_manager() {}
@@ -1059,7 +1059,7 @@ bool find_or_add_t(const std::string &sql_select_statment, const std::string &sq
 template <typename TParams, typename default_id_type, typename t_conn>
 bool find_or_add_t_multiparametred(const std::string &sql_select_statment, const std::string &sql_insert_statment, OUT default_id_type &id, OUT bool &new_object_added, TParams params, t_conn &c)
 {
-	GULPS_CAT_MAJOR("ado_db_help");                                                                                                                                                         \
+	GULPS_CAT_MAJOR("ado_db_help");
 	//CHECK_CONNECTION(false);
 
 	new_object_added = false;
