@@ -46,7 +46,7 @@
 	}                                                                                                                                                                                           \
 	catch(const std::exception &ex)                                                                                                                                                             \
 	{                                                                                                                                                                                           \
-		GULPS_CAT_MAJOR("ado_db_help");                                                                                                                                                         \
+		GULPS_CAT_MAJOR("epee_ado_db_help");                                                                                                                                                         \
 		GULPSF_ERROR("DB_ERROR: {}", ex.what();                                                                                                                                                 \
 		return ret_val;                                                                                                                                                                         \
 	}                                                                                                                                                                                           \
@@ -56,14 +56,14 @@
 		std::string descr = string_encoding::convert_to_ansii(pstr ? pstr : TEXT(""));                                                                                                          \
 		const TCHAR *pmessage = comm_err.ErrorMessage();                                                                                                                                        \
 		pstr = comm_err.Source();                                                                                                                                                               \
-		GULPS_CAT_MAJOR("ado_db_help");                                                                                                                                                         \
+		GULPS_CAT_MAJOR("epee_ado_db_help");                                                                                                                                                         \
 		std::string source = string_encoding::convert_to_ansii(pstr ? pstr : TEXT(""));                                                                                                         \
 		GULPSF_ERROR("COM_ERROR {}:\n\tDescriprion:{}, \n\t Message: {}\n\t Source: {}", mess_where, descr, string_encoding::convert_to_ansii(pmessage), source);                               \
 		return ret_val;                                                                                                                                                                         \
 	}                                                                                                                                                                                           \
 	catch(...)                                                                                                                                                                                  \
 	{                                                                                                                                                                                           \
-		GULPS_CAT_MAJOR("ado_db_help");                                                                                                                                                         \
+		GULPS_CAT_MAJOR("epee_ado_db_help");                                                                                                                                                         \
 		GULPS_ERROR("..._ERROR: Unknown error.");                                                                                                                                               \
 		return ret_val;                                                                                                                                                                         \
 	}
@@ -87,7 +87,7 @@ struct profile_entry
 
 class profiler_manager
 {
-	GULPS_CAT_MAJOR("ado_db_help");
+	GULPS_CAT_MAJOR("epee_ado_db_help");
   public:
 	typedef std::map<std::string, profile_entry> sqls_map;
 	profiler_manager() {}
@@ -1059,7 +1059,7 @@ bool find_or_add_t(const std::string &sql_select_statment, const std::string &sq
 template <typename TParams, typename default_id_type, typename t_conn>
 bool find_or_add_t_multiparametred(const std::string &sql_select_statment, const std::string &sql_insert_statment, OUT default_id_type &id, OUT bool &new_object_added, TParams params, t_conn &c)
 {
-	GULPS_CAT_MAJOR("ado_db_help");
+	GULPS_CAT_MAJOR("epee_ado_db_help");
 	//CHECK_CONNECTION(false);
 
 	new_object_added = false;

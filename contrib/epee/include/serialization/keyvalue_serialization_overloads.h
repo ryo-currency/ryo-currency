@@ -38,7 +38,7 @@ namespace epee
 {
 namespace serialization
 {
-GULPS_CAT_MAJOR("kv_ser");
+GULPS_CAT_MAJOR("epee_kv_ser");
 
 //-------------------------------------------------------------------------------------------------------------------
 template <class t_type, class t_storage>

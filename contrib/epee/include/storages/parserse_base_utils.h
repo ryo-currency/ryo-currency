@@ -97,7 +97,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 	bool escape_mode = false;
 	std::string::const_iterator it = star_end_string;
 	++it;
-	GULPS_CAT_MAJOR("pars_bs_utls");
+	GULPS_CAT_MAJOR("epee_pars_bs_utls");
 	for(; it != buf_end; it++)
 	{
 		if(escape_mode /*prev_ch == '\\'*/)
@@ -173,7 +173,7 @@ inline void match_number2(std::string::const_iterator &star_end_string, std::str
 {
 	val.clear();
 	is_float_val = false;
-	GULPS_CAT_MAJOR("pars_bs_utls");
+	GULPS_CAT_MAJOR("epee_pars_bs_utls");
 	for(std::string::const_iterator it = star_end_string; it != buf_end; it++)
 	{
 		if(isdigit(*it) || (it == star_end_string && *it == '-') || (val.size() && *it == '.') || (is_float_val && (*it == 'e' || *it == 'E' || *it == '-' || *it == '+')))
@@ -214,7 +214,7 @@ inline bool match_number(std::string::const_iterator &star_end_string, std::stri
 inline void match_word2(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {
 	val.clear();
-	GULPS_CAT_MAJOR("pars_bs_utls");
+	GULPS_CAT_MAJOR("epee_pars_bs_utls");
 	for(std::string::const_iterator it = star_end_string; it != buf_end; it++)
 	{
 		if(!isalpha(*it))

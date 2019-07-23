@@ -45,7 +45,7 @@ namespace serialization
 /************************************************************************/
 class portable_storage
 {
-  GULPS_CAT_MAJOR("prt_strg");
+  GULPS_CAT_MAJOR("epee_prt_strg");
   public:
 	typedef epee::serialization::hsection hsection;
 	typedef epee::serialization::harray harray;

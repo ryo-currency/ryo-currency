@@ -42,7 +42,7 @@ namespace epee
 template <class t_child_class, class t_connection_context = epee::net_utils::connection_context_base>
 class http_server_impl_base : public net_utils::http::i_http_server_handler<t_connection_context>
 {
-	GULPS_CAT_MAJOR("http_serv");
+	GULPS_CAT_MAJOR("epee_http_serv");
   public:
 	http_server_impl_base()
 		: m_net_server(epee::net_utils::e_connection_type_RPC)

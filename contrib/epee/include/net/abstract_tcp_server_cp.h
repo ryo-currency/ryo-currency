@@ -54,7 +54,7 @@ namespace net_utils
 template <class TProtocol>
 class cp_server_impl //: public abstract_handler
 {
-	GULPS_CAT_MAJOR("tcp_srv");
+	GULPS_CAT_MAJOR("epee_tcp_srv");
   public:
 	cp_server_impl(/*abstract_handler* phandler = NULL*/);
 	virtual ~cp_server_impl();

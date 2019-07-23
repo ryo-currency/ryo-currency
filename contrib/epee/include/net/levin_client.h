@@ -44,7 +44,7 @@ namespace levin
 /************************************************************************/
 class levin_client_impl
 {
-  GULPS_CAT_MAJOR("lev_cli");
+  GULPS_CAT_MAJOR("epee_lev_cli");
 
   public:
 	levin_client_impl();

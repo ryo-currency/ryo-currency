@@ -59,7 +59,7 @@
 	epee::serialization::store_t_to_json(resp, resp_data, 0, false); \
 	resp_data += "\n";                                               \
 	uint64_t ticks3 = epee::misc_utils::get_tick_count();            \
-	{GULPS_CAT_MAJOR("jsrpc_serv); GULPS_LOG_L2("[{}] processed with {}/{}/{}ms", method_name, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2);}
+	{GULPS_CAT_MAJOR("epee_jsrpc_serv"); GULPS_LOG_L2("[{}] processed with {}/{}/{}ms", method_name, ticks1 - ticks, ticks2 - ticks1, ticks3 - ticks2);}
 
 #define MAP_JSONRPC2_WE(method_name, callback_f, command_type)                                                                   \
 	else if(callback_name == method_name)                                                                                        \

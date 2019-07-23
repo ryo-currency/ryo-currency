@@ -41,7 +41,7 @@ namespace serialization
 {
 namespace json
 {
-GULPS_CAT_MAJOR("ptb_stg_jsn");
+GULPS_CAT_MAJOR("epee_ptb_stg_jsn");
 #define CHECK_ISSPACE()                                                                \
 	if(!isspace(*it))                                                                  \
 	{                                                                                  \

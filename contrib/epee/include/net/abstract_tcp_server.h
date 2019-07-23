@@ -57,7 +57,7 @@ class soket_sender : public i_service_endpoint
 		if(cb != send(m_sock, (char *)ptr, (int)cb, 0))
 		{
 			int sock_err = WSAGetLastError();
-			GULPS_CAT_MAJOR("tcp_srv");
+			GULPS_CAT_MAJOR("epee_tcp_srv");
 			GULPSF_LOG_ERROR("soket_sender: Failed to send {} bytes, Error={}", cb , sock_err);
 			return false;
 		}
@@ -73,7 +73,7 @@ class soket_sender : public i_service_endpoint
 template <class THandler>
 class abstract_tcp_server
 {
-	GULPS_CAT_MAJOR("tcp_srv");
+	GULPS_CAT_MAJOR("epee_tcp_srv");
   public:
 	abstract_tcp_server();
 

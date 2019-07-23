@@ -268,7 +268,7 @@ class http_simple_client_template : public i_target_handler
 
   public:
 
-	GULPS_CAT_MAJOR("http_client");
+	GULPS_CAT_MAJOR("epee_http_client");
 
 	explicit http_simple_client_template()
 		: i_target_handler(), m_net_client(), m_host_buff(), m_port(), m_auth(), m_header_cache(), m_response_info(), m_len_in_summary(0), m_len_in_remain(0), m_pcontent_encoding_handler(nullptr), m_state(), m_chunked_state(), m_chunked_cache(), m_lock(), m_ssl(false)
