@@ -38,6 +38,8 @@
 using namespace epee;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 namespace
 {
 uint64_t const TEST_FEE = 5000000000;			 // 5 * 10^9
@@ -155,7 +157,7 @@ bool transactions_flow_test(std::string &working_folder,
 	w2.init(daemon_addr_b);
 
 	std::cout << "Using wallets: \n"
-								   << "Source:  " << w1.get_account().get_public_address_str(MAINNET) << "\nPath: " << working_folder + "/" + path_source_wallet 
+								   << "Source:  " << w1.get_account().get_public_address_str(MAINNET) << "\nPath: " << working_folder + "/" + path_source_wallet
 								   << "\nTarget:  " << w2.get_account().get_public_address_str(MAINNET) << "\nPath: " << working_folder + "/" + path_target_wallet << std::endl;
 
 	//lets do some money

@@ -44,7 +44,6 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#define GULPS_CAT_MAJOR "crybas_diff"
 #include "common/gulps.hpp"
 
 #include <algorithm>
@@ -59,6 +58,8 @@
 #include "difficulty.h"
 #include "include_base_utils.h"
 #include "misc_language.h"
+
+GULPS_CAT_MAJOR("crybas_diff");
 
 namespace cryptonote
 {
@@ -242,9 +243,9 @@ difficulty_type next_difficulty_v2(std::vector<std::uint64_t> timestamps, std::v
 				time_span = 1;
 			}
 			time_spans.push_back(time_span);
-			
+
 			GULPS_LOGF_L3("Timespan {}: {}:{}:{} ({})", i, (time_span / 60) / 60, (time_span > 3600 ? (time_span % 3600) / 60 : time_span / 60), time_span % 60, time_span );
-			
+
 		}
 		timespan_median = epee::misc_utils::median(time_spans);
 	}
@@ -341,7 +342,7 @@ void interpolate_timestamps(std::vector<uint64_t>& timestamps)
 	uint64_t maxValid = timestamps[N];
 	for(size_t i = 1; i < N; i++)
 	{
-		/* 
+		/*
 		 * Mask timestamp if it is smaller or equal to last valid timestamp
 		 * or if it is larger or equal to largest timestamp
 		 */
@@ -369,7 +370,7 @@ void interpolate_timestamps(std::vector<uint64_t>& timestamps)
 		if(timestamps[i] <= N)
 		{
 			// denominator -- NOT THE SAME AS [i+1]
-			uint64_t den = timestamps[i] + 1; 
+			uint64_t den = timestamps[i] + 1;
 			// numerator
 			uint64_t num = timestamps[i];
 			uint64_t delta = timestamps[i+1] - timestamps[i-num];

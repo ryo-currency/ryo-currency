@@ -45,7 +45,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "cnt_pct_hand_base"
+
 
 #include <atomic>
 #include <boost/asio.hpp>
@@ -89,9 +89,9 @@
 
 #include "cryptonote_core/cryptonote_core.h" // e.g. for the send_stop_signal()
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("cnt_pct_hand_base");
 
 // ################################################################################################
 // ################################################################################################
@@ -156,11 +156,11 @@ void cryptonote_protocol_handler_base::handler_response_blocks_now(size_t packet
 	do
 	{ // rate limiting
 		//XXX
-		/*if (::cryptonote::core::get_is_stopping()) { 
+		/*if (::cryptonote::core::get_is_stopping()) {
 			GULPS_LOG_L1("We are stopping - so abort sleep");
 			return;
 		}*/
-		/*if (m_was_shutdown) { 
+		/*if (m_was_shutdown) {
 			GULPS_LOG_L1("m_was_shutdown - so abort sleep");
 			return;
 		}*/

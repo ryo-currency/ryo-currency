@@ -49,7 +49,7 @@
 #include "cryptonote_basic.h"
 #include "difficulty.h"
 #include "math_helper.h"
-#include "cryptonote_basic/blobdatatype.h" 
+#include "cryptonote_basic/blobdatatype.h"
 #include <atomic>
 #include <boost/logic/tribool_fwd.hpp>
 #include <boost/program_options.hpp>
@@ -61,6 +61,8 @@
 #include <time.h>
 #include <unistd.h>
 #endif
+
+#include "common/gulps.hpp"
 
 namespace cryptonote
 {
@@ -79,6 +81,7 @@ struct i_miner_handler
 /************************************************************************/
 class miner
 {
+	GULPS_CAT_MAJOR("crybas_miner");
   public:
 	miner(i_miner_handler *phandler);
 	~miner();

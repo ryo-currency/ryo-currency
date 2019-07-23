@@ -41,7 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "wallet_args"
 
 #include "wallet/wallet_args.h"
 
@@ -72,6 +71,7 @@
 
 namespace wallet_args
 {
+GULPS_CAT_MAJOR("wallet_args");
 // Create on-demand to prevent static initialization order fiasco issues.
 command_line::arg_descriptor<std::string> arg_generate_from_json()
 {

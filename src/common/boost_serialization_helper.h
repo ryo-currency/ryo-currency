@@ -57,6 +57,7 @@ namespace tools
 template <class t_object>
 bool serialize_obj_to_file(t_object &obj, const std::string &file_path)
 {
+	GULPS_CAT_MAJOR("serialization_helper");
 	GULPS_TRY_ENTRY();
 #if defined(_MSC_VER)
 	// Need to know HANDLE of file to call FlushFileBuffers
@@ -111,6 +112,7 @@ bool serialize_obj_to_file(t_object &obj, const std::string &file_path)
 template <class t_object>
 bool unserialize_obj_from_file(t_object &obj, const std::string &file_path)
 {
+	GULPS_CAT_MAJOR("serialization_helper");
 	GULPS_TRY_ENTRY();
 
 	std::ifstream data_file;

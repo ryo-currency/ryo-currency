@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "http_proto"
 
 #include "file_io_utils.h"
 #include "http_protocol_handler.h"
@@ -36,7 +32,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -50,6 +46,8 @@ namespace net_utils
 {
 namespace http
 {
+
+GULPS_CAT_MAJOR("http_proto");
 
 struct multipart_entry
 {

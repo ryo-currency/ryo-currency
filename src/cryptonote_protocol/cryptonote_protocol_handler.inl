@@ -50,10 +50,6 @@
 
 // (may contain code and/or modifications by other developers)
 // developer rfree: this code is caller of our new network code, and is modded; e.g. for rate limiting
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "cn_pcl_hand"
 
 //IGNORE
 #include <boost/interprocess/detail/atomic.hpp>
@@ -65,13 +61,13 @@
 #include "net/network_throttle-detail.hpp"
 #include "profile_tools.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
 #define context_str std::string("[" + epee::net_utils::print_connection_context_short(context) + "]")
 
-#define GULPS_P2P_MESSAGE(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, "p2p", GULPS_CAT_MINOR, gulps::COLOR_WHITE, __VA_ARGS__) 
+#define GULPS_P2P_MESSAGE(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, "p2p", gulps_scoped_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
 
 #define BLOCK_QUEUE_NBLOCKS_THRESHOLD 10					// chunks of N blocks
 #define BLOCK_QUEUE_SIZE_THRESHOLD (100 * 1024 * 1024)		// MB
@@ -322,15 +318,15 @@ bool t_cryptonote_protocol_handler<t_core>::process_payload_sync_data(const CORE
 		uint64_t max_block_height = std::max(hshd.current_height, m_core.get_current_blockchain_height());
 		uint64_t last_block_v1 = m_core.get_nettype() == TESTNET ? 624633 : m_core.get_nettype() == MAINNET ? 1009826 : (uint64_t)-1;
 		uint64_t diff_v2 = max_block_height > last_block_v1 ? std::min(abs_diff, max_block_height - last_block_v1) : 0;
-		if(is_inital) 
-		GULPS_GLOBALF_PRINT("\n{} Sync data returned a new top block candidate: {} -> {} [Your node is {} blocks ({} days {})]\nSYNCHRONIZATION started", context_str, m_core.get_current_blockchain_height(), 
-					hshd.current_height, abs_diff, ((abs_diff - diff_v2) / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)) + (diff_v2 / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)), 
+		if(is_inital)
+		GULPS_GLOBALF_PRINT("\n{} Sync data returned a new top block candidate: {} -> {} [Your node is {} blocks ({} days {})]\nSYNCHRONIZATION started", context_str, m_core.get_current_blockchain_height(),
+					hshd.current_height, abs_diff, ((abs_diff - diff_v2) / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)) + (diff_v2 / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)),
 					(0 <= diff ? std::string("behind") : std::string("ahead")));
 		else
-		GULPS_GLOBALF_PRINT("\n{} Sync data returned a new top block candidate: {} -> {} [Your node is {} blocks ({} days {})]\nSYNCHRONIZATION started", context_str, m_core.get_current_blockchain_height(), 
-					hshd.current_height, abs_diff, ((abs_diff - diff_v2) / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)) + (diff_v2 / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)), 
+		GULPS_GLOBALF_PRINT("\n{} Sync data returned a new top block candidate: {} -> {} [Your node is {} blocks ({} days {})]\nSYNCHRONIZATION started", context_str, m_core.get_current_blockchain_height(),
+					hshd.current_height, abs_diff, ((abs_diff - diff_v2) / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)) + (diff_v2 / (24 * 60 * 60 / common_config::DIFFICULTY_TARGET)),
 					(0 <= diff ? std::string("behind") : std::string("ahead")));
-					
+
 		if(hshd.current_height >= m_core.get_current_blockchain_height() + 5) // don't switch to unsafe mode just for a few blocks
 			m_core.safesyncmode(false);
 	}
@@ -705,7 +701,7 @@ int t_cryptonote_protocol_handler<t_core>::handle_request_fluffy_missing_tx(int 
 		{
 			GULPS_LOGF_ERROR("{} Failed to handle request NOTIFY_REQUEST_FLUFFY_MISSING_TX, request is asking for a tx whose index is out of bounds , tx index = {}, block tx count {}, block_height = {}, dropping connection",  context_str, tx_idx , b.tx_hashes.size()
 				, arg.current_blockchain_height);
-				
+
 
 			drop_connection(context, false, false);
 			return 1;
@@ -901,7 +897,7 @@ int t_cryptonote_protocol_handler<t_core>::handle_response_get_objects(int comma
 		{
 			GULPS_LOGF_ERROR("{} sent wrong NOTIFY_RESPONSE_GET_OBJECTS: block with id={}, tx_hashes.size()={} mismatch with block_complete_entry.m_txs.size()={}, dropping connection"
 													, context_str, epee::string_tools::pod_to_hex(get_blob_hash(block_entry.block))
-													, b.tx_hashes.size() , block_entry.txs.size()); 
+													, b.tx_hashes.size() , block_entry.txs.size());
 			drop_connection(context, false, false);
 			return 1;
 		}
@@ -928,8 +924,8 @@ int t_cryptonote_protocol_handler<t_core>::handle_response_get_objects(int comma
 	}
 
 	{
-		GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, GULPS_CAT_MAJOR, GULPS_CAT_MINOR, gulps::COLOR_BOLD_YELLOW, "{} Got NEW BLOCKS inside of {}: size: {}, blocks: {} - {}", 
-		 context_str, __FUNCTION__, arg.blocks.size(), start_height, (start_height + arg.blocks.size() - 1));
+		GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_scoped_major_cat::c_str(), gulps_scoped_minor_cat::c_str(), gulps::COLOR_BOLD_YELLOW, "{} Got NEW BLOCKS inside of {}: size: {}, blocks: {} - {}",
+			context_str, __FUNCTION__, arg.blocks.size(), start_height, (start_height + arg.blocks.size() - 1));
 
 		// add that new span to the block queue
 		const boost::posix_time::time_duration dt = now - context.m_last_request_time;

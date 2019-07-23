@@ -50,8 +50,6 @@
  * \brief Source file that defines simple_wallet class.
  */
 
-#define GULPS_CAT_MAJOR "cli_wallet"
-
 #include "simplewallet.h"
 #include "common/base58.h"
 #include "common/command_line.h"
@@ -92,7 +90,7 @@
 #define GULPS_PRINT_BOLD(...) GULPS_PRINT_CLR(gulps::COLOR_BOLD_WHITE, __VA_ARGS__)
 #define GULPS_PRINT_GREEN(...) GULPS_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
 #define GULPS_PRINTF_GREEN(...) GULPS_PRINTF_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
-#define GULPS_PRINT_SECRET(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, "secret", gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPS_PRINT_SECRET(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_scoped_major_cat::c_str(), "secret", gulps::COLOR_WHITE, __VA_ARGS__)
 
 #ifdef WIN32
 #undef fmt
@@ -110,7 +108,7 @@ using boost::lexical_cast;
 namespace po = boost::program_options;
 typedef cryptonote::simple_wallet sw;
 
-
+GULPS_CAT_MAJOR("cli_wallet");
 
 #define EXTENDED_LOGS_FILE "wallet_details.log"
 

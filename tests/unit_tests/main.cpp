@@ -47,6 +47,8 @@
 
 namespace po = boost::program_options;
 
+GULPS_CAT_MAJOR("test");
+
 boost::filesystem::path unit_test::data_dir;
 
 // is not used by the test but must be defined to fulfill linker dependencies of core_rpc-server

@@ -1,11 +1,6 @@
 #ifndef JSONRPC_SERVER_IMPL_BASE_H
 #define JSONRPC_SERVER_IMPL_BASE_H
 
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "jsrpc_serv"
-
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 
@@ -13,7 +8,7 @@
 #include "net/jsonrpc_protocol_handler.h"
 #include "net/jsonrpc_server_handlers_map.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 namespace epee
 {
@@ -21,7 +16,7 @@ namespace epee
 template <class t_child_class, class t_connection_context = epee::net_utils::connection_context_base>
 class jsonrpc_server_impl_base : public net_utils::jsonrpc2::i_jsonrpc2_server_handler<t_connection_context>
 {
-
+	GULPS_CAT_MAJOR("jsrpc_serv);
   public:
 	jsonrpc_server_impl_base()
 		: m_net_server()

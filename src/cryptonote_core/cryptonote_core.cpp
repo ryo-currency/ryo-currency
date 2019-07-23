@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "crtnte_core"
 
 #include <boost/algorithm/string.hpp>
 
@@ -75,7 +74,7 @@ using namespace epee;
 #include "common/gulps.hpp"
 
 
-
+GULPS_CAT_MAJOR("crtnte_core");
 
 DISABLE_VS_WARNINGS(4355)
 

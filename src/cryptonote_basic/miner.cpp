@@ -43,7 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "crybas_miner"
+
 
 #include "boost/logic/tribool.hpp"
 #include "common/command_line.h"
@@ -87,12 +87,9 @@
 #include <unistd.h>
 #endif
 
-
-
 using namespace epee;
 
 #include "miner.h"
-#include "common/gulps.hpp"
 
 namespace cryptonote
 {
@@ -267,10 +264,10 @@ bool miner::init(const boost::program_options::variables_map &vm, network_type n
 			return false;
 		}
 
-		if(command_line::get_arg(vm, arg_start_mining) == common_config::DEV_FUND_ADDRESS) 
-		{ 
+		if(command_line::get_arg(vm, arg_start_mining) == common_config::DEV_FUND_ADDRESS)
+		{
 			GULPS_LOGF_ERROR("Dev fund address is not mineable. If you would like to support the dev team please mine to {}",  common_config::RYO_DONATION_ADDR);
-			return false; 
+			return false;
 		}
 
 		m_mine_address = info.address;
@@ -341,7 +338,7 @@ bool miner::start(const account_public_address &adr, size_t threads_count, const
 	for(size_t i = 0; i != threads_count; i++)
 	{
 		m_threads.push_back(boost::thread(attrs, boost::bind(&miner::worker_thread, this)));
-	}	
+	}
 
 	GULPS_PRINTF("Mining has started with {} threads, good luck!",  threads_count );
 

@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "http_client"
 
 #pragma once
 #include <boost/lexical_cast.hpp>
@@ -59,7 +55,7 @@
 
 //#pragma comment(lib, "shlwapi.lib")
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -70,7 +66,7 @@ namespace epee
 namespace net_utils
 {
 
-/*struct url 
+/*struct url
 	{
 	public:
 		void parse(const std::string& url_s)
@@ -271,6 +267,9 @@ class http_simple_client_template : public i_target_handler
 	bool m_ssl;
 
   public:
+
+	GULPS_CAT_MAJOR("http_client");
+
 	explicit http_simple_client_template()
 		: i_target_handler(), m_net_client(), m_host_buff(), m_port(), m_auth(), m_header_cache(), m_response_info(), m_len_in_summary(0), m_len_in_remain(0), m_pcontent_encoding_handler(nullptr), m_state(), m_chunked_state(), m_chunked_cache(), m_lock(), m_ssl(false)
 	{

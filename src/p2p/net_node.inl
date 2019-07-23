@@ -45,10 +45,6 @@
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
 // IP blocking adapted from Boolberry
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif 
-#define GULPS_CAT_MAJOR "net_node"
 
 #include <algorithm>
 #include <atomic>
@@ -73,7 +69,7 @@
 #include <miniupnp/miniupnpc/upnpcommands.h>
 #include <miniupnp/miniupnpc/upnperrors.h>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 #define contextx_str(x) std::string("[" + epee::net_utils::print_connection_context_short(x) + "]")
 
@@ -873,7 +869,7 @@ bool node_server<t_payload_net_handler>::is_addr_connected(const epee::net_utils
 
 	return connected;
 }
-	
+
 #define priority_str(x) x ? "[priority]" : ""
 
 template <class t_payload_net_handler>
@@ -1379,7 +1375,7 @@ bool node_server<t_payload_net_handler>::check_trust(const proof_of_trust &tr)
 	}
 	if(m_last_stat_request_time >= tr.time)
 	{
-		GULPS_WARNF("check_trust failed to check time conditions, last_stat_request_time={}, proof_time={}", m_last_stat_request_time , tr.time); 
+		GULPS_WARNF("check_trust failed to check time conditions, last_stat_request_time={}, proof_time={}", m_last_stat_request_time , tr.time);
 		return false;
 	}
 	if(m_config.m_peer_id != tr.peer_id)

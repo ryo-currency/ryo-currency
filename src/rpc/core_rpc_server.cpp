@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "c_rpc_serv"
 
 #include "include_base_utils.h"
 #include "string_tools.h"
@@ -70,7 +69,6 @@ using namespace epee;
 #include "common/gulps.hpp"
 
 
-
 #define MAX_RESTRICTED_FAKE_OUTS_COUNT 40
 #define MAX_RESTRICTED_GLOBAL_FAKE_OUTS_COUNT 5000
 
@@ -88,7 +86,7 @@ void add_reason(std::string &reasons, const char *reason)
 
 namespace cryptonote
 {
-
+GULPS_CAT_MAJOR("c_rpc_serv");
 //-----------------------------------------------------------------------------------
 void core_rpc_server::init_options(boost::program_options::options_description &desc)
 {

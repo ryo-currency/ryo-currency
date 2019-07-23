@@ -1,11 +1,6 @@
 #ifndef JSONRPC_PROTOCOL_HANDLER_H
 #define JSONRPC_PROTOCOL_HANDLER_H
 
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "jsrpc_proto"
-
 #include <cstdint>
 #include <string>
 
@@ -14,7 +9,7 @@
 #include "storages/portable_storage.h"
 #include "storages/portable_storage_template_helper.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 namespace epee
 {
@@ -22,6 +17,9 @@ namespace net_utils
 {
 namespace jsonrpc2
 {
+
+GULPS_CAT_MAJOR("jsrpc_proto");
+
 inline std::string &make_error_resp_json(int64_t code, const std::string &message,
 										 std::string &response_data,
 										 const epee::serialization::storage_entry &id = nullptr)

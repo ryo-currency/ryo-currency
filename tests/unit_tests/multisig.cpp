@@ -33,6 +33,8 @@
 #include "wallet/wallet2.h"
 #include "common/gulps.hpp"
 
+GULPS_CAT_MAJOR("test");
+
 static const struct
 {
 	const char *address;

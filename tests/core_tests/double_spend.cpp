@@ -34,6 +34,8 @@
 using namespace epee;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 //======================================================================================================================
 
 gen_double_spend_in_different_chains::gen_double_spend_in_different_chains()

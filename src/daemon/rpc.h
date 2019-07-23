@@ -43,16 +43,12 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "daemon_rpc"
 
 #pragma once
 
 #include "rpc/core_rpc_server.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -61,6 +57,7 @@ namespace daemonize
 
 class t_rpc final
 {
+	 GULPS_CAT_MAJOR("daemon_rpc");
   public:
 	static void init_options(boost::program_options::options_description &option_spec)
 	{

@@ -31,7 +31,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /* rfree: implementation for the non-template base, can be used by connection<> template class in abstract_tcp_server2 file  */
-#define GULPS_CAT_MAJOR "conn_basics"
 
 #include "net/connection_basic.hpp"
 
@@ -79,7 +78,7 @@
 // TODO:
 #include "net/network_throttle-detail.hpp"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 

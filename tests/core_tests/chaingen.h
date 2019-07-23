@@ -282,6 +282,7 @@ bool check_block_verification_context(const cryptonote::block_verification_conte
 template <class t_test_class>
 struct push_core_event_visitor : public boost::static_visitor<bool>
 {
+	GULPS_CAT_MAJOR("test_chaining");
   private:
 	cryptonote::core &m_c;
 	const std::vector<test_event_entry> &m_events;
@@ -404,6 +405,7 @@ struct push_core_event_visitor : public boost::static_visitor<bool>
 template <class t_test_class>
 inline bool replay_events_through_core(cryptonote::core &cr, const std::vector<test_event_entry> &events, t_test_class &validator)
 {
+	GULPS_CAT_MAJOR("test_chaingen");
 	GULPS_TRY_ENTRY();
 
 	//init core here

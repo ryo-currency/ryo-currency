@@ -43,7 +43,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "rctSigs"
 
 #include "rctSigs.h"
 #include "bulletproofs.h"
@@ -55,6 +54,9 @@
 
 using namespace crypto;
 using namespace std;
+
+GULPS_CAT_MAJOR("rctSigs");
+
 
 #define CHECK_AND_ASSERT_MES_L1(expr, ret, ...) \
 	{                                               \

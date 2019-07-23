@@ -41,7 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "cn_deser"
+
 
 #include "common/command_line.h"
 #include "cryptonote_basic/cryptonote_basic.h"
@@ -59,6 +59,8 @@ namespace po = boost::program_options;
 using namespace epee;
 
 using namespace cryptonote;
+
+GULPS_CAT_MAJOR("cn_deser");
 
 static void print_extra_fields(const std::vector<cryptonote::tx_extra_field> &fields)
 {
@@ -113,9 +115,9 @@ int main(int argc, char *argv[])
 	});
 	if(!r)
 		return 1;
-	
+
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 			return msg.lvl >= gulps::LEVEL_PRINT;
 			});
 	gulps::inst().add_output(std::move(out));

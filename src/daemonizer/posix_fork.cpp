@@ -3,7 +3,6 @@
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-#define GULPS_CAT_MAJOR "posix_fork"
 
 #include "daemonizer/posix_fork.h"
 
@@ -24,7 +23,7 @@
 
 namespace posix
 {
-
+	GULPS_CAT_MAJOR("posix_fork");
 namespace
 {
 void quit(const std::string &message)

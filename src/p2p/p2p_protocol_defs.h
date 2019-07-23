@@ -43,10 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "p2p_proto_defs"
 
 #pragma once
 
@@ -66,6 +62,7 @@
 
 namespace nodetool
 {
+GULPS_CAT_MAJOR("p2p_proto_defs");
 typedef boost::uuids::uuid uuid;
 typedef uint64_t peerid_type;
 

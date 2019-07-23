@@ -42,7 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#define GULPS_CAT_MAJOR "blockch_export"
 
 #include "blockchain_db/blockchain_db.h"
 #include "blockchain_db/db_types.h"
@@ -55,7 +54,7 @@
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("blockch_export");
 
 namespace po = boost::program_options;
 using namespace epee;
@@ -116,20 +115,20 @@ int main(int argc, char *argv[])
 
 	po::variables_map vm;
 	bool r = command_line::handle_error_helper(desc_options, [&]() {
-		po::store(po::parse_command_line(argc, argv, desc_options), vm);		
+		po::store(po::parse_command_line(argc, argv, desc_options), vm);
 		po::notify(vm);
 		return true;
 	});
 	if(!r)
 		return 1;
-	
+
 	gulps::inst().set_thread_tag("BLOCKCH_EXPORT");
-	
+
 	//Temp error output
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
 	auto temp_handle = gulps::inst().add_output(std::move(out));
-	
+
 	if(!command_line::is_arg_defaulted(vm, arg_log_level))
 	{
 		if(!log_scr.parse_cat_string(command_line::get_arg(vm, arg_log_level).c_str()))
@@ -146,15 +145,15 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-	
+
 	block_stop = command_line::get_arg(vm, arg_block_stop);
-	
+
 	gulps::inst().remove_output(temp_handle);
-	
+
 	if(log_scr.is_active())
 	{
 		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
-		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
 					return false;
 				if(printed)
@@ -163,7 +162,7 @@ int main(int argc, char *argv[])
 				});
 		gulps::inst().add_output(std::move(out));
 	}
-	
+
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
 		GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME, RYO_VERSION_FULL);

@@ -23,19 +23,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#define GULPS_CAT_MAJOR "srv_imp_base"
 
 #ifndef _SERVICE_IMPL_BASE_H_
 #define _SERVICE_IMPL_BASE_H_
 
 #pragma comment(lib, "advapi32.lib")
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 namespace epee
 {
 class service_impl_base
 {
+	GULPS_CAT_MAJOR("srv_imp_base");
   public:
 	service_impl_base();
 	virtual ~service_impl_base();

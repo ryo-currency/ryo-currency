@@ -43,9 +43,9 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
+
+#include "common/gulps.hpp"
 #include <boost/program_options.hpp>
-
-
 
 namespace daemonize
 {
@@ -54,6 +54,7 @@ struct t_internals;
 
 class t_daemon final
 {
+	GULPS_CAT_MAJOR("daemon");
   public:
 	static void init_options(boost::program_options::options_description &option_spec);
 

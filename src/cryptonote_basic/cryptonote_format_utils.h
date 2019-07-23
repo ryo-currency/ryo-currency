@@ -194,6 +194,7 @@ std::string obj_to_json_str(T &obj)
 	std::stringstream ss;
 	json_archive<true> ar(ss, true);
 	bool r = ::serialization::serialize(ar, obj);
+	GULPS_CAT_MAJOR("formt_utils");
 	GULPS_CHECK_AND_ASSERT_MES(r, "", "obj_to_json_str failed: serialization::serialize returned false");
 	return ss.str();
 }

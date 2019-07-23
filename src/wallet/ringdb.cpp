@@ -41,7 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "ringdb"
 
 #include "ringdb.h"
 #include "misc_language.h"
@@ -51,7 +50,9 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <lmdb.h>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
+
+GULPS_CAT_MAJOR("ringdb");
 
 static const char zerokey[8] = {0};
 static const MDB_val zerokeyval = {sizeof(zerokey), (void *)zerokey};

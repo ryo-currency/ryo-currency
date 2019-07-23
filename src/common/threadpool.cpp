@@ -41,11 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#ifdef GULPS_CAT_MAJOR
-    #undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "thdpool"
-
 
 #include "common/threadpool.h"
 
@@ -55,8 +50,6 @@
 
 #include "common/util.h"
 #include "cryptonote_config.h"
-
-#include "common/gulps.hpp"
 
 static __thread int depth = 0;
 

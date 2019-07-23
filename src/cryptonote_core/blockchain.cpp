@@ -43,10 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-    #undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "blockchain"
+
 
 #include <algorithm>
 #include <boost/filesystem.hpp>
@@ -81,7 +78,7 @@
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("blockchain");
 
 #define FIND_BLOCKCHAIN_SUPPLEMENT_MAX_SIZE (100 * 1024 * 1024) // 100 MB
 

@@ -37,6 +37,8 @@ using namespace epee;
 using namespace crypto;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 //----------------------------------------------------------------------------------------------------------------------
 // Tests
 

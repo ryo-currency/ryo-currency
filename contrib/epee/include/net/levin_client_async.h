@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "lev_cli"
 
 #pragma once
 
@@ -53,6 +49,8 @@ namespace levin
 
 class levin_client_async
 {
+	GULPS_CAT_MAJOR("lev_cli");
+
 	levin_commands_handler *m_pcommands_handler;
 	void (*commands_handler_destroy)(levin_commands_handler *);
 	volatile uint32_t m_is_stop;

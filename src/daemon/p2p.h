@@ -43,10 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "daemon_p2p"
 
 #pragma once
 
@@ -54,7 +50,7 @@
 #include "daemon/protocol.h"
 #include "p2p/net_node.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -63,6 +59,7 @@ namespace daemonize
 
 class t_p2p final
 {
+	GULPS_CAT_MAJOR("daemon_p2p");
   private:
 	typedef cryptonote::t_cryptonote_protocol_handler<cryptonote::core> t_protocol_raw;
 	typedef nodetool::node_server<t_protocol_raw> t_node_server;

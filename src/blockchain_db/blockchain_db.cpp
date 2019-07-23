@@ -41,7 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "blockchain_db"
 
 #include <boost/range/adaptor/reversed.hpp>
 #include <unordered_set>
@@ -56,8 +55,6 @@
 #ifdef BERKELEY_DB
 #include "berkeleydb/db_bdb.h"
 #endif
-
-#include "common/gulps.hpp"
 
 static const char *db_types[] = {
 	"lmdb",
@@ -134,7 +131,7 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 {
 	bool miner_tx = false;
 	crypto::hash tx_hash;
-	
+
 	if(!tx_hash_ptr)
 	{
 		// should only need to compute hash for miner transactions
@@ -492,7 +489,7 @@ void BlockchainDB::fixup()
 	set_batch_transactions(true);
 	batch_start();
 
-	// premine key images 
+	// premine key images
 	static const char* const premine_key_images[] =
 	{
 		"a42fa875b187e7f9e8d25ad158187458cdcce0db9582b5ccd02e9a5d99a79239", //txid 29b65a4ddd5ad2502f4a5e536651de577837fef2b62e1eeccf518806a5195d98

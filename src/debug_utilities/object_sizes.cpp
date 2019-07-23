@@ -41,7 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "obj_sizes"
 
 #include "blockchain_db/lmdb/db_lmdb.h"
 #include "cryptonote_basic/cryptonote_basic.h"
@@ -69,6 +68,7 @@ class size_logger
   public:
 	~size_logger()
 	{
+		GULPS_CAT_MAJOR("obj_sizes");
 		for(const auto &i : types)
 			GULPS_PRINTF("{}\t{}",i.first, i.second);
 	}
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 	tools::on_startup();
 
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 		return true;
 	});
 

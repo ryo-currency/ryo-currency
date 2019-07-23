@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "net"
 
 #ifndef _NET_UTILS_BASE_H_
 #define _NET_UTILS_BASE_H_
@@ -37,7 +33,7 @@
 #include <type_traits>
 #include <typeinfo>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 #ifndef MAKE_IP
 #define MAKE_IP(a1, a2, a3, a4) (a1 | (a2 << 8) | (a3 << 16) | (a4 << 24))
@@ -47,6 +43,9 @@ namespace epee
 {
 namespace net_utils
 {
+
+GULPS_CAT_MAJOR("net");
+
 class ipv4_network_address
 {
 	uint32_t m_ip;
@@ -338,7 +337,7 @@ std::string print_connection_context_short(const connection_context_base &ctx);
 inline std::ostream &operator<<(std::ostream &os, const connection_context_base &ct)
 {
 	os << "[" << epee::net_utils::print_connection_context_short(ct).c_str() << "] ";
-	return os;	
+	return os;
 }
 
 }

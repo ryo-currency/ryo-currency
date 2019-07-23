@@ -26,14 +26,10 @@
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "lev_cli"
 
 #include "string_tools.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 

@@ -43,6 +43,8 @@ namespace net_utils
 namespace smtp
 {
 
+GULPS_CAT_MAJOR("smtp");
+
 using boost::asio::ip::tcp;
 using namespace boost::archive::iterators;
 typedef base64_from_binary<transform_width<const char *, 6, 8>> base64_text;

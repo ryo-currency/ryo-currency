@@ -34,6 +34,8 @@
 using namespace epee;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 namespace
 {
 void split_miner_tx_outs(transaction &miner_tx, uint64_t amount_1)

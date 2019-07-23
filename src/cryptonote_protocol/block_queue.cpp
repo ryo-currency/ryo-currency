@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "blk_queue"
 
 #include "block_queue.h"
 #include "cryptonote_protocol_defs.h"
@@ -52,9 +51,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("blk_queue");
 
 namespace std
 {
