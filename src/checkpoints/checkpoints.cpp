@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "checkpoints"
 
 #include "include_base_utils.h"
 
@@ -57,7 +56,7 @@
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("checkpoints");
 
 namespace cryptonote
 {
@@ -119,12 +118,12 @@ bool checkpoints::check_block(uint64_t height, const crypto::hash &h, bool &is_a
 
 	if(it->second == h)
 	{
-		GULPS_INFOF("CHECKPOINT PASSED FOR HEIGHT {} {}", height, h);
+		GULPSF_INFO("CHECKPOINT PASSED FOR HEIGHT {} {}", height, h);
 		return true;
 	}
 	else
 	{
-		GULPS_WARNF("CHECKPOINT FAILED FOR HEIGHT {}. EXPECTED HASH: {}, FETCHED HASH: {}", height, it->second, h);
+		GULPSF_WARN("CHECKPOINT FAILED FOR HEIGHT {}. EXPECTED HASH: {}, FETCHED HASH: {}", height, it->second, h);
 		return false;
 	}
 }
@@ -228,7 +227,7 @@ bool checkpoints::load_checkpoints_from_json(const std::string &json_hashfile_fu
 	GULPS_LOG_L1("Adding checkpoints from blockchain hashfile");
 
 	uint64_t prev_max_height = get_max_height();
-	GULPS_LOGF_L1("Hard-coded max checkpoint height is {}",  prev_max_height);
+	GULPSF_LOG_L1("Hard-coded max checkpoint height is {}",  prev_max_height);
 	t_hash_json hashes;
 	if(!epee::serialization::load_t_from_json_file(hashes, json_hashfile_fullpath))
 	{
@@ -241,12 +240,12 @@ bool checkpoints::load_checkpoints_from_json(const std::string &json_hashfile_fu
 		height = it->height;
 		if(height <= prev_max_height)
 		{
-			GULPS_LOGF_L1("ignoring checkpoint height {}",  height);
+			GULPSF_LOG_L1("ignoring checkpoint height {}",  height);
 		}
 		else
 		{
 			std::string blockhash = it->hash;
-			GULPS_LOGF_L1("Adding checkpoint height {}, hash={}", height,  blockhash);
+			GULPSF_LOG_L1("Adding checkpoint height {}, hash={}", height,  blockhash);
 			ADD_CHECKPOINT(height, blockhash);
 		}
 		++it;

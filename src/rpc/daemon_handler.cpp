@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "daemon_handler.h"
+#include "common/gulps.hpp"
 
 // likely included by daemon_handler.h's includes,
 // but including here for clarity
@@ -56,7 +57,7 @@ namespace cryptonote
 
 namespace rpc
 {
-
+GULPS_CAT_MAJOR("rpc_args");
 void DaemonHandler::handle(const GetHeight::Request &req, GetHeight::Response &res)
 {
 	res.height = m_core.get_current_blockchain_height();
@@ -841,7 +842,7 @@ bool DaemonHandler::getBlockHeaderByHash(const crypto::hash &hash_in, cryptonote
 
 std::string DaemonHandler::handle(const std::string &request)
 {
-	GULPS_LOGF_L1("Handling RPC request: {}", request);
+	GULPSF_LOG_L1("Handling RPC request: {}", request);
 
 	Message *resp_message = NULL;
 
@@ -892,7 +893,7 @@ std::string DaemonHandler::handle(const std::string &request)
 		delete resp_message;
 		resp_message = NULL;
 
-		GULPS_LOGF_L1("Returning RPC response: {}", response);
+		GULPSF_LOG_L1("Returning RPC response: {}", response);
 
 		return response;
 	}

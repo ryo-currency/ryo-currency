@@ -38,6 +38,7 @@ template <class concrete_test>
 class gen_double_spend_base : public test_chain_unit_base
 {
   public:
+	GULPS_CAT_MAJOR("test_double_spend");
 	static const uint64_t send_amount = FIRST_BLOCK_REWARD - TESTS_DEFAULT_FEE;
 
 	gen_double_spend_base();

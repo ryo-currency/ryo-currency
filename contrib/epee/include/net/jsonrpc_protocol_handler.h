@@ -1,11 +1,6 @@
 #ifndef JSONRPC_PROTOCOL_HANDLER_H
 #define JSONRPC_PROTOCOL_HANDLER_H
 
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "jsrpc_proto"
-
 #include <cstdint>
 #include <string>
 
@@ -14,7 +9,7 @@
 #include "storages/portable_storage.h"
 #include "storages/portable_storage_template_helper.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 namespace epee
 {
@@ -22,6 +17,9 @@ namespace net_utils
 {
 namespace jsonrpc2
 {
+
+GULPS_CAT_MAJOR("epee_jsrpc_proto");
+
 inline std::string &make_error_resp_json(int64_t code, const std::string &message,
 										 std::string &response_data,
 										 const epee::serialization::storage_entry &id = nullptr)
@@ -104,7 +102,7 @@ class jsonrpc2_connection_handler
 	virtual bool handle_recv(const void *ptr, size_t cb)
 	{
 		std::string buf((const char *)ptr, cb);
-		GULPS_PRINTF("JSONRPC2_RECV: {}\r\n{}", ptr , buf);
+		GULPSF_PRINT("JSONRPC2_RECV: {}\r\n{}", ptr , buf);
 
 		bool res = handle_buff_in(buf);
 		return res;
@@ -156,9 +154,9 @@ class jsonrpc2_connection_handler
 		GULPS_CHECK_AND_ASSERT_MES(m_config.m_phandler, false, "m_config.m_phandler is NULL!!!!");
 		std::string response_data;
 
-		GULPS_LOGF_L3("JSONRPC2_REQUEST: >> \r\n{}", request_data);
+		GULPSF_LOG_L3("JSONRPC2_REQUEST: >> \r\n{}", request_data);
 		bool rpc_result = m_config.m_phandler->handle_rpc_request(request_data, response_data, m_conn_context);
-		GULPS_LOGF_L3("JSONRPC2_RESPONSE: << \r\n{}", response_data);
+		GULPSF_LOG_L3("JSONRPC2_RESPONSE: << \r\n{}", response_data);
 
 		m_psnd_hndlr->do_send((void *)response_data.data(), response_data.size());
 		return rpc_result;

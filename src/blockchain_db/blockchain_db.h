@@ -46,6 +46,7 @@
 
 #pragma once
 
+#include "common/gulps.hpp"
 #include "common/command_line.h"
 #include "crypto/hash.h"
 #include "cryptonote_basic/blobdatatype.h"
@@ -356,6 +357,7 @@ class KEY_IMAGE_EXISTS : public DB_EXCEPTION
  */
 class BlockchainDB
 {
+	GULPS_CAT_MAJOR("blockchain_db");
   private:
 	/*********************************************************************
    * private virtual members
@@ -415,7 +417,7 @@ class BlockchainDB
 	/**
    * @brief remove data about a transaction
    *
-   * The subclass implementing this will remove the transaction data 
+   * The subclass implementing this will remove the transaction data
    * for the passed transaction.  The data to be removed was added in
    * add_transaction_data().  Additionally, current subclasses have behavior
    * which requires the transaction itself as a parameter here.  Future
@@ -1521,7 +1523,7 @@ class BlockchainDB
 	bool m_open;										   //!< Whether or not the BlockchainDB is open/ready for use
 	mutable epee::critical_section m_synchronization_lock; //!< A lock, currently for when BlockchainLMDB needs to resize the backing db file
 
-	inline bool is_vout_bad(const cryptonote::tx_out& vout) 
+	inline bool is_vout_bad(const cryptonote::tx_out& vout)
 	{
 		return vout.target.type() == typeid(txout_to_key) && bad_outpks.find(boost::get<txout_to_key>(vout.target).key) != bad_outpks.end();
 	}

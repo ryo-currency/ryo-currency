@@ -58,6 +58,7 @@ static const rct::key multisig_salt = {{'M', 'u', 'l', 't', 'i', 's', 'i', 'g', 
 
 namespace cryptonote
 {
+GULPS_CAT_MAJOR("multisig");
 //-----------------------------------------------------------------
 crypto::secret_key get_multisig_blinded_secret_key(const crypto::secret_key &key)
 {

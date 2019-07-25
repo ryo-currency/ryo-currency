@@ -44,6 +44,8 @@
 
 #pragma once
 
+#include "common/gulps.hpp"
+
 #include "crypto/crypto.h"
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "wipeable_string.h"
@@ -55,6 +57,7 @@ namespace tools
 {
 class ringdb
 {
+	GULPS_CAT_MAJOR("ringdb");
   public:
 	ringdb(std::string filename, const std::string &genesis);
 	~ringdb();

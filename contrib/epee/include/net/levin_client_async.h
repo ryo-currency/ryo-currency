@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "lev_cli"
 
 #pragma once
 
@@ -53,6 +49,8 @@ namespace levin
 
 class levin_client_async
 {
+	GULPS_CAT_MAJOR("epee_lev_cli");
+
 	levin_commands_handler *m_pcommands_handler;
 	void (*commands_handler_destroy)(levin_commands_handler *);
 	volatile uint32_t m_is_stop;
@@ -173,7 +171,7 @@ class levin_client_async
 					return false;
 
 				int err = ::WSAGetLastError();
-				GULPS_LOGF_ERROR("Failed to recv(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+				GULPSF_LOG_ERROR("Failed to recv(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 				disconnect();
 				//reconnect();
 				return false;
@@ -184,7 +182,7 @@ class levin_client_async
 				//reconnect();
 				return false;
 			}
-			GULPS_LOGF_L3("[{}] RECV {}", m_socket , res);
+			GULPSF_LOG_L3("[{}] RECV {}", m_socket , res);
 			cb -= res;
 			pbuff += res;
 		}
@@ -250,29 +248,29 @@ class levin_client_async
 		head.m_command = command;
 		head.m_protocol_version = LEVIN_PROTOCOL_VER_1;
 		head.m_flags = LEVIN_PACKET_REQUEST;
-		GULPS_LOGF_L3("[{}] Sending invoke data", m_socket );
+		GULPSF_LOG_L3("[{}] Sending invoke data", m_socket );
 
 		CRITICAL_REGION_BEGIN(m_send_lock);
-		GULPS_LOGF_L3("[{}] SEND {}", m_socket , sizeof(head));
+		GULPSF_LOG_L3("[{}] SEND {}", m_socket , sizeof(head));
 		int res = ::send(m_socket, (const char *)&head, sizeof(head), 0);
 		if(SOCKET_ERROR == res)
 		{
 			int err = ::WSAGetLastError();
-			GULPS_LOGF_ERROR("Failed to send(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+			GULPSF_LOG_ERROR("Failed to send(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 			disconnect();
 			return LEVIN_ERROR_CONNECTION_DESTROYED;
 		}
-		GULPS_LOGF_L3("[{}] SEND {}", m_socket , (int)in_buff.size());
+		GULPSF_LOG_L3("[{}] SEND {}", m_socket , (int)in_buff.size());
 		res = ::send(m_socket, in_buff.data(), (int)in_buff.size(), 0);
 		if(SOCKET_ERROR == res)
 		{
 			int err = ::WSAGetLastError();
-			GULPS_LOGF_ERROR("Failed to send(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+			GULPSF_LOG_ERROR("Failed to send(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 			disconnect();
 			return LEVIN_ERROR_CONNECTION_DESTROYED;
 		}
 		CRITICAL_REGION_END();
-		GULPS_LOGF_L3("LEVIN_PACKET_SENT. [len={}, flags={}, is_cmd={}, cmd_id = {}, pr_v={}, uid={}]{}", head.m_cb , head.m_flags , head.m_have_to_return_data , head.m_command , head.m_protocol_version , string_tools::get_str_from_guid_a(head.m_id) );
+		GULPSF_LOG_L3("LEVIN_PACKET_SENT. [len={}, flags={}, is_cmd={}, cmd_id = {}, pr_v={}, uid={}]{}", head.m_cb , head.m_flags , head.m_have_to_return_data , head.m_command , head.m_protocol_version , string_tools::get_str_from_guid_a(head.m_id) );
 
 		//hard coded timeout in 10 minutes for maximum invoke period. if it happens, it could mean only some real troubles.
 		boost::system_time timeout = boost::get_system_time() + boost::posix_time::milliseconds(100);
@@ -299,7 +297,7 @@ class levin_client_async
 				}
 				else
 				{
-					GULPS_PRINTF("[{}] Timeout on waiting invoke result. ", m_socket );
+					GULPSF_PRINT("[{}] Timeout on waiting invoke result. ", m_socket );
 					//disconnect();
 					return LEVIN_ERROR_CONNECTION_TIMEDOUT;
 				}
@@ -330,26 +328,26 @@ class levin_client_async
 		head.m_protocol_version = LEVIN_PROTOCOL_VER_1;
 		head.m_flags = LEVIN_PACKET_REQUEST;
 		CRITICAL_REGION_BEGIN(m_send_lock);
-		GULPS_LOGF_L3("[{}] SEND {}", m_socket , sizeof(head));
+		GULPSF_LOG_L3("[{}] SEND {}", m_socket , sizeof(head));
 		int res = ::send(m_socket, (const char *)&head, sizeof(head), 0);
 		if(SOCKET_ERROR == res)
 		{
 			int err = ::WSAGetLastError();
-			GULPS_LOGF_ERROR("Failed to send(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+			GULPSF_LOG_ERROR("Failed to send(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 			disconnect();
 			return LEVIN_ERROR_CONNECTION_DESTROYED;
 		}
-		GULPS_LOGF_L3("[{}] SEND {}", m_socket , (int)in_buff.size());
+		GULPSF_LOG_L3("[{}] SEND {}", m_socket , (int)in_buff.size());
 		res = ::send(m_socket, in_buff.data(), (int)in_buff.size(), 0);
 		if(SOCKET_ERROR == res)
 		{
 			int err = ::WSAGetLastError();
-			GULPS_LOGF_ERROR("Failed to send(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+			GULPSF_LOG_ERROR("Failed to send(), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 			disconnect();
 			return LEVIN_ERROR_CONNECTION_DESTROYED;
 		}
 		CRITICAL_REGION_END();
-		GULPS_LOGF_L3("LEVIN_PACKET_SENT. [len={}, flags={}, is_cmd={}, cmd_id = {}, pr_v={}, uid={}]{}", head.m_cb , head.m_flags , head.m_have_to_return_data , head.m_command , head.m_protocol_version , string_tools::get_str_from_guid_a(head.m_id) );
+		GULPSF_LOG_L3("LEVIN_PACKET_SENT. [len={}, flags={}, is_cmd={}, cmd_id = {}, pr_v={}, uid={}]{}", head.m_cb , head.m_flags , head.m_have_to_return_data , head.m_command , head.m_protocol_version , string_tools::get_str_from_guid_a(head.m_id) );
 
 		return 1;
 	}
@@ -377,7 +375,7 @@ class levin_client_async
 			if(m_is_stop)
 				return false;
 			int err_code = ::WSAGetLastError();
-			GULPS_LOGF_ERROR("Filed to call select, err code = {}", err_code);
+			GULPSF_LOG_ERROR("Filed to call select, err code = {}", err_code);
 			disconnect();
 		}
 		else
@@ -430,7 +428,7 @@ class levin_client_async
 		}
 		CRITICAL_REGION_END();
 
-		GULPS_LOGF_L3("LEVIN_PACKET_RECIEVED. [len={}, flags={}, is_cmd={}, cmd_id = {}, pr_v={}, uid={}]", head.m_cb , head.m_flags , head.m_have_to_return_data , head.m_command , head.m_protocol_version , string_tools::get_str_from_guid_a(head.m_id) );
+		GULPSF_LOG_L3("LEVIN_PACKET_RECIEVED. [len={}, flags={}, is_cmd={}, cmd_id = {}, pr_v={}, uid={}]", head.m_cb , head.m_flags , head.m_have_to_return_data , head.m_command , head.m_protocol_version , string_tools::get_str_from_guid_a(head.m_id) );
 
 		if(is_request)
 		{
@@ -459,7 +457,7 @@ class levin_client_async
 
 	bool reciever_thread()
 	{
-		GULPS_LOGF_L3("[{}] Socket reciever thread started.[m_threads_count={}]", m_socket , m_threads_count );
+		GULPSF_LOG_L3("[{}] Socket reciever thread started.[m_threads_count={}]", m_socket , m_threads_count );
 		log_space::log_singletone::set_thread_log_prefix("RECIEVER_WORKER");
 		boost::interprocess::ipcdetail::atomic_inc32(&m_threads_count);
 
@@ -489,7 +487,7 @@ class levin_client_async
 		}
 
 		boost::interprocess::ipcdetail::atomic_dec32(&m_threads_count);
-		GULPS_LOGF_L3("[{}] Socket reciever thread stopped.[m_threads_count={}]", m_socket , m_threads_count );
+		GULPSF_LOG_L3("[{}] Socket reciever thread stopped.[m_threads_count={}]", m_socket , m_threads_count );
 		return true;
 	}
 
@@ -522,11 +520,11 @@ class levin_client_async
 			if(res == SOCKET_ERROR)
 			{
 				int err_code = ::WSAGetLastError();
-				GULPS_LOGF_ERROR("Failed to send, err = {}", err_code);
+				GULPSF_LOG_ERROR("Failed to send, err = {}", err_code);
 				return false;
 			}
 			CRITICAL_REGION_END();
-			GULPS_LOGF_L3("LEVIN_PACKET_SENT. [len={}, flags={}, is_cmd={}, cmd_id = {}, pr_v={}, uid={}]{}", head.m_cb , head.m_flags , head.m_have_to_return_data , head.m_command , head.m_protocol_version , string_tools::get_str_from_guid_a(head.m_id) );
+			GULPSF_LOG_L3("LEVIN_PACKET_SENT. [len={}, flags={}, is_cmd={}, cmd_id = {}, pr_v={}, uid={}]{}", head.m_cb , head.m_flags , head.m_have_to_return_data , head.m_command , head.m_protocol_version , string_tools::get_str_from_guid_a(head.m_id) );
 		}
 		else
 		{
@@ -539,7 +537,7 @@ class levin_client_async
 
 	bool handler_thread()
 	{
-		GULPS_LOGF_L3("[{}] Socket handler thread started.[m_threads_count={}]", m_socket , m_threads_count );
+		GULPSF_LOG_L3("[{}] Socket handler thread started.[m_threads_count={}]", m_socket , m_threads_count );
 		log_space::log_singletone::set_thread_log_prefix("HANDLER_WORKER");
 		boost::interprocess::ipcdetail::atomic_inc32(&m_threads_count);
 
@@ -573,7 +571,7 @@ class levin_client_async
 		}
 
 		boost::interprocess::ipcdetail::atomic_dec32(&m_threads_count);
-		GULPS_LOGF_L3("[{}] Socket handler thread stopped.[m_threads_count={}]", m_socket , m_threads_count );
+		GULPSF_LOG_L3("[{}] Socket handler thread stopped.[m_threads_count={}]", m_socket , m_threads_count );
 		return true;
 	}
 };

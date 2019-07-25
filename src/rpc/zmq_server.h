@@ -64,6 +64,7 @@ static constexpr int DEFAULT_RPC_RECV_TIMEOUT_MS = 1000;
 
 class ZmqServer
 {
+	GULPS_CAT_MAJOR("zmq_serv");
   public:
 	ZmqServer(RpcHandler &h);
 

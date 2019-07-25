@@ -23,17 +23,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "lev_help"
 
 #pragma once
 
 #include "levin_base.h"
 #include "serializeble_struct_helper.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -82,6 +78,7 @@ bool pack_data_to_levin_message(const std::string &data, std::string &buff, int 
 
 bool load_levin_data_from_levin_message(std::string &levin_data, const std::string &buff, int &command)
 {
+	GULPS_CAT_MAJOR("epee_lev_help");
 	if(buff.size() < sizeof(levin::bucket_head))
 	{
 		GULPS_LOG_L3("size of buff(", buff.size(), ") is too small, at load_struct_from_levin_message");
@@ -109,6 +106,7 @@ bool load_levin_data_from_levin_message(std::string &levin_data, const std::stri
 template <class t_struct>
 bool load_struct_from_levin_message(t_struct &t, const std::string &buff, int &command)
 {
+	GULPS_CAT_MAJOR("epee_lev_help");
 	if(buff.size() < sizeof(levin::bucket_head))
 	{
 		GULPS_ERROR("size of buff(", buff.size(), ") is too small, at load_struct_from_levin_message");

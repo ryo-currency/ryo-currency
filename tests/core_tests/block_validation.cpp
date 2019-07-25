@@ -35,6 +35,8 @@
 using namespace epee;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 namespace
 {
 bool lift_up_difficulty(std::vector<test_event_entry> &events, std::vector<uint64_t> &timestamps,

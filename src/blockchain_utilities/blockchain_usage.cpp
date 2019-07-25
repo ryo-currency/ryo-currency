@@ -42,8 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#define GULPS_CAT_MAJOR "blockch_usage"
-
 #include "cryptonote_core/blockchain.h"
 #include "blockchain_db/blockchain_db.h"
 #include "blockchain_db/db_types.h"
@@ -57,7 +55,7 @@
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("blockch_usage");
 
 namespace po = boost::program_options;
 using namespace epee;
@@ -160,9 +158,9 @@ int main(int argc, char *argv[])
 	});
 	if(!r)
 		return 1;
-	
+
 	gulps::inst().set_thread_tag("BLOCKCH_USAGE");
-	
+
 	//Temp error output
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
 	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
@@ -180,7 +178,7 @@ int main(int argc, char *argv[])
 	{
 		if(!log_scr.parse_cat_string(std::to_string(log_level).c_str()))
 		{
-			GULPS_ERRORF("Failed to parse filter string {}", log_level);
+			GULPSF_ERROR("Failed to parse filter string {}", log_level);
 			return 1;
 		}
 	}
@@ -190,7 +188,7 @@ int main(int argc, char *argv[])
 	if(log_scr.is_active())
 	{
 		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
-		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { 
+		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
 					return false;
 				if(printed)
@@ -199,7 +197,7 @@ int main(int argc, char *argv[])
 				});
 		gulps::inst().add_output(std::move(out));
 	}
-	
+
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
 		GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")");
@@ -312,7 +310,7 @@ int main(int argc, char *argv[])
 	for(const auto &c : counts)
 	{
 		float percent = 100.f * c.second / total;
-		GULPS_INFOF("{} outputs used {} times ({}%)", c.second, c.first, percent);
+		GULPSF_INFO("{} outputs used {} times ({}%)", c.second, c.first, percent);
 	}
 
 	GULPS_PRINT("Blockchain usage exported OK");

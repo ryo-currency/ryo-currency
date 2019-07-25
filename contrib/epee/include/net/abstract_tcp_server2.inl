@@ -29,10 +29,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "tcp_serv"
+
 
 //#include "net_utils_base.h"
 #include "misc_language.h"
@@ -55,7 +52,7 @@
 
 #include "../../../../src/cryptonote_core/cryptonote_core.h" // e.g. for the send_stop_signal()
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -88,7 +85,7 @@ connection<t_protocol_handler>::connection(boost::asio::io_service &io_service,
 	  m_timer(io_service),
 	  m_local(false)
 {
-	GULPS_LOGF_L1("test, connection constructor set m_connection_type={}", m_connection_type);
+	GULPSF_LOG_L1("test, connection constructor set m_connection_type={}", m_connection_type);
 }
 PRAGMA_WARNING_DISABLE_VS(4355)
 //---------------------------------------------------------------------------------
@@ -180,7 +177,7 @@ bool connection<t_protocol_handler>::start(bool is_income, bool is_multithreaded
 	boost::asio::detail::socket_option::integer<IPPROTO_IP, IP_TOS>
 		optionTos(tos);
 	socket_.set_option(optionTos);
-//GULPS_LOGF_L1("Set ToS flag to {}", tos);
+//GULPSF_LOG_L1("Set ToS flag to {}", tos);
 #endif
 
 	boost::asio::ip::tcp::no_delay noDelayOption(false);
@@ -195,7 +192,7 @@ template <class t_protocol_handler>
 bool connection<t_protocol_handler>::request_callback()
 {
 	GULPS_TRY_ENTRY();
-	GULPS_LOGF_L1("[{}] request_callback", print_connection_context_short(context) );
+	GULPSF_LOG_L1("[{}] request_callback", print_connection_context_short(context) );
 	// Use safe_shared_from_this, because of this is public method and it can be called on the object being deleted
 	auto self = safe_shared_from_this();
 	if(!self)
@@ -221,9 +218,9 @@ bool connection<t_protocol_handler>::add_ref()
 	auto self = safe_shared_from_this();
 	if(!self)
 		return false;
-	//GULPS_LOGF_L2("[sock {}] add_ref, m_peer_number={}", socket_.native_handle() , mI->m_peer_number);
+	//GULPSF_LOG_L2("[sock {}] add_ref, m_peer_number={}", socket_.native_handle() , mI->m_peer_number);
 	CRITICAL_REGION_LOCAL(self->m_self_refs_lock);
-	//GULPS_LOGF_L2("[sock {}] add_ref 2, m_peer_number={}", socket_.native_handle() , mI->m_peer_number);
+	//GULPSF_LOG_L2("[sock {}] add_ref 2, m_peer_number={}", socket_.native_handle() , mI->m_peer_number);
 	if(m_was_shutdown)
 		return false;
 	m_self_refs.push_back(self);
@@ -251,7 +248,7 @@ template <class t_protocol_handler>
 void connection<t_protocol_handler>::call_back_starter()
 {
 	GULPS_TRY_ENTRY();
-	GULPS_LOGF_L1("[{}] fired_callback", print_connection_context_short(context) );
+	GULPSF_LOG_L1("[{}] fired_callback", print_connection_context_short(context) );
 	m_protocol_handler.handle_qued_callback();
 	GULPS_CATCH_ENTRY_L0("connection<t_protocol_handler>::call_back_starter()", void());
 }
@@ -273,7 +270,7 @@ void connection<t_protocol_handler>::save_dbg_log()
 		address = endpoint.address().to_string();
 		port = boost::lexical_cast<std::string>(endpoint.port());
 	}
-	GULPS_LOGF_L1(" connection type {} {}:{} <--> {}:{}", to_string(m_connection_type) , socket_.local_endpoint().address().to_string() , socket_.local_endpoint().port()
+	GULPSF_LOG_L1(" connection type {} {}:{} <--> {}:{}", to_string(m_connection_type) , socket_.local_endpoint().address().to_string() , socket_.local_endpoint().port()
 							   , address , port);
 }
 //---------------------------------------------------------------------------------
@@ -303,7 +300,7 @@ void connection<t_protocol_handler>::handle_read(const boost::system::error_code
 		{
 			do // keep sleeping if we should sleep
 			{
-				{ //_scopeGULPS_LOGF_L1("CRITICAL_REGION_LOCAL");
+				{ //_scopeGULPSF_LOG_L1("CRITICAL_REGION_LOCAL");
 					CRITICAL_REGION_LOCAL(epee::net_utils::network_throttle_manager::m_lock_get_global_throttle_in);
 					delay = epee::net_utils::network_throttle_manager::get_global_throttle_in().get_sleep_time_after_tick(bytes_transferred);
 				}
@@ -418,7 +415,7 @@ bool connection<t_protocol_handler>::do_send(const void *ptr, size_t cb)
 		{																					// LOCK: chunking
 			epee::critical_region_t<decltype(m_chunking_lock)> send_guard(m_chunking_lock); // *** critical ***
 
-			GULPS_LOGF_L1("do_send() will SPLIT into small chunks, from packet={} B for ptr={}", cb , ptr);
+			GULPSF_LOG_L1("do_send() will SPLIT into small chunks, from packet={} B for ptr={}", cb , ptr);
 			t_safe all = cb; // all bytes to send
 			t_safe pos = 0;  // current sending position
 			// 01234567890
@@ -443,19 +440,19 @@ bool connection<t_protocol_handler>::do_send(const void *ptr, size_t cb)
 				GULPS_CHECK_AND_ASSERT_MES(len_unsigned < std::numeric_limits<size_t>::max(), false, "Invalid len_unsigned"); // yeap we want strong < then max size, to be sure
 
 				void *chunk_start = ((char *)ptr) + pos;
-				GULPS_LOGF_L1("chunk_start={} ptr={} pos={}", chunk_start , ptr , pos);
+				GULPSF_LOG_L1("chunk_start={} ptr={} pos={}", chunk_start , ptr , pos);
 				GULPS_CHECK_AND_ASSERT_MES(chunk_start >= ptr, false, "Pointer wraparound"); // not wrapped around address?
 				//std::memcpy( (void*)buf, chunk_start, len);
 
-				GULPS_LOGF_L1("part of {}: pos={} len={}", lenall , pos , len);
+				GULPSF_LOG_L1("part of {}: pos={} len={}", lenall , pos , len);
 
 				bool ok = do_send_chunk(chunk_start, len); // <====== ***
 
 				all_ok = all_ok && ok;
 				if(!all_ok)
 				{
-					GULPS_LOGF_L1("do_send() DONE ***FAILED*** from packet={} B for ptr={}", cb , ptr);
-					GULPS_LOGF_L1("do_send() SEND was aborted in middle of big package - this is mostly harmless (e.g. peer closed connection) but if it causes trouble tell us at https://github.com/ryo-currency/ryo. {}", cb);
+					GULPSF_LOG_L1("do_send() DONE ***FAILED*** from packet={} B for ptr={}", cb , ptr);
+					GULPSF_LOG_L1("do_send() SEND was aborted in middle of big package - this is mostly harmless (e.g. peer closed connection) but if it causes trouble tell us at https://github.com/ryo-currency/ryo. {}", cb);
 					return false; // partial failure in sending
 				}
 				pos = pos + len;
@@ -464,9 +461,9 @@ bool connection<t_protocol_handler>::do_send(const void *ptr, size_t cb)
 				// (in catch block, or uniq pointer) delete buf;
 			} // each chunk
 
-			GULPS_LOGF_L1("do_send() DONE SPLIT from packet={} B for ptr={}", cb , ptr);
+			GULPSF_LOG_L1("do_send() DONE SPLIT from packet={} B for ptr={}", cb , ptr);
 
-			GULPS_LOGF_L1("do_send() m_connection_type = {}", m_connection_type);
+			GULPSF_LOG_L1("do_send() m_connection_type = {}", m_connection_type);
 
 			return all_ok; // done - e.g. queued - all the chunks of current do_send call
 		}				   // LOCK: chunking
@@ -519,15 +516,15 @@ bool connection<t_protocol_handler>::do_send_chunk(const void *ptr, size_t cb)
         }*/
 
 		long int ms = 250 + (rand() % 50);
-		GULPS_LOGF_L1("Sleeping because QUEUE is FULL, in {} for {} ms before packet_size={}", __FUNCTION__ , ms , cb); // XXX debug sleep
+		GULPSF_LOG_L1("Sleeping because QUEUE is FULL, in {} for {} ms before packet_size={}", __FUNCTION__ , ms , cb); // XXX debug sleep
 		m_send_que_lock.unlock();
 		boost::this_thread::sleep(boost::posix_time::milliseconds(ms));
 		m_send_que_lock.lock();
-		GULPS_LOGF_L1("sleep for queue: {}", ms);
+		GULPSF_LOG_L1("sleep for queue: {}", ms);
 
 		if(retry > retry_limit)
 		{
-			GULPS_WARNF("send que size is more than ABSTRACT_SERVER_SEND_QUE_MAX_COUNT({}), shutting down connection", ABSTRACT_SERVER_SEND_QUE_MAX_COUNT );
+			GULPSF_WARN("send que size is more than ABSTRACT_SERVER_SEND_QUE_MAX_COUNT({}), shutting down connection", ABSTRACT_SERVER_SEND_QUE_MAX_COUNT );
 			shutdown();
 			return false;
 		}
@@ -539,7 +536,7 @@ bool connection<t_protocol_handler>::do_send_chunk(const void *ptr, size_t cb)
 	if(m_send_que.size() > 1)
 	{ // active operation should be in progress, nothing to do, just wait last operation callback
 		auto size_now = cb;
-		GULPS_LOGF_L1("do_send() NOW just queues: packet={} B, is added to queue-size={}", size_now , m_send_que.size());
+		GULPSF_LOG_L1("do_send() NOW just queues: packet={} B, is added to queue-size={}", size_now , m_send_que.size());
 		//do_send_handler_delayed( ptr , size_now ); // (((H))) // empty function
 
 		GULPS_LOG_L2(context, "[sock ", socket_.native_handle(), "] Async send requested ", m_send_que.front().size());
@@ -554,7 +551,7 @@ bool connection<t_protocol_handler>::do_send_chunk(const void *ptr, size_t cb)
 		}
 
 		auto size_now = m_send_que.front().size();
-		GULPS_LOGF_L1("do_send() NOW SENSD: packet={} B", size_now );
+		GULPSF_LOG_L1("do_send() NOW SENSD: packet={} B", size_now );
 		if(speed_limit_is_enabled())
 			do_send_handler_write(ptr, size_now); // (((H)))
 
@@ -565,7 +562,7 @@ bool connection<t_protocol_handler>::do_send_chunk(const void *ptr, size_t cb)
 								 boost::bind(&connection<t_protocol_handler>::handle_write, self, _1, _2)
 								 //)
 								 );
-		//GULPS_LOGF_L2("(chunk): {}", size_now);
+		//GULPSF_LOG_L2("(chunk): {}", size_now);
 		//logger_handle_net_write(size_now);
 		//GULPS_INFO("[sock " << socket_.native_handle() << "] Async send requested " << m_send_que.front().size());
 	}
@@ -707,7 +704,7 @@ void connection<t_protocol_handler>::handle_write(const boost::system::error_cod
 								 boost::bind(&connection<t_protocol_handler>::handle_write, connection<t_protocol_handler>::shared_from_this(), _1, _2)
 								 // )
 								 );
-		//GULPS_LOGF_L2("(normal){}", size_now);
+		//GULPSF_LOG_L2("(normal){}", size_now);
 	}
 	CRITICAL_REGION_END();
 
@@ -824,7 +821,7 @@ bool boosted_tcp_server<t_protocol_handler>::init_server(const std::string port,
 
 	if(port.size() && !string_tools::get_xtype_from_string(p, port))
 	{
-		GULPS_ERRORF("Failed to convert port no = {}", port);
+		GULPSF_ERROR("Failed to convert port no = {}", port);
 		return false;
 	}
 	return this->init_server(p, address);
@@ -868,7 +865,7 @@ void boosted_tcp_server<t_protocol_handler>::set_threads_prefix(const std::strin
 	if(it == server_type_map.end())
 		throw std::runtime_error("Unknown prefix/server type:" + std::string(prefix_name));
 	auto connection_type = it->second; // the value of type
-	GULPS_INFOF("Set server type to: {} from name: {}, prefix_name = {}", connection_type , m_thread_name_prefix , prefix_name);
+	GULPSF_INFO("Set server type to: {} from name: {}, prefix_name = {}", connection_type , m_thread_name_prefix , prefix_name);
 }
 //---------------------------------------------------------------------------------
 template <class t_protocol_handler>
@@ -959,7 +956,7 @@ bool boosted_tcp_server<t_protocol_handler>::timed_wait_server_stop(uint64_t wai
 	{
 		if(m_threads[i]->joinable() && !m_threads[i]->try_join_for(ms))
 		{
-			GULPS_LOGF_L1("Interrupting thread {}", m_threads[i]->native_handle());
+			GULPSF_LOG_L1("Interrupting thread {}", m_threads[i]->native_handle());
 			m_threads[i]->interrupt();
 		}
 	}
@@ -1015,7 +1012,7 @@ void boosted_tcp_server<t_protocol_handler>::handle_accept(const boost::system::
 	}
 	else
 	{
-		GULPS_ERRORF("Some problems at accept: {}, connections_count = {}", e.message() , m_sock_count);
+		GULPSF_ERROR("Some problems at accept: {}, connections_count = {}", e.message() , m_sock_count);
 	}
 	GULPS_CATCH_ENTRY_L0("boosted_tcp_server<t_protocol_handler>::handle_accept", void());
 }
@@ -1028,7 +1025,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 	connection_ptr new_connection_l(new connection<t_protocol_handler>(io_service_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
 	connections_mutex.lock();
 	connections_.insert(new_connection_l);
-	GULPS_LOGF_L1("connections_ size now {}", connections_.size());
+	GULPSF_LOG_L1("connections_ size now {}", connections_.size());
 	connections_mutex.unlock();
 	epee::misc_utils::auto_scope_leave_caller scope_exit_handler = epee::misc_utils::create_scope_leave_handler([&]() { CRITICAL_REGION_LOCAL(connections_mutex); connections_.erase(new_connection_l); });
 	boost::asio::ip::tcp::socket &sock_ = new_connection_l->socket();
@@ -1040,7 +1037,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 	boost::asio::ip::tcp::resolver::iterator end;
 	if(iterator == end)
 	{
-		GULPS_ERRORF("Failed to resolve {}", adr);
+		GULPSF_ERROR("Failed to resolve {}", adr);
 		return false;
 	}
 	//////////////////////////////////////////////////////////////////////////
@@ -1093,7 +1090,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 		{
 			//timeout
 			sock_.close();
-			GULPS_LOGF_L2("Failed to connect to {}:{}, because of timeout ({})", adr , port , conn_timeout );
+			GULPSF_LOG_L2("Failed to connect to {}:{}, because of timeout ({})", adr , port , conn_timeout );
 			return false;
 		}
 	}
@@ -1101,13 +1098,13 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 
 	if(ec || !sock_.is_open())
 	{
-		GULPS_LOGF_L2("Some problems at connect, message: {}", ec.message());
+		GULPSF_LOG_L2("Some problems at connect, message: {}", ec.message());
 		if(sock_.is_open())
 			sock_.close();
 		return false;
 	}
 
-	GULPS_LOGF_L2("Connected success to {}:{}", adr , port);
+	GULPSF_LOG_L2("Connected success to {}:{}", adr , port);
 
 	// start adds the connection to the config object's list, so we don't need to have it locally anymore
 	connections_mutex.lock();
@@ -1121,7 +1118,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 	}
 	else
 	{
-		GULPS_ERRORF("[sock {}] Failed to start connection, connections_count = {}", new_connection_l->socket().native_handle() , m_sock_count);
+		GULPSF_ERROR("[sock {}] Failed to start connection, connections_count = {}", new_connection_l->socket().native_handle() , m_sock_count);
 	}
 
 	new_connection_l->save_dbg_log();
@@ -1139,7 +1136,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 	connection_ptr new_connection_l(new connection<t_protocol_handler>(io_service_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
 	connections_mutex.lock();
 	connections_.insert(new_connection_l);
-	GULPS_LOGF_L1("connections_ size now {}", connections_.size());
+	GULPSF_LOG_L1("connections_ size now {}", connections_.size());
 	connections_mutex.unlock();
 	epee::misc_utils::auto_scope_leave_caller scope_exit_handler = epee::misc_utils::create_scope_leave_handler([&]() { CRITICAL_REGION_LOCAL(connections_mutex); connections_.erase(new_connection_l); });
 	boost::asio::ip::tcp::socket &sock_ = new_connection_l->socket();
@@ -1151,7 +1148,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 	boost::asio::ip::tcp::resolver::iterator end;
 	if(iterator == end)
 	{
-		GULPS_ERRORF("Failed to resolve {}", adr);
+		GULPSF_ERROR("Failed to resolve {}", adr);
 		return false;
 	}
 	//////////////////////////////////////////////////////////////////////////
@@ -1170,7 +1167,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 	sh_deadline->async_wait([=](const boost::system::error_code &error) {
 		if(error != boost::asio::error::operation_aborted)
 		{
-			GULPS_LOGF_L2("Failed to connect to {}:{}, because of timeout ({})", adr , port , conn_timeout );
+			GULPSF_LOG_L2("Failed to connect to {}:{}, because of timeout ({})", adr , port , conn_timeout );
 			new_connection_l->socket().close();
 		}
 	});
@@ -1187,7 +1184,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 			}
 			else
 			{
-				GULPS_LOGF_L2("[sock {}] Connected success to {}:{} from {}:{}", new_connection_l->socket().native_handle() , adr , port , lep.address().to_string() , lep.port());
+				GULPSF_LOG_L2("[sock {}] Connected success to {}:{} from {}:{}", new_connection_l->socket().native_handle() , adr , port , lep.address().to_string() , lep.port());
 
 				// start adds the connection to the config object's list, so we don't need to have it locally anymore
 				connections_mutex.lock();
@@ -1201,14 +1198,14 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 				}
 				else
 				{
-					GULPS_LOGF_L2("[sock {}] Failed to start connection to {}:{}", new_connection_l->socket().native_handle() , adr , port);
+					GULPSF_LOG_L2("[sock {}] Failed to start connection to {}:{}", new_connection_l->socket().native_handle() , adr , port);
 					cb(conn_context, boost::asio::error::fault);
 				}
 			}
 		}
 		else
 		{
-			GULPS_LOGF_L2("[sock {}] Failed to connect to {}:{} from {}:{}: {}:{}", new_connection_l->socket().native_handle() , adr , port , lep.address().to_string() , lep.port() , ec_.message() , ec_.value());
+			GULPSF_LOG_L2("[sock {}] Failed to connect to {}:{} from {}:{}: {}:{}", new_connection_l->socket().native_handle() , adr , port , lep.address().to_string() , lep.port() , ec_.message() , ec_.value());
 			cb(conn_context, ec_);
 		}
 	});

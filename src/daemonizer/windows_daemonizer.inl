@@ -41,10 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "win_dmnzer"
 
 #pragma once
 
@@ -58,10 +54,11 @@
 
 namespace daemonizer
 {
+GULPS_CAT_MAJOR("win_dmnzer");
 extern gulps_log_level log_scr, log_dsk;
 
 namespace
-{	
+{
 const command_line::arg_descriptor<bool> arg_install_service = {
 	"install-service", "Install Windows service"};
 const command_line::arg_descriptor<bool> arg_uninstall_service = {
@@ -140,7 +137,7 @@ inline bool daemonize(
 	boost::program_options::variables_map const &vm)
 {
 	std::string arguments = get_argument_string(argc, argv);
-	
+
 	if(command_line::has_arg(vm, arg_is_service))
 	{
 		// TODO - Set the service status here for return codes

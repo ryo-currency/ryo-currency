@@ -59,6 +59,8 @@ using namespace epee;
 using namespace cryptonote;
 using namespace crypto;
 
+GULPS_CAT_MAJOR("test");
+
 BOOST_CLASS_VERSION(nodetool::node_server<cryptonote::t_cryptonote_protocol_handler<tests::proxy_core>>, 1);
 
 int main(int argc, char *argv[])
@@ -74,8 +76,8 @@ int main(int argc, char *argv[])
 	string_tools::set_module_name_and_folder(argv[0]);
 
 	//set up logging options
-	
-	
+
+
 
 	po::options_description desc("Allowed options");
 	command_line::add_arg(desc, cryptonote::arg_data_dir);

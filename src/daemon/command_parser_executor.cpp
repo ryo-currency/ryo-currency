@@ -41,7 +41,7 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "cmd_pars_exe"
+
 
 #include "daemon/command_parser_executor.h"
 #include "common/dns_utils.h"
@@ -232,7 +232,7 @@ bool t_command_parser_executor::print_transaction(const std::vector<std::string>
 			include_json = true;
 		else
 		{
-			GULPS_PRINTF("unexpected argument: {}", args[i]);
+			GULPSF_PRINT("unexpected argument: {}", args[i]);
 			return true;
 		}
 	}
@@ -340,7 +340,7 @@ bool t_command_parser_executor::start_mining(const std::vector<std::string> &arg
 
 	if(nettype != cryptonote::MAINNET)
 
-	GULPS_PRINTF("Mining to a {} address, make sure this is intentional!", (nettype == cryptonote::TESTNET ? "testnet" : "stagenet"));
+	GULPSF_PRINT("Mining to a {} address, make sure this is intentional!", (nettype == cryptonote::TESTNET ? "testnet" : "stagenet"));
 	uint64_t threads_count = 1;
 	bool do_background_mining = false;
 	bool ignore_battery = false;
@@ -706,7 +706,7 @@ bool t_command_parser_executor::sync_info(const std::vector<std::string> &args)
 
 bool t_command_parser_executor::version(const std::vector<std::string> &args)
 {
-	GULPS_PRINTF("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
+	GULPSF_PRINT("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
 	return true;
 }
 

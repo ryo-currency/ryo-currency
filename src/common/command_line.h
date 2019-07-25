@@ -43,10 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-    #undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "cmd_line"
 
 #pragma once
 
@@ -66,6 +62,8 @@
 
 namespace command_line
 {
+
+GULPS_CAT_MAJOR("cmd_line");
 
 //! \return True if `str` is `is_iequal("y" || "yes" || `tr("yes"))`.
 bool is_yes(const std::string &str);
@@ -266,7 +264,7 @@ bool handle_error_helper(const boost::program_options::options_description &desc
 	}
 	catch(const std::exception &e)
 	{
-		GULPS_ERRORF("Failed to parse arguments: {}", e.what());
+		GULPSF_ERROR("Failed to parse arguments: {}", e.what());
 		GULPS_PRINT(desc);
 		return false;
 	}

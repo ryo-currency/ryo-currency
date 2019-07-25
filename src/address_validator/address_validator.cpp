@@ -42,7 +42,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#define GULPS_CAT_MAJOR "addr_val"
 #include "common/gulps.hpp"
 
 #include "common/command_line.h"
@@ -149,7 +148,7 @@ bool address_validator::validate_options()
 	std::vector<std::string> networks = {"auto", "mainnet", "testnet", "stagenet"};
 	if(std::find(networks.begin(), networks.end(), m_network) == networks.end())
 	{
-		GULPS_ERRORF("Invalid/Unknown network type {}.", m_network);
+		GULPSF_ERROR("Invalid/Unknown network type {}.", m_network);
 		return 2;
 	}
 	return 0;
@@ -219,9 +218,9 @@ int main(int argc, char *argv[])
 
 	// We won't replace the custom output writer here, so just direct **our** errors to console
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.cat_major == GULPS_CAT_MAJOR && msg.lvl == gulps::LEVEL_ERROR; });
+	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.cat_major == "addr_val" && msg.lvl == gulps::LEVEL_ERROR; });
 	gulps::inst().add_output(std::move(out));
- 
+
 	using namespace cryptonote;
 
 	address_validator validator{};

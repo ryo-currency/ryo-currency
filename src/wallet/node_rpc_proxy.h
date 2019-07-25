@@ -44,6 +44,8 @@
 
 #pragma once
 
+#include "common/gulps.hpp"
+
 #include "include_base_utils.h"
 #include "net/http_client.h"
 #include <boost/thread/mutex.hpp>
@@ -54,6 +56,7 @@ namespace tools
 
 class NodeRPCProxy
 {
+	GULPS_CAT_MAJOR("wallet_rpc_proxy");
   public:
 	NodeRPCProxy(epee::net_utils::http::http_simple_client &http_client, boost::mutex &mutex);
 

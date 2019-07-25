@@ -41,10 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#ifdef GULPS_CAT_MAJOR
-    #undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "scpd_msg_wrt"
 
 #pragma once
 
@@ -61,6 +57,7 @@ namespace tools
 /************************************************************************/
 class scoped_message_writer
 {
+	GULPS_CAT_MAJOR("scpd_msg_wrt");
   private:
 	bool m_flush;
 	std::stringstream m_oss;
@@ -108,7 +105,7 @@ class scoped_message_writer
 		{
 			m_flush = false;
 
-			GULPS_OUTPUT(gulps::OUT_LOG_0, m_log_level, GULPS_CAT_MAJOR, "msgwriter", m_color, m_oss.str());
+			GULPS_OUTPUT(gulps::OUT_LOG_0, m_log_level, gulps_major_cat::c_str(), "msgwriter", m_color, m_oss.str());
 			GULPS_PRINT_CLR(m_color, m_oss.str());
 		}
 	}

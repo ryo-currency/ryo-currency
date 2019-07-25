@@ -43,10 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-    #undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "cmn_util"
 
 #pragma once
 
@@ -69,8 +65,8 @@
 
 /*! \brief Various Tools
  *
- *  
- * 
+ *
+ *
  */
 namespace tools
 {
@@ -126,12 +122,12 @@ std::string get_default_data_dir();
 
 #ifdef WIN32
 /**
-   * @brief 
+   * @brief
    *
    * @param nfolder
    * @param iscreate
    *
-   * @return 
+   * @return
    */
 std::string get_special_folder_path(int nfolder, bool iscreate);
 #endif
@@ -146,7 +142,7 @@ std::string get_os_version_string();
 
 /*! \brief creates directories for a path
    *
-   *  wrapper around boost::filesyste::create_directories.  
+   *  wrapper around boost::filesyste::create_directories.
    *  (ensure-directory-exists): greenspun's tenth rule in action!
    */
 bool create_directories_if_necessary(const std::string &path);
@@ -199,7 +195,8 @@ class signal_handler
 		}
 		else
 		{
-			GULPS_GLOBALF_PRINT_CLR(gulps::COLOR_RED, "Got control signal {}. Exiting without saving...", type);
+			GULPS_CAT_MAJOR("cmn_util");
+			GULPSF_GLOBAL_PRINT_CLR(gulps::COLOR_RED, "Got control signal {}. Exiting without saving...", type);
 			return FALSE;
 		}
 		return TRUE;

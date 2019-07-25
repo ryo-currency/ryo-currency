@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "csl_hand"
 
 #pragma once
 
@@ -44,7 +40,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/thread.hpp>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 #ifdef HAVE_READLINE
 #include "readline_buffer.h"
@@ -293,6 +289,7 @@ bool empty_commands_handler(t_server *psrv, const std::string &command)
 
 class async_console_handler
 {
+	GULPS_CAT_MAJOR("epee_csl_hand");
   public:
 	async_console_handler()
 	{
@@ -331,7 +328,7 @@ class async_console_handler
 
 			if(prompt.back() != ' ')
 				prompt += ' ';
-			gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, 
+			gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(),
 					"cmd_prompt", __FILE__, __LINE__, std::move(prompt), gulps::COLOR_BOLD_YELLOW, false));
 		}
 	}
@@ -387,7 +384,7 @@ class async_console_handler
 			}
 			catch(const std::exception &ex)
 			{
-				GULPS_ERRORF("Exception at [console_handler], what={}", ex.what());
+				GULPSF_ERROR("Exception at [console_handler], what={}", ex.what());
 			}
 		}
 		if(exit_handler)

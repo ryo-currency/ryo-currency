@@ -43,10 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "net_node"
 
 #pragma once
 #include <boost/program_options/options_description.hpp>
@@ -66,7 +62,7 @@
 #include "storages/levin_abstract_invoke2.h"
 #include "warnings.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 PUSH_WARNINGS
 DISABLE_VS_WARNINGS(4355)
@@ -88,6 +84,7 @@ class node_server : public epee::levin::levin_commands_handler<p2p_connection_co
 					public i_p2p_endpoint<typename t_payload_net_handler::connection_context>,
 					public epee::net_utils::i_connection_filter
 {
+	GULPS_CAT_MAJOR("net_node");
 	struct by_conn_id
 	{
 	};

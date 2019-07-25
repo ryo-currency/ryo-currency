@@ -57,13 +57,13 @@
 			}                                                                         \
 			else                                                                      \
 			{                                                                         \
-				GULPS_LOGF_ERROR("Field {} found in JSON, but not {}", #name, #jtype); \
+				GULPSF_LOG_ERROR("Field {} found in JSON, but not {}", #name, #jtype); \
 				return false;                                                         \
 			}                                                                         \
 		}                                                                             \
 		else if(mandatory)                                                            \
 		{                                                                             \
-			GULPS_LOGF_ERROR("Field {} not found in JSON", #name);                     \
+			GULPSF_LOG_ERROR("Field {} not found in JSON", #name);                     \
 			return false;                                                             \
 		}                                                                             \
 	while(0)

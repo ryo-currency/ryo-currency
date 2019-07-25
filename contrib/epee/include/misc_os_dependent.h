@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "msc_os_dep"
 
 #ifdef _WIN32
 #include <Winsock2.h>
@@ -53,7 +49,7 @@
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 #pragma once
 namespace epee
@@ -99,6 +95,7 @@ inline uint64_t get_tick_count()
 
 inline int call_sys_cmd(const std::string &cmd)
 {
+	GULPS_CAT_MAJOR("epee_msc_os_dep");
 	GULPS_PRINT("# {}", cmd);
 
 	FILE *fp;

@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Adapted from Python code by Sarang Noether
-#define GULPS_CAT_MAJOR "multiexp"
 
 #include "common/perf_timer.h"
 #include "common/gulps.hpp"
@@ -89,7 +88,7 @@ extern "C" {
 
 namespace rct
 {
-
+	GULPS_CAT_MAJOR("multiexp");
 static inline bool operator<(const rct::key &k0, const rct::key &k1)
 {
 	for(int n = 31; n >= 0; --n)
@@ -364,12 +363,12 @@ multiexp_cache::multiexp_cache()
 	s_cache.init_cache(data, STRAUS_SIZE_LIMIT);
 	p_cache.init_cache(data, 0, false);
 
-	GULPS_INFOF("Hi/Gi cache size: {} kB", (sizeof(Hi_cache) + sizeof(Gi_cache)) / 1024 );
-	GULPS_INFOF("Hi_p3/Gi_p3 cache size: {} kB", (sizeof(Hi_p3_cache) + sizeof(Gi_p3_cache)) / 1024 );
-	GULPS_INFOF("Straus cache size: {} kB", sizeof(straus_cache) / 1024 );
-	GULPS_INFOF("Pippenger cache size: {} kB", sizeof(pippenger_cache) / 1024 );
+	GULPSF_INFO("Hi/Gi cache size: {} kB", (sizeof(Hi_cache) + sizeof(Gi_cache)) / 1024 );
+	GULPSF_INFO("Hi_p3/Gi_p3 cache size: {} kB", (sizeof(Hi_p3_cache) + sizeof(Gi_p3_cache)) / 1024 );
+	GULPSF_INFO("Straus cache size: {} kB", sizeof(straus_cache) / 1024 );
+	GULPSF_INFO("Pippenger cache size: {} kB", sizeof(pippenger_cache) / 1024 );
 	size_t cache_size = (sizeof(Hi_cache) + sizeof(Hi_p3_cache)) * 2 + sizeof(straus_cache) + sizeof(pippenger_cache);
-	GULPS_INFOF("Total cache size: {}kB", cache_size / 1024 );
+	GULPSF_INFO("Total cache size: {}kB", cache_size / 1024 );
 }
 
 void straus_cache::init_cache(const std::vector<MultiexpData> &data, size_t N)
@@ -410,7 +409,7 @@ rct::key straus_cache::straus(const std::vector<MultiexpData> &data, size_t STEP
 
 	MULTIEXP_PERF(PERF_TIMER_START_UNIT(setup, 1000000));
 	static constexpr unsigned int mask = (1 << STRAUS_C) - 1;
-	
+
 	ge_cached cached;
 	ge_p1p1 p1;
 	ge_p3 p3;

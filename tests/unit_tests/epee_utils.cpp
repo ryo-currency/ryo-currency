@@ -50,6 +50,8 @@
 #include "span.h"
 #include "string_tools.h"
 
+GULPS_CAT_MAJOR("test");
+
 namespace
 {
 template <typename Destination, typename Source>

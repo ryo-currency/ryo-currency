@@ -43,16 +43,12 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "daemon_rpc"
 
 #pragma once
 
 #include "rpc/core_rpc_server.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -61,6 +57,7 @@ namespace daemonize
 
 class t_rpc final
 {
+	 GULPS_CAT_MAJOR("daemon_rpc");
   public:
 	static void init_options(boost::program_options::options_description &option_spec)
 	{
@@ -76,28 +73,28 @@ class t_rpc final
 		boost::program_options::variables_map const &vm, t_core &core, t_p2p &p2p, const bool restricted, const cryptonote::network_type nettype, const std::string &port, const std::string &description)
 		: m_server{core.get(), p2p.get()}, m_description{description}
 	{
-		GULPS_GLOBALF_PRINT("Initializing {} RPC server...", m_description);
+		GULPSF_GLOBAL_PRINT("Initializing {} RPC server...", m_description);
 
 		if(!m_server.init(vm, restricted, nettype, port))
 		{
 			throw std::runtime_error("Failed to initialize " + m_description + " RPC server.");
 		}
-		GULPS_GLOBALF_PRINT("{} RPC server initialized OK on port: {}", m_description, m_server.get_binded_port());
+		GULPSF_GLOBAL_PRINT("{} RPC server initialized OK on port: {}", m_description, m_server.get_binded_port());
 	}
 
 	void run()
 	{
-		GULPS_GLOBALF_PRINT("Starting {} RPC server...",m_description);
+		GULPSF_GLOBAL_PRINT("Starting {} RPC server...",m_description);
 		if(!m_server.run(2, false))
 		{
 			throw std::runtime_error("Failed to start " + m_description + " RPC server.");
 		}
-		GULPS_GLOBALF_PRINT("{} RPC server started ok", m_description);
+		GULPSF_GLOBAL_PRINT("{} RPC server started ok", m_description);
 	}
 
 	void stop()
 	{
-		GULPS_GLOBALF_PRINT("Stopping {} RPC server...", m_description);
+		GULPSF_GLOBAL_PRINT("Stopping {} RPC server...", m_description);
 		m_server.send_stop_signal();
 		m_server.timed_wait_server_stop(5000);
 	}
@@ -109,14 +106,14 @@ class t_rpc final
 
 	~t_rpc()
 	{
-		GULPS_GLOBALF_PRINT("Deinitializing {} RPC server...", m_description);
+		GULPSF_GLOBAL_PRINT("Deinitializing {} RPC server...", m_description);
 		try
 		{
 			m_server.deinit();
 		}
 		catch(...)
 		{
-			GULPS_ERRORF("Failed to deinitialize {} RPC server...", m_description);
+			GULPSF_ERROR("Failed to deinitialize {} RPC server...", m_description);
 		}
 	}
 };

@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "ptb_stg_jsn"
 
 #pragma once
 #include "file_io_utils.h"
@@ -36,7 +32,7 @@
 
 #define EPEE_JSON_RECURSION_LIMIT_INTERNAL 100
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 namespace epee
 {
@@ -45,6 +41,7 @@ namespace serialization
 {
 namespace json
 {
+GULPS_CAT_MAJOR("epee_ptb_stg_jsn");
 #define CHECK_ISSPACE()                                                                \
 	if(!isspace(*it))                                                                  \
 	{                                                                                  \
@@ -389,9 +386,9 @@ inline void run_handler(typename t_storage::hsection current_section,
         "streetAddress": "21 2nd Street",
         "city": "New York",
         "state": "NY",
-        "postalCode": -10021, 
-        "have_boobs": true, 
-        "have_balls": false 
+        "postalCode": -10021,
+        "have_boobs": true,
+        "have_balls": false
     },
     "phoneNumber": [
         {
@@ -402,7 +399,7 @@ inline void run_handler(typename t_storage::hsection current_section,
             "type": "fax",
             "number": "646 555-4567"
         }
-    ], 
+    ],
     "phoneNumbers": [
     "812 123-1234",
     "916 123-4567"
@@ -420,7 +417,7 @@ inline bool load_from_json(const std::string &buff_json, t_storage &stg)
 	}
 	catch(const std::exception &ex)
 	{
-		GULPS_ERRORF("Failed to parse json, what: {}", ex.what());
+		GULPSF_ERROR("Failed to parse json, what: {}", ex.what());
 		return false;
 	}
 	catch(...)

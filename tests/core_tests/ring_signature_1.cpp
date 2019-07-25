@@ -34,6 +34,8 @@
 using namespace epee;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 ////////
 // class gen_ring_signature_1;
 

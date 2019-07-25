@@ -750,10 +750,10 @@ struct wallet_files_doesnt_correspond : public wallet_logic_error
 //----------------------------------------------------------------------------------------------------
 
 template <typename TException, typename... TArgs>
-void throw_wallet_ex(std::string &&loc, const TArgs &... args)
+void throw_wallet_ex(std::string &&cat_major, std::string &&cat_minor, std::string &&loc, const TArgs &... args)
 {
 	TException e(std::move(loc), args...);
-	GULPS_LOG_L0(e.to_string());
+	GULPS_CAT2_LOG_L0(cat_major.c_str(), cat_minor.c_str(), e.to_string());
 	throw e;
 }
 
@@ -767,12 +767,12 @@ void throw_wallet_ex(std::string &&loc, const TArgs &... args)
 	do                                                                                                         \
 	{                                                                                                          \
 		GULPS_LOG_ERROR("THROW EXCEPTION: ", #err_type);                                                           \
-		tools::error::throw_wallet_ex<err_type>(std::string(__FILE__ ":" STRINGIZE(__LINE__)), ##__VA_ARGS__); \
+		tools::error::throw_wallet_ex<err_type>(gulps_major_cat::c_str(), gulps_minor_cat::c_str(), std::string(__FILE__ ":" STRINGIZE(__LINE__)), ##__VA_ARGS__); \
 	} while(0)
 
 #define THROW_WALLET_EXCEPTION_IF(cond, err_type, ...)                                                         \
 	if(cond)                                                                                                   \
 	{                                                                                                          \
 		GULPS_LOG_ERROR(#cond, ". THROW EXCEPTION: ", #err_type);                                                \
-		tools::error::throw_wallet_ex<err_type>(std::string(__FILE__ ":" STRINGIZE(__LINE__)), ##__VA_ARGS__); \
+		tools::error::throw_wallet_ex<err_type>(gulps_major_cat::c_str(), gulps_minor_cat::c_str(), std::string(__FILE__ ":" STRINGIZE(__LINE__)), ##__VA_ARGS__); \
 	}

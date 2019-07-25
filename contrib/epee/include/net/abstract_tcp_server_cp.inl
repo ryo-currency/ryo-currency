@@ -23,12 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#undef GULPS_CAT_MAJOR
-#define GULPS_CAT_MAJOR "tcp_serv"
 
 #pragma comment(lib, "Ws2_32.lib")
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -76,7 +74,7 @@ bool cp_server_impl<TProtocol>::init_server(int port_no)
 	if(SOCKET_ERROR == err)
 	{
 		err = ::WSAGetLastError();
-		GULPS_LOGF_L1("Failed to setsockopt(SO_REUSEADDR), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+		GULPSF_LOG_L1("Failed to setsockopt(SO_REUSEADDR), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		deinit_server();
 		return false;
 	}
@@ -91,7 +89,7 @@ bool cp_server_impl<TProtocol>::init_server(int port_no)
 	if(SOCKET_ERROR == err)
 	{
 		err = ::WSAGetLastError();
-		GULPS_LOGF_L1("Failed to Bind, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+		GULPSF_LOG_L1("Failed to Bind, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		deinit_server();
 		return false;
 	}
@@ -100,7 +98,7 @@ bool cp_server_impl<TProtocol>::init_server(int port_no)
 	if(INVALID_HANDLE_VALUE == m_completion_port)
 	{
 		err = ::WSAGetLastError();
-		GULPS_LOGF_L1("Failed to CreateIoCompletionPort, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+		GULPSF_LOG_L1("Failed to CreateIoCompletionPort, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 		deinit_server();
 		return false;
 	}
@@ -169,7 +167,7 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 			{
 				// check return code for error
 				int err = GetLastError();
-				GULPS_LOGF_L1("GetQueuedCompletionStatus failed with error {} {}", err , log_space::get_win32_err_descr(err));
+				GULPSF_LOG_L1("GetQueuedCompletionStatus failed with error {} {}", err , log_space::get_win32_err_descr(err));
 
 				if(pio_data)
 					::InterlockedExchange(&pio_data->m_is_in_use, 0);
@@ -188,7 +186,7 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 		}
 		if(!pconnection || !pio_data)
 		{
-			GULPS_PRINTF("BIG FAIL: pconnection or pio_data is empty: pconnection={} pio_data={}", pconnection, pio_data);
+			GULPSF_PRINT("BIG FAIL: pconnection or pio_data is empty: pconnection={} pio_data={}", pconnection, pio_data);
 			break;
 		}
 
@@ -274,7 +272,7 @@ bool cp_server_impl<TProtocol>::worker_thread_member()
 						break;
 					}else
 					{
-						GULPS_LOGF_L3("WSARecv return immediatily 0, bytes_recvd={}", bytes_recvd);
+						GULPSF_LOG_L3("WSARecv return immediatily 0, bytes_recvd={}", bytes_recvd);
 						//pconnection->m_tprotocol_handler.handle_recv(pio_data->Buffer, bytes_recvd);
 					}
 				}*/
@@ -299,7 +297,7 @@ bool cp_server_impl<TProtocol>::shutdown_connection(connection<TProtocol> *pconn
 	}
 	else
 	{
-		GULPS_LOGF_L3("Shutting down connection ({})", pconn );
+		GULPSF_LOG_L3("Shutting down connection ({})", pconn );
 	}
 	m_connections_lock.lock();
 	connections_container::iterator it = m_connections.find(pconn->m_sock);
@@ -340,7 +338,7 @@ bool cp_server_impl<TProtocol>::shutdown_connection(connection<TProtocol> *pconn
 	m_connections_lock.lock();
 	m_connections.erase(it);
 	m_connections_lock.unlock();
-	GULPS_LOGF_L2("Socked {} closed, wait_count={}", sock , close_sock_wait_count);
+	GULPSF_LOG_L2("Socked {} closed, wait_count={}", sock , close_sock_wait_count);
 	return true;
 }
 //-------------------------------------------------------------
@@ -369,7 +367,7 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 		//::CloseHandle(h_thread);
 	}
 
-	GULPS_LOGF_L1("Numbers of worker threads started: {}", threads_count);
+	GULPSF_LOG_L1("Numbers of worker threads started: {}", threads_count);
 
 	m_stop = false;
 	while(!m_stop)
@@ -413,17 +411,17 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 				if(m_stop)
 					break;
 				int err = ::WSAGetLastError();
-				GULPS_LOGF_L2("Failed to WSAAccept, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+				GULPSF_LOG_L2("Failed to WSAAccept, err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 				continue;
 			}
-			GULPS_LOGF_L2("Accepted connection (new socket={})", new_sock );
+			GULPSF_LOG_L2("Accepted connection (new socket={})", new_sock );
 			{
 				PROFILE_FUNC("[run_server] Add new connection");
 				add_new_connection(new_sock, adr_from.sin_addr.s_addr, adr_from.sin_port);
 			}
 		}
 	}
-	GULPS_LOGF_L2("Closing connections({}) and waiting...", m_connections.size() );
+	GULPSF_LOG_L2("Closing connections({}) and waiting...", m_connections.size() );
 	m_connections_lock.lock();
 	for(connections_container::iterator it = m_connections.begin(); it != m_connections.end(); it++)
 	{
@@ -437,9 +435,9 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 		::Sleep(100);
 		wait_count++;
 	}
-	GULPS_LOGF_L2("Connections closed OK (wait_count={})", wait_count );
+	GULPSF_LOG_L2("Connections closed OK (wait_count={})", wait_count );
 
-	GULPS_LOGF_L2("Stopping worker threads({}).", m_worker_thread_counter );
+	GULPSF_LOG_L2("Stopping worker threads({}).", m_worker_thread_counter );
 	for(int i = 0; i < m_worker_thread_counter; i++)
 	{
 		::PostQueuedCompletionStatus(m_completion_port, 0, 0, 0);
@@ -452,7 +450,7 @@ bool cp_server_impl<TProtocol>::run_server(int threads_count = 0)
 		wait_count++;
 	}
 
-	GULPS_LOGF_L1("Net Server STOPPED, wait_count = {}", wait_count);
+	GULPSF_LOG_L1("Net Server STOPPED, wait_count = {}", wait_count);
 	return true;
 }
 //-------------------------------------------------------------
@@ -483,7 +481,7 @@ bool cp_server_impl<TProtocol>::add_new_connection(SOCKET new_sock, const networ
 	//if(NULL == ::CreateIoCompletionPort((HANDLE)new_sock, m_completion_port, (ULONG_PTR)&conn, 0))
 	//{
 	//	int err = ::GetLastError();
-	//	GULPS_LOGF_L2("Failed to CreateIoCompletionPort(associate socket and completion port), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
+	//	GULPSF_LOG_L2("Failed to CreateIoCompletionPort(associate socket and completion port), err = {} '{}'", err , socket_errors::get_socket_error_text(err) );
 	//	return false;
 	//}
 

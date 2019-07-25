@@ -41,6 +41,8 @@ using namespace epee;
 
 namespace po = boost::program_options;
 
+GULPS_CAT_MAJOR("test");
+
 namespace
 {
 const command_line::arg_descriptor<bool> arg_test_transactions_flow = {"test_transactions_flow", ""};
@@ -65,8 +67,8 @@ int main(int argc, char *argv[])
 	string_tools::set_module_name_and_folder(argv[0]);
 
 	//set up logging options
-	
-	
+
+
 
 	po::options_description desc_options("Allowed options");
 	command_line::add_arg(desc_options, command_line::arg_help);
