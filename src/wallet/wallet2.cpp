@@ -44,8 +44,6 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#define GULPS_CAT_MAJOR "wallet_backend"
-
 #include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "include_base_utils.h"
 #include <boost/algorithm/string/classification.hpp>
@@ -98,6 +96,8 @@ using namespace std;
 using namespace crypto;
 using namespace cryptonote;
 using namespace epee;
+
+GULPS_CAT_MAJOR("wallet_backend");
 
 // used to choose when to stop adding outputs to a tx
 #define APPROXIMATE_INPUT_BYTES 80
@@ -1001,7 +1001,7 @@ void wallet2::check_acc_out_precomp(const tx_out &o, const crypto::key_derivatio
 	tx_scan_info.received = is_out_to_acc_precomp_64(m_subaddresses, boost::get<txout_to_key>(o.target).key, derivation, additional_derivations, i, hwdev);
 	if(tx_scan_info.received)
 	{
-		//Extra check on the baseline version. 
+		//Extra check on the baseline version.
 		tx_scan_info.received = is_out_to_acc_precomp(m_subaddresses, boost::get<txout_to_key>(o.target).key, derivation, additional_derivations, i, hwdev);
 		if(!tx_scan_info.received)
 			GULPS_LOG_ERROR("ERROR! Results of precomp_64 and precomp differ!");
@@ -5368,7 +5368,7 @@ uint32_t wallet2::adjust_priority(uint32_t priority)
 
 			// estimate how 'full' the last N blocks are
 			const size_t P = 100 * block_size_sum / (N * full_reward_zone);
-			GULPS_LOGF_L0("The last {} blocks fill roughly {}% of the full reward zone.", N, P);
+			GULPSF_LOG_L0("The last {} blocks fill roughly {}% of the full reward zone.", N, P);
 			if(P > 80)
 			{
 				GULPS_LOG_L0("We don't use the low priority because recent blocks are quite full.");
@@ -9126,7 +9126,7 @@ size_t wallet2::import_multisig(std::vector<cryptonote::blobdata> blobs)
 		std::vector<tools::wallet2::multisig_info> i;
 		boost::archive::portable_binary_iarchive ar(iss);
 		ar >> i;
-		GULPS_LOGF_L0("{} outputs found", i.size());
+		GULPSF_LOG_L0("{} outputs found", i.size());
 		info.push_back(std::move(i));
 	}
 

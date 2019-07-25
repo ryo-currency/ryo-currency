@@ -65,6 +65,7 @@ namespace cryptonote
    */
 class address_validator
 {
+	GULPS_CAT_MAJOR("addr_val");
   public:
 	address_validator() = default;
 

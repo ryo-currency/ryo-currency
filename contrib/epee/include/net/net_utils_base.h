@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "net"
 
 #ifndef _NET_UTILS_BASE_H_
 #define _NET_UTILS_BASE_H_
@@ -37,7 +33,7 @@
 #include <type_traits>
 #include <typeinfo>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 #ifndef MAKE_IP
 #define MAKE_IP(a1, a2, a3, a4) (a1 | (a2 << 8) | (a3 << 16) | (a4 << 24))
@@ -47,6 +43,9 @@ namespace epee
 {
 namespace net_utils
 {
+
+GULPS_CAT_MAJOR("epee_net");
+
 class ipv4_network_address
 {
 	uint32_t m_ip;
@@ -198,11 +197,11 @@ class network_address
 			const_cast<network_address &>(this_ref) = ipv4_network_address{0, 0};
 			auto &addr = this_ref.template as_mutable<ipv4_network_address>();
 			if(epee::serialization::selector<is_store>::serialize(addr, stg, hparent_section, "addr"))
-				GULPS_LOGF_L1("Found as addr: {}", this_ref.str());
+				GULPSF_LOG_L1("Found as addr: {}", this_ref.str());
 			else if(epee::serialization::selector<is_store>::serialize(addr, stg, hparent_section, "template as<ipv4_network_address>()"))
-				GULPS_LOGF_L1("Found as template as<ipv4_network_address>(): {}", this_ref.str());
+				GULPSF_LOG_L1("Found as template as<ipv4_network_address>(): {}", this_ref.str());
 			else if(epee::serialization::selector<is_store>::serialize(addr, stg, hparent_section, "template as_mutable<ipv4_network_address>()"))
-				GULPS_LOGF_L1("Found as template as_mutable<ipv4_network_address>(): {}", this_ref.str());
+				GULPSF_LOG_L1("Found as template as_mutable<ipv4_network_address>(): {}", this_ref.str());
 			else
 			{
 				GULPS_WARN("Address not found");
@@ -338,7 +337,7 @@ std::string print_connection_context_short(const connection_context_base &ctx);
 inline std::ostream &operator<<(std::ostream &os, const connection_context_base &ct)
 {
 	os << "[" << epee::net_utils::print_connection_context_short(ct).c_str() << "] ";
-	return os;	
+	return os;
 }
 
 }

@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "val_conv"
 
 #pragma once
 
@@ -37,7 +33,7 @@
 #include "portable_storage_base.h"
 #include "warnings.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 namespace epee
 {
@@ -48,6 +44,7 @@ namespace serialization
 template <typename from_type, typename to_type>
 void convert_int_to_uint(const from_type &from, to_type &to)
 {
+	GULPS_CAT_MAJOR("epee_val_conv");
 	PUSH_WARNINGS
 	DISABLE_VS_WARNINGS(4018)
 	GULPS_CHECK_AND_ASSERT_THROW_MES(from >= 0, "unexpected int value with signed storage value less than 0, and unsigned receiver value");
@@ -59,6 +56,7 @@ void convert_int_to_uint(const from_type &from, to_type &to)
 template <typename from_type, typename to_type>
 void convert_int_to_int(const from_type &from, to_type &to)
 {
+	GULPS_CAT_MAJOR("epee_val_conv");
 	GULPS_CHECK_AND_ASSERT_THROW_MES(from >= boost::numeric::bounds<to_type>::lowest(), "int value overhead: try to set value ", from, " to type ", typeid(to_type).name(), " with lowest possible value = ", boost::numeric::bounds<to_type>::lowest());
 	PUSH_WARNINGS
 	DISABLE_CLANG_WARNING(tautological-constant-out-of-range-compare)
@@ -69,6 +67,7 @@ void convert_int_to_int(const from_type &from, to_type &to)
 template <typename from_type, typename to_type>
 void convert_uint_to_any_int(const from_type &from, to_type &to)
 {
+	GULPS_CAT_MAJOR("epee_val_conv");
 	PUSH_WARNINGS
 	DISABLE_VS_WARNINGS(4018)
 	DISABLE_CLANG_WARNING(tautological-constant-out-of-range-compare)
@@ -134,6 +133,7 @@ struct convert_to_integral<from_type, to_type, false>
 {
 	static void convert(const from_type &from, to_type &to)
 	{
+		GULPS_CAT_MAJOR("epee_val_conv");
 		ASSERT_AND_THROW_WRONG_CONVERSION();
 	}
 };
@@ -146,7 +146,8 @@ struct convert_to_integral<std::string, uint64_t, false>
 {
 	static void convert(const std::string &from, uint64_t &to)
 	{
-		GULPS_LOGF_L2("Converting std::string to uint64_t. Source: {}", from);
+		GULPS_CAT_MAJOR("epee_val_conv");
+		GULPSF_LOG_L2("Converting std::string to uint64_t. Source: {}", from);
 		// String only contains digits
 		if(std::all_of(from.begin(), from.end(), ::isdigit))
 			to = boost::lexical_cast<uint64_t>(from);

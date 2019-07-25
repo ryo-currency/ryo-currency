@@ -43,8 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Adapted from Python code by Sarang Noether
-#undef GULPS_CAT_MAJOR
-#define GULPS_CAT_MAJOR "multiexp"
 
 #pragma once
 
@@ -84,6 +82,7 @@ static constexpr size_t maxM = cryptonote::common_config::BULLETPROOF_MAX_OUTPUT
 
 struct MultiexpData
 {
+	GULPS_CAT_MAJOR("multiexp");
 	rct::key scalar;
 	ge_p3 point;
 
@@ -107,7 +106,7 @@ struct alignas(8) ge_cached_pad
 class pippenger_cache
 {
 public:
-	pippenger_cache() : size(0), alloc_size(0) {}	
+	pippenger_cache() : size(0), alloc_size(0) {}
 
 	inline ge_cached* pp_offset(size_t n) { return &cache[n].gec; };
 	inline const ge_cached& pp_offset(size_t n) const { return cache[n].gec; };
@@ -150,7 +149,7 @@ private:
 class straus_cache
 {
 public:
-	straus_cache() : size(0) {}	
+	straus_cache() : size(0) {}
 
 	static constexpr size_t STRAUS_C = 4;
 

@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "http_client"
 
 #pragma once
 #include <boost/lexical_cast.hpp>
@@ -59,7 +55,7 @@
 
 //#pragma comment(lib, "shlwapi.lib")
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -70,7 +66,7 @@ namespace epee
 namespace net_utils
 {
 
-/*struct url 
+/*struct url
 	{
 	public:
 		void parse(const std::string& url_s)
@@ -271,6 +267,9 @@ class http_simple_client_template : public i_target_handler
 	bool m_ssl;
 
   public:
+
+	GULPS_CAT_MAJOR("epee_http_client");
+
 	explicit http_simple_client_template()
 		: i_target_handler(), m_net_client(), m_host_buff(), m_port(), m_auth(), m_header_cache(), m_response_info(), m_len_in_summary(0), m_len_in_remain(0), m_pcontent_encoding_handler(nullptr), m_state(), m_chunked_state(), m_chunked_cache(), m_lock(), m_ssl(false)
 	{
@@ -344,7 +343,7 @@ class http_simple_client_template : public i_target_handler
 			GULPS_LOG_L1("Reconnecting...");
 			if(!connect(timeout))
 			{
-				GULPS_LOGF_L1("Failed to connect to {}:{}", m_host_buff , m_port);
+				GULPSF_LOG_L1("Failed to connect to {}:{}", m_host_buff , m_port);
 				return false;
 			}
 		}
@@ -667,7 +666,7 @@ class http_simple_client_template : public i_target_handler
 				}
 				if(!get_chunk_head(m_chunked_cache, m_len_in_remain, is_matched))
 				{
-					GULPS_LOGF_ERROR("http_stream_filter::handle_chunked(*) Failed to get length from chunked head:{}", m_chunked_cache);
+					GULPSF_LOG_ERROR("http_stream_filter::handle_chunked(*) Failed to get length from chunked head:{}", m_chunked_cache);
 					m_state = reciev_machine_state_error;
 					return false;
 				}
@@ -719,7 +718,7 @@ class http_simple_client_template : public i_target_handler
 				return true;
 			case http_chunked_state_undefined:
 			default:
-				GULPS_LOGF_ERROR("http_stream_filter::handle_chunked(): Wrong state{}", m_chunked_state);
+				GULPSF_LOG_ERROR("http_stream_filter::handle_chunked(): Wrong state{}", m_chunked_state);
 				return false;
 			}
 		}
@@ -876,7 +875,7 @@ class http_simple_client_template : public i_target_handler
 			string_tools::trim(m_response_info.m_header_info.m_transfer_encoding);
 			if(string_tools::compare_no_case(m_response_info.m_header_info.m_transfer_encoding, "chunked"))
 			{
-				GULPS_LOGF_ERROR("Wrong Transfer-Encoding:{}", m_response_info.m_header_info.m_transfer_encoding);
+				GULPSF_LOG_ERROR("Wrong Transfer-Encoding:{}", m_response_info.m_header_info.m_transfer_encoding);
 				m_state = reciev_machine_state_error;
 				return false;
 			}
@@ -889,7 +888,7 @@ class http_simple_client_template : public i_target_handler
 			//In the response header the length was specified
 			if(!content_len_valid)
 			{
-				GULPS_LOGF_ERROR("http_stream_filter::analize_cached_reply_header_and_invoke_state(): Failed to get_len_from_content_lenght();, m_query_info.m_content_length={}", m_response_info.m_header_info.m_content_length);
+				GULPSF_LOG_ERROR("http_stream_filter::analize_cached_reply_header_and_invoke_state(): Failed to get_len_from_content_lenght();, m_query_info.m_content_length={}", m_response_info.m_header_info.m_content_length);
 				m_state = reciev_machine_state_error;
 				return false;
 			}
@@ -918,7 +917,7 @@ class http_simple_client_template : public i_target_handler
 		else
 		{ //Apparently there are no signs of the form of transfer, will receive data until the connection is closed
 			m_state = reciev_machine_state_error;
-			GULPS_ERRORF("Undefined transfer type, consider http_body_transfer_connection_close method. header: {}", m_header_cache);
+			GULPSF_ERROR("Undefined transfer type, consider http_body_transfer_connection_close method. header: {}", m_header_cache);
 			return false;
 		}
 		return false;
@@ -947,7 +946,7 @@ class http_simple_client_template : public i_target_handler
 				boundary = result[7];
 			else
 			{
-				GULPS_LOGF_ERROR("Failed to match boundary in content-type={}", head_info.m_content_type);
+				GULPSF_LOG_ERROR("Failed to match boundary in content-type={}", head_info.m_content_type);
 				return false;
 			}
 			return true;

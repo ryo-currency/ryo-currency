@@ -27,14 +27,10 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "lan_base"
 
 /*!
  * \file language_base.h
- * 
+ *
  * \brief Language Base class for Polymorphism.
  */
 
@@ -80,6 +76,7 @@ inline std::string utf8prefix(const std::string &s, size_t count)
    */
 class Base
 {
+	GULPS_CAT_MAJOR("lan_base");
   protected:
 	enum
 	{

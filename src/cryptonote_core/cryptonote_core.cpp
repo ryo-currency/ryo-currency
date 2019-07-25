@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "crtnte_core"
 
 #include <boost/algorithm/string.hpp>
 
@@ -75,7 +74,7 @@ using namespace epee;
 #include "common/gulps.hpp"
 
 
-
+GULPS_CAT_MAJOR("crtnte_core");
 
 DISABLE_VS_WARNINGS(4355)
 
@@ -270,7 +269,7 @@ bool core::handle_command_line(const boost::program_options::variables_map &vm)
 	m_offline = get_arg(vm, arg_offline);
 	m_disable_dns_checkpoints = get_arg(vm, arg_disable_dns_checkpoints);
 	if(!command_line::is_arg_defaulted(vm, arg_fluffy_blocks))
-		GULPS_WARNF("{} is obsolete, it is now default", arg_fluffy_blocks.name);
+		GULPSF_WARN("{} is obsolete, it is now default", arg_fluffy_blocks.name);
 
 	if(command_line::get_arg(vm, arg_test_drop_download) == true)
 		test_drop_download();
@@ -374,7 +373,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 	}
 
 	folder /= db->get_db_name();
-	GULPS_GLOBALF_PRINT("Loading blockchain from folder {} ...", folder.string());
+	GULPSF_GLOBAL_PRINT("Loading blockchain from folder {} ...", folder.string());
 
 	const std::string filename = folder.string();
 	// default to fast:async:1
@@ -391,7 +390,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 		const bool db_sync_mode_is_default = command_line::is_arg_defaulted(vm, cryptonote::arg_db_sync_mode);
 
 		for(const auto &option : options)
-			GULPS_LOGF_L1("option: {}", option);
+			GULPSF_LOG_L1("option: {}", option);
 
 		// default to fast:async:1
 		uint64_t DEFAULT_FLAGS = DBF_FAST;
@@ -451,7 +450,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 	}
 	catch(const DB_ERROR &e)
 	{
-		GULPS_LOGF_ERROR("Error opening database: {}", e.what());
+		GULPSF_LOG_ERROR("Error opening database: {}", e.what());
 		return false;
 	}
 
@@ -551,7 +550,7 @@ bool core::handle_incoming_tx_pre(const blobdata &tx_blob, tx_verification_conte
 
 	if(tx_blob.size() > get_max_tx_size())
 	{
-		GULPS_LOGF_L1("WRONG TRANSACTION BLOB, too big size {}, rejected", tx_blob.size() );
+		GULPSF_LOG_L1("WRONG TRANSACTION BLOB, too big size {}, rejected", tx_blob.size() );
 		tvc.m_verifivation_failed = true;
 		tvc.m_too_big = true;
 		return false;
@@ -603,7 +602,7 @@ bool core::handle_incoming_tx_post(const blobdata &tx_blob, tx_verification_cont
 {
 	if(!check_tx_syntax(tx))
 	{
-		GULPS_LOGF_L1("WRONG TRANSACTION BLOB, Failed to check tx {} syntax, rejected", tx_hash );
+		GULPSF_LOG_L1("WRONG TRANSACTION BLOB, Failed to check tx {} syntax, rejected", tx_hash );
 		tvc.m_verifivation_failed = true;
 		return false;
 	}
@@ -614,7 +613,7 @@ bool core::handle_incoming_tx_post(const blobdata &tx_blob, tx_verification_cont
 	}
 	else if(!check_tx_semantic(tx, keeped_by_block))
 	{
-		GULPS_LOGF_L1("WRONG TRANSACTION BLOB, Failed to check tx {} semantic, rejected", tx_hash );
+		GULPSF_LOG_L1("WRONG TRANSACTION BLOB, Failed to check tx {} semantic, rejected", tx_hash );
 		tvc.m_verifivation_failed = true;
 		bad_semantics_txes_lock.lock();
 		bad_semantics_txes[0].insert(tx_hash);
@@ -657,7 +656,7 @@ bool core::handle_incoming_txs(const std::list<blobdata> &tx_blobs, std::vector<
 			}
 			catch(const std::exception &e)
 			{
-				GULPS_VERIFYF_ERR_TX("Exception in handle_incoming_tx_pre: {}", e.what());
+				GULPSF_VERIFY_ERR_TX("Exception in handle_incoming_tx_pre: {}", e.what());
 				results[i].res = false;
 			}
 		});
@@ -670,11 +669,11 @@ bool core::handle_incoming_txs(const std::list<blobdata> &tx_blobs, std::vector<
 			continue;
 		if(m_mempool.have_tx(results[i].hash))
 		{
-			GULPS_LOGF_L2("tx {}already have transaction in tx_pool", results[i].hash );
+			GULPSF_LOG_L2("tx {}already have transaction in tx_pool", results[i].hash );
 		}
 		else if(m_blockchain_storage.have_tx(results[i].hash))
 		{
-			GULPS_LOGF_L2("tx {} already have transaction in blockchain", results[i].hash );
+			GULPSF_LOG_L2("tx {} already have transaction in blockchain", results[i].hash );
 		}
 		else
 		{
@@ -685,7 +684,7 @@ bool core::handle_incoming_txs(const std::list<blobdata> &tx_blobs, std::vector<
 				}
 				catch(const std::exception &e)
 				{
-					GULPS_VERIFYF_ERR_TX("Exception in handle_incoming_tx_post: {}", e.what());
+					GULPSF_VERIFY_ERR_TX("Exception in handle_incoming_tx_post: {}", e.what());
 					results[i].res = false;
 				}
 			});
@@ -706,15 +705,15 @@ bool core::handle_incoming_txs(const std::list<blobdata> &tx_blobs, std::vector<
 		ok &= add_new_tx(results[i].tx, results[i].hash, results[i].prefix_hash, it->size(), tvc[i], keeped_by_block, relayed, do_not_relay);
 		if(tvc[i].m_verifivation_failed)
 		{
-			GULPS_VERIFYF_ERR_TX("Transaction verification failed: {}", results[i].hash);
+			GULPSF_VERIFY_ERR_TX("Transaction verification failed: {}", results[i].hash);
 		}
 		else if(tvc[i].m_verifivation_impossible)
 		{
-			GULPS_VERIFYF_ERR_TX("Transaction verification impossible: {}", results[i].hash);
+			GULPSF_VERIFY_ERR_TX("Transaction verification impossible: {}", results[i].hash);
 		}
 
 		if(tvc[i].m_added_to_pool)
-			GULPS_LOGF_L1("tx added: {}", results[i].hash);
+			GULPSF_LOG_L1("tx added: {}", results[i].hash);
 	}
 	return ok;
 
@@ -746,19 +745,19 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 {
 	if(!tx.vin.size())
 	{
-		GULPS_VERIFYF_ERR_TX("tx with empty inputs, rejected for tx id= {}", get_transaction_hash(tx));
+		GULPSF_VERIFY_ERR_TX("tx with empty inputs, rejected for tx id= {}", get_transaction_hash(tx));
 		return false;
 	}
 
 	if(!check_inputs_types_supported(tx))
 	{
-		GULPS_VERIFYF_ERR_TX("unsupported input types for tx id= {}", get_transaction_hash(tx));
+		GULPSF_VERIFY_ERR_TX("unsupported input types for tx id= {}", get_transaction_hash(tx));
 		return false;
 	}
 
 	if(!check_outs_valid(tx))
 	{
-		GULPS_VERIFYF_ERR_TX("tx with invalid outputs, rejected for tx id= {}", get_transaction_hash(tx));
+		GULPSF_VERIFY_ERR_TX("tx with invalid outputs, rejected for tx id= {}", get_transaction_hash(tx));
 		return false;
 	}
 
@@ -770,7 +769,7 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 
 	if(!check_money_overflow(tx))
 	{
-		GULPS_VERIFYF_ERR_TX("tx has money overflow, rejected for tx id= {}", get_transaction_hash(tx));
+		GULPSF_VERIFY_ERR_TX("tx has money overflow, rejected for tx id= {}", get_transaction_hash(tx));
 		return false;
 	}
 
@@ -778,7 +777,7 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 
 	if(!keeped_by_block && get_object_blobsize(tx) >= m_blockchain_storage.get_current_cumulative_blocksize_limit() - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE)
 	{
-		GULPS_VERIFYF_ERR_TX("tx is too large {}, expected not bigger than {}", get_object_blobsize(tx) , m_blockchain_storage.get_current_cumulative_blocksize_limit() - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE);
+		GULPSF_VERIFY_ERR_TX("tx is too large {}, expected not bigger than {}", get_object_blobsize(tx) , m_blockchain_storage.get_current_cumulative_blocksize_limit() - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE);
 		return false;
 	}
 
@@ -957,13 +956,13 @@ bool core::add_new_tx(transaction &tx, const crypto::hash &tx_hash, const crypto
 
 	if(m_mempool.have_tx(tx_hash))
 	{
-		GULPS_LOGF_L2("tx {} already have transaction in tx_pool", tx_hash );
+		GULPSF_LOG_L2("tx {} already have transaction in tx_pool", tx_hash );
 		return true;
 	}
 
 	if(m_blockchain_storage.have_tx(tx_hash))
 	{
-		GULPS_LOGF_L2("tx {} already have transaction in blockchain", tx_hash );
+		GULPSF_LOG_L2("tx {} already have transaction in blockchain", tx_hash );
 		return true;
 	}
 
@@ -1164,7 +1163,7 @@ bool core::handle_incoming_block(const blobdata &block_blob, block_verification_
 	bvc = boost::value_initialized<block_verification_context>();
 	if(block_blob.size() > common_config::BLOCK_SIZE_LIMIT_ABSOLUTE)
 	{
-		GULPS_LOGF_L1("WRONG BLOCK BLOB, too big size {}, rejected", block_blob.size() );
+		GULPSF_LOG_L1("WRONG BLOCK BLOB, too big size {}, rejected", block_blob.size() );
 		bvc.m_verifivation_failed = true;
 		return false;
 	}
@@ -1190,7 +1189,7 @@ bool core::check_incoming_block_size(const blobdata &block_blob) const
 {
 	if(block_blob.size() > common_config::BLOCK_SIZE_LIMIT_ABSOLUTE)
 	{
-		GULPS_LOGF_L1("WRONG BLOCK BLOB, too big size {}, rejected", block_blob.size() );
+		GULPSF_LOG_L1("WRONG BLOCK BLOB, too big size {}, rejected", block_blob.size() );
 		return false;
 	}
 	return true;
@@ -1379,7 +1378,7 @@ bool core::check_updates()
       return true;
 
     std::string version, hash;
-    GULPS_CATF_LOG_L1("updates", "Checking for a new {} version for {}", software, buildtag);
+    GULPSF_CAT_LOG_L1("updates", "Checking for a new {} version for {}", software, buildtag);
     if (!tools::check_updates(software, buildtag, version, hash))
       return false;
 
@@ -1387,7 +1386,7 @@ bool core::check_updates()
       return true;
 
     std::string url = tools::get_update_url(software, subdir, buildtag, version, true);
-    GULPS_GLOBALF_PRINT_CLR(gulps:COLOR_CYAN, "Version {} of {} for {} is available: {}, SHA256 hash {}", version , software, buildtag, url, hash);
+    GULPSF_GLOBAL_PRINT_CLR(gulps:COLOR_CYAN, "Version {} of {} for {} is available: {}, SHA256 hash {}", version , software, buildtag, url, hash);
 
     if (check_updates_level == UPDATES_NOTIFY)
       return true;
@@ -1427,20 +1426,20 @@ bool core::check_updates()
           crypto::hash file_hash;
           if (!tools::sha256sum(tmppath, file_hash))
           {
-            GULPS_CATF_ERROR("updates", "Failed to hash {}", tmppath);
+            GULPSF_CAT_ERROR("updates", "Failed to hash {}", tmppath);
             remove = true;
             good = false;
           }
           else if (hash != epee::string_tools::pod_to_hex(file_hash))
           {
-            GULPS_CATF_ERROR("updates", "Download from {} does not match the expected hash", uri );
+            GULPSF_CAT_ERROR("updates", "Download from {} does not match the expected hash", uri );
             remove = true;
             good = false;
           }
         }
         else
         {
-          GULPS_CATF_ERROR("updates", "Failed to download {}", uri);
+          GULPSF_CAT_ERROR("updates", "Failed to download {}", uri);
           good = false;
         }
         boost::unique_lock<boost::mutex> lock(m_update_mutex);
@@ -1463,19 +1462,19 @@ bool core::check_updates()
           }
         }
         if (good)
-          GULPS_CATF_PRINT_CLR(gulps::COLOR_CYAN, "updates", "New version downloaded to {}", path.string());
+          GULPSF_CAT_PRINT_CLR(gulps::COLOR_CYAN, "updates", "New version downloaded to {}", path.string());
       }, [this](const std::string &path, const std::string &uri, size_t length, ssize_t content_length) {
         if (length >= m_last_update_length + 1024 * 1024 * 10)
         {
           m_last_update_length = length;
-          GULPS_CATF_LOG_L1("updates", "Downloaded {}/{}", length, (content_length ? std::to_string(content_length) : "unknown"));
+          GULPSF_CAT_LOG_L1("updates", "Downloaded {}/{}", length, (content_length ? std::to_string(content_length) : "unknown"));
         }
         return true;
       });
     }
     else
     {
-      GULPS_CATF_LOG_L1("updates", "We already have {} with expected hash", path);
+      GULPSF_CAT_LOG_L1("updates", "We already have {} with expected hash", path);
     }
 
     lock.unlock();
@@ -1493,7 +1492,7 @@ bool core::check_disk_space()
 	uint64_t free_space = get_free_space();
 	if(free_space < 1ull * 1024 * 1024 * 1024) // 1 GB
 	{
-		GULPS_CATF_WARN("Free space is below 1 GB on {}", m_config_folder);
+		GULPSF_CAT_WARN("Free space is below 1 GB on {}", m_config_folder);
 	}
 	return true;
 }

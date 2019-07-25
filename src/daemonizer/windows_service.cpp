@@ -41,7 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "win_ser"
 
 #include <boost/chrono/chrono.hpp>
 #include <boost/thread/thread.hpp>
@@ -69,7 +68,7 @@
 
 namespace windows
 {
-
+GULPS_CAT_MAJOR("win_ser");
 namespace
 {
 typedef std::unique_ptr<std::remove_pointer<SC_HANDLE>::type, decltype(&::CloseServiceHandle)> service_handle;

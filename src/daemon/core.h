@@ -41,17 +41,13 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "daemon_core"
 
 #pragma once
 
 #include "cryptonote_core/cryptonote_core.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -60,6 +56,7 @@ namespace daemonize
 
 class t_core final
 {
+	GULPS_CAT_MAJOR("daemon_core");
   public:
 	static void init_options(boost::program_options::options_description &option_spec)
 	{

@@ -50,8 +50,6 @@
  * \brief Source file that defines simple_wallet class.
  */
 
-#define GULPS_CAT_MAJOR "cli_wallet"
-
 #include "simplewallet.h"
 #include "common/base58.h"
 #include "common/command_line.h"
@@ -88,11 +86,11 @@
 
 #define GULPS_PRINT_FAIL(...) GULPS_ERROR(tr("Error: "), __VA_ARGS__)
 #define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
-#define GULPS_PRINTF_OK(...) GULPS_PRINTF(__VA_ARGS__)
+#define GULPSF_PRINT_OK(...) GULPSF_PRINT(__VA_ARGS__)
 #define GULPS_PRINT_BOLD(...) GULPS_PRINT_CLR(gulps::COLOR_BOLD_WHITE, __VA_ARGS__)
 #define GULPS_PRINT_GREEN(...) GULPS_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
-#define GULPS_PRINTF_GREEN(...) GULPS_PRINTF_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
-#define GULPS_PRINT_SECRET(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, GULPS_CAT_MAJOR, "secret", gulps::COLOR_WHITE, __VA_ARGS__)
+#define GULPSF_PRINT_GREEN(...) GULPSF_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
+#define GULPS_PRINT_SECRET(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), "secret", gulps::COLOR_WHITE, __VA_ARGS__)
 
 #ifdef WIN32
 #undef fmt
@@ -110,7 +108,7 @@ using boost::lexical_cast;
 namespace po = boost::program_options;
 typedef cryptonote::simple_wallet sw;
 
-
+GULPS_CAT_MAJOR("wallet_cli");
 
 #define EXTENDED_LOGS_FILE "wallet_details.log"
 
@@ -395,7 +393,7 @@ void handle_transfer_exception(const std::exception_ptr &e, bool trusted_daemon)
 	}
 	catch(const tools::error::not_enough_unlocked_money &e)
 	{
-		GULPS_LOGF_L0("not enough money to transfer, available only {}, sent amount {}",
+		GULPSF_LOG_L0("not enough money to transfer, available only {}, sent amount {}",
 					 print_money(e.available()), print_money(e.tx_amount()));
 
 		GULPS_PRINT_FAIL(tr("Not enough money in unlocked balance"));
@@ -403,7 +401,7 @@ void handle_transfer_exception(const std::exception_ptr &e, bool trusted_daemon)
 	}
 	catch(const tools::error::not_enough_money &e)
 	{
-		GULPS_LOGF_L0("not enough money to transfer, available only {}, sent amount {}",
+		GULPSF_LOG_L0("not enough money to transfer, available only {}, sent amount {}",
 					 print_money(e.available()), print_money(e.tx_amount()));
 
 		GULPS_PRINT_FAIL(tr("Not enough money in unlocked balance"));
@@ -411,7 +409,7 @@ void handle_transfer_exception(const std::exception_ptr &e, bool trusted_daemon)
 	}
 	catch(const tools::error::tx_not_possible &e)
 	{
-		GULPS_LOGF_L0("not enough money to transfer, available only {}, transaction amount {} = {} + {} (fee)",
+		GULPSF_LOG_L0("not enough money to transfer, available only {}, transaction amount {} = {} + {} (fee)",
 					 print_money(e.available()), print_money(e.tx_amount() + e.fee()), print_money(e.tx_amount()), print_money(e.fee()));
 
 		GULPS_PRINT_FAIL(tr("Failed to find a way to create transactions. This is usually due to dust which is so small it cannot pay for itself in fees, or trying to send more money than the unlocked balance, or not leaving enough for fees"));
@@ -436,7 +434,7 @@ void handle_transfer_exception(const std::exception_ptr &e, bool trusted_daemon)
 	}
 	catch(const tools::error::tx_rejected &e)
 	{
-		GULPS_ERRORF(tr("Error: transaction {} was rejected by daemon with status: {}"), get_transaction_hash(e.tx()), e.status());
+		GULPSF_ERROR(tr("Error: transaction {} was rejected by daemon with status: {}"), get_transaction_hash(e.tx()), e.status());
 		std::string reason = e.reason();
 		if(!reason.empty())
 			GULPS_ERROR(tr("Reason: "), reason);
@@ -491,7 +489,7 @@ bool check_file_overwrite(const std::string &filename)
 	{
 		if(boost::ends_with(filename, ".keys"))
 		{
-			GULPS_ERRORF(tr("Error: File {} likely stores wallet private keys! Use a different file name."), filename);
+			GULPSF_ERROR(tr("Error: File {} likely stores wallet private keys! Use a different file name."), filename);
 			return false;
 		}
 		return command_line::is_yes(input_line(fmt::format(tr("File {} already exists. Are you sure to overwrite it? (Y/Yes/N/No): "), filename)));
@@ -745,7 +743,7 @@ bool simple_wallet::print_fee_info(const std::vector<std::string> &args /* = std
 
 	using namespace cryptonote;
 	constexpr uint64_t typical_size_kb = 15;
-	GULPS_PRINTF_OK(tr("Current fee is {} {} per kB and {} {} per ring member."),
+	GULPSF_PRINT_OK(tr("Current fee is {} {} per kB and {} {} per ring member."),
 		print_money(common_config::FEE_PER_KB) , get_unit(get_default_decimal_point()),
 		print_money(common_config::FEE_PER_RING_MEMBER), get_unit(get_default_decimal_point()));
 
@@ -785,9 +783,9 @@ bool simple_wallet::print_fee_info(const std::vector<std::string> &args /* = std
 				msg = tr(" (current)");
 			uint64_t minutes_low = nblocks_low * common_config::DIFFICULTY_TARGET / 60, minutes_high = nblocks_high * common_config::DIFFICULTY_TARGET / 60;
 			if(nblocks_high == nblocks_low)
-				GULPS_PRINTF_OK(tr("{} block ({} minutes) backlog at priority {}{}"), nblocks_low, minutes_low, priority, msg);
+				GULPSF_PRINT_OK(tr("{} block ({} minutes) backlog at priority {}{}"), nblocks_low, minutes_low, priority, msg);
 			else
-				GULPS_PRINTF_OK(tr("{} to {} block ({} to {} minutes) backlog at priority {}"), nblocks_low, nblocks_high, minutes_low, minutes_high, priority);
+				GULPSF_PRINT_OK(tr("{} to {} block ({} to {} minutes) backlog at priority {}"), nblocks_low, nblocks_high, minutes_low, minutes_high, priority);
 		}
 		else
 			GULPS_PRINT_OK(tr("No backlog at priority "), priority);
@@ -1222,7 +1220,7 @@ bool simple_wallet::submit_multisig(const std::vector<std::string> &args)
 		}
 		if(txs.m_signers.size() < threshold)
 		{
-			GULPS_ERRORF(tr("Error: Multisig transaction signed by only {} signers, needs {} more signatures"), txs.m_signers.size(), threshold - txs.m_signers.size());
+			GULPSF_ERROR(tr("Error: Multisig transaction signed by only {} signers, needs {} more signatures"), txs.m_signers.size(), threshold - txs.m_signers.size());
 			return true;
 		}
 
@@ -1290,7 +1288,7 @@ bool simple_wallet::export_raw_multisig(const std::vector<std::string> &args)
 		}
 		if(txs.m_signers.size() < threshold)
 		{
-			GULPS_ERRORF(tr("Error: Multisig transaction signed by only {} signers, needs {} more signatures"), txs.m_signers.size(), threshold - txs.m_signers.size());
+			GULPSF_ERROR(tr("Error: Multisig transaction signed by only {} signers, needs {} more signatures"), txs.m_signers.size(), threshold - txs.m_signers.size());
 			return true;
 		}
 
@@ -2492,7 +2490,7 @@ bool simple_wallet::ask_wallet_create_if_needed()
 		{
 			tools::wallet2::wallet_exists(wallet_path, keys_file_exists, wallet_file_exists);
 			GULPS_LOG_L1("wallet_path: ", wallet_path);
-			GULPS_LOGF_L1("keys_file_exists: {} wallet_file_exists: {}", keys_file_exists, wallet_file_exists);
+			GULPSF_LOG_L1("keys_file_exists: {} wallet_file_exists: {}", keys_file_exists, wallet_file_exists);
 
 			if((keys_file_exists || wallet_file_exists) && (!m_generate_new.empty() || m_restoring))
 			{
@@ -2869,7 +2867,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 				GULPS_PRINT_FAIL(tr("Error: M/N is currently unsupported. "));
 				return false;
 			}
-			GULPS_PRINTF_OK(tr("Generating master wallet from {} of {} multisig wallet keys"), multisig_m, multisig_n);
+			GULPSF_PRINT_OK(tr("Generating master wallet from {} of {} multisig wallet keys"), multisig_m, multisig_n);
 
 			// parse multisig address
 			std::string address_string = input_line("Multisig wallet address: ");
@@ -3145,7 +3143,7 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 	}
 
 	if(!m_trusted_daemon)
-		GULPS_PRINTF_OK(tr("Warning: using an untrusted daemon at {}, privacy will be lessened"), m_wallet->get_daemon_address());
+		GULPSF_PRINT_OK(tr("Warning: using an untrusted daemon at {}, privacy will be lessened"), m_wallet->get_daemon_address());
 
 	if(m_wallet->get_ring_database().empty())
 		GULPS_PRINT_FAIL(tr("Failed to initialize ring database: privacy enhancing features will be inactive"));
@@ -3213,7 +3211,7 @@ bool simple_wallet::try_connect_to_daemon(bool silent, uint32_t *version)
 	{
 		if(!silent)
 		{
-			GULPS_ERRORF(tr("Error: Daemon uses a different RPC major version ({}) than the wallet ({}): {}. Either update one of them, or use --allow-mismatched-daemon-version."),
+			GULPSF_ERROR(tr("Error: Daemon uses a different RPC major version ({}) than the wallet ({}): {}. Either update one of them, or use --allow-mismatched-daemon-version."),
 						 *version >> 16, CORE_RPC_VERSION_MAJOR, m_wallet->get_daemon_address());
 		}
 		return false;
@@ -3243,7 +3241,7 @@ std::string simple_wallet::get_mnemonic_language(bool ignore_cmd_arg)
 		if(!ret.empty())
 			return ret;
 
-		GULPS_ERRORF(tr("Error: Language '{}' is not in the language list. Please specify the language manually.\n"), m_mnemonic_language);
+		GULPSF_ERROR(tr("Error: Language '{}' is not in the language list. Please specify the language manually.\n"), m_mnemonic_language);
 	}
 
 	GULPS_PRINT_OK(tr("List of available languages for your wallet's seed:"));
@@ -3580,7 +3578,7 @@ bool simple_wallet::new_wallet_msig(const boost::program_options::variables_map 
 			return false;
 		}
 
-		GULPS_PRINTF_OK(tr("Generated new {}/{} multisig wallet: {}"), threshold, total, m_wallet->get_account().get_public_address_str(m_wallet->nettype()));
+		GULPSF_PRINT_OK(tr("Generated new {}/{} multisig wallet: {}"), threshold, total, m_wallet->get_account().get_public_address_str(m_wallet->nettype()));
 	}
 	catch(const std::exception &e)
 	{
@@ -3640,7 +3638,7 @@ bool simple_wallet::open_wallet(const boost::program_options::variables_map &vm)
 			{
 			} // guard against I/O errors
 			if(password_is_correct)
-				GULPS_ERRORF(tr("Error: You may want to remove the file \"{}\" and try again"), m_wallet_file);
+				GULPSF_ERROR(tr("Error: You may want to remove the file \"{}\" and try again"), m_wallet_file);
 		}
 		return false;
 	}
@@ -4026,7 +4024,7 @@ bool simple_wallet::show_balance_unlocked(bool detailed)
 	if(!detailed || balance_per_subaddress.empty())
 		return true;
 	GULPS_PRINT_OK(tr("Balance per address:"));
-	GULPS_PRINTF_OK("{:>15} {:>21} {:>21} {:>7} {:>21}", tr("Address"), tr("Balance"), tr("Unlocked balance"), tr("Outputs"), tr("Label"));
+	GULPSF_PRINT_OK("{:>15} {:>21} {:>21} {:>7} {:>21}", tr("Address"), tr("Balance"), tr("Unlocked balance"), tr("Outputs"), tr("Label"));
 	std::vector<tools::wallet2::transfer_details> transfers;
 	m_wallet->get_transfers(transfers);
 	for(const auto &i : balance_per_subaddress)
@@ -4034,7 +4032,7 @@ bool simple_wallet::show_balance_unlocked(bool detailed)
 		cryptonote::subaddress_index subaddr_index = {m_current_subaddress_account, i.first};
 		std::string address_str = m_wallet->get_subaddress_as_str(subaddr_index).substr(0, 6);
 		uint64_t num_unspent_outputs = std::count_if(transfers.begin(), transfers.end(), [&subaddr_index](const tools::wallet2::transfer_details &td) { return !td.m_spent && td.m_subaddr_index == subaddr_index; });
-		GULPS_PRINTF_OK("{:>8} {:>6} {:>21} {:>21} {:>7} {:>21}", i.first, address_str, print_money(i.second),
+		GULPSF_PRINT_OK("{:>8} {:>6} {:>21} {:>21} {:>7} {:>21}", i.first, address_str, print_money(i.second),
 						print_money(unlocked_balance_per_subaddress[i.first]), num_unspent_outputs, m_wallet->get_subaddress_label(subaddr_index));
 	}
 	return true;
@@ -4118,7 +4116,7 @@ bool simple_wallet::show_incoming_transfers(const std::vector<std::string> &args
 				if(verbose)
 					verbose_string = fmt::format("{:>68}{:>68}", tr("pubkey"), tr("key image"));
 
-				GULPS_PRINTF_OK("{:>21}{:>8}{:>12}{:>16}{:>68}{:>16}{}", tr("amount"), tr("spent"), tr("unlocked"),
+				GULPSF_PRINT_OK("{:>21}{:>8}{:>12}{:>16}{:>68}{:>16}{}", tr("amount"), tr("spent"), tr("unlocked"),
 								tr("global index"), tr("tx id"), tr("addr index"), verbose_string);
 
 				transfers_found = true;
@@ -4138,7 +4136,7 @@ bool simple_wallet::show_incoming_transfers(const std::vector<std::string> &args
 				verbose_string = fmt::format("{:>3}{:>64}{}{:>68}", "<", td.get_public_key(), ">", kimg);
 			}
 
-			GULPS_PRINTF_CLR(td.m_spent ? gulps::COLOR_MAGENTA : gulps::COLOR_GREEN, "{:>21}{:>8}{:>12}{:>16}{:>3}{:>64}{}{:>16}{}",
+			GULPSF_PRINT_CLR(td.m_spent ? gulps::COLOR_MAGENTA : gulps::COLOR_GREEN, "{:>21}{:>8}{:>12}{:>16}{:>3}{:>64}{}{:>16}{}",
 							print_money(td.amount()), td.m_spent ? tr("T") : tr("F"), m_wallet->is_transfer_unlocked(td) ? tr("unlocked") : tr("locked"),
 							td.m_global_output_index, "<", td.m_txid, ">", td.m_subaddr_index.minor, verbose_string);
 		}
@@ -4175,7 +4173,7 @@ bool simple_wallet::show_payments(const std::vector<std::string> &args)
 
 	PAUSE_READLINE();
 
-	GULPS_PRINTF_OK("{:>68}{:>68}{:>12}{:>21}{:>16}{:>16}", tr("payment"), tr("transaction"), tr("height"), tr("amount"), tr("unlock time"), tr("addr index"));
+	GULPSF_PRINT_OK("{:>68}{:>68}{:>12}{:>21}{:>16}{:>16}", tr("payment"), tr("transaction"), tr("height"), tr("amount"), tr("unlock time"), tr("addr index"));
 
 	bool payments_found = false;
 	for(std::string arg : args)
@@ -4197,7 +4195,7 @@ bool simple_wallet::show_payments(const std::vector<std::string> &args)
 				{
 					payments_found = true;
 				}
-				GULPS_PRINTF_CLR(gulps::COLOR_GREEN, "{}{}{}{}{}{}",
+				GULPSF_PRINT_CLR(gulps::COLOR_GREEN, "{}{}{}{}{}{}",
 												payment_id.payment_id,
 												pd.m_tx_hash,
 												pd.m_block_height,
@@ -4455,7 +4453,7 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 	uint64_t adjusted_fake_outs_count = m_wallet->adjust_mixin(fake_outs_count);
 	if(adjusted_fake_outs_count > fake_outs_count)
 	{
-		GULPS_ERRORF(tr("Error: ring size {} is too small, minimum is {}"), fake_outs_count + 1, adjusted_fake_outs_count + 1);
+		GULPSF_ERROR(tr("Error: ring size {} is too small, minimum is {}"), fake_outs_count + 1, adjusted_fake_outs_count + 1);
 		return true;
 	}
 
@@ -4827,7 +4825,7 @@ bool simple_wallet::sweep_main(uint64_t below, const std::vector<std::string> &a
 	uint64_t adjusted_fake_outs_count = m_wallet->adjust_mixin(fake_outs_count);
 	if(adjusted_fake_outs_count > fake_outs_count)
 	{
-		GULPS_ERRORF(tr("Error: ring size {} is too small, minimum is {}"), fake_outs_count + 1, adjusted_fake_outs_count + 1);
+		GULPSF_ERROR(tr("Error: ring size {} is too small, minimum is {}"), fake_outs_count + 1, adjusted_fake_outs_count + 1);
 		return true;
 	}
 
@@ -5600,7 +5598,7 @@ bool simple_wallet::check_tx_key(const std::vector<std::string> &args_)
 			{
 				if(confirmations != (uint64_t)-1)
 				{
-					GULPS_PRINTF_OK(tr("This transaction has {} confirmations"), confirmations);
+					GULPSF_PRINT_OK(tr("This transaction has {} confirmations"), confirmations);
 				}
 				else
 				{
@@ -5674,7 +5672,7 @@ bool simple_wallet::check_tx_proof(const std::vector<std::string> &args)
 				{
 					if(confirmations != (uint64_t)-1)
 					{
-						GULPS_PRINTF_OK(tr("This transaction has {} confirmations"), confirmations);
+						GULPSF_PRINT_OK(tr("This transaction has {} confirmations"), confirmations);
 					}
 					else
 					{
@@ -5894,7 +5892,7 @@ bool simple_wallet::check_reserve_proof(const std::vector<std::string> &args)
 		uint64_t total, spent;
 		if(m_wallet->check_reserve_proof(info.address, args.size() == 3 ? args[2] : "", sig_str, total, spent))
 		{
-			GULPS_PRINTF_OK(tr("Good signature -- total: {}, spent: {}, unspent: {}"), print_money(total), print_money(spent), print_money(total - spent));
+			GULPSF_PRINT_OK(tr("Good signature -- total: {}, spent: {}, unspent: {}"), print_money(total), print_money(spent), print_money(total - spent));
 		}
 		else
 		{
@@ -6082,7 +6080,7 @@ bool simple_wallet::show_transfers(const std::vector<std::string> &args_)
 	// print in and out sorted by height
 	for(std::map<uint64_t, std::pair<bool, std::string>>::const_iterator i = output.begin(); i != output.end(); ++i)
 	{
-		GULPS_PRINTF_CLR(i->second.first ? gulps::COLOR_GREEN : gulps::COLOR_MAGENTA, "{:>8} {:>6} {}", i->first, i->second.first ? tr("in") : tr("out"), i->second.second);
+		GULPSF_PRINT_CLR(i->second.first ? gulps::COLOR_GREEN : gulps::COLOR_MAGENTA, "{:>8} {:>6} {}", i->first, i->second.first ? tr("in") : tr("out"), i->second.second);
 	}
 
 	if(pool)
@@ -6102,7 +6100,7 @@ bool simple_wallet::show_transfers(const std::vector<std::string> &args_)
 				std::string double_spend_note;
 				if(i->second.m_double_spend_seen)
 					double_spend_note = tr("[Double spend seen on the network: this transaction may or may not end up being mined] ");
-				GULPS_PRINTF_OK("{:>8s} {:>6s} {:>16s} {:>20s} {} {} {} {} {}{}", "pool", "in", get_human_readable_timestamp(pd.m_timestamp),
+				GULPSF_PRINT_OK("{:>8s} {:>6s} {:>16s} {:>20s} {} {} {} {} {}{}", "pool", "in", get_human_readable_timestamp(pd.m_timestamp),
 						  print_money(pd.m_amount), string_tools::pod_to_hex(pd.m_tx_hash), payment_id, pd.m_subaddr_index.minor, "-", note, double_spend_note);
 			}
 		}
@@ -6129,7 +6127,7 @@ bool simple_wallet::show_transfers(const std::vector<std::string> &args_)
 			bool is_failed = pd.m_state == tools::wallet2::unconfirmed_transfer_details::failed;
 			if((failed && is_failed) || (!is_failed && pending))
 			{
-				GULPS_PRINTF_OK("{:>8s} {:>6s} {:>16s} {:>20s} {} {} {:>14s} {} - {}", (is_failed ? tr("failed") : tr("pending")), tr("out"),
+				GULPSF_PRINT_OK("{:>8s} {:>6s} {:>16s} {:>20s} {} {} {:>14s} {} - {}", (is_failed ? tr("failed") : tr("pending")), tr("out"),
 								get_human_readable_timestamp(pd.m_timestamp), print_money(amount - pd.m_change - fee), string_tools::pod_to_hex(i->first),
 								payment_id, print_money(fee), print_subaddr_indices(pd.m_subaddr_indices), note);
 			}
@@ -6563,26 +6561,26 @@ void simple_wallet::print_accounts(const std::string &tag)
 	{
 		if(account_tags.first.count(tag) == 0)
 		{
-			GULPS_ERRORF(tr("Error: Tag {} is unregistered."), tag);
+			GULPSF_ERROR(tr("Error: Tag {} is unregistered."), tag);
 			return;
 		}
 		GULPS_PRINT_OK(tr("Accounts with tag: "), tag);
 		GULPS_PRINT_OK(tr("Tag's description: "), account_tags.first.find(tag)->second);
 	}
-	GULPS_PRINTF_OK("  {:>15} {:>21} {:>21} {:>21}", tr("Account"), tr("Balance"), tr("Unlocked balance"), tr("Label"));
+	GULPSF_PRINT_OK("  {:>15} {:>21} {:>21} {:>21}", tr("Account"), tr("Balance"), tr("Unlocked balance"), tr("Label"));
 	uint64_t total_balance = 0, total_unlocked_balance = 0;
 	for(uint32_t account_index = 0; account_index < m_wallet->get_num_subaddress_accounts(); ++account_index)
 	{
 		if(account_tags.second[account_index] != tag)
 			continue;
-		GULPS_PRINTF_OK(" {}{:>8} {:>6} {:>21} {:>21} {:>21}", (m_current_subaddress_account == account_index ? '*' : ' '), account_index,
+		GULPSF_PRINT_OK(" {}{:>8} {:>6} {:>21} {:>21} {:>21}", (m_current_subaddress_account == account_index ? '*' : ' '), account_index,
 						m_wallet->get_subaddress_as_str({account_index, 0}).substr(0, 6), print_money(m_wallet->balance(account_index)),
 						print_money(m_wallet->unlocked_balance(account_index)), m_wallet->get_subaddress_label({account_index, 0}));
 		total_balance += m_wallet->balance(account_index);
 		total_unlocked_balance += m_wallet->unlocked_balance(account_index);
 	}
 	GULPS_PRINT_OK("----------------------------------------------------------------------------------");
-	GULPS_PRINTF_OK("  {:>15} {:>21} {:>21}", tr("Total"), print_money(total_balance), print_money(total_unlocked_balance));
+	GULPSF_PRINT_OK("  {:>15} {:>21} {:>21}", tr("Total"), print_money(total_balance), print_money(total_unlocked_balance));
 }
 //----------------------------------------------------------------------------------------------------
 bool simple_wallet::print_address(const std::vector<std::string> &args /* = std::vector<std::string>()*/)
@@ -6732,7 +6730,7 @@ bool simple_wallet::print_integrated_address(const std::vector<std::string> &arg
 		{
 			if(info.has_payment_id)
 			{
-				GULPS_PRINTF_OK(tr("Integrated address: {}, payment ID: {}"),
+				GULPSF_PRINT_OK(tr("Integrated address: {}, payment ID: {}"),
 								get_public_address_as_str(m_wallet->nettype(), false, info.address), epee::string_tools::pod_to_hex(info.payment_id));
 			}
 			else

@@ -43,7 +43,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "rctOps"
 
 #include "rctOps.h"
 #include "common/gulps.hpp"
@@ -60,7 +59,7 @@ using namespace std;
 		{                                            \
 			std::string str;	\
 			str = stream_writer::write(__VA_ARGS__);	\
-			GULPS_WARN(str);                       \
+			{GULPS_CAT_MAJOR("rctOps"); GULPS_WARN(str);}                       \
 			throw std::runtime_error(str);       \
 		}                                            \
 	}
@@ -104,6 +103,7 @@ key skGen()
 //Mainly used in testing
 keyV skvGen(size_t rows)
 {
+	GULPS_CAT_MAJOR("rctOps");
 	GULPS_CHECK_AND_ASSERT_THROW_MES(rows > 0, "0 keys requested");
 	keyV rv(rows);
 	for(size_t i = 0; i < rows; i++)
@@ -279,7 +279,7 @@ rct::key addKeys(const key &A, const key &B)
 	return k;
 }
 
-rct::key addKeys(const keyV &A) 
+rct::key addKeys(const keyV &A)
 {
 	if (A.empty())
 		return rct::identity();

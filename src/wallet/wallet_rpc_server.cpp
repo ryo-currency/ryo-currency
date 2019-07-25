@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "wallet.rpc"
 
 #include "include_base_utils.h"
 #include <boost/algorithm/string.hpp>
@@ -87,6 +86,7 @@ boost::optional<tools::password_container> password_prompter(const char *prompt,
 	auto pwd_container = tools::password_container::prompt(verify, prompt);
 	if(!pwd_container)
 	{
+		GULPS_CAT_MAJOR("wallet_rpc");
 		GULPS_ERROR(tr("failed to read wallet password"));
 	}
 	return pwd_container;
@@ -182,7 +182,7 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 #ifdef _WIN32
 			GULPS_ERROR(tr("Failed to create directory "),  m_wallet_dir);
 #else
-			GULPS_ERRORF(tr("Failed to create directory {}: {}"), m_wallet_dir, strerror(errno));
+			GULPSF_ERROR(tr("Failed to create directory {}: {}"), m_wallet_dir, strerror(errno));
 #endif
 			return false;
 		}
@@ -193,7 +193,7 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 		if(rpc_config->login)
 		{
 			const cryptonote::rpc_args::descriptors arg{};
-			GULPS_ERRORF(tr("Cannot specify --{} and --{}"), arg_disable_rpc_login.name, arg.rpc_login.name);
+			GULPSF_ERROR(tr("Cannot specify --{} and --{}"), arg_disable_rpc_login.name, arg.rpc_login.name);
 			return false;
 		}
 	}
@@ -211,7 +211,7 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 			rpc_login_file = tools::private_file::create(temp);
 			if(!rpc_login_file.handle())
 			{
-				GULPS_ERRORF(tr("Failed to create file {}. Check permissions or remove file"), temp);
+				GULPSF_ERROR(tr("Failed to create file {}. Check permissions or remove file"), temp);
 				return false;
 			}
 			std::fputs(http_login->username.c_str(), rpc_login_file.handle());
@@ -2968,6 +2968,7 @@ bool wallet_rpc_server::on_submit_multisig(const wallet_rpc::COMMAND_RPC_SUBMIT_
 
 int main(int argc, char **argv)
 {
+	GULPS_CAT_MAJOR("wallet_rpc");
 #ifdef WIN32
 	std::vector<char*> argptrs;
 	command_line::set_console_utf8();

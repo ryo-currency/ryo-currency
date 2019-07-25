@@ -34,6 +34,8 @@
 using namespace epee;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 namespace
 {
 bool construct_miner_tx_by_size(transaction &miner_tx, uint64_t height, uint64_t already_generated_coins,

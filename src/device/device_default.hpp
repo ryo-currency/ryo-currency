@@ -46,6 +46,7 @@
 #pragma once
 
 #include "device.hpp"
+#include "common/gulps.hpp"
 
 namespace hw
 {
@@ -57,6 +58,7 @@ void register_all(std::map<std::string, std::unique_ptr<device>> &registry);
 
 class device_default : public hw::device
 {
+	GULPS_CAT_MAJOR("device");
   public:
 	device_default();
 	~device_default();

@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "lev_abs_inv2"
 
 #pragma once
 
@@ -34,7 +30,7 @@
 #include "portable_storage_template_helper.h"
 #include <boost/utility/value_init.hpp>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -54,15 +50,16 @@ bool invoke_remote_command2(int command, const t_arg &out_struct, t_result &resu
 	stg.store_to_binary(buff_to_send);
 
 	int res = transport.invoke(command, buff_to_send, buff_to_recv);
+	GULPS_CAT_MAJOR("epee_lev_abs_inv2");
 	if(res <= 0)
 	{
-		GULPS_LOGF_ERROR("Failed to invoke command {} return code {}", command , res);
+		GULPSF_LOG_ERROR("Failed to invoke command {} return code {}", command , res);
 		return false;
 	}
 	serialization::portable_storage stg_ret;
 	if(!stg_ret.load_from_binary(buff_to_recv))
 	{
-		GULPS_LOGF_ERROR("Failed to load_from_binary on command {}", command);
+		GULPSF_LOG_ERROR("Failed to load_from_binary on command {}", command);
 		return false;
 	}
 	return result_struct.load(stg_ret);
@@ -82,7 +79,8 @@ bool notify_remote_command2(int command, const t_arg &out_struct, t_transport &t
 	int res = transport.notify(command, buff_to_send);
 	if(res <= 0)
 	{
-		GULPS_LOGF_ERROR("Failed to notify command {} return code {}", command , res);
+		GULPS_CAT_MAJOR("epee_lev_abs_inv2");
+		GULPSF_LOG_ERROR("Failed to notify command {} return code {}", command , res);
 		return false;
 	}
 	return true;
@@ -91,7 +89,7 @@ bool notify_remote_command2(int command, const t_arg &out_struct, t_transport &t
 template <class t_arg, class t_result, class t_transport>
 bool invoke_remote_command2(boost::uuids::uuid conn_id, int command, const t_arg &out_struct, t_result &result_struct, t_transport &transport)
 {
-
+	GULPS_CAT_MAJOR("epee_lev_abs_inv2");
 	typename serialization::portable_storage stg;
 	out_struct.store(stg);
 	std::string buff_to_send, buff_to_recv;
@@ -100,13 +98,13 @@ bool invoke_remote_command2(boost::uuids::uuid conn_id, int command, const t_arg
 	int res = transport.invoke(command, buff_to_send, buff_to_recv, conn_id);
 	if(res <= 0)
 	{
-		GULPS_LOGF_L1("Failed to invoke command {} return code {}", command , res);
+		GULPSF_LOG_L1("Failed to invoke command {} return code {}", command , res);
 		return false;
 	}
 	typename serialization::portable_storage stg_ret;
 	if(!stg_ret.load_from_binary(buff_to_recv))
 	{
-		GULPS_LOGF_ERROR("Failed to load_from_binary on command {}", command);
+		GULPSF_LOG_ERROR("Failed to load_from_binary on command {}", command);
 		return false;
 	}
 	return result_struct.load(stg_ret);
@@ -115,6 +113,7 @@ bool invoke_remote_command2(boost::uuids::uuid conn_id, int command, const t_arg
 template <class t_result, class t_arg, class callback_t, class t_transport>
 bool async_invoke_remote_command2(boost::uuids::uuid conn_id, int command, const t_arg &out_struct, t_transport &transport, const callback_t &cb, size_t inv_timeout = LEVIN_DEFAULT_TIMEOUT_PRECONFIGURED)
 {
+	GULPS_CAT_MAJOR("epee_lev_abs_inv2");
 	typename serialization::portable_storage stg;
 	const_cast<t_arg &>(out_struct).store(stg); //TODO: add true const support to searilzation
 	std::string buff_to_send;
@@ -123,20 +122,20 @@ bool async_invoke_remote_command2(boost::uuids::uuid conn_id, int command, const
 		t_result result_struct = AUTO_VAL_INIT(result_struct);
 		if(code <= 0)
 		{
-			GULPS_LOGF_L1("Failed to invoke command {} return code {}", command , code);
+			GULPSF_LOG_L1("Failed to invoke command {} return code {}", command , code);
 			cb(code, result_struct, context);
 			return false;
 		}
 		serialization::portable_storage stg_ret;
 		if(!stg_ret.load_from_binary(buff))
 		{
-			GULPS_LOGF_ERROR("Failed to load_from_binary on command {}", command);
+			GULPSF_LOG_ERROR("Failed to load_from_binary on command {}", command);
 			cb(LEVIN_ERROR_FORMAT, result_struct, context);
 			return false;
 		}
 		if(!result_struct.load(stg_ret))
 		{
-			GULPS_LOGF_ERROR("Failed to load result struct on command {}", command);
+			GULPSF_LOG_ERROR("Failed to load result struct on command {}", command);
 			cb(LEVIN_ERROR_FORMAT, result_struct, context);
 			return false;
 		}
@@ -146,7 +145,7 @@ bool async_invoke_remote_command2(boost::uuids::uuid conn_id, int command, const
 									 inv_timeout);
 	if(res <= 0)
 	{
-		GULPS_LOGF_L1("Failed to invoke command {} return code {}", command , res);
+		GULPSF_LOG_L1("Failed to invoke command {} return code {}", command , res);
 		return false;
 	}
 	return true;
@@ -164,7 +163,8 @@ bool notify_remote_command2(boost::uuids::uuid conn_id, int command, const t_arg
 	int res = transport.notify(command, buff_to_send, conn_id);
 	if(res <= 0)
 	{
-		GULPS_LOGF_ERROR("Failed to notify command {} return code {}", command , res);
+		GULPS_CAT_MAJOR("epee_lev_abs_inv2");
+		GULPSF_LOG_ERROR("Failed to notify command {} return code {}", command , res);
 		return false;
 	}
 	return true;
@@ -174,10 +174,11 @@ bool notify_remote_command2(boost::uuids::uuid conn_id, int command, const t_arg
 template <class t_owner, class t_in_type, class t_out_type, class t_context, class callback_t>
 int buff_to_t_adapter(int command, const std::string &in_buff, std::string &buff_out, callback_t cb, t_context &context)
 {
+	GULPS_CAT_MAJOR("epee_lev_abs_inv2");
 	serialization::portable_storage strg;
 	if(!strg.load_from_binary(in_buff))
 	{
-		GULPS_LOGF_ERROR("Failed to load_from_binary in command {}", command);
+		GULPSF_LOG_ERROR("Failed to load_from_binary in command {}", command);
 		return -1;
 	}
 	boost::value_initialized<t_in_type> in_struct;
@@ -185,7 +186,7 @@ int buff_to_t_adapter(int command, const std::string &in_buff, std::string &buff
 
 	if(!static_cast<t_in_type &>(in_struct).load(strg))
 	{
-		GULPS_LOGF_ERROR("Failed to load in_struct in command {}", command);
+		GULPSF_LOG_ERROR("Failed to load in_struct in command {}", command);
 		return -1;
 	}
 	int res = cb(command, static_cast<t_in_type &>(in_struct), static_cast<t_out_type &>(out_struct), context);
@@ -194,7 +195,7 @@ int buff_to_t_adapter(int command, const std::string &in_buff, std::string &buff
 
 	if(!strg_out.store_to_binary(buff_out))
 	{
-		GULPS_LOGF_ERROR("Failed to store_to_binary in command{}", command);
+		GULPSF_LOG_ERROR("Failed to store_to_binary in command{}", command);
 		return -1;
 	}
 
@@ -204,16 +205,17 @@ int buff_to_t_adapter(int command, const std::string &in_buff, std::string &buff
 template <class t_owner, class t_in_type, class t_context, class callback_t>
 int buff_to_t_adapter(t_owner *powner, int command, const std::string &in_buff, callback_t cb, t_context &context)
 {
+	GULPS_CAT_MAJOR("epee_lev_abs_inv2");
 	serialization::portable_storage strg;
 	if(!strg.load_from_binary(in_buff))
 	{
-		GULPS_LOGF_ERROR("Failed to load_from_binary in notify {}", command);
+		GULPSF_LOG_ERROR("Failed to load_from_binary in notify {}", command);
 		return -1;
 	}
 	boost::value_initialized<t_in_type> in_struct;
 	if(!static_cast<t_in_type &>(in_struct).load(strg))
 	{
-		GULPS_LOGF_ERROR("Failed to load in_struct in notify {}", command);
+		GULPSF_LOG_ERROR("Failed to load in_struct in notify {}", command);
 		return -1;
 	}
 	return cb(command, in_struct, context);
@@ -311,7 +313,7 @@ int buff_to_t_adapter(t_owner *powner, int command, const std::string &in_buff, 
 	}
 
 #define END_INVOKE_MAP2()                              \
-	GULPS_LOGF_ERROR("Unknown command:{}", command);          \
+	{GULPS_CAT_MAJOR("epee_lev_abs_inv2"); GULPSF_LOG_ERROR("Unknown command:{}", command);}          \
 	return LEVIN_ERROR_CONNECTION_HANDLER_NOT_DEFINED; \
 	}
 }

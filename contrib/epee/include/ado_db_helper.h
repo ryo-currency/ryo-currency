@@ -23,7 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#define GULPS_CAT_MAJOR "ado_db_help"
 
 #ifndef _DB_ADO_HELPER_H_
 #define _DB_ADO_HELPER_H_
@@ -35,7 +34,7 @@
 #include <comutil.h>
 #include <vector>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 #define BEGIN_TRY_SECTION() \
 	try                     \
@@ -47,7 +46,8 @@
 	}                                                                                                                                                                                           \
 	catch(const std::exception &ex)                                                                                                                                                             \
 	{                                                                                                                                                                                           \
-		GULPS_ERRORF("DB_ERROR: {}", ex.what();                                                                                                                                    \
+		GULPS_CAT_MAJOR("epee_ado_db_help");                                                                                                                                                         \
+		GULPSF_ERROR("DB_ERROR: {}", ex.what();                                                                                                                                                 \
 		return ret_val;                                                                                                                                                                         \
 	}                                                                                                                                                                                           \
 	catch(const _com_error &comm_err)                                                                                                                                                           \
@@ -56,13 +56,15 @@
 		std::string descr = string_encoding::convert_to_ansii(pstr ? pstr : TEXT(""));                                                                                                          \
 		const TCHAR *pmessage = comm_err.ErrorMessage();                                                                                                                                        \
 		pstr = comm_err.Source();                                                                                                                                                               \
+		GULPS_CAT_MAJOR("epee_ado_db_help");                                                                                                                                                         \
 		std::string source = string_encoding::convert_to_ansii(pstr ? pstr : TEXT(""));                                                                                                         \
-		GULPS_ERRORF("COM_ERROR {}:\n\tDescriprion:{}, \n\t Message: {}\n\t Source: {}", mess_where, descr, string_encoding::convert_to_ansii(pmessage), source); \
+		GULPSF_ERROR("COM_ERROR {}:\n\tDescriprion:{}, \n\t Message: {}\n\t Source: {}", mess_where, descr, string_encoding::convert_to_ansii(pmessage), source);                               \
 		return ret_val;                                                                                                                                                                         \
 	}                                                                                                                                                                                           \
 	catch(...)                                                                                                                                                                                  \
 	{                                                                                                                                                                                           \
-		GULPS_ERROR("..._ERROR: Unknown error.");                                                                                                                                  \
+		GULPS_CAT_MAJOR("epee_ado_db_help");                                                                                                                                                         \
+		GULPS_ERROR("..._ERROR: Unknown error.");                                                                                                                                               \
 		return ret_val;                                                                                                                                                                         \
 	}
 
@@ -85,6 +87,7 @@ struct profile_entry
 
 class profiler_manager
 {
+	GULPS_CAT_MAJOR("epee_ado_db_help");
   public:
 	typedef std::map<std::string, profile_entry> sqls_map;
 	profiler_manager() {}
@@ -966,11 +969,11 @@ class per_thread_connection_pool
 			HRESULT res = conn->Open(_bstr_t(m_connection_string.c_str()), _bstr_t(m_login.c_str()), _bstr_t(m_password.c_str()), NULL);
 			if(res != S_OK)
 			{
-				GULPS_ERRORF("Failed to connect do DB, connection str:{}", m_connection_string);
+				GULPSF_ERROR("Failed to connect do DB, connection str:{}", m_connection_string);
 				return conn;
 			}
 			CATCH_TRY_SECTION_MESS(conn, "while creating another connection");
-			GULPS_PRINTF("New DB Connection added for threadid={}", ::GetCurrentThreadId());
+			GULPSF_PRINT("New DB Connection added for threadid={}", ::GetCurrentThreadId());
 			ado_db_helper::execute_helper(conn, "set enable_seqscan=false;");
 			return conn;
 		}
@@ -1056,7 +1059,7 @@ bool find_or_add_t(const std::string &sql_select_statment, const std::string &sq
 template <typename TParams, typename default_id_type, typename t_conn>
 bool find_or_add_t_multiparametred(const std::string &sql_select_statment, const std::string &sql_insert_statment, OUT default_id_type &id, OUT bool &new_object_added, TParams params, t_conn &c)
 {
-
+	GULPS_CAT_MAJOR("epee_ado_db_help");
 	//CHECK_CONNECTION(false);
 
 	new_object_added = false;

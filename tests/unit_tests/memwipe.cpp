@@ -32,6 +32,8 @@
 #include "common/gulps.hpp"
 #include <stdint.h>
 
+GULPS_CAT_MAJOR("test");
+
 // Probably won't catch the optimized out case, but at least we test
 // it works in the normal case
 static void test(bool wipe)

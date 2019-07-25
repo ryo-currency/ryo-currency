@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Adapted from Java code by Sarang Noether
-#define GULPS_CAT_MAJOR "bulletproofs"
 
 #include "common/perf_timer.h"
 #include "common/gulps.hpp"
@@ -62,6 +61,7 @@ extern "C" {
 
 namespace rct
 {
+GULPS_CAT_MAJOR("bulletproofs");
 static rct::keyV vector_powers(const rct::key &x, size_t n);
 static rct::keyV vector_dup(const rct::key &x, size_t n);
 static rct::key inner_product(const rct::keyV &a, const rct::keyV &b);

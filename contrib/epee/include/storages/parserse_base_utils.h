@@ -23,14 +23,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "pars_bs_utls"
 
 #pragma once
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 namespace epee
@@ -83,7 +79,7 @@ inline std::string transform_to_escape_sequence(const std::string &src)
 	return res;
 }
 /*
-      
+
       \b  Backspace (ascii code 08)
       \f  Form feed (ascii code 0C)
       \n  New line
@@ -101,6 +97,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 	bool escape_mode = false;
 	std::string::const_iterator it = star_end_string;
 	++it;
+	GULPS_CAT_MAJOR("epee_pars_bs_utls");
 	for(; it != buf_end; it++)
 	{
 		if(escape_mode /*prev_ch == '\\'*/)
@@ -139,7 +136,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 				break;
 			default:
 				val.push_back(*it);
-				GULPS_PRINTF("Unknown escape sequence :\"\\{}\"", *it);
+				GULPSF_PRINT("Unknown escape sequence :\"\\{}\"", *it);
 			}
 			escape_mode = false;
 		}
@@ -176,6 +173,7 @@ inline void match_number2(std::string::const_iterator &star_end_string, std::str
 {
 	val.clear();
 	is_float_val = false;
+	GULPS_CAT_MAJOR("epee_pars_bs_utls");
 	for(std::string::const_iterator it = star_end_string; it != buf_end; it++)
 	{
 		if(isdigit(*it) || (it == star_end_string && *it == '-') || (val.size() && *it == '.') || (is_float_val && (*it == 'e' || *it == 'E' || *it == '-' || *it == '+')))
@@ -216,7 +214,7 @@ inline bool match_number(std::string::const_iterator &star_end_string, std::stri
 inline void match_word2(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {
 	val.clear();
-
+	GULPS_CAT_MAJOR("epee_pars_bs_utls");
 	for(std::string::const_iterator it = star_end_string; it != buf_end; it++)
 	{
 		if(!isalpha(*it))

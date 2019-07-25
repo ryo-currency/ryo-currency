@@ -35,6 +35,8 @@ using namespace epee;
 
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 /*
 bool transactions_generation_from_blockchain(std::string& blockchain_folder_path)
 {

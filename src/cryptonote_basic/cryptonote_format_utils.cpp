@@ -43,10 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "formt_utils"
 
 #include "include_base_utils.h"
 #include "crypto/pow_hash/cn_slow_hash.hpp"
@@ -62,7 +58,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include "common/gulps.hpp"
-
 
 
 #define ENCRYPTED_PAYMENT_ID_TAIL 0x8d
@@ -114,6 +109,7 @@ static std::atomic<uint64_t> block_hashes_cached_count(0);
 
 namespace cryptonote
 {
+GULPS_CAT_MAJOR("formt_utils");
 static inline unsigned char *operator&(ec_point &point)
 {
 	return &reinterpret_cast<unsigned char &>(point);

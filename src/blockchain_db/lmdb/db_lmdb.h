@@ -44,6 +44,7 @@
 
 #include <atomic>
 
+#include "common/gulps.hpp"
 #include "blockchain_db/blockchain_db.h"
 #include "cryptonote_basic/blobdatatype.h" // for type blobdata
 #include "ringct/rctTypes.h"
@@ -171,6 +172,7 @@ struct mdb_txn_safe
 // write for block and tx data, so no write transaction is open at the time.
 class BlockchainLMDB : public BlockchainDB
 {
+	GULPS_CAT_MAJOR("db_lmdb");
   public:
 	BlockchainLMDB(bool batch_transactions = false);
 	~BlockchainLMDB();

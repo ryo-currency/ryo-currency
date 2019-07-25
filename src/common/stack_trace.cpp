@@ -41,7 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "stk_trace"
 
 
 #if !defined __GNUC__ || defined __MINGW32__ || defined __MINGW64__ || defined __ANDROID__
@@ -64,6 +63,7 @@
 
 #include "common/gulps.hpp"
 
+GULPS_CAT_MAJOR("stk_trace");
 
 // from http://stackoverflow.com/questions/11665829/how-can-i-print-stack-trace-for-caught-exceptions-in-c-code-injection-in-c
 
@@ -160,16 +160,16 @@ void log_stack_trace(const char *msg)
 			break;
 		if(unw_get_reg(&cur, UNW_REG_IP, &ip) < 0)
 		{
-			GULPS_LOGF_L0("{:<4}", level);
+			GULPSF_LOG_L0("{:<4}", level);
 			continue;
 		}
 		if(unw_get_proc_name(&cur, sym, sizeof(sym), &off) < 0)
 		{
-			GULPS_LOGF_L0("{:<4}{:<20#0.x}", level, ip);
+			GULPSF_LOG_L0("{:<4}{:<20#0.x}", level, ip);
 			continue;
 		}
 		dsym = abi::__cxa_demangle(sym, NULL, NULL, &status);
-		GULPS_LOGF_L0("{:<4}{:<20#0.x} {#0.x} + {#0.x}", level, ip, (!status && dsym ? dsym : sym), off);
+		GULPSF_LOG_L0("{:<4}{:<20#0.x} {#0.x} + {#0.x}", level, ip, (!status && dsym ? dsym : sym), off);
 		free(dsym);
 	}
 #else

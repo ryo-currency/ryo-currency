@@ -43,7 +43,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "rctSigs"
 
 #include "rctSigs.h"
 #include "bulletproofs.h"
@@ -55,6 +54,9 @@
 
 using namespace crypto;
 using namespace std;
+
+GULPS_CAT_MAJOR("rctSigs");
+
 
 #define CHECK_AND_ASSERT_MES_L1(expr, ret, ...) \
 	{                                               \
@@ -975,7 +977,7 @@ bool verRct(const rctSig &rv, bool semantics)
 			{
 				if(!results[i])
 				{
-					GULPS_LOGF_L1("Range proof verified failed for proof {}", i);
+					GULPSF_LOG_L1("Range proof verified failed for proof {}", i);
 					return false;
 				}
 			}
@@ -999,7 +1001,7 @@ bool verRct(const rctSig &rv, bool semantics)
 	}
 	catch(const std::exception &e)
 	{
-		GULPS_LOGF_L1("Error in verRct: {}", e.what());
+		GULPSF_LOG_L1("Error in verRct: {}", e.what());
 		return false;
 	}
 	catch(...)
@@ -1100,7 +1102,7 @@ bool verRctSemanticsSimple(const std::vector<const rctSig *> &rvv)
 		{
 			if(!results[i])
 			{
-				GULPS_LOGF_L1("Range proof verified failed for proof {}", i);
+				GULPSF_LOG_L1("Range proof verified failed for proof {}", i);
 				return false;
 			}
 		}
@@ -1110,7 +1112,7 @@ bool verRctSemanticsSimple(const std::vector<const rctSig *> &rvv)
 	// we can get deep throws from ge_frombytes_vartime if input isn't valid
 	catch(const std::exception &e)
 	{
-		GULPS_LOGF_L1("Error in verRctSemanticsSimple: {}", e.what());
+		GULPSF_LOG_L1("Error in verRctSemanticsSimple: {}", e.what());
 		return false;
 	}
 	catch(...)
@@ -1165,7 +1167,7 @@ bool verRctNonSemanticsSimple(const rctSig &rv)
 		{
 			if(!results[i])
 			{
-				GULPS_LOGF_L1("verRctMGSimple failed for input {}", i);
+				GULPSF_LOG_L1("verRctMGSimple failed for input {}", i);
 				return false;
 			}
 		}
@@ -1175,7 +1177,7 @@ bool verRctNonSemanticsSimple(const rctSig &rv)
 	// we can get deep throws from ge_frombytes_vartime if input isn't valid
 	catch(const std::exception &e)
 	{
-		GULPS_LOGF_L1("Error in verRctNonSemanticsSimple: {}", e.what());
+		GULPSF_LOG_L1("Error in verRctNonSemanticsSimple: {}", e.what());
 		return false;
 	}
 	catch(...)

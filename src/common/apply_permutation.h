@@ -53,7 +53,7 @@
 
 namespace tools
 {
-
+GULPS_CAT_MAJOR("common_tools");
 template <typename F>
 void apply_permutation(std::vector<size_t> permutation, const F &swap)
 {

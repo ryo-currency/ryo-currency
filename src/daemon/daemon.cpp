@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "daemon"
 
 #include "daemon/daemon.h"
 #include "rpc/daemon_handler.h"
@@ -63,7 +62,7 @@
 #include "daemon/rpc.h"
 #include "version.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 using namespace epee;
 
@@ -172,7 +171,7 @@ bool t_daemon::run(bool interactive)
 
 		if(!zmq_server.addTCPSocket(zmq_rpc_bind_address, zmq_rpc_bind_port))
 		{
-			GULPS_ERRORF("Failed to add TCP Socket ({}:{}) to ZMQ RPC Server", zmq_rpc_bind_address, zmq_rpc_bind_port);
+			GULPSF_ERROR("Failed to add TCP Socket ({}:{}) to ZMQ RPC Server", zmq_rpc_bind_address, zmq_rpc_bind_port);
 
 			if(rpc_commands)
 				rpc_commands->stop_handling();
@@ -186,7 +185,7 @@ bool t_daemon::run(bool interactive)
 		GULPS_INFO("Starting ZMQ server...");
 		zmq_server.run();
 
-		GULPS_INFOF("ZMQ server started at {}:{}.", zmq_rpc_bind_address, zmq_rpc_bind_port);
+		GULPSF_INFO("ZMQ server started at {}:{}.", zmq_rpc_bind_address, zmq_rpc_bind_port);
 
 		mp_internals->p2p.run(); // blocks until p2p goes down
 
@@ -203,7 +202,7 @@ bool t_daemon::run(bool interactive)
 	}
 	catch(std::exception const &ex)
 	{
-		GULPS_ERRORF("Uncaught exception! {}", ex.what());
+		GULPSF_ERROR("Uncaught exception! {}", ex.what());
 		return false;
 	}
 	catch(...)

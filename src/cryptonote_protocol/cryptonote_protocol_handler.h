@@ -47,10 +47,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "cn_pcl_hand"
 
 #pragma once
 
@@ -67,8 +63,7 @@
 #include "warnings.h"
 #include <boost/circular_buffer.hpp>
 
-#include "common/gulps.hpp"	
-
+#include "common/gulps.hpp"
 
 PUSH_WARNINGS
 DISABLE_VS_WARNINGS(4355)
@@ -81,6 +76,7 @@ namespace cryptonote
 class cryptonote_protocol_handler_base_pimpl;
 class cryptonote_protocol_handler_base
 {
+	GULPS_CAT_MAJOR("cn_pcl_hand");
   private:
 	std::unique_ptr<cryptonote_protocol_handler_base_pimpl> mI;
 
@@ -97,6 +93,7 @@ class cryptonote_protocol_handler_base
 template <class t_core>
 class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_protocol_handler_base
 {
+	GULPS_CAT_MAJOR("cn_pcl_hand");
   public:
 	typedef cryptonote_connection_context connection_context;
 	typedef core_stat_info stat_info;
@@ -176,7 +173,7 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	template <class t_parameter>
 	bool post_notify(typename t_parameter::request &arg, cryptonote_connection_context &context)
 	{
-		GULPS_LOGF_L2("[{}] post {} -->", epee::net_utils::print_connection_context_short(context), typeid(t_parameter).name());
+		GULPSF_LOG_L2("[{}] post {} -->", epee::net_utils::print_connection_context_short(context), typeid(t_parameter).name());
 		std::string blob;
 		epee::serialization::store_t_to_binary(arg, blob);
 		//handler_response_blocks_now(blob.size()); // XXX
@@ -186,7 +183,7 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	template <class t_parameter>
 	bool relay_post_notify(typename t_parameter::request &arg, cryptonote_connection_context &exclude_context)
 	{
-		GULPS_LOGF_L2("[{}] post relay {} -->", epee::net_utils::print_connection_context_short(exclude_context), typeid(t_parameter).name());
+		GULPSF_LOG_L2("[{}] post relay {} -->", epee::net_utils::print_connection_context_short(exclude_context), typeid(t_parameter).name());
 		std::string arg_buff;
 		epee::serialization::store_t_to_binary(arg, arg_buff);
 		return m_p2p->relay_notify_to_all(t_parameter::ID, arg_buff, exclude_context);

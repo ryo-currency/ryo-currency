@@ -37,6 +37,8 @@
 
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 bool test_transaction_generation_and_ring_signature()
 {
 

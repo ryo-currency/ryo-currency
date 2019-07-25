@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "http_serv"
 
 #pragma once
 
@@ -36,7 +32,7 @@
 #include "net/http_server_cp2.h"
 #include "net/http_server_handlers_map2.h"
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -46,7 +42,7 @@ namespace epee
 template <class t_child_class, class t_connection_context = epee::net_utils::connection_context_base>
 class http_server_impl_base : public net_utils::http::i_http_server_handler<t_connection_context>
 {
-
+	GULPS_CAT_MAJOR("epee_http_serv");
   public:
 	http_server_impl_base()
 		: m_net_server(epee::net_utils::e_connection_type_RPC)
@@ -76,7 +72,7 @@ class http_server_impl_base : public net_utils::http::i_http_server_handler<t_co
 
 		m_net_server.get_config_object().m_user = std::move(user);
 
-		GULPS_GLOBALF_PRINT("Binding on {}:{}", bind_ip , bind_port);
+		GULPSF_GLOBAL_PRINT("Binding on {}:{}", bind_ip , bind_port);
 		bool res = m_net_server.init_server(bind_port, bind_ip);
 		if(!res)
 		{
@@ -89,7 +85,7 @@ class http_server_impl_base : public net_utils::http::i_http_server_handler<t_co
 	bool run(size_t threads_count, bool wait = true)
 	{
 		//go to loop
-		GULPS_INFOF("Run net_service loop( {} threads)...", threads_count );
+		GULPSF_INFO("Run net_service loop( {} threads)...", threads_count );
 		if(!m_net_server.run_server(threads_count, wait))
 		{
 			GULPS_LOG_ERROR("Failed to run net tcp server!");

@@ -43,7 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#define GULPS_CAT_MAJOR "main_daemon"
 
 #include "blockchain_db/db_types.h"
 #include "common/command_line.h"
@@ -68,7 +67,7 @@
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("main_daemon");
 
 namespace po = boost::program_options;
 namespace bf = boost::filesystem;
@@ -156,8 +155,8 @@ int main(int argc, char* argv[])
 
 		if(command_line::get_arg(vm, command_line::arg_help))
 		{
-			GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
-			GULPS_PRINTF("\nUsage: {} [options|settings] [daemon_command...]\n\n", std::string{argv[0]});
+			GULPSF_PRINT("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
+			GULPSF_PRINT("\nUsage: {} [options|settings] [daemon_command...]\n\n", std::string{argv[0]});
 			GULPS_PRINT(visible_options);
 			return 0;
 		}
@@ -165,7 +164,7 @@ int main(int argc, char* argv[])
 		// Ryo Version
 		if(command_line::get_arg(vm, command_line::arg_version))
 		{
-			GULPS_PRINTF("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
+			GULPSF_PRINT("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
 			return 0;
 		}
 
@@ -188,7 +187,7 @@ int main(int argc, char* argv[])
 			catch(const std::exception &e)
 			{
 				// log system isn't initialized yet
-				GULPS_ERRORF("Error parsing config file: {}", e.what());
+				GULPSF_ERROR("Error parsing config file: {}", e.what());
 				throw;
 			}
 		}
@@ -211,7 +210,7 @@ int main(int argc, char* argv[])
 		// verify that blockchaindb type is valid
 		if(!cryptonote::blockchain_valid_db_type(db_type))
 		{
-			GULPS_PRINTF("Invalid database type ({}), available types are: {}", db_type, cryptonote::blockchain_db_types(", "));
+			GULPSF_PRINT("Invalid database type ({}), available types are: {}", db_type, cryptonote::blockchain_db_types(", "));
 			return 0;
 		}
 
@@ -309,7 +308,7 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					GULPS_ERRORF("Unknown command: {}", command.front());
+					GULPSF_ERROR("Unknown command: {}", command.front());
 					return 1;
 				}
 			}
@@ -355,7 +354,7 @@ int main(int argc, char* argv[])
 		gulps::inst().remove_output(temp_out_id);
 
 		// logging is now set up
-		GULPS_GLOBALF_PRINT("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
+		GULPSF_GLOBAL_PRINT("Ryo '{}' ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
 
 		GULPS_INFO("Moving from main() into the daemonize now.");
 
@@ -363,7 +362,7 @@ int main(int argc, char* argv[])
 	}
 	catch(std::exception const &ex)
 	{
-		GULPS_LOGF_ERROR("Exception in main! {}", ex.what());
+		GULPSF_LOG_ERROR("Exception in main! {}", ex.what());
 	}
 	catch(...)
 	{

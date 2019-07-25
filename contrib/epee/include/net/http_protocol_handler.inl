@@ -23,10 +23,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "http_proto"
 
 #include "file_io_utils.h"
 #include "http_protocol_handler.h"
@@ -36,7 +32,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/regex.hpp>
 
-#include "common/gulps.hpp"	
+#include "common/gulps.hpp"
 
 
 
@@ -50,6 +46,8 @@ namespace net_utils
 {
 namespace http
 {
+
+GULPS_CAT_MAJOR("epee_http_proto");
 
 struct multipart_entry
 {
@@ -101,7 +99,7 @@ inline bool parse_header(std::string::const_iterator it_begin, std::string::cons
 			entry.m_etc_header_fields.push_back(std::pair<std::string, std::string>(result[field_etc_name], result[field_val]));
 		else
 		{
-			GULPS_LOGF_ERROR("simple_http_connection_handler::parse_header() not matched last entry in:{}", std::string(it_current_bound, it_end));
+			GULPSF_LOG_ERROR("simple_http_connection_handler::parse_header() not matched last entry in:{}", std::string(it_current_bound, it_end));
 		}
 
 		it_current_bound = result[(int)result.size() - 1].first;
@@ -121,7 +119,7 @@ inline bool handle_part_of_multipart(std::string::const_iterator it_begin, std::
 
 	if(!parse_header(it_begin, end_header_it + 4, entry))
 	{
-		GULPS_LOGF_ERROR("Failed to parse header:{}", std::string(it_begin, end_header_it + 2));
+		GULPSF_LOG_ERROR("Failed to parse header:{}", std::string(it_begin, end_header_it + 2));
 		return false;
 	}
 
@@ -137,7 +135,7 @@ inline bool parse_multipart_body(const std::string &content_type, const std::str
 	std::string boundary;
 	if(!match_boundary(content_type, boundary))
 	{
-		GULPS_ERRORF("Failed to match boundary in content type: {}", content_type);
+		GULPSF_ERROR("Failed to match boundary in content type: {}", content_type);
 		return false;
 	}
 
@@ -222,7 +220,7 @@ template <class t_connection_context>
 bool simple_http_connection_handler<t_connection_context>::handle_recv(const void *ptr, size_t cb)
 {
 	std::string buf((const char *)ptr, cb);
-	//GULPS_PRINTF("HTTP_RECV: {}\r\n{}", ptr , buf);
+	//GULPSF_PRINT("HTTP_RECV: {}\r\n{}", ptr , buf);
 	//file_io_utils::save_string_to_file(string_tools::get_current_module_folder() + "/" + boost::lexical_cast<std::string>(ptr), std::string((const char*)ptr, cb));
 
 	bool res = handle_buff_in(buf);
@@ -306,7 +304,7 @@ bool simple_http_connection_handler<t_connection_context>::handle_buff_in(std::s
 		case http_state_connection_close:
 			return false;
 		default:
-			GULPS_LOGF_ERROR("simple_http_connection_handler::handle_char_out: Wrong state: {}", m_state);
+			GULPSF_LOG_ERROR("simple_http_connection_handler::handle_char_out: Wrong state: {}", m_state);
 			return false;
 		case http_state_error:
 			GULPS_LOG_ERROR("simple_http_connection_handler::handle_char_out: Error state!!!");
@@ -372,7 +370,7 @@ bool simple_http_connection_handler<t_connection_context>::handle_invoke_query_l
 	else
 	{
 		m_state = http_state_error;
-		GULPS_LOGF_ERROR("simple_http_connection_handler<t_connection_context>::handle_invoke_query_line(): Failed to match first line: {}", m_cache);
+		GULPSF_LOG_ERROR("simple_http_connection_handler<t_connection_context>::handle_invoke_query_line(): Failed to match first line: {}", m_cache);
 		return false;
 	}
 
@@ -396,14 +394,14 @@ std::string::size_type simple_http_connection_handler<t_connection_context>::mat
 template <class t_connection_context>
 bool simple_http_connection_handler<t_connection_context>::analize_cached_request_header_and_invoke_state(size_t pos)
 {
-	//GULPS_LOGF_L3("HTTP HEAD:\r\n{}", m_cache.substr(0, pos));
+	//GULPSF_LOG_L3("HTTP HEAD:\r\n{}", m_cache.substr(0, pos));
 
 	m_query_info.m_full_request_buf_size = pos;
 	m_query_info.m_request_head.assign(m_cache.begin(), m_cache.begin() + pos);
 
 	if(!parse_cached_header(m_query_info.m_header_info, m_cache, pos))
 	{
-		GULPS_LOGF_ERROR("simple_http_connection_handler<t_connection_context>::analize_cached_request_header_and_invoke_state(): failed to anilize request header: {}", m_cache);
+		GULPSF_LOG_ERROR("simple_http_connection_handler<t_connection_context>::analize_cached_request_header_and_invoke_state(): failed to anilize request header: {}", m_cache);
 		m_state = http_state_error;
 		return false;
 	}
@@ -419,7 +417,7 @@ bool simple_http_connection_handler<t_connection_context>::analize_cached_reques
 		m_body_transfer_type = http_body_transfer_measure;
 		if(!get_len_from_content_lenght(m_query_info.m_header_info.m_content_length, m_len_summary))
 		{
-			GULPS_LOGF_ERROR("simple_http_connection_handler<t_connection_context>::analize_cached_request_header_and_invoke_state(): Failed to get_len_from_content_lenght();, m_query_info.m_content_length={}", m_query_info.m_header_info.m_content_length);
+			GULPSF_LOG_ERROR("simple_http_connection_handler<t_connection_context>::analize_cached_request_header_and_invoke_state(): Failed to get_len_from_content_lenght();, m_query_info.m_content_length={}", m_query_info.m_header_info.m_content_length);
 			m_state = http_state_error;
 			return false;
 		}
@@ -453,7 +451,7 @@ bool simple_http_connection_handler<t_connection_context>::handle_retriving_quer
 	case http_body_transfer_multipart:
 	case http_body_transfer_undefined:
 	default:
-		GULPS_LOGF_ERROR("simple_http_connection_handler<t_connection_context>::handle_retriving_query_body(): Unexpected m_body_query_type state:{}", m_body_transfer_type);
+		GULPSF_LOG_ERROR("simple_http_connection_handler<t_connection_context>::handle_retriving_query_body(): Unexpected m_body_query_type state:{}", m_body_transfer_type);
 		m_state = http_state_error;
 		return false;
 	}
@@ -535,7 +533,7 @@ bool simple_http_connection_handler<t_connection_context>::parse_cached_header(h
 			body_info.m_etc_fields.push_back(std::pair<std::string, std::string>(result[field_etc_name], result[field_val]));
 		else
 		{
-			GULPS_LOGF_ERROR("simple_http_connection_handler<t_connection_context>::parse_cached_header() not matched last entry in:{}", m_cache_to_process);
+			GULPSF_LOG_ERROR("simple_http_connection_handler<t_connection_context>::parse_cached_header() not matched last entry in:{}", m_cache_to_process);
 		}
 
 		it_current_bound = result[(int)result.size() - 1].first;
@@ -574,9 +572,9 @@ bool simple_http_connection_handler<t_connection_context>::handle_request_and_se
 	}
 
 	std::string response_data = get_response_header(response);
-	//GULPS_PRINTF("HTTP_SEND: << \r\n{}", response_data + response.m_body);
+	//GULPSF_PRINT("HTTP_SEND: << \r\n{}", response_data + response.m_body);
 
-	GULPS_LOGF_L3("HTTP_RESPONSE_HEAD: << \r\n{}", response_data);
+	GULPSF_LOG_L3("HTTP_RESPONSE_HEAD: << \r\n{}", response_data);
 
 	m_psnd_hndlr->do_send((void *)response_data.data(), response_data.size());
 	if((response.m_body.size() && (query_info.m_http_method != http::http_method_head)) || (query_info.m_http_method == http::http_method_options))
@@ -598,7 +596,7 @@ bool simple_http_connection_handler<t_connection_context>::handle_request(const 
 	m_config.m_lock.unlock();
 	if(!file_io_utils::load_file_to_string(destination_file_path.c_str(), response.m_body))
 	{
-		GULPS_WARNF("URI '{}' [{}] Not Found (404 )", query_info.m_full_request_str.substr(0, query_info.m_full_request_str.size() - 2) , destination_file_path );
+		GULPSF_WARN("URI '{}' [{}] Not Found (404 )", query_info.m_full_request_str.substr(0, query_info.m_full_request_str.size() - 2) , destination_file_path );
 		response.m_body = get_not_found_response_body(query_info.m_URI);
 		response.m_response_code = 404;
 		response.m_response_comment = "Not found";

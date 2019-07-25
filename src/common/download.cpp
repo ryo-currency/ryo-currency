@@ -41,7 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#define GULPS_CAT_MAJOR "download"
 
 #include "download.h"
 #include "cryptonote_config.h"
@@ -60,6 +59,9 @@
 
 namespace tools
 {
+
+GULPS_CAT_MAJOR("download");
+
 struct download_thread_control
 {
 	const std::string path;
@@ -100,19 +102,19 @@ static void download_thread(download_async_handle control)
 		uint64_t existing_size = 0;
 		if(epee::file_io_utils::get_file_size(control->path, existing_size) && existing_size > 0)
 		{
-			GULPS_INFOF("Resuming downloading {} to {} from {}", control->uri ,  control->path ,  existing_size);
+			GULPSF_INFO("Resuming downloading {} to {} from {}", control->uri ,  control->path ,  existing_size);
 			mode |= std::ios_base::app;
 		}
 		else
 		{
-			GULPS_INFOF("Downloading {} to {}", control->uri ,  control->path);
+			GULPSF_INFO("Downloading {} to {}", control->uri ,  control->path);
 			mode |= std::ios_base::trunc;
 		}
 		std::ofstream f;
 		f.open(control->path, mode);
 		if(!f.good())
 		{
-			GULPS_ERRORF("Failed to open file {}", control->path);
+			GULPSF_ERROR("Failed to open file {}", control->path);
 			control->result_cb(control->path, control->uri, control->success);
 			return;
 		}
@@ -124,18 +126,18 @@ static void download_thread(download_async_handle control)
 			virtual bool on_header(const epee::net_utils::http::http_response_info &headers)
 			{
 				for(const auto &kv : headers.m_header_info.m_etc_fields)
-					GULPS_LOGF_L1("Header: {}: {}", kv.first ,  kv.second);
+					GULPSF_LOG_L1("Header: {}: {}", kv.first ,  kv.second);
 				ssize_t length = 0u;
 				if(epee::string_tools::get_xtype_from_string(length, headers.m_header_info.m_content_length) && length >= 0)
 				{
-					GULPS_INFOF("Content-Length: {}", length);
+					GULPSF_INFO("Content-Length: {}", length);
 					content_length = length;
 					boost::filesystem::path path(control->path);
 					boost::filesystem::space_info si = boost::filesystem::space(path);
 					if(si.available < (size_t)content_length)
 					{
 						const uint64_t avail = (si.available + 1023) / 1024, needed = (content_length + 1023) / 1024;
-						GULPS_ERRORF("Not enough space to download {} kB to {} ({} kB available)", needed, path.string(), avail);
+						GULPSF_ERROR("Not enough space to download {} kB to {} ({} kB available)", needed, path.string(), avail);
 						return false;
 					}
 				}
@@ -176,7 +178,7 @@ static void download_thread(download_async_handle control)
 				}
 				catch(const std::exception &e)
 				{
-					GULPS_ERRORF("Error writing data: {}", e.what());
+					GULPSF_ERROR("Error writing data: {}", e.what());
 					return false;
 				}
 			}
@@ -191,13 +193,13 @@ static void download_thread(download_async_handle control)
 		epee::net_utils::http::url_content u_c;
 		if(!epee::net_utils::parse_url(control->uri, u_c))
 		{
-			GULPS_ERRORF("Failed to parse URL {}", control->uri);
+			GULPSF_ERROR("Failed to parse URL {}", control->uri);
 			control->result_cb(control->path, control->uri, control->success);
 			return;
 		}
 		if(u_c.host.empty())
 		{
-			GULPS_ERRORF("Failed to determine address from URL {}", control->uri);
+			GULPSF_ERROR("Failed to determine address from URL {}", control->uri);
 			control->result_cb(control->path, control->uri, control->success);
 			return;
 		}
@@ -206,28 +208,28 @@ static void download_thread(download_async_handle control)
 
 		bool ssl = u_c.schema == "https";
 		uint16_t port = u_c.port ? u_c.port : ssl ? 443 : 80;
-		GULPS_LOGF_L1("Connecting to {}:{}", u_c.host ,  port);
+		GULPSF_LOG_L1("Connecting to {}:{}", u_c.host ,  port);
 		client.set_server(u_c.host, std::to_string(port), boost::none, ssl);
 		if(!client.connect(std::chrono::seconds(30)))
 		{
 			boost::lock_guard<boost::mutex> lock(control->mutex);
-			GULPS_ERRORF("Failed to connect to {}", control->uri);
+			GULPSF_ERROR("Failed to connect to {}", control->uri);
 			control->result_cb(control->path, control->uri, control->success);
 			return;
 		}
-		GULPS_LOGF_L1("GETting {}", u_c.uri);
+		GULPSF_LOG_L1("GETting {}", u_c.uri);
 		const epee::net_utils::http::http_response_info *info = NULL;
 		epee::net_utils::http::fields_list fields;
 		if(existing_size > 0)
 		{
 			const std::string range = "bytes=" + std::to_string(existing_size) + "-";
-			GULPS_LOGF_L1("Asking for range: {}", range);
+			GULPSF_LOG_L1("Asking for range: {}", range);
 			fields.push_back(std::make_pair("Range", range));
 		}
 		if(!client.invoke_get(u_c.uri, std::chrono::seconds(30), "", &info, fields))
 		{
 			boost::lock_guard<boost::mutex> lock(control->mutex);
-			GULPS_ERRORF("Failed to connect to {}", control->uri);
+			GULPSF_ERROR("Failed to connect to {}", control->uri);
 			client.disconnect();
 			control->result_cb(control->path, control->uri, control->success);
 			return;
@@ -243,21 +245,21 @@ static void download_thread(download_async_handle control)
 		if(!info)
 		{
 			boost::lock_guard<boost::mutex> lock(control->mutex);
-			GULPS_ERRORF("Failed invoking GET command to {}, no status info returned", control->uri );
+			GULPSF_ERROR("Failed invoking GET command to {}, no status info returned", control->uri );
 			client.disconnect();
 			control->result_cb(control->path, control->uri, control->success);
 			return;
 		}
-		GULPS_LOGF_L1("response code: {}", info->m_response_code);
-		GULPS_LOGF_L1("response length: {}", info->m_header_info.m_content_length);
-		GULPS_LOGF_L1("response comment: {}", info->m_response_comment);
-		GULPS_LOGF_L1("response body: {}", info->m_body);
+		GULPSF_LOG_L1("response code: {}", info->m_response_code);
+		GULPSF_LOG_L1("response length: {}", info->m_header_info.m_content_length);
+		GULPSF_LOG_L1("response comment: {}", info->m_response_comment);
+		GULPSF_LOG_L1("response body: {}", info->m_body);
 		for(const auto &f : info->m_additional_fields)
-			GULPS_LOGF_L1("additional field: {}: {}", f.first ,  f.second);
+			GULPSF_LOG_L1("additional field: {}: {}", f.first ,  f.second);
 		if(info->m_response_code != 200 && info->m_response_code != 206)
 		{
 			boost::lock_guard<boost::mutex> lock(control->mutex);
-			GULPS_ERRORF("Status code {}", info->m_response_code);
+			GULPSF_ERROR("Status code {}", info->m_response_code);
 			client.disconnect();
 			control->result_cb(control->path, control->uri, control->success);
 			return;
@@ -272,7 +274,7 @@ static void download_thread(download_async_handle control)
 	}
 	catch(const std::exception &e)
 	{
-		GULPS_ERRORF("Exception in download thread: {}", e.what());
+		GULPSF_ERROR("Exception in download thread: {}", e.what());
 		// fall through and call result_cb not from the catch block to avoid another exception
 	}
 	boost::lock_guard<boost::mutex> lock(control->mutex);

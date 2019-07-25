@@ -43,11 +43,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-#ifdef GULPS_CAT_MAJOR
-	#undef GULPS_CAT_MAJOR
-#endif
-#define GULPS_CAT_MAJOR "basic_util"
-
 
 #include "include_base_utils.h"
 #include "common/gulps.hpp"
@@ -66,7 +61,7 @@
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("basic_util");
 
 namespace cryptonote
 {
@@ -74,7 +69,7 @@ namespace cryptonote
 struct integrated_address
 {
 	integrated_address(account_public_address adr, crypto::hash8 payment_id) : adr(adr), payment_id(payment_id) {}
-    
+
 	account_public_address adr;
 	crypto::hash8 payment_id;
 
@@ -92,7 +87,7 @@ struct integrated_address
 struct kurz_address
 {
 	kurz_address(crypto::public_key m_public_key) : m_public_key(m_public_key) {}
-	
+
 	crypto::public_key m_public_key;
 
 	BEGIN_SERIALIZE_OBJECT()
@@ -169,7 +164,7 @@ bool get_block_reward(network_type nettype, size_t median_size, size_t current_b
 
 	if(current_block_size > 2 * median_size)
 	{
-		GULPS_ERRORF("Block cumulative size is too big: {}, expected less than {}", current_block_size, 2 * median_size);
+		GULPSF_ERROR("Block cumulative size is too big: {}, expected less than {}", current_block_size, 2 * median_size);
 		return false;
 	}
 
@@ -380,7 +375,7 @@ bool parse_hash256(const std::string str_hash, crypto::hash &hash)
 	bool res = epee::string_tools::parse_hexstr_to_binbuff(str_hash, buf);
 	if(!res || buf.size() != sizeof(crypto::hash))
 	{
-		GULPS_ERRORF("invalid hash format: <{}>", str_hash);
+		GULPSF_ERROR("invalid hash format: <{}>", str_hash);
 		return false;
 	}
 	else

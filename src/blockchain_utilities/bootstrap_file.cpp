@@ -42,8 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#define GULPS_CAT_MAJOR "bootstr_file"
-
 #include "bootstrap_serialization.h"
 #include "serialization/binary_utils.h" // dump_binary(), parse_binary()
 #include "serialization/json_utils.h"   // dump_json()
@@ -52,7 +50,7 @@
 
 #include "common/gulps.hpp"
 
-
+GULPS_CAT_MAJOR("bootstr_file");
 
 namespace po = boost::program_options;
 
@@ -106,7 +104,7 @@ bool BootstrapFile::open_writer(const boost::filesystem::path &file_path)
 	else
 	{
 		num_blocks = count_blocks(file_path.string());
-		GULPS_LOGF_L1("appending to existing file with height: {}  total blocks: {}", num_blocks - 1, num_blocks);
+		GULPSF_LOG_L1("appending to existing file with height: {}  total blocks: {}", num_blocks - 1, num_blocks);
 	}
 	m_height = num_blocks;
 
@@ -155,7 +153,7 @@ bool BootstrapFile::initialize_file()
 	uint32_t bd_size = 0;
 
 	blobdata bd = t_serializable_object_to_blob(bfi);
-	GULPS_LOGF_L1("bootstrap::file_info size: {}", bd.size());
+	GULPSF_LOG_L1("bootstrap::file_info size: {}", bd.size());
 	bd_size = bd.size();
 
 	if(!::serialization::dump_binary(bd_size, blob))
@@ -166,7 +164,7 @@ bool BootstrapFile::initialize_file()
 	output_stream_header << bd;
 
 	bd = t_serializable_object_to_blob(bbi);
-	GULPS_LOGF_L1("bootstrap::blocks_info size: {}", bd.size());
+	GULPSF_LOG_L1("bootstrap::blocks_info size: {}", bd.size());
 	bd_size = bd.size();
 
 	if(!::serialization::dump_binary(bd_size, blob))
@@ -192,7 +190,7 @@ void BootstrapFile::flush_chunk()
 	// MTRACE("chunk_size " << chunk_size);
 	if(chunk_size > BUFFER_SIZE)
 	{
-		GULPS_WARNF("WARNING: chunk_size {} > BUFFER_SIZE {}", chunk_size, BUFFER_SIZE);
+		GULPSF_WARN("WARNING: chunk_size {} > BUFFER_SIZE {}", chunk_size, BUFFER_SIZE);
 	}
 
 	std::string blob;
@@ -213,14 +211,14 @@ void BootstrapFile::flush_chunk()
 	long num_chars_written = pos_after - pos_before;
 	if(static_cast<unsigned long>(num_chars_written) != chunk_size)
 	{
-		GULPS_ERRORF("Error writing chunk:  height: {}  chunk_size: {}  num chars written: {}", m_cur_height, chunk_size, num_chars_written);
+		GULPSF_ERROR("Error writing chunk:  height: {}  chunk_size: {}  num chars written: {}", m_cur_height, chunk_size, num_chars_written);
 		throw std::runtime_error("Error writing chunk");
 	}
 
 	m_buffer.clear();
 	delete m_output_stream;
 	m_output_stream = new boost::iostreams::stream<boost::iostreams::back_insert_device<buffer_type>>(m_buffer);
-	GULPS_LOGF_L1("flushed chunk:  chunk_size: {}", chunk_size);
+	GULPSF_LOG_L1("flushed chunk:  chunk_size: {}", chunk_size);
 }
 
 void BootstrapFile::write_block(block &block)
@@ -295,16 +293,16 @@ bool BootstrapFile::store_blockchain_raw(Blockchain *_blockchain_storage, tx_mem
 	// height.
 	uint64_t block_start = m_height;
 	uint64_t block_stop = 0;
-	GULPS_INFOF("source blockchain height: {}", m_blockchain_storage->get_current_blockchain_height() - 1);
+	GULPSF_INFO("source blockchain height: {}", m_blockchain_storage->get_current_blockchain_height() - 1);
 	if((requested_block_stop > 0) && (requested_block_stop < m_blockchain_storage->get_current_blockchain_height()))
 	{
-		GULPS_INFOF("Using requested block height: {}", requested_block_stop);
+		GULPSF_INFO("Using requested block height: {}", requested_block_stop);
 		block_stop = requested_block_stop;
 	}
 	else
 	{
 		block_stop = m_blockchain_storage->get_current_blockchain_height() - 1;
-		GULPS_INFOF("Using block height of source blockchain: {}", block_stop);
+		GULPSF_INFO("Using block height of source blockchain: {}", block_stop);
 	}
 	for(m_cur_height = block_start; m_cur_height <= block_stop; ++m_cur_height)
 	{
@@ -320,7 +318,7 @@ bool BootstrapFile::store_blockchain_raw(Blockchain *_blockchain_storage, tx_mem
 		if(m_cur_height % progress_interval == 0)
 		{
 			GULPS_PRINT(refresh_string);
-			GULPS_PRINTF("block {}/{}\r", m_cur_height, block_stop );
+			GULPSF_PRINT("block {}/{}\r", m_cur_height, block_stop );
 		}
 	}
 	// NOTE: use of NUM_BLOCKS_PER_CHUNK is a placeholder in case multi-block chunks are later supported.
@@ -330,11 +328,11 @@ bool BootstrapFile::store_blockchain_raw(Blockchain *_blockchain_storage, tx_mem
 	}
 	// print message for last block, which may not have been printed yet due to progress_interval
 	GULPS_PRINT( refresh_string);
-	GULPS_PRINTF( "block {}/{}" , m_cur_height - 1, block_stop );
+	GULPSF_PRINT( "block {}/{}" , m_cur_height - 1, block_stop );
 
-	GULPS_INFOF("Number of blocks exported: {}", num_blocks_written);
+	GULPSF_INFO("Number of blocks exported: {}", num_blocks_written);
 	if(num_blocks_written > 0)
-		GULPS_INFOF("Largest chunk: {} bytes", m_max_chunk);
+		GULPSF_INFO("Largest chunk: {} bytes", m_max_chunk);
 
 	return BootstrapFile::close();
 }
@@ -369,7 +367,7 @@ uint64_t BootstrapFile::seek_to_first_chunk(std::ifstream &import_file)
 		throw std::runtime_error("Error reading expected number of bytes");
 	if(!::serialization::parse_binary(str1, buflen_file_info))
 		throw std::runtime_error("Error in deserialization of buflen_file_info");
-	GULPS_INFOF("bootstrap::file_info size: {}", buflen_file_info);
+	GULPSF_INFO("bootstrap::file_info size: {}", buflen_file_info);
 
 	if(buflen_file_info > sizeof(buf1))
 		throw std::runtime_error("Error: bootstrap::file_info size exceeds buffer size");
@@ -380,9 +378,9 @@ uint64_t BootstrapFile::seek_to_first_chunk(std::ifstream &import_file)
 	bootstrap::file_info bfi;
 	if(!::serialization::parse_binary(str1, bfi))
 		throw std::runtime_error("Error in deserialization of bootstrap::file_info");
-	GULPS_INFOF("bootstrap file v {}.{}", unsigned(bfi.major_version), unsigned(bfi.minor_version));
-	GULPS_INFOF("bootstrap magic size: {}", sizeof(file_magic));
-	GULPS_INFOF("bootstrap header size: {}", bfi.header_size);
+	GULPSF_INFO("bootstrap file v {}.{}", unsigned(bfi.major_version), unsigned(bfi.minor_version));
+	GULPSF_INFO("bootstrap magic size: {}", sizeof(file_magic));
+	GULPSF_INFO("bootstrap header size: {}", bfi.header_size);
 
 	uint64_t full_header_size = sizeof(file_magic) + bfi.header_size;
 	import_file.seekg(full_header_size);
@@ -411,23 +409,23 @@ uint64_t BootstrapFile::count_bytes(std::ifstream &import_file, uint64_t blocks,
 		str1.assign(buf1, sizeof(chunk_size));
 		if(!::serialization::parse_binary(str1, chunk_size))
 			throw std::runtime_error("Error in deserialization of chunk_size");
-		GULPS_LOGF_L1("chunk_size: {}", chunk_size);
+		GULPSF_LOG_L1("chunk_size: {}", chunk_size);
 
 		if(chunk_size > BUFFER_SIZE)
 		{
 			GULPS_PRINT( refresh_string);
-			GULPS_WARNF("WARNING: chunk_size {} > BUFFER_SIZE {}  height: {}", chunk_size, BUFFER_SIZE, h - 1);
+			GULPSF_WARN("WARNING: chunk_size {} > BUFFER_SIZE {}  height: {}", chunk_size, BUFFER_SIZE, h - 1);
 			throw std::runtime_error("Aborting: chunk size exceeds buffer size");
 		}
 		if(chunk_size > CHUNK_SIZE_WARNING_THRESHOLD)
 		{
 			GULPS_PRINT( refresh_string);
-			GULPS_LOGF_L1("NOTE: chunk_size {} > {} << height: {}", chunk_size, CHUNK_SIZE_WARNING_THRESHOLD, h - 1);
+			GULPSF_LOG_L1("NOTE: chunk_size {} > {} << height: {}", chunk_size, CHUNK_SIZE_WARNING_THRESHOLD, h - 1);
 		}
 		else if(chunk_size <= 0)
 		{
 			GULPS_PRINT( refresh_string);
-			GULPS_LOGF_L1("ERROR: chunk_size {} <= 0  height: {}", chunk_size, h - 1);
+			GULPSF_LOG_L1("ERROR: chunk_size {} <= 0  height: {}", chunk_size, h - 1);
 			throw std::runtime_error("Aborting");
 		}
 		// skip to next expected block size value
@@ -435,7 +433,7 @@ uint64_t BootstrapFile::count_bytes(std::ifstream &import_file, uint64_t blocks,
 		if(!import_file)
 		{
 			GULPS_PRINT( refresh_string);
-			GULPS_ERRORF("ERROR: unexpected end of file: bytes read before error: {} of chunk_size {}", import_file.gcount(), chunk_size);
+			GULPSF_ERROR("ERROR: unexpected end of file: bytes read before error: {} of chunk_size {}", import_file.gcount(), chunk_size);
 			throw std::runtime_error("Aborting");
 		}
 		bytes_read += chunk_size;
@@ -494,20 +492,20 @@ uint64_t BootstrapFile::count_blocks(const std::string &import_file_path, std::s
 		}
 		bytes_read += count_bytes(import_file, progress_interval, blocks, quit);
 		h += blocks;
-		GULPS_PRINTF("\rblock height: {}    \r", h - 1);
+		GULPSF_PRINT("\rblock height: {}    \r", h - 1);
 
 		// GULPS_PRINT( refresh_string);
-		GULPS_LOGF_L1("Number bytes scanned: {}", bytes_read);
+		GULPSF_LOG_L1("Number bytes scanned: {}", bytes_read);
 	}
 
 	import_file.close();
 
 	GULPS_PRINT( "\n");
 	GULPS_PRINT( "Done scanning bootstrap file");
-	GULPS_PRINTF( "Full header length: {} bytes", full_header_size);
-	GULPS_PRINTF( "Scanned for blocks: {} bytes",  bytes_read);
-	GULPS_PRINTF( "Total:              {} bytes",  full_header_size + bytes_read);
-	GULPS_PRINTF("Number of blocks: {}", h);
+	GULPSF_PRINT( "Full header length: {} bytes", full_header_size);
+	GULPSF_PRINT( "Scanned for blocks: {} bytes",  bytes_read);
+	GULPSF_PRINT( "Total:              {} bytes",  full_header_size + bytes_read);
+	GULPSF_PRINT("Number of blocks: {}", h);
 	GULPS_PRINT( "\n");
 
 	// NOTE: h is the number of blocks.
