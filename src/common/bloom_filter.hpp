@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Ryo Currency Project
+// Copyright (c) 2019, Ryo Currency Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
@@ -41,88 +41,77 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#pragma once 
+#include <vector>
+#include <random>
 
-#include <queue>
-#include <list>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
+#include "crypto/hash.h"
 
-template <typename T>
-class thdq
+class bloom_filter
 {
 public:
-
-	bool pop(T& item)
+	bloom_filter() {}
+	
+	inline void init(size_t num_of_elements)
 	{
-		std::unique_lock<std::mutex> mlock(mutex_);
-		while (queue_.empty() && !finish) { cond_.wait(mlock); }
-		if(!queue_.empty())
+		bits_number = num_of_elements * 16;
+		hash_number = 11;
+		bytes.resize(bits_number/8, 0);
+	}
+
+	inline void add_element(const void* data, size_t data_len)
+	{
+		crypto::hash h = crypto::cn_fast_hash(data, data_len);
+
+		uint64_t seed;
+		memcpy(&seed, h.data, sizeof(seed));
+
+		std::mt19937_64 mtgen(seed);
+		std::uniform_int_distribution<uint16_t> dist(0, bits_number-1);
+
+		for(size_t i=0; i < hash_number; i++)
+			set_bit(dist(mtgen));
+	}
+
+	inline bool not_present(const void* data, size_t data_len)
+	{
+		crypto::hash h = crypto::cn_fast_hash(data, data_len);
+
+		uint64_t seed;
+		memcpy(&seed, h.data, sizeof(seed));
+
+		std::mt19937_64 mtgen(seed);
+		std::uniform_int_distribution<uint16_t> dist(0, bits_number-1);
+
+		for(size_t i=0; i < hash_number; i++)
 		{
-			item = std::move(queue_.front());
-			queue_.pop();
-			mlock.unlock();
-			size_cond_.notify_all();
-			return true;
+			if(!read_bit(dist(mtgen)))
+				return true;
 		}
 		return false;
 	}
 
-	bool wait_for_pop(std::unique_lock<std::mutex>& lck)
-	{
-		lck = std::unique_lock<std::mutex>(mutex_);
-		while (queue_.empty() && !finish) { cond_.wait(lck); }
-		bool has_pop = !queue_.empty();
-		if(!has_pop) { lck.unlock(); }
-		return has_pop;
-	}
-
-	size_t wait_for_size(size_t q_size)
-	{
-		std::unique_lock<std::mutex> mlock(mutex_);
-		while (queue_.size() > q_size) { size_cond_.wait(mlock); }
-		return queue_.size();
-	}
-
-	T pop(std::unique_lock<std::mutex>& lck)
-	{
-		T item = std::move(queue_.front());
-		queue_.pop();
-		lck.unlock();
-		size_cond_.notify_all();
-		return item;
-	}
-
-	void push(const T& item)
-	{
-		std::unique_lock<std::mutex> mlock(mutex_);
-		if(finish) return;
-		queue_.push(item);
-		mlock.unlock();
-		cond_.notify_one();
-	}
-
-	void push(T&& item)
-	{
-		std::unique_lock<std::mutex> mlock(mutex_);
-		if(finish) return;
-		queue_.push(std::move(item));
-		mlock.unlock();
-		cond_.notify_one();
-	}
-
-	void set_finish_flag()
-	{
-		std::unique_lock<std::mutex> mlock(mutex_);
-		finish = true;
-		cond_.notify_all();
-	}
-
 private:
-	std::queue<T> queue_;
-	std::mutex mutex_;
-	std::condition_variable cond_;
-	std::condition_variable size_cond_;
-	bool finish = false;
+	size_t hash_number;
+	size_t bits_number;
+	std::vector<uint8_t> bytes;
+
+	inline bool read_bit(size_t pos)
+	{
+		size_t byte = pos / 8;
+		size_t bit = pos % 8;
+
+		if(byte >= bytes.size())
+		    return false;
+
+		return bytes[byte] & (1<<bit);
+	}
+
+	inline void set_bit(size_t pos)
+	{
+		size_t byte = pos / 8;
+		size_t bit = pos % 8;
+
+		if(byte < bytes.size())
+			bytes[byte] |= (1<<bit);
+	}
 };
