@@ -212,6 +212,7 @@ void get_hash_stats(uint64_t &tx_hashes_calculated, uint64_t &tx_hashes_cached, 
 //------------------------------------------------------------------------------------------------------------------------------
 inline blobdata get_pruned_tx_blob(transaction &tx)
 {
+	GULPS_CAT_MAJOR("formt_utils");
 	std::stringstream ss;
 	binary_archive<true> ba(ss);
 	bool r = tx.serialize_base(ba);
@@ -221,6 +222,7 @@ inline blobdata get_pruned_tx_blob(transaction &tx)
 //------------------------------------------------------------------------------------------------------------------------------
 inline blobdata get_pruned_tx_blob(const blobdata &blobdata)
 {
+	GULPS_CAT_MAJOR("formt_utils");
 	cryptonote::transaction tx;
 
 	if(!cryptonote::parse_and_validate_tx_base_from_blob(blobdata, tx))

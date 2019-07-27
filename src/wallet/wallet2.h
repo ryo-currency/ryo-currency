@@ -104,7 +104,8 @@ class i_wallet2_callback
 
 class hashchain
 {
-  public:
+GULPS_CAT_MAJOR("wallet2");
+public:
 	hashchain() : m_genesis(crypto::null_hash), m_offset(0) {}
 
 	size_t size() const { return m_blockchain.size() + m_offset; }
@@ -116,7 +117,7 @@ class hashchain
 			m_genesis = hash;
 		m_blockchain.push_back(hash);
 	}
-	bool is_in_bounds(size_t idx) const { GULPS_LOGF_L1("is_in_bounds: {} / {} / {}", idx, m_blockchain.size(), m_offset); return idx >= m_offset && idx < size(); }
+	bool is_in_bounds(size_t idx) const { GULPSF_LOG_L1("is_in_bounds: {} / {} / {}", idx, m_blockchain.size(), m_offset); return idx >= m_offset && idx < size(); }
 	const crypto::hash &operator[](size_t idx) const { return m_blockchain[idx - m_offset]; }
 	crypto::hash &operator[](size_t idx) { return m_blockchain[idx - m_offset]; }
 	void crop(size_t height) { m_blockchain.resize(height - m_offset); }
