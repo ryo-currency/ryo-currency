@@ -1991,6 +1991,7 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 		}
 	}
 
+	tx_call_map tx_calls;
 	// Now, process incoming funds
 	for(const auto& i : res->indices_found)
 	{
@@ -2001,12 +2002,12 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 		if(i.tx_idx == 0)
 		{
 			const crypto::hash& tx_id = res->blocks_parsed[i.block_idx].miner_tx_hash;
-			process_new_transaction(tx_id, b.miner_tx, tx_indices, height, b.timestamp, true, false, false);
+			add_new_tx_call(tx_calls, tx_id, b.miner_tx, tx_indices, height, b.timestamp, true);
 		}
 		else
 		{
 			const cryptonote::transaction& tx = res->blocks_parsed[i.block_idx].txes[i.tx_idx-1];
-			process_new_transaction(b.tx_hashes[i.tx_idx-1], tx, tx_indices, height, b.timestamp, false, false, false);
+			add_new_tx_call(tx_calls, b.tx_hashes[i.tx_idx-1], tx, tx_indices, height, b.timestamp, false);
 		}
 	}
 
@@ -2038,12 +2039,35 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 						size_t height = res->blocks_parsed[blk_idx].block_height;
 						const std::vector<uint64_t>& tx_indices = res->o_indices[blk_idx].indices[tx_idx+1].indices;
 						const cryptonote::transaction& tx = res->blocks_parsed[blk_idx].txes[tx_idx];
-						process_new_transaction(b.tx_hashes[tx_idx], tx, tx_indices, height, b.timestamp, false, false, false);
+						add_new_tx_call(tx_calls, b.tx_hashes[tx_idx], tx, tx_indices, height, b.timestamp, false);
 					}
 				}
 			}
 		}
 	}
+
+	if(tx_calls.size() == 0)
+		return;
+
+	if(tx_calls.size() == 1)
+	{
+		auto it = tx_calls.begin();
+		it->second.first();
+		return;
+	}
+
+	using call_pair = std::pair<std::function<void()>, uint64_t>;
+	std::vector<call_pair> calls;
+	calls.reserve(tx_calls.size());
+
+	for(auto& v : tx_calls)
+		calls.emplace_back(std::move(v.second));
+	
+	std::sort(calls.begin(), calls.end(), [](const call_pair& a, const call_pair& b)
+		{ return a.second < b.second; });
+
+	for(call_pair& p : calls)
+		p.first();
 }
 
 void wallet2::refresh(uint64_t start_height, uint64_t &blocks_fetched, bool &received_money)
