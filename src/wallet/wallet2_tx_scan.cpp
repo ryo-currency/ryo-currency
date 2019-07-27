@@ -165,12 +165,12 @@ bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid
 {
 	const cryptonote::account_keys &keys = ctx.account.get_keys();
 	GULPS_LOG_L2("Scanning tx ", txid);
-	for(size_t in_idx = 0; in_idx < tx.vin.size(); in_idx++)
+	for(const auto& tx_in : tx.vin)
 	{
-		if(tx.vin[in_idx].type() != typeid(cryptonote::txin_to_key))
+		if(tx_in.type() != typeid(cryptonote::txin_to_key))
 			continue;
 
-		const crypto::key_image& ki = boost::get<cryptonote::txin_to_key>(tx.vin[in_idx]).k_image;
+		const crypto::key_image& ki = boost::get<cryptonote::txin_to_key>(tx_in).k_image;
 		in_kimg.add_element(&ki, sizeof(crypto::key_image));
 	}
 
@@ -314,6 +314,7 @@ void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
 				}
 				blke.skipped = false;
 
+				blke.miner_tx_hash = cryptonote::get_transaction_hash(blke.block.miner_tx);
 				size_t tx_i =0;
 				blke.txes.resize(bl.txs.size());
 				for(const cryptonote::blobdata& tx_blob : bl.txs)
@@ -336,8 +337,7 @@ void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
 
 				if(ctx.scan_type != RefreshNoCoinbase)
 				{
-					crypto::hash txid = cryptonote::get_transaction_hash(blke.block.miner_tx);
-					if(block_scan_tx(ctx, txid, blke.block.miner_tx, pull_res->key_images))
+					if(block_scan_tx(ctx, blke.miner_tx_hash, blke.block.miner_tx, pull_res->key_images))
 						pull_res->indices_found.emplace_back(i, 0);
 				}
 

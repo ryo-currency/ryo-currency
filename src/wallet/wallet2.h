@@ -1234,6 +1234,7 @@ class wallet2
 			uint64_t block_height;
 			crypto::hash block_hash;
 			cryptonote::block block;
+			crypto::hash miner_tx_hash;
 			std::vector<cryptonote::transaction> txes;
 			bool skipped;
 		};
