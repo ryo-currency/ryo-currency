@@ -1308,6 +1308,16 @@ class wallet2
 	void block_download_thd(wallet2::wallet_block_dl_ctx& ctx);
 	void block_scan_thd(const wallet_scan_ctx& ctx);
 	bool block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid, const cryptonote::transaction& tx, bloom_filter& in_kimg);
+	using tx_call_map = std::unordered_map<crypto::hash, std::pair<std::function<void()>, uint64_t>>;
+	inline void add_new_tx_call(tx_call_map& map, const crypto::hash& txid, const cryptonote::transaction& tx, const std::vector<uint64_t>& o_indices, 
+								uint64_t height, uint64_t ts, bool miner_tx)
+	{
+		if(map.find(txid) != map.end())
+			return;
+
+		map.emplace(std::piecewise_construct, std::forward_as_tuple(txid), std::forward_as_tuple(
+			std::bind(&wallet2::process_new_transaction, this, std::cref(txid), std::cref(tx), std::cref(o_indices), height, ts, miner_tx, false, false), height));
+	}
 };
 }
 BOOST_CLASS_VERSION(tools::wallet2, 24)
