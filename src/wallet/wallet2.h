@@ -1247,7 +1247,7 @@ class wallet2
 		size_t dl_order;
 		uint64_t blocks_start_height;
 		const std::list<crypto::hash> short_chain_history;
-		std::list<cryptonote::block_complete_entry> blocks_bin;
+		std::vector<cryptonote::block_complete_entry_v> blocks_bin;
 		std::vector<cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices> o_indices;
 
 		std::vector<block_complete_entry_parsed> blocks_parsed;

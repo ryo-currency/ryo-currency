@@ -64,6 +64,7 @@ class TestDB : public BlockchainDB
 	virtual blobdata get_block_blob_from_height(const uint64_t &height) const { return cryptonote::t_serializable_object_to_blob(get_block_from_height(height)); }
 	virtual blobdata get_block_blob(const crypto::hash &h) const { return blobdata(); }
 	virtual bool get_tx_blob(const crypto::hash &h, cryptonote::blobdata &tx) const { return false; }
+	virtual bool get_tx_blob_indexed(const crypto::hash& h, cryptonote::blobdata& bd, std::vector<uint64_t>& o_idx) const { return false; }
 	virtual uint64_t get_block_height(const crypto::hash &h) const { return 0; }
 	virtual block_header get_block_header(const crypto::hash &h) const { return block_header(); }
 	virtual uint64_t get_block_timestamp(const uint64_t &height) const { return 0; }

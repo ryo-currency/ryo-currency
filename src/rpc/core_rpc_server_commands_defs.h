@@ -126,7 +126,7 @@ struct COMMAND_RPC_GET_BLOCKS_FAST
 
 	struct response
 	{
-		std::list<block_complete_entry> blocks;
+		std::vector<block_complete_entry_v> blocks;
 		uint64_t start_height;
 		uint64_t current_height;
 		std::string status;

@@ -2382,6 +2382,141 @@ bool Blockchain::find_blockchain_supplement(const uint64_t req_start_block, cons
 	m_db->block_txn_stop();
 	return true;
 }
+
+bool Blockchain::find_blockchain_supplement_indexed(const uint64_t req_start_block, const std::list<crypto::hash> &qblock_ids, std::vector<block_complete_entry_v>& blocks,
+			std::vector<COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices>& out_idx, uint64_t &total_height, uint64_t &start_height, size_t max_count) const
+{
+	GULPS_LOG_L3("Blockchain::", __func__);
+	CRITICAL_REGION_LOCAL(m_blockchain_lock);
+
+	// if a specific start height has been requested
+	if(req_start_block > 0)
+	{
+		// if requested height is higher than our chain, return false -- we can't help
+		if(req_start_block >= m_db->height())
+		{
+			return false;
+		}
+		start_height = req_start_block;
+	}
+	else
+	{
+		if(!find_blockchain_supplement(qblock_ids, start_height))
+		{
+			return false;
+		}
+	}
+
+	m_db->block_txn_start(true);
+	total_height = get_current_blockchain_height();
+	size_t end_height = std::min(total_height, start_height + max_count);
+	size_t count = 0, size = 0;
+	blocks.reserve(end_height - start_height);
+	out_idx.reserve(end_height - start_height);
+
+	std::vector<block_complete_entry_v*> ent;
+	std::vector<COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices*> idx;
+	std::vector<std::pair<block, bool>> b;
+	
+	struct tx_blob
+	{
+		cryptonote::blobdata blob;
+		size_t bi;
+		size_t txi;
+	};
+
+	std::vector<tx_blob> tx;
+	size_t max_conc = tools::get_max_concurrency();
+	ent.resize(max_conc);
+	idx.resize(max_conc);
+	b.resize(max_conc);
+	tx.resize(max_conc * 32);
+
+	tools::threadpool &tpool = tools::threadpool::getInstance();
+	tools::threadpool::waiter waiter;
+
+	for(size_t i = start_height; i < end_height; count++)
+	{
+		if(size >= FIND_BLOCKCHAIN_SUPPLEMENT_MAX_SIZE && count >= 3)
+			break;
+
+		size_t batch_size = std::min<size_t>(max_conc, end_height - i);
+
+		for(size_t bi = 0; bi < batch_size; bi++)
+		{
+			blocks.emplace_back();
+			out_idx.emplace_back();
+			ent[bi] = &blocks.back();
+			idx[bi] = &out_idx.back();
+			ent[bi]->block = m_db->get_block_blob_from_height(i+bi);
+		}
+
+		for(size_t bi = 0; bi < batch_size; bi++)
+			tpool.submit(&waiter, [&, bi] { b[bi].second = parse_and_validate_block_from_blob(ent[bi]->block, b[bi].first); });
+		waiter.wait();
+
+		size_t total_tx_cnt = 0;
+		size_t ttxi = 0;
+		for(size_t bi = 0; bi < batch_size; bi++)
+		{
+			GULPS_CHECK_AND_ASSERT_MES(b[bi].second, false, "internal error, invalid block");
+			const block& bl = b[bi].first;
+			size_t tx_cnt = bl.tx_hashes.size();
+			idx[bi]->indices.resize(tx_cnt+1);
+
+			get_tx_outputs_gindexs(get_transaction_hash(bl.miner_tx), idx[bi]->indices[0].indices);
+
+			total_tx_cnt += tx_cnt;
+			if(tx.size() < total_tx_cnt)
+				tx.resize(total_tx_cnt*2);
+
+			ent[bi]->txs.resize(tx_cnt);
+			for(size_t txi=0; txi < tx_cnt; txi++, ttxi++)
+			{
+				GULPS_CHECK_AND_ASSERT_MES(m_db->get_tx_blob_indexed(bl.tx_hashes[txi], tx[ttxi].blob, idx[bi]->indices[txi+1].indices), 
+										   false, "internal error, transaction from block not found");
+				tx[ttxi].bi = bi;
+				tx[ttxi].txi = txi;
+			}
+		}
+
+		size_t txpt = total_tx_cnt / max_conc;
+		if(txpt > 0)
+		{
+			for(size_t thdi=0; thdi < max_conc; thdi++)
+			{
+				tpool.submit(&waiter, [&, thdi] {
+					for(size_t ttxi = thdi*txpt; ttxi < (thdi+1)*txpt; ttxi++)
+					{
+						size_t bi = tx[ttxi].bi;
+						size_t txi = tx[ttxi].txi;
+						ent[bi]->txs[txi] = cryptonote::get_pruned_tx_blob(tx[ttxi].blob);
+					}
+				});
+			}
+			waiter.wait();
+		}
+
+		for(size_t ttxi = txpt*max_conc; ttxi < total_tx_cnt; ttxi++)
+		{
+			size_t bi = tx[ttxi].bi;
+			size_t txi = tx[ttxi].txi;
+			ent[bi]->txs[txi] = cryptonote::get_pruned_tx_blob(tx[ttxi].blob);
+		}
+
+		for(size_t bi = 0; bi < batch_size; bi++)
+		{
+			size += ent[bi]->block.size();
+			for(const auto &t : ent[bi]->txs)
+				size += t.size();
+		}
+
+		i += batch_size;
+	}
+
+	m_db->block_txn_stop();
+	return true;
+}
 //------------------------------------------------------------------
 bool Blockchain::add_block_as_invalid(const block &bl, const crypto::hash &h)
 {
@@ -2527,10 +2662,10 @@ bool Blockchain::get_tx_outputs_gindexs(const crypto::hash &tx_id, std::vector<u
 	{
 		// empty indexs is only valid if the vout is empty, which is legal but rare
 		cryptonote::transaction tx = m_db->get_tx(tx_id);
-    if(tx.vout.size() == 1 && m_db->is_vout_bad(tx.vout[0]))
-      indexs.insert(indexs.begin(), uint64_t(-1)); //This vout is unspendable so give it an invalid index
-    else
-		  GULPS_CHECK_AND_ASSERT_MES(tx.vout.empty(), false, "internal error: global indexes for transaction " , tx_id , " is empty, and tx vout is not");
+		if(tx.vout.size() == 1 && m_db->is_vout_bad(tx.vout[0]))
+			indexs.insert(indexs.begin(), uint64_t(-1)); //This vout is unspendable so give it an invalid index
+		else
+			GULPS_CHECK_AND_ASSERT_MES(tx.vout.empty(), false, "internal error: global indexes for transaction " , tx_id , " is empty, and tx vout is not");
 	}
 
 	return true;

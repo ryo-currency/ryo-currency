@@ -286,7 +286,7 @@ void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
 			size_t blk_i=0;
 			size_t in_count = 0;
 			pull_res->blocks_parsed.resize(pull_res->blocks_bin.size());
-			for(const cryptonote::block_complete_entry& bl : pull_res->blocks_bin)
+			for(const cryptonote::block_complete_entry_v& bl : pull_res->blocks_bin)
 			{
 				wallet_rpc_scan_data::block_complete_entry_parsed& blke = pull_res->blocks_parsed[blk_i];
 				const cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices& blk_o_idx = pull_res->o_indices[blk_i];
