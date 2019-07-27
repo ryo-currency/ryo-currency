@@ -1978,7 +1978,7 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 			m_blockchain.push_back(bl.block_hash);
 			++m_local_bc_height;
 
-			if(0 != m_callback)
+			if(m_callback != nullptr)
 				m_callback->on_new_block(bl.block_height, bl.block);
 		}
 		else if(m_blockchain[bl.block_height] != bl.block_hash)
@@ -2000,7 +2000,8 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 
 		if(i.tx_idx == 0)
 		{
-			process_new_transaction(get_transaction_hash(b.miner_tx), b.miner_tx, tx_indices, height, b.timestamp, true, false, false);
+			const crypto::hash& tx_id = res->blocks_parsed[i.block_idx].miner_tx_hash;
+			process_new_transaction(tx_id, b.miner_tx, tx_indices, height, b.timestamp, true, false, false);
 		}
 		else
 		{
@@ -2078,9 +2079,9 @@ void wallet2::refresh(uint64_t start_height, uint64_t &blocks_fetched, bool &rec
 	//Download thread will likely be network or disk bound, so it should be in addition to max_conurrency
 	wallet_refresh_ctx refresh_ctx;
 	wallet_block_dl_ctx ctx(refresh_ctx);
-	size_t thd_max = std::min<size_t>(std::thread::hardware_concurrency(), 8);
+	size_t thd_max = std::min<size_t>(tools::get_max_concurrency(), 8);
 	ctx.scan_thd_cnt = thd_max;
-	ctx.short_chain_history = std::move(short_chain_history); //Cant we use ctx.short_chain_history from the beggining? 
+	ctx.short_chain_history = std::move(short_chain_history);
 	ctx.start_height = start_height;
 	ctx.thd = std::thread(&wallet2::block_download_thd, this, std::ref(ctx));
 
@@ -2139,9 +2140,9 @@ void wallet2::refresh(uint64_t start_height, uint64_t &blocks_fetched, bool &rec
 
 	GULPS_LOG_L1("Joining threads...");
 	ctx.thd.join();
-	for(size_t i=0; i < thd_max; i++)
-		scan_thds[i].join();
-	
+	for(auto& t :scan_thds)
+		t.join();
+
 	if(last_tx_hash_id != (m_transfers.size() ? m_transfers.back().m_txid : null_hash))
 		received_money = true;
 
