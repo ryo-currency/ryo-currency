@@ -43,6 +43,8 @@
 
 namespace tools
 {
+GULPS_CAT_MAJOR("wallet_tx_scan");
+
 std::unique_ptr<wallet2::wallet_rpc_scan_data> wallet2::pull_blocks(uint64_t start_height, const std::list<crypto::hash> &short_chain_history)
 {
 	cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::request req = AUTO_VAL_INIT(req);
@@ -60,7 +62,7 @@ std::unique_ptr<wallet2::wallet_rpc_scan_data> wallet2::pull_blocks(uint64_t sta
 							  "mismatched blocks (" + boost::lexical_cast<std::string>(res.blocks.size()) + ") and output_indices (" +
 								  boost::lexical_cast<std::string>(res.output_indices.size()) + ") sizes from daemon");
 
-	GULPS_LOGF_L1("Pulled blocks {}-{} / {}.", res.start_height, std::max(res.start_height+res.blocks.size()-1, res.start_height), res.current_height);
+	GULPSF_LOG_L1("Pulled blocks {}-{} / {}.", res.start_height, std::max(res.start_height+res.blocks.size()-1, res.start_height), res.current_height);
 
 	std::unique_ptr<wallet2::wallet_rpc_scan_data> ret(new wallet_rpc_scan_data);
 	ret->blocks_start_height = res.start_height;
@@ -99,7 +101,7 @@ void wallet2::block_download_thd(wallet2::wallet_block_dl_ctx& ctx)
 			current_top_height = pull_res->blocks_start_height + pull_res->blocks_bin.size()-1;
 			if(last_top_height == current_top_height)
 			{
-				GULPS_LOGF_L1("No more blocks from daemon.");
+				GULPS_LOG_L1("No more blocks from daemon.");
 				ctx.refresh_ctx.m_scan_in_queue.set_finish_flag();
 				ctx.refreshed = true; 
 				return;
@@ -150,12 +152,12 @@ void wallet2::block_download_thd(wallet2::wallet_block_dl_ctx& ctx)
 	ctx.refresh_ctx.m_scan_in_queue.set_finish_flag();
 	if(ctx.error)
 	{
-		GULPS_LOGF_L1("Stop downloading blocks due to an error");
+		GULPS_LOG_L1("Stop downloading blocks due to an error");
 	}
 	else
 	{
 		ctx.cancelled = true;
-		GULPS_LOGF_L1("Stop downloading blocks due to user cancel");
+		GULPS_LOG_L1("Stop downloading blocks due to user cancel");
 	}
 }
 
@@ -273,7 +275,7 @@ void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
 		{
 			std::unique_ptr<wallet2::wallet_rpc_scan_data> pull_res = ctx.refresh_ctx.m_scan_in_queue.pop(lck);
 
-			GULPS_LOGF_L1("Scanning blocks {} - {}", pull_res->blocks_start_height, pull_res->blocks_start_height+pull_res->blocks_bin.size()-1);
+			GULPSF_LOG_L1("Scanning blocks {} - {}", pull_res->blocks_start_height, pull_res->blocks_start_height+pull_res->blocks_bin.size()-1);
 			
 			if(ctx.refresh_ctx.m_scan_error)
 			{
@@ -353,19 +355,19 @@ void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
 	{
 		ctx.refresh_ctx.m_scan_error = true;
 		m_run = false;
-		GULPS_LOG_ERROR("Blocks scanning thread exception: {}", e.what());
+		GULPSF_LOG_ERROR("Blocks scanning thread exception: {}", e.what());
 	}
 
 	if(ctx.refresh_ctx.m_running_scan_thd_cnt.fetch_sub(1)-1 == 0)
 	{
-		GULPS_LOGF_L1("Blocks scanning threads complete");
+		GULPS_LOG_L1("Blocks scanning threads complete");
 		ctx.refresh_ctx.m_scan_out_queue.set_finish_flag();
 	}
 	else
 	{
 		size_t left = ctx.refresh_ctx.m_running_scan_thd_cnt;
 		bool error = ctx.refresh_ctx.m_scan_error;
-		GULPS_LOG_L1("block_scan_thd exits {} left, m_scan_error state", left, error);
+		GULPSF_LOG_L1("block_scan_thd exits {} left, m_scan_error state", left, error);
 	}
 }
 }

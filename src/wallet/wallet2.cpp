@@ -1970,7 +1970,7 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 	// Including previous data (can happen if there is a fork during the scan)
 	THROW_WALLET_EXCEPTION_IF(res->blocks_parsed.size() == 0, error::wallet_internal_error, "Integrated blocks vector is empty");
 	THROW_WALLET_EXCEPTION_IF(!m_blockchain.is_in_bounds(res->blocks_parsed.front().block_height), error::wallet_internal_error, "Index out of bounds of hashchain");
-	GULPS_LOGF_L1("Integrating results blocks: {} - {}", res->blocks_parsed.front().block_height, res->blocks_parsed.back().block_height);
+	GULPSF_LOG_L1("Integrating results blocks: {} - {}", res->blocks_parsed.front().block_height, res->blocks_parsed.back().block_height);
 	for(const auto& bl : res->blocks_parsed)
 	{
 		if(bl.block_height >= m_blockchain.size())
@@ -2087,7 +2087,7 @@ void wallet2::refresh(uint64_t start_height, uint64_t &blocks_fetched, bool &rec
 	wallet_scan_ctx ct(*this, refresh_ctx);
 	refresh_ctx.m_running_scan_thd_cnt = thd_max;
 	
-	GULPS_LOGF_L1("Running {} scanning threads", refresh_ctx.m_running_scan_thd_cnt);
+	GULPSF_LOG_L1("Running {} scanning threads", refresh_ctx.m_running_scan_thd_cnt);
 
 	std::vector<std::thread> scan_thds;
 	scan_thds.reserve(thd_max);
