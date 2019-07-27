@@ -1,6 +1,6 @@
 [<img src="doc/img/main_banner.png">](https://ryo-currency.com/ryo-serious-competitor-to-monero)
 
-Ryo is one of very few cryptonote currencies that does actual, rapid development. Its team is led by fireice_uk, mosu_forge and psychocrypt. Who are the developers of [Cryptonight-GPU](https://medium.com/@crypto_ryo/cryptonight-gpu-fpga-proof-pow-algorithm-based-on-floating-point-instructions-92524debf8e8) and [Cryptonight-Heavy](https://github.com/ryo-currency/ryo-writeups/blob/master/cn-heavy.md) mining algorithms, GUI Wallet with built-in GPU solo mining feature called [Ryo Wallet Atom](https://ryo-currency.com/atom) and [Xmr-Stak](https://github.com/fireice-uk/xmr-stak/releases) miner.
+Ryo is one of very few cryptonote currencies that does actual, rapid development. Its team is led by fireice_uk, mosu_forge and psychocrypt who are the developers of [Cryptonight-GPU](https://medium.com/@crypto_ryo/cryptonight-gpu-fpga-proof-pow-algorithm-based-on-floating-point-instructions-92524debf8e8) and [Cryptonight-Heavy](https://github.com/ryo-currency/ryo-writeups/blob/master/cn-heavy.md) mining algorithms, GUI Wallet with built-in GPU solo mining feature called [Ryo Wallet Atom](https://ryo-currency.com/atom) and [Xmr-Stak](https://github.com/fireice-uk/xmr-stak/releases) miner.
 - Website: [ryo-currency.com](https://ryo-currency.com)
 - Mail: [contact@ryo-currency.com](mailto:contact@ryo-currency.com)
 
@@ -29,7 +29,7 @@ The authenticity of the checksums can be verified with the [PGP-key's](doc/pgp_k
 
 
 ## Project Roadmap
-The Ryo dev. team has several vectors of development, and it has already brought results that we can see.
+The Ryo dev team has several vectors of development, and it has already brought results that we can see.
 [<img src="doc/img/RM.png">](https://ryo-currency.com#roadmap)  
 Navigate to Ryo official website to explore development track record and [roadmap](https://ryo-currency.com#roadmap) details.
 
