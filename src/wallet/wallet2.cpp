@@ -2021,6 +2021,18 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 			break;
 		}
 	}
+	
+	if(!needs_full_scan)
+	{
+		for(const auto& n : res->incoming_kimg) 
+		{
+			if(!res->key_images.not_present(&n, sizeof(crypto::key_image)))
+			{
+				needs_full_scan = true;
+				break;
+			}
+		}
+	}
 
 	if(needs_full_scan)
 	{
@@ -2033,7 +2045,8 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 					if(in.type() != typeid(cryptonote::txin_to_key))
 						continue;
 
-					if(m_key_images.find(boost::get<cryptonote::txin_to_key>(in).k_image) != m_key_images.end())
+					const crypto::key_image& ki = boost::get<cryptonote::txin_to_key>(in).k_image;
+					if(m_key_images.find(ki) != m_key_images.end() || res->incoming_kimg.find(ki) != res->incoming_kimg.end())
 					{
 						const cryptonote::block& b = res->blocks_parsed[blk_idx].block;
 						size_t height = res->blocks_parsed[blk_idx].block_height;

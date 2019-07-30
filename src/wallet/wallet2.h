@@ -1255,6 +1255,7 @@ class wallet2
 		std::vector<block_complete_entry_parsed> blocks_parsed;
 		std::vector<found_output_idx> indices_found;
 		bloom_filter key_images;
+		std::unordered_set<crypto::key_image> incoming_kimg;
 	};
 
 	std::unique_ptr<wallet_rpc_scan_data> pull_blocks(uint64_t start_height, const std::list<crypto::hash> &short_chain_history);
@@ -1307,7 +1308,7 @@ class wallet2
 	void integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& res);
 	void block_download_thd(wallet2::wallet_block_dl_ctx& ctx);
 	void block_scan_thd(const wallet_scan_ctx& ctx);
-	bool block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid, const cryptonote::transaction& tx, bloom_filter& in_kimg);
+	bool block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid, const cryptonote::transaction& tx, bloom_filter& in_kimg, std::unordered_set<crypto::key_image>& inc_kimg);
 	using tx_call_map = std::unordered_map<crypto::hash, std::pair<std::function<void()>, uint64_t>>;
 	inline void add_new_tx_call(tx_call_map& map, const crypto::hash& txid, const cryptonote::transaction& tx, const std::vector<uint64_t>& o_indices, 
 								uint64_t height, uint64_t ts, bool miner_tx)

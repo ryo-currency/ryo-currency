@@ -40,6 +40,7 @@
 
 #include "wallet2.h"
 #include "crypto/crypto.h"
+#include "device/device_default.hpp"
 
 namespace tools
 {
@@ -161,8 +162,9 @@ void wallet2::block_download_thd(wallet2::wallet_block_dl_ctx& ctx)
 	}
 }
 
-bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid, const cryptonote::transaction& tx, bloom_filter& in_kimg)
+bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid, const cryptonote::transaction& tx, bloom_filter& in_kimg, std::unordered_set<crypto::key_image>& inc_kimg)
 {
+	hw::core::device_default dummy_dev;
 	const cryptonote::account_keys &keys = ctx.account.get_keys();
 	GULPS_LOG_L2("Scanning tx ", txid);
 	for(const auto& tx_in : tx.vin)
@@ -222,6 +224,8 @@ bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid
 		}
 	}
 
+	bool spend_unknown = keys.m_spend_secret_key == crypto::null_skey || !keys.m_multisig_keys.empty();
+	bool ret = false;
 	for(size_t out_idx = 0; out_idx < tx.vout.size(); out_idx++)
 	{
 		if(tx.vout[out_idx].target.type() != typeid(cryptonote::txout_to_key))
@@ -238,11 +242,23 @@ bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid
 #else
 		crypto::derive_subaddress_public_key(out_pubkey, derivation, out_idx, subaddress_spendkey);
 #endif
-		
 
 		auto found = m_subaddresses.find(subaddress_spendkey);
 		if(found != m_subaddresses.end())
-			return true;
+		{
+			if(!spend_unknown)
+			{
+				cryptonote::keypair eph;
+				crypto::key_image ki;
+				bool r = cryptonote::generate_key_image_helper_precomp(keys, out_pubkey, derivation, out_idx, found->second, eph, ki, dummy_dev);
+				THROW_WALLET_EXCEPTION_IF(!r, error::wallet_internal_error, "Failed to generate key image");
+				THROW_WALLET_EXCEPTION_IF(eph.pub != out_pubkey,
+									error::wallet_internal_error, "key_image generated ephemeral public key not matched with output_key");
+				THROW_WALLET_EXCEPTION_IF(!inc_kimg.insert(ki).second, error::wallet_internal_error, "Duplicate key image");
+			}
+			ret = true;
+			continue;
+		}
 
 		// try additional tx pubkeys if available
 		if(!additional_derivations.empty())
@@ -259,11 +275,24 @@ bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid
 #endif
 			found = m_subaddresses.find(subaddress_spendkey);
 			if(found != m_subaddresses.end())
-				return true;
+			{
+				if(!spend_unknown)
+				{
+					cryptonote::keypair eph;
+					crypto::key_image ki;
+					bool r = cryptonote::generate_key_image_helper_precomp(keys, out_pubkey, derivation, out_idx, found->second, eph, ki, dummy_dev);
+					THROW_WALLET_EXCEPTION_IF(!r, error::wallet_internal_error, "Failed to generate key image");
+					THROW_WALLET_EXCEPTION_IF(eph.pub != out_pubkey,
+										error::wallet_internal_error, "key_image generated ephemeral public key not matched with output_key");
+					THROW_WALLET_EXCEPTION_IF(!inc_kimg.insert(ki).second, error::wallet_internal_error, "Duplicate key image");
+				}
+				ret = true;
+				continue;
+			}
 		}
 	}
 
-	return false;
+	return ret;
 }
 
 void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
@@ -337,13 +366,13 @@ void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
 
 				if(ctx.scan_type != RefreshNoCoinbase)
 				{
-					if(block_scan_tx(ctx, blke.miner_tx_hash, blke.block.miner_tx, pull_res->key_images))
+					if(block_scan_tx(ctx, blke.miner_tx_hash, blke.block.miner_tx, pull_res->key_images, pull_res->incoming_kimg))
 						pull_res->indices_found.emplace_back(i, 0);
 				}
 
 				for(size_t txi=0; txi < blke.txes.size(); txi++)
 				{
-					if(block_scan_tx(ctx, blke.block.tx_hashes[txi], blke.txes[txi], pull_res->key_images))
+					if(block_scan_tx(ctx, blke.block.tx_hashes[txi], blke.txes[txi], pull_res->key_images, pull_res->incoming_kimg))
 						pull_res->indices_found.emplace_back(i, txi+1);
 				}
 			}
