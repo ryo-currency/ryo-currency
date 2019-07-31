@@ -231,27 +231,6 @@ bool core_rpc_server::on_get_info(const COMMAND_RPC_GET_INFO::request &req, COMM
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-static cryptonote::blobdata get_pruned_tx_blob(cryptonote::transaction &tx)
-{
-	std::stringstream ss;
-	binary_archive<true> ba(ss);
-	bool r = tx.serialize_base(ba);
-	GULPS_CHECK_AND_ASSERT_MES(r, cryptonote::blobdata(), "Failed to serialize rct signatures base");
-	return ss.str();
-}
-//------------------------------------------------------------------------------------------------------------------------------
-static cryptonote::blobdata get_pruned_tx_blob(const cryptonote::blobdata &blobdata)
-{
-	cryptonote::transaction tx;
-
-	if(!cryptonote::parse_and_validate_tx_from_blob(blobdata, tx))
-	{
-		GULPS_ERROR("Failed to parse and validate tx from blob");
-		return cryptonote::blobdata();
-	}
-	return get_pruned_tx_blob(tx);
-}
-//------------------------------------------------------------------------------------------------------------------------------
 bool core_rpc_server::on_get_blocks(const COMMAND_RPC_GET_BLOCKS_FAST::request &req, COMMAND_RPC_GET_BLOCKS_FAST::response &res)
 {
 	PERF_TIMER(on_get_blocks);
@@ -259,59 +238,19 @@ bool core_rpc_server::on_get_blocks(const COMMAND_RPC_GET_BLOCKS_FAST::request &
 	if(use_bootstrap_daemon_if_necessary<COMMAND_RPC_GET_BLOCKS_FAST>(invoke_http_mode::BIN, "/getblocks.bin", req, res, r))
 		return r;
 
-	std::list<std::pair<cryptonote::blobdata, std::list<cryptonote::blobdata>>> bs;
-
-	if(!m_core.find_blockchain_supplement(req.start_height, req.block_ids, bs, res.current_height, res.start_height, COMMAND_RPC_GET_BLOCKS_FAST_MAX_COUNT))
+	if(!req.prune)
 	{
 		res.status = "Failed";
 		return false;
 	}
 
-	size_t pruned_size = 0, unpruned_size = 0, ntxes = 0;
-	for(auto &bd : bs)
+	if(!m_core.find_blockchain_supplement_indexed(req.start_height, req.block_ids, res.blocks, res.output_indices,
+		res.current_height, res.start_height, COMMAND_RPC_GET_BLOCKS_FAST_MAX_COUNT))
 	{
-		res.blocks.resize(res.blocks.size() + 1);
-		res.blocks.back().block = bd.first;
-		pruned_size += bd.first.size();
-		unpruned_size += bd.first.size();
-		res.output_indices.push_back(COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices());
-		res.output_indices.back().indices.push_back(COMMAND_RPC_GET_BLOCKS_FAST::tx_output_indices());
-		block b;
-		if(!parse_and_validate_block_from_blob(bd.first, b))
-		{
-			res.status = "Invalid block";
-			return false;
-		}
-		bool r = m_core.get_tx_outputs_gindexs(get_transaction_hash(b.miner_tx), res.output_indices.back().indices.back().indices);
-		if(!r)
-		{
-			res.status = "Failed";
-			return false;
-		}
-		size_t txidx = 0;
-		ntxes += bd.second.size();
-		for(std::list<cryptonote::blobdata>::iterator i = bd.second.begin(); i != bd.second.end(); ++i)
-		{
-			unpruned_size += i->size();
-			if(req.prune)
-				res.blocks.back().txs.push_back(get_pruned_tx_blob(std::move(*i)));
-			else
-				res.blocks.back().txs.push_back(std::move(*i));
-			i->clear();
-			i->shrink_to_fit();
-			pruned_size += res.blocks.back().txs.back().size();
-
-			res.output_indices.back().indices.push_back(COMMAND_RPC_GET_BLOCKS_FAST::tx_output_indices());
-			bool r = m_core.get_tx_outputs_gindexs(b.tx_hashes[txidx++], res.output_indices.back().indices.back().indices);
-			if(!r)
-			{
-				res.status = "Failed";
-				return false;
-			}
-		}
+		res.status = "Failed";
+		return false;
 	}
 
-	GULPSF_LOG_L1("on_get_blocks: {} blocks, {} txes, pruned size {}, unpruned size {}", bs.size() , ntxes , pruned_size , unpruned_size);
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }

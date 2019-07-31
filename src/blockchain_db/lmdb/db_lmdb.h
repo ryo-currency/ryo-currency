@@ -235,6 +235,7 @@ class BlockchainLMDB : public BlockchainDB
 	virtual uint64_t get_tx_unlock_time(const crypto::hash &h) const;
 
 	virtual bool get_tx_blob(const crypto::hash &h, cryptonote::blobdata &tx) const;
+	virtual bool get_tx_blob_indexed(const crypto::hash& h, cryptonote::blobdata& bd, std::vector<uint64_t>& o_idx) const;
 
 	virtual uint64_t get_tx_count() const;
 

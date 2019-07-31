@@ -514,9 +514,10 @@ public:
 
 		void output_main()
 		{
-			while(msg_q.wait_for_pop())
+			std::unique_lock<std::mutex> lck;
+			while(msg_q.wait_for_pop(lck))
 			{
-				message msg = msg_q.pop();
+				message msg = msg_q.pop(lck);
 				write_output(msg);
 			}
 		}

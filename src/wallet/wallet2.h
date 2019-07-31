@@ -72,6 +72,7 @@
 #include "rpc/core_rpc_server_commands_defs.h"
 #include "storages/http_abstract_invoke.h"
 
+#include "common/bloom_filter.hpp"
 #include "common/password.h"
 #include "node_rpc_proxy.h"
 #include "wallet_errors.h"
@@ -103,7 +104,8 @@ class i_wallet2_callback
 
 class hashchain
 {
-  public:
+GULPS_CAT_MAJOR("wallet2");
+public:
 	hashchain() : m_genesis(crypto::null_hash), m_offset(0) {}
 
 	size_t size() const { return m_blockchain.size() + m_offset; }
@@ -115,7 +117,7 @@ class hashchain
 			m_genesis = hash;
 		m_blockchain.push_back(hash);
 	}
-	bool is_in_bounds(size_t idx) const { return idx >= m_offset && idx < size(); }
+	bool is_in_bounds(size_t idx) const { GULPSF_LOG_L1("is_in_bounds: {} / {} / {}", idx, m_blockchain.size(), m_offset); return idx >= m_offset && idx < size(); }
 	const crypto::hash &operator[](size_t idx) const { return m_blockchain[idx - m_offset]; }
 	crypto::hash &operator[](size_t idx) { return m_blockchain[idx - m_offset]; }
 	void crop(size_t height) { m_blockchain.resize(height - m_offset); }
@@ -1088,16 +1090,12 @@ class wallet2
      */
 	bool load_keys(const std::string &keys_file_name, const epee::wipeable_string &password);
 	void process_new_transaction(const crypto::hash &txid, const cryptonote::transaction &tx, const std::vector<uint64_t> &o_indices, uint64_t height, uint64_t ts, bool miner_tx, bool pool, bool double_spend_seen);
-	void process_new_blockchain_entry(const cryptonote::block &b, const cryptonote::block_complete_entry &bche, const crypto::hash &bl_id, uint64_t height, const cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices &o_indices);
 	void detach_blockchain(uint64_t height);
 	void get_short_chain_history(std::list<crypto::hash> &ids) const;
 	bool is_tx_spendtime_unlocked(uint64_t unlock_time, uint64_t block_height) const;
 	bool clear();
-	void pull_blocks(uint64_t start_height, uint64_t &blocks_start_height, const std::list<crypto::hash> &short_chain_history, std::list<cryptonote::block_complete_entry> &blocks, std::vector<cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices> &o_indices);
 	void pull_hashes(uint64_t start_height, uint64_t &blocks_start_height, const std::list<crypto::hash> &short_chain_history, std::list<crypto::hash> &hashes);
 	void fast_refresh(uint64_t stop_height, uint64_t &blocks_start_height, std::list<crypto::hash> &short_chain_history);
-	void pull_next_blocks(uint64_t start_height, uint64_t &blocks_start_height, std::list<crypto::hash> &short_chain_history, const std::list<cryptonote::block_complete_entry> &prev_blocks, std::list<cryptonote::block_complete_entry> &blocks, std::vector<cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices> &o_indices, bool &error);
-	void process_blocks(uint64_t start_height, const std::list<cryptonote::block_complete_entry> &blocks, const std::vector<cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices> &o_indices, uint64_t &blocks_added);
 	uint64_t select_transfers(uint64_t needed_money, std::vector<size_t> unused_transfers_indices, std::vector<size_t> &selected_transfers, bool trusted_daemon) const;
 	bool prepare_file_names(const std::string &file_path);
 	void process_unconfirmed(const crypto::hash &txid, const cryptonote::transaction &tx, uint64_t height);
@@ -1228,6 +1226,99 @@ class wallet2
 	std::string m_ring_database;
 	bool m_ring_history_saved;
 	std::unique_ptr<ringdb> m_ringdb;
+
+	struct wallet_rpc_scan_data
+	{
+		struct block_complete_entry_parsed
+		{
+			uint64_t block_height;
+			crypto::hash block_hash;
+			cryptonote::block block;
+			crypto::hash miner_tx_hash;
+			std::vector<cryptonote::transaction> txes;
+			bool skipped;
+		};
+
+		struct found_output_idx
+		{
+			found_output_idx(size_t block_idx, size_t tx_idx) : block_idx(block_idx), tx_idx(tx_idx) {}
+			size_t block_idx;
+			size_t tx_idx;
+		};
+
+		size_t dl_order;
+		uint64_t blocks_start_height;
+		const std::list<crypto::hash> short_chain_history;
+		std::vector<cryptonote::block_complete_entry_v> blocks_bin;
+		std::vector<cryptonote::COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices> o_indices;
+
+		std::vector<block_complete_entry_parsed> blocks_parsed;
+		std::vector<found_output_idx> indices_found;
+		bloom_filter key_images;
+		std::unordered_set<crypto::key_image> incoming_kimg;
+	};
+
+	std::unique_ptr<wallet_rpc_scan_data> pull_blocks(uint64_t start_height, const std::list<crypto::hash> &short_chain_history);
+
+	struct wallet_refresh_ctx
+	{
+		wallet_refresh_ctx() : m_scan_error(false) {};
+
+		thdq<std::unique_ptr<wallet_rpc_scan_data>> m_scan_in_queue;
+		thdq<std::unique_ptr<wallet_rpc_scan_data>> m_scan_out_queue;
+		std::atomic<size_t> m_running_scan_thd_cnt;
+		std::atomic<bool> m_scan_error;
+	};
+
+	struct wallet_scan_ctx
+	{
+		wallet_scan_ctx(const wallet2& parent, wallet_refresh_ctx& refresh_ctx) : 
+			explicit_refresh(parent.m_explicit_refresh_from_block_height),
+			wallet_create_time(parent.m_account.get_createtime()),
+			refresh_height(parent.m_refresh_from_block_height),
+			account(parent.m_account),
+			scan_type(parent.m_refresh_type),
+			refresh_ctx(refresh_ctx)
+			{}
+
+		bool explicit_refresh;
+		uint64_t wallet_create_time;
+		uint64_t refresh_height;
+		const cryptonote::account_base& account;
+		RefreshType scan_type;
+		wallet_refresh_ctx& refresh_ctx;
+	};
+
+	struct wallet_block_dl_ctx
+	{
+		wallet_block_dl_ctx(wallet_refresh_ctx& refresh_ctx) : 
+			refresh_ctx(refresh_ctx) {}
+
+		size_t scan_thd_cnt;
+		size_t start_height;
+		std::list<crypto::hash> short_chain_history;
+
+		std::thread thd;
+		std::atomic<bool> error;
+		bool refreshed;
+		bool cancelled;
+		wallet_refresh_ctx& refresh_ctx;
+	};
+
+	void integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& res);
+	void block_download_thd(wallet2::wallet_block_dl_ctx& ctx);
+	void block_scan_thd(const wallet_scan_ctx& ctx);
+	bool block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid, const cryptonote::transaction& tx, bloom_filter& in_kimg, std::unordered_set<crypto::key_image>& inc_kimg);
+	using tx_call_map = std::unordered_map<crypto::hash, std::pair<std::function<void()>, uint64_t>>;
+	inline void add_new_tx_call(tx_call_map& map, const crypto::hash& txid, const cryptonote::transaction& tx, const std::vector<uint64_t>& o_indices, 
+								uint64_t height, uint64_t ts, bool miner_tx)
+	{
+		if(map.find(txid) != map.end())
+			return;
+
+		map.emplace(std::piecewise_construct, std::forward_as_tuple(txid), std::forward_as_tuple(
+			std::bind(&wallet2::process_new_transaction, this, std::cref(txid), std::cref(tx), std::cref(o_indices), height, ts, miner_tx, false, false), height));
+	}
 };
 }
 BOOST_CLASS_VERSION(tools::wallet2, 24)
@@ -1246,6 +1337,20 @@ BOOST_CLASS_VERSION(tools::wallet2::signed_tx_set, 0)
 BOOST_CLASS_VERSION(tools::wallet2::tx_construction_data, 3)
 BOOST_CLASS_VERSION(tools::wallet2::pending_tx, 3)
 BOOST_CLASS_VERSION(tools::wallet2::multisig_sig, 0)
+
+inline void drop_from_short_history(std::list<crypto::hash> &short_chain_history, size_t N)
+{
+	std::list<crypto::hash>::iterator right;
+	// drop early N off, skipping the genesis block
+	if(short_chain_history.size() > N)
+	{
+		right = short_chain_history.end();
+		std::advance(right, -1);
+		std::list<crypto::hash>::iterator left = right;
+		std::advance(left, -N);
+		short_chain_history.erase(left, right);
+	}
+}
 
 namespace boost
 {

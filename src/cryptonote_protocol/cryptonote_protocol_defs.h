@@ -133,6 +133,19 @@ struct block_complete_entry
 	END_KV_SERIALIZE_MAP()
 };
 
+// As far as epee is concerned, those two are interchangeable
+struct block_complete_entry_v
+{
+	block_complete_entry_v(blobdata block, std::vector<blobdata> txs) : block(block), txs(txs)  {}
+
+	blobdata block;
+	std::vector<blobdata> txs;
+	BEGIN_KV_SERIALIZE_MAP(block_complete_entry_v)
+	KV_SERIALIZE(block)
+	KV_SERIALIZE(txs)
+	END_KV_SERIALIZE_MAP()
+};
+
 /************************************************************************/
 /*                                                                      */
 /************************************************************************/
