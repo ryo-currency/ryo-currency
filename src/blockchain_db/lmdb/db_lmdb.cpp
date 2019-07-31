@@ -2217,6 +2217,56 @@ bool BlockchainLMDB::get_tx_blob(const crypto::hash &h, cryptonote::blobdata &bd
 	return true;
 }
 
+bool BlockchainLMDB::get_tx_blob_indexed(const crypto::hash& h, cryptonote::blobdata& bd, std::vector<uint64_t>& o_idx) const
+{
+	GULPS_LOG_L3("BlockchainLMDB::", __func__);
+	check_open();
+
+	TXN_PREFIX_RDONLY();
+	RCURSOR(tx_indices);
+	RCURSOR(txs);
+
+	MDB_val_set(v, h);
+	MDB_val result;
+	auto get_result = mdb_cursor_get(m_cur_tx_indices, (MDB_val *)&zerokval, &v, MDB_GET_BOTH);
+	uint64_t db_tx_id;
+	if(get_result == 0)
+	{
+		txindex *tip = (txindex *)v.mv_data;
+		db_tx_id = tip->data.tx_id;
+		MDB_val_set(val_tx_id, tip->data.tx_id);
+		get_result = mdb_cursor_get(m_cur_txs, &val_tx_id, &result, MDB_SET);
+	}
+	if(get_result == MDB_NOTFOUND)
+		return false;
+	else if(get_result)
+		throw0(DB_ERROR(lmdb_error("DB error attempting to fetch tx from hash", get_result).c_str()));
+
+	bd.assign(reinterpret_cast<char *>(result.mv_data), result.mv_size);
+
+	RCURSOR(tx_outputs);
+	int out_result = 0;
+	MDB_val_set(k_tx_id, db_tx_id);
+	MDB_val out_v;
+
+	out_result = mdb_cursor_get(m_cur_tx_outputs, &k_tx_id, &out_v, MDB_SET);
+	if(out_result == MDB_NOTFOUND)
+		GULPS_PRINT("WARNING: Unexpected: tx has no amount indices stored in ",
+					 "tx_outputs, but it should have an empty entry even if it's a tx without ",
+					 "outputs");
+	else if(out_result)
+		throw0(DB_ERROR(lmdb_error("DB error attempting to get data for tx_outputs[tx_index]", out_result).c_str()));
+
+	const uint64_t *indices = (const uint64_t *)out_v.mv_data;
+	int num_outputs = out_v.mv_size / sizeof(uint64_t);
+
+	o_idx.resize(num_outputs);
+	memcpy(o_idx.data(), indices, out_v.mv_size);
+	
+	TXN_POSTFIX_RDONLY();
+	return true;
+}
+
 uint64_t BlockchainLMDB::get_tx_count() const
 {
 	GULPS_LOG_L3("BlockchainLMDB::", __func__);

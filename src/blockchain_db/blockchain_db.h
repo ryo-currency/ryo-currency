@@ -1118,6 +1118,7 @@ class BlockchainDB
    * @return true iff the transaction was found
    */
 	virtual bool get_tx_blob(const crypto::hash &h, cryptonote::blobdata &tx) const = 0;
+	virtual bool get_tx_blob_indexed(const crypto::hash& h, cryptonote::blobdata& bd, std::vector<uint64_t>& o_idx) const = 0;
 
 	/**
    * @brief fetches the total number of transactions ever

@@ -209,6 +209,30 @@ crypto::hash get_tx_tree_hash(const block &b);
 bool is_valid_decomposed_amount(uint64_t amount);
 void get_hash_stats(uint64_t &tx_hashes_calculated, uint64_t &tx_hashes_cached, uint64_t &block_hashes_calculated, uint64_t &block_hashes_cached);
 
+//------------------------------------------------------------------------------------------------------------------------------
+inline blobdata get_pruned_tx_blob(transaction &tx)
+{
+	GULPS_CAT_MAJOR("formt_utils");
+	std::stringstream ss;
+	binary_archive<true> ba(ss);
+	bool r = tx.serialize_base(ba);
+	GULPS_CHECK_AND_ASSERT_MES(r, cryptonote::blobdata(), "Failed to serialize rct signatures base");
+	return ss.str();
+}
+//------------------------------------------------------------------------------------------------------------------------------
+inline blobdata get_pruned_tx_blob(const blobdata &blobdata)
+{
+	GULPS_CAT_MAJOR("formt_utils");
+	cryptonote::transaction tx;
+
+	if(!cryptonote::parse_and_validate_tx_base_from_blob(blobdata, tx))
+	{
+		GULPS_ERROR("Failed to parse and validate tx from blob");
+		return cryptonote::blobdata();
+	}
+	return get_pruned_tx_blob(tx);
+}
+
 #define CHECKED_GET_SPECIFIC_VARIANT(variant_var, specific_type, variable_name, fail_return_val)                                                                                              \
 	GULPS_CHECK_AND_ASSERT_MES(variant_var.type() == typeid(specific_type), fail_return_val, "wrong variant type: " , variant_var.type().name() , ", expected " , typeid(specific_type).name()); \
 	specific_type &variable_name = boost::get<specific_type>(variant_var);
