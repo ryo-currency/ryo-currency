@@ -81,11 +81,11 @@ function(ryo_option name description default)
 endfunction()
 
 # detect 64bit x86 architecture and set ARCH_X86_64
-if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
   set(ARCH_X86_64 TRUE)
-elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "amd64")
+elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64")
   set(ARCH_X86_64 TRUE)
-elseif (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "AMD64")
+elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
   # cmake reports AMD64 on Windows, but we might be building for 32-bit.
   if (CMAKE_CL_64)
   set(ARCH_X86_64 TRUE)
