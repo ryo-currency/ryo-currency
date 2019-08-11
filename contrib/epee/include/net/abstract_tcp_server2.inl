@@ -956,7 +956,7 @@ bool boosted_tcp_server<t_protocol_handler>::timed_wait_server_stop(uint64_t wai
 	{
 		if(m_threads[i]->joinable() && !m_threads[i]->try_join_for(ms))
 		{
-			GULPSF_LOG_L1("Interrupting thread {}", m_threads[i]->native_handle());
+			GULPS_LOG_L1("Interrupting thread ", m_threads[i]->get_id());
 			m_threads[i]->interrupt();
 		}
 	}
