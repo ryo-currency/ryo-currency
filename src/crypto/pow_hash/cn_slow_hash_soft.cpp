@@ -436,6 +436,27 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::explode_scratchpad_soft()
 	}
 }
 
+#if defined(__arm__)
+inline void generate_512(uint64_t idx, const uint64_t* in, uint8_t* out)
+{
+	constexpr size_t hash_size = 200; // 25x8 bytes
+	alignas(8) uint64_t hash[25];
+
+	memcpy(hash, in, hash_size);
+	hash[0] ^= idx;
+
+	keccakf(hash);
+	memcpy(out, hash, 160);
+	out += 160;
+
+	keccakf(hash);
+	memcpy(out, hash, 176);
+	out += 176;
+
+	keccakf(hash);
+	memcpy(out, hash, 176);
+}
+#else
 inline void generate_512(uint64_t idx, const uint64_t* in, uint8_t* out)
 {
 	constexpr size_t hash_size = 200; // 25x8 bytes
@@ -455,6 +476,7 @@ inline void generate_512(uint64_t idx, const uint64_t* in, uint8_t* out)
 	keccakf(hash);
 	memcpy(out, hash, 176);
 }
+#endif
 
 template <size_t MEMORY, size_t ITER, size_t VERSION>
 void cn_slow_hash<MEMORY, ITER, VERSION>::explode_scratchpad_3()
