@@ -41,7 +41,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#pragma once 
+#pragma once
 
 #include <queue>
 #include <list>
@@ -69,9 +69,14 @@ public:
 		return false;
 	}
 
+	std::unique_lock<std::mutex> get_lock()
+	{
+		return std::unique_lock<std::mutex>(mutex_, std::defer_lock);
+	}
+
 	bool wait_for_pop(std::unique_lock<std::mutex>& lck)
 	{
-		lck = std::unique_lock<std::mutex>(mutex_);
+		lck.lock();
 		while (queue_.empty() && !finish) { cond_.wait(lck); }
 		bool has_pop = !queue_.empty();
 		if(!has_pop) { lck.unlock(); }

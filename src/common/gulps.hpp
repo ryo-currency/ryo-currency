@@ -514,7 +514,7 @@ public:
 
 		void output_main()
 		{
-			std::unique_lock<std::mutex> lck;
+			std::unique_lock<std::mutex> lck = msg_q.get_lock();
 			while(msg_q.wait_for_pop(lck))
 			{
 				message msg = msg_q.pop(lck);

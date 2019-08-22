@@ -104,7 +104,7 @@ void wallet2::block_download_thd(wallet2::wallet_block_dl_ctx& ctx)
 			{
 				GULPS_LOG_L1("No more blocks from daemon.");
 				ctx.refresh_ctx.m_scan_in_queue.set_finish_flag();
-				ctx.refreshed = true; 
+				ctx.refreshed = true;
 				return;
 			}
 
@@ -116,7 +116,7 @@ void wallet2::block_download_thd(wallet2::wallet_block_dl_ctx& ctx)
 				ctx.start_height = 0;
 				first_round = false;
 			}
-	
+
 			drop_from_short_history(ctx.short_chain_history, 3);
 			// prepend the last 3 blocks, should be enough to guard against a block or two's reorg
 			cryptonote::block bl;
@@ -198,7 +198,7 @@ bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid
 #else
 	derivation_res = crypto::generate_key_derivation(tx_pub_key, keys.m_view_secret_key, derivation);
 #endif
-	
+
 	if(!derivation_res)
 	{
 		GULPS_WARN("Failed to generate key derivation from tx pubkey, skipping");
@@ -299,13 +299,13 @@ void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
 {
 	try
 	{
-		std::unique_lock<std::mutex> lck;
+		std::unique_lock<std::mutex> lck = ctx.refresh_ctx.m_scan_in_queue.get_lock();
 		while(ctx.refresh_ctx.m_scan_in_queue.wait_for_pop(lck))
 		{
 			std::unique_ptr<wallet2::wallet_rpc_scan_data> pull_res = ctx.refresh_ctx.m_scan_in_queue.pop(lck);
 
 			GULPSF_LOG_L1("Scanning blocks {} - {}", pull_res->blocks_start_height, pull_res->blocks_start_height+pull_res->blocks_bin.size()-1);
-			
+
 			if(ctx.refresh_ctx.m_scan_error)
 			{
 				GULPS_LOG_L1("block_scan_thd exits due to m_scan_error.");
@@ -327,16 +327,16 @@ void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
 				THROW_WALLET_EXCEPTION_IF(!r, error::block_parse_error, bl.block);
 				blke.block_hash = get_block_hash(blke.block);
 				THROW_WALLET_EXCEPTION_IF(bl.txs.size() + 1 != blk_o_idx.indices.size(), error::wallet_internal_error,
-					"block transactions=" + std::to_string(bl.txs.size()) + " not match with daemon response size=" + 
+					"block transactions=" + std::to_string(bl.txs.size()) + " not match with daemon response size=" +
 					std::to_string(blk_o_idx.indices.size()) + " for block " + std::to_string(blke.block_height));
-				THROW_WALLET_EXCEPTION_IF(bl.txs.size() != blke.block.tx_hashes.size(), error::wallet_internal_error, 
+				THROW_WALLET_EXCEPTION_IF(bl.txs.size() != blke.block.tx_hashes.size(), error::wallet_internal_error,
 										  "Wrong amount of transactions for block");
 
 				blk_i++;
 				if(!ctx.explicit_refresh && (blke.block.timestamp + 60 * 60 * 24 <= ctx.wallet_create_time || blke.block_height  < ctx.refresh_height))
 				{
 					if(blke.block_height % 100 == 0)
-						GULPS_LOG_L2("Skipped block by timestamp, height: ", blke.block_height, ", block time ", 
+						GULPS_LOG_L2("Skipped block by timestamp, height: ", blke.block_height, ", block time ",
 									 blke.block.timestamp, ", account time ", ctx.wallet_create_time);
 					blke.skipped = true;
 					continue;
