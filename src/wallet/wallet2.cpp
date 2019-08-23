@@ -2013,7 +2013,7 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 
 	// Do outgoing funds
 	bool needs_full_scan = false;
-	for(const auto& n : m_key_images) 
+	for(const auto& n : m_key_images)
 	{
 		if(!res->key_images.not_present(&n.first, sizeof(crypto::key_image)))
 		{
@@ -2021,10 +2021,10 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 			break;
 		}
 	}
-	
+
 	if(!needs_full_scan)
 	{
-		for(const auto& n : res->incoming_kimg) 
+		for(const auto& n : res->incoming_kimg)
 		{
 			if(!res->key_images.not_present(&n, sizeof(crypto::key_image)))
 			{
@@ -2075,7 +2075,7 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 
 	for(auto& v : tx_calls)
 		calls.emplace_back(std::move(v.second));
-	
+
 	std::sort(calls.begin(), calls.end(), [](const call_pair& a, const call_pair& b)
 		{ return a.second < b.second; });
 
@@ -2124,7 +2124,7 @@ void wallet2::refresh(uint64_t start_height, uint64_t &blocks_fetched, bool &rec
 
 	wallet_scan_ctx ct(*this, refresh_ctx);
 	refresh_ctx.m_running_scan_thd_cnt = thd_max;
-	
+
 	GULPSF_LOG_L1("Running {} scanning threads", refresh_ctx.m_running_scan_thd_cnt);
 
 	std::vector<std::thread> scan_thds;
@@ -2134,7 +2134,7 @@ void wallet2::refresh(uint64_t start_height, uint64_t &blocks_fetched, bool &rec
 
 	size_t result_idx=0;
 	std::list<std::unique_ptr<wallet2::wallet_rpc_scan_data>> result_list;
-	std::unique_lock<std::mutex> lck;
+	std::unique_lock<std::mutex> lck = refresh_ctx.m_scan_out_queue.get_lock();
 	while(refresh_ctx.m_scan_out_queue.wait_for_pop(lck))
 	{
 		result_list.emplace_back(refresh_ctx.m_scan_out_queue.pop(lck));
