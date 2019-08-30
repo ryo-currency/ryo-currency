@@ -1611,7 +1611,15 @@ bool Blockchain::handle_alternative_block(const block &b, const crypto::hash &id
 		// FIXME: consider moving away from block_extended_info at some point
 		block_extended_info bei = boost::value_initialized<block_extended_info>();
 		bei.bl = b;
-		bei.height = alt_chain.size() ? it_prev->second.height + 1 : m_db->get_block_height(b.prev_id) + 1;
+
+		const uint64_t prev_height = alt_chain.size() ? it_prev->second.height : m_db->get_block_height(b.prev_id);
+		bei.height = prev_height + 1;
+
+		const uint64_t block_reward = get_outs_money_amount(b.miner_tx);
+		const uint64_t prev_generated_coins = alt_chain.size() ?
+			it_prev->second.already_generated_coins : m_db->get_block_already_generated_coins(prev_height);
+		bei.already_generated_coins = (block_reward < (MONEY_SUPPLY - prev_generated_coins)) ?
+			prev_generated_coins + block_reward : MONEY_SUPPLY;
 
 		bool is_a_checkpoint;
 		if(!m_checkpoints.check_block(bei.height, id, is_a_checkpoint))
@@ -2417,7 +2425,7 @@ bool Blockchain::find_blockchain_supplement_indexed(const uint64_t req_start_blo
 	std::vector<block_complete_entry_v*> ent;
 	std::vector<COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices*> idx;
 	std::vector<std::pair<block, bool>> b;
-	
+
 	struct tx_blob
 	{
 		cryptonote::blobdata blob;
@@ -2473,7 +2481,7 @@ bool Blockchain::find_blockchain_supplement_indexed(const uint64_t req_start_blo
 			ent[bi]->txs.resize(tx_cnt);
 			for(size_t txi=0; txi < tx_cnt; txi++, ttxi++)
 			{
-				GULPS_CHECK_AND_ASSERT_MES(m_db->get_tx_blob_indexed(bl.tx_hashes[txi], tx[ttxi].blob, idx[bi]->indices[txi+1].indices), 
+				GULPS_CHECK_AND_ASSERT_MES(m_db->get_tx_blob_indexed(bl.tx_hashes[txi], tx[ttxi].blob, idx[bi]->indices[txi+1].indices),
 										   false, "internal error, transaction from block not found");
 				tx[ttxi].bi = bi;
 				tx[ttxi].txi = txi;
