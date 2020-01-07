@@ -333,7 +333,13 @@ void wallet2::block_scan_thd(const wallet_scan_ctx& ctx)
 										  "Wrong amount of transactions for block");
 
 				blk_i++;
-				if(!ctx.explicit_refresh && (blke.block.timestamp + 60 * 60 * 24 <= ctx.wallet_create_time || blke.block_height  < ctx.refresh_height))
+				if(blke.block_height < m_blockchain.size() && m_blockchain[blke.block_height] == blke.block_hash)
+				{
+					GULPS_LOG_L2("block_scan_thd skipped block, already in blockchain: ", epee::string_tools::pod_to_hex(blke.block_hash));
+					blke.skipped = true;
+					continue;
+				}
+				else if(!ctx.explicit_refresh && (blke.block.timestamp + 60 * 60 * 24 <= ctx.wallet_create_time || blke.block_height  < ctx.refresh_height))
 				{
 					if(blke.block_height % 100 == 0)
 						GULPS_LOG_L2("Skipped block by timestamp, height: ", blke.block_height, ", block time ",
