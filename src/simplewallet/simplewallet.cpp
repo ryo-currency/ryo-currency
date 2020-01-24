@@ -84,14 +84,6 @@
 
 #include "common/gulps.hpp"
 
-#define GULPS_PRINT_FAIL(...) GULPS_ERROR(tr("Error: "), __VA_ARGS__)
-#define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
-#define GULPSF_PRINT_OK(...) GULPSF_PRINT(__VA_ARGS__)
-#define GULPS_PRINT_BOLD(...) GULPS_PRINT_CLR(gulps::COLOR_BOLD_WHITE, __VA_ARGS__)
-#define GULPS_PRINT_GREEN(...) GULPS_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
-#define GULPSF_PRINT_GREEN(...) GULPSF_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__)
-#define GULPS_PRINT_SECRET(...) GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), "secret", gulps::COLOR_WHITE, __VA_ARGS__)
-
 #ifdef WIN32
 #undef fmt
 #include <windows.h>
@@ -100,6 +92,15 @@
 #endif
 
 #include "readline_buffer.h"
+
+#define GULPS_PRINT_FAIL(...) do{PAUSE_READLINE();GULPS_ERROR(tr("Error: "), __VA_ARGS__);}while(false)
+#define GULPS_PRINT_OK(...) do{PAUSE_READLINE();GULPS_PRINT(__VA_ARGS__);}while(false)
+#define GULPSF_PRINT_OK(...) do{PAUSE_READLINE();GULPSF_PRINT(__VA_ARGS__);}while(false)
+#define GULPS_PRINT_BOLD(...) do{PAUSE_READLINE();GULPS_PRINT_CLR(gulps::COLOR_BOLD_WHITE, __VA_ARGS__);}while(false)
+#define GULPS_PRINT_GREEN(...) do{PAUSE_READLINE();GULPS_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__);}while(false)
+#define GULPSF_PRINT_GREEN(...) do{PAUSE_READLINE();GULPSF_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__);}while(false)
+#define GULPS_PRINT_SECRET(...) do{PAUSE_READLINE();GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), "secret", gulps::COLOR_WHITE, __VA_ARGS__);}while(false)
+
 
 using namespace std;
 using namespace epee;
