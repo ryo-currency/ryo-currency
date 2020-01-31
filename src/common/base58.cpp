@@ -213,7 +213,7 @@ bool decode_block(const char *block, size_t size, char *res)
 
 	return true;
 }
-}
+} // namespace
 
 std::string encode(const std::string &data)
 {
@@ -263,7 +263,7 @@ bool decode(const std::string &enc, std::string &data)
 	if(0 < last_block_size)
 	{
 		if(!decode_block(enc.data() + full_block_count * full_encoded_block_size, last_block_size,
-						 &data[full_block_count * full_block_size]))
+			   &data[full_block_count * full_block_size]))
 			return false;
 	}
 
@@ -305,5 +305,5 @@ bool decode_addr(std::string addr, uint64_t &tag, std::string &data)
 	data = addr_data.substr(read);
 	return true;
 }
-}
-}
+} // namespace base58
+} // namespace tools

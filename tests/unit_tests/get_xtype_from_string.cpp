@@ -50,21 +50,21 @@ void do_neg_test(const std::string &str)
 	T val;
 	ASSERT_FALSE(get_xtype_from_string(val, str));
 }
-}
+} // namespace
 
-#define TEST_pos(int_type, expected, str)                            \
+#define TEST_pos(int_type, expected, str) \
 	TEST(get_xtype_from_string, handles_pos_##int_type##_##expected) \
-	{                                                                \
-		do_pos_test<int_type>(expected, str);                        \
+	{ \
+		do_pos_test<int_type>(expected, str); \
 	}
 
 #define DO_MAKE_NEG_TEST_NAME(prefix, int_type, ln) prefix##int_type##_##ln
 #define MAKE_NEG_TEST_NAME(prefix, int_type, ln) DO_MAKE_NEG_TEST_NAME(prefix, int_type, ln)
 
-#define TEST_neg(int_type, str)                                                      \
+#define TEST_neg(int_type, str) \
 	TEST(get_xtype_from_string, MAKE_NEG_TEST_NAME(handles_neg, int_type, __LINE__)) \
-	{                                                                                \
-		do_neg_test<int_type>(str);                                                  \
+	{ \
+		do_neg_test<int_type>(str); \
 	}
 
 TEST_pos(uint16_t, 0, "0");

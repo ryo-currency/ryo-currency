@@ -44,6 +44,7 @@
 #include "common/command_line.h"
 #include "include_base_utils.h"
 
+#include "common/gulps.hpp"
 #include "cryptonote_basic/account_boost_serialization.h"
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
@@ -51,7 +52,6 @@
 #include "cryptonote_basic/cryptonote_format_utils.h"
 #include "cryptonote_core/cryptonote_core.h"
 #include "misc_language.h"
-#include "common/gulps.hpp"
 
 struct callback_entry
 {
@@ -75,8 +75,8 @@ struct serialized_object
 {
 	serialized_object() {}
 
-	serialized_object(const cryptonote::blobdata &a_data)
-		: data(a_data)
+	serialized_object(const cryptonote::blobdata &a_data) :
+		data(a_data)
 	{
 	}
 
@@ -108,8 +108,8 @@ struct event_visitor_settings
 		set_txs_keeped_by_block = 1 << 0
 	};
 
-	event_visitor_settings(int a_valid_mask = 0, bool a_txs_keeped_by_block = false)
-		: valid_mask(a_valid_mask), txs_keeped_by_block(a_txs_keeped_by_block)
+	event_visitor_settings(int a_valid_mask = 0, bool a_txs_keeped_by_block = false) :
+		valid_mask(a_valid_mask), txs_keeped_by_block(a_txs_keeped_by_block)
 	{
 	}
 
@@ -151,13 +151,13 @@ class test_generator
   public:
 	struct block_info
 	{
-		block_info()
-			: prev_id(), already_generated_coins(0), block_size(0)
+		block_info() :
+			prev_id(), already_generated_coins(0), block_size(0)
 		{
 		}
 
-		block_info(crypto::hash a_prev_id, uint64_t an_already_generated_coins, size_t a_block_size)
-			: prev_id(a_prev_id), already_generated_coins(an_already_generated_coins), block_size(a_block_size)
+		block_info(crypto::hash a_prev_id, uint64_t an_already_generated_coins, size_t a_block_size) :
+			prev_id(a_prev_id), already_generated_coins(an_already_generated_coins), block_size(a_block_size)
 		{
 		}
 
@@ -186,22 +186,22 @@ class test_generator
 	uint64_t get_already_generated_coins(const cryptonote::block &blk) const;
 
 	void add_block(const cryptonote::block &blk, size_t tsx_size, std::vector<size_t> &block_sizes, uint64_t already_generated_coins,
-				   uint8_t hf_version = 1);
+		uint8_t hf_version = 1);
 	bool construct_block(cryptonote::block &blk, uint64_t height, const crypto::hash &prev_id,
-						 const cryptonote::account_base &miner_acc, uint64_t timestamp, uint64_t already_generated_coins,
-						 std::vector<size_t> &block_sizes, const std::list<cryptonote::transaction> &tx_list);
+		const cryptonote::account_base &miner_acc, uint64_t timestamp, uint64_t already_generated_coins,
+		std::vector<size_t> &block_sizes, const std::list<cryptonote::transaction> &tx_list);
 	bool construct_block(cryptonote::block &blk, const cryptonote::account_base &miner_acc, uint64_t timestamp);
 	bool construct_block(cryptonote::block &blk, const cryptonote::block &blk_prev, const cryptonote::account_base &miner_acc,
-						 const std::list<cryptonote::transaction> &tx_list = std::list<cryptonote::transaction>());
+		const std::list<cryptonote::transaction> &tx_list = std::list<cryptonote::transaction>());
 
 	bool construct_block_manually(cryptonote::block &blk, const cryptonote::block &prev_block,
-								  const cryptonote::account_base &miner_acc, int actual_params = bf_none, uint8_t major_ver = 0,
-								  uint8_t minor_ver = 0, uint64_t timestamp = 0, const crypto::hash &prev_id = crypto::hash(),
-								  const cryptonote::difficulty_type &diffic = 1, const cryptonote::transaction &miner_tx = cryptonote::transaction(),
-								  const std::vector<crypto::hash> &tx_hashes = std::vector<crypto::hash>(), size_t txs_sizes = 0, size_t max_outs = 999,
-								  uint8_t hf_version = 1);
+		const cryptonote::account_base &miner_acc, int actual_params = bf_none, uint8_t major_ver = 0,
+		uint8_t minor_ver = 0, uint64_t timestamp = 0, const crypto::hash &prev_id = crypto::hash(),
+		const cryptonote::difficulty_type &diffic = 1, const cryptonote::transaction &miner_tx = cryptonote::transaction(),
+		const std::vector<crypto::hash> &tx_hashes = std::vector<crypto::hash>(), size_t txs_sizes = 0, size_t max_outs = 999,
+		uint8_t hf_version = 1);
 	bool construct_block_manually_tx(cryptonote::block &blk, const cryptonote::block &prev_block,
-									 const cryptonote::account_base &miner_acc, const std::vector<crypto::hash> &tx_hashes, size_t txs_size);
+		const cryptonote::account_base &miner_acc, const std::vector<crypto::hash> &tx_hashes, size_t txs_size);
 
   private:
 	std::unordered_map<crypto::hash, block_info> m_blocks_info;
@@ -211,22 +211,22 @@ inline cryptonote::difficulty_type get_test_difficulty() { return 1; }
 void fill_nonce(cryptonote::block &blk, const cryptonote::difficulty_type &diffic, uint64_t height);
 
 bool construct_miner_tx_manually(size_t height, uint64_t already_generated_coins,
-								 const cryptonote::account_public_address &miner_address, cryptonote::transaction &tx,
-								 uint64_t fee, cryptonote::keypair *p_txkey = 0);
+	const cryptonote::account_public_address &miner_address, cryptonote::transaction &tx,
+	uint64_t fee, cryptonote::keypair *p_txkey = 0);
 bool construct_tx_to_key(const std::vector<test_event_entry> &events, cryptonote::transaction &tx,
-						 const cryptonote::block &blk_head, const cryptonote::account_base &from, const cryptonote::account_base &to,
-						 uint64_t amount, uint64_t fee, size_t nmix);
+	const cryptonote::block &blk_head, const cryptonote::account_base &from, const cryptonote::account_base &to,
+	uint64_t amount, uint64_t fee, size_t nmix);
 cryptonote::transaction construct_tx_with_fee(std::vector<test_event_entry> &events, const cryptonote::block &blk_head,
-											  const cryptonote::account_base &acc_from, const cryptonote::account_base &acc_to,
-											  uint64_t amount, uint64_t fee);
+	const cryptonote::account_base &acc_from, const cryptonote::account_base &acc_to,
+	uint64_t amount, uint64_t fee);
 
 void get_confirmed_txs(const std::vector<cryptonote::block> &blockchain, const map_hash2tx_t &mtx, map_hash2tx_t &confirmed_txs);
 bool find_block_chain(const std::vector<test_event_entry> &events, std::vector<cryptonote::block> &blockchain, map_hash2tx_t &mtx, const crypto::hash &head);
 void fill_tx_sources_and_destinations(const std::vector<test_event_entry> &events, const cryptonote::block &blk_head,
-									  const cryptonote::account_base &from, const cryptonote::account_base &to,
-									  uint64_t amount, uint64_t fee, size_t nmix,
-									  std::vector<cryptonote::tx_source_entry> &sources,
-									  std::vector<cryptonote::tx_destination_entry> &destinations);
+	const cryptonote::account_base &from, const cryptonote::account_base &to,
+	uint64_t amount, uint64_t fee, size_t nmix,
+	std::vector<cryptonote::tx_source_entry> &sources,
+	std::vector<cryptonote::tx_destination_entry> &destinations);
 uint64_t get_balance(const cryptonote::account_base &addr, const std::vector<cryptonote::block> &blockchain, const map_hash2tx_t &mtx);
 
 //--------------------------------------------------------------------------
@@ -283,6 +283,7 @@ template <class t_test_class>
 struct push_core_event_visitor : public boost::static_visitor<bool>
 {
 	GULPS_CAT_MAJOR("test_chaining");
+
   private:
 	cryptonote::core &m_c;
 	const std::vector<test_event_entry> &m_events;
@@ -292,8 +293,8 @@ struct push_core_event_visitor : public boost::static_visitor<bool>
 	bool m_txs_keeped_by_block;
 
   public:
-	push_core_event_visitor(cryptonote::core &c, const std::vector<test_event_entry> &events, t_test_class &validator)
-		: m_c(c), m_events(events), m_validator(validator), m_ev_index(0), m_txs_keeped_by_block(false)
+	push_core_event_visitor(cryptonote::core &c, const std::vector<test_event_entry> &events, t_test_class &validator) :
+		m_c(c), m_events(events), m_validator(validator), m_ev_index(0), m_txs_keeped_by_block(false)
 	{
 	}
 
@@ -398,7 +399,7 @@ struct push_core_event_visitor : public boost::static_visitor<bool>
   private:
 	void log_event(const std::string &event_type) const
 	{
-		std::cout << "=== EVENT # " <<  m_ev_index << ": "<< event_type << std::endl;
+		std::cout << "=== EVENT # " << m_ev_index << ": " << event_type << std::endl;
 	}
 };
 //--------------------------------------------------------------------------
@@ -432,7 +433,8 @@ struct get_test_options
 	const std::pair<uint8_t, uint64_t> hard_forks[2];
 	const cryptonote::test_options test_options = {
 		hard_forks};
-	get_test_options() : hard_forks{std::make_pair((uint8_t)1, (uint64_t)0), std::make_pair((uint8_t)0, (uint64_t)0)} {}
+	get_test_options() :
+		hard_forks{std::make_pair((uint8_t)1, (uint64_t)0), std::make_pair((uint8_t)0, (uint64_t)0)} {}
 };
 
 //--------------------------------------------------------------------------
@@ -489,70 +491,70 @@ inline bool do_replay_file(const std::string &filename)
 	return do_replay_events<t_test_class>(events);
 }
 //--------------------------------------------------------------------------
-#define GENERATE_ACCOUNT(account)     \
+#define GENERATE_ACCOUNT(account) \
 	cryptonote::account_base account; \
 	account.generate_new(false);
 
-#define GENERATE_MULTISIG_ACCOUNT(account, threshold, total)                                                                                                     \
-	GULPS_CHECK_AND_ASSERT_MES(threshold >= 2 && threshold <= total, false, "Invalid multisig scheme");                                                                \
-	std::vector<cryptonote::account_base> account(total);                                                                                                        \
-	do                                                                                                                                                           \
-	{                                                                                                                                                            \
-		for(size_t msidx = 0; msidx < total; ++msidx)                                                                                                            \
-			account[msidx].generate_new(false);                                                                                                                  \
-		std::unordered_set<crypto::public_key> all_multisig_keys;                                                                                                \
-		std::vector<std::vector<crypto::secret_key>> view_keys(total);                                                                                           \
-		std::vector<std::vector<crypto::public_key>> spend_keys(total);                                                                                          \
-		for(size_t msidx = 0; msidx < total; ++msidx)                                                                                                            \
-		{                                                                                                                                                        \
-			for(size_t msidx_inner = 0; msidx_inner < total; ++msidx_inner)                                                                                      \
-			{                                                                                                                                                    \
-				if(msidx_inner != msidx)                                                                                                                         \
-				{                                                                                                                                                \
-					crypto::secret_key vkh = cryptonote::get_multisig_blinded_secret_key(account[msidx_inner].get_keys().m_view_secret_key);                     \
-					view_keys[msidx].push_back(vkh);                                                                                                             \
-					crypto::secret_key skh = cryptonote::get_multisig_blinded_secret_key(account[msidx_inner].get_keys().m_spend_secret_key);                    \
-					crypto::public_key pskh;                                                                                                                     \
-					crypto::secret_key_to_public_key(skh, pskh);                                                                                                 \
-					spend_keys[msidx].push_back(pskh);                                                                                                           \
-				}                                                                                                                                                \
-			}                                                                                                                                                    \
-		}                                                                                                                                                        \
-		for(size_t msidx = 0; msidx < total; ++msidx)                                                                                                            \
-		{                                                                                                                                                        \
-			std::vector<crypto::secret_key> multisig_keys;                                                                                                       \
-			crypto::secret_key spend_skey;                                                                                                                       \
-			crypto::public_key spend_pkey;                                                                                                                       \
-			if(threshold == total)                                                                                                                               \
-				cryptonote::generate_multisig_N_N(account[msidx].get_keys(), spend_keys[msidx], multisig_keys, (rct::key &)spend_skey, (rct::key &)spend_pkey);  \
-			else                                                                                                                                                 \
+#define GENERATE_MULTISIG_ACCOUNT(account, threshold, total) \
+	GULPS_CHECK_AND_ASSERT_MES(threshold >= 2 && threshold <= total, false, "Invalid multisig scheme"); \
+	std::vector<cryptonote::account_base> account(total); \
+	do \
+	{ \
+		for(size_t msidx = 0; msidx < total; ++msidx) \
+			account[msidx].generate_new(false); \
+		std::unordered_set<crypto::public_key> all_multisig_keys; \
+		std::vector<std::vector<crypto::secret_key>> view_keys(total); \
+		std::vector<std::vector<crypto::public_key>> spend_keys(total); \
+		for(size_t msidx = 0; msidx < total; ++msidx) \
+		{ \
+			for(size_t msidx_inner = 0; msidx_inner < total; ++msidx_inner) \
+			{ \
+				if(msidx_inner != msidx) \
+				{ \
+					crypto::secret_key vkh = cryptonote::get_multisig_blinded_secret_key(account[msidx_inner].get_keys().m_view_secret_key); \
+					view_keys[msidx].push_back(vkh); \
+					crypto::secret_key skh = cryptonote::get_multisig_blinded_secret_key(account[msidx_inner].get_keys().m_spend_secret_key); \
+					crypto::public_key pskh; \
+					crypto::secret_key_to_public_key(skh, pskh); \
+					spend_keys[msidx].push_back(pskh); \
+				} \
+			} \
+		} \
+		for(size_t msidx = 0; msidx < total; ++msidx) \
+		{ \
+			std::vector<crypto::secret_key> multisig_keys; \
+			crypto::secret_key spend_skey; \
+			crypto::public_key spend_pkey; \
+			if(threshold == total) \
+				cryptonote::generate_multisig_N_N(account[msidx].get_keys(), spend_keys[msidx], multisig_keys, (rct::key &)spend_skey, (rct::key &)spend_pkey); \
+			else \
 				cryptonote::generate_multisig_N1_N(account[msidx].get_keys(), spend_keys[msidx], multisig_keys, (rct::key &)spend_skey, (rct::key &)spend_pkey); \
-			crypto::secret_key view_skey = cryptonote::generate_multisig_view_secret_key(account[msidx].get_keys().m_view_secret_key, view_keys[msidx]);         \
-			account[msidx].make_multisig(view_skey, spend_skey, spend_pkey, multisig_keys);                                                                      \
-			for(const auto &k : multisig_keys)                                                                                                                   \
-				all_multisig_keys.insert(rct::rct2pk(rct::scalarmultBase(rct::sk2rct(k))));                                                                      \
-		}                                                                                                                                                        \
-		if(threshold < total)                                                                                                                                    \
-		{                                                                                                                                                        \
-			std::vector<crypto::public_key> spend_public_keys;                                                                                                   \
-			for(const auto &k : all_multisig_keys)                                                                                                               \
-				spend_public_keys.push_back(k);                                                                                                                  \
-			crypto::public_key spend_pkey = cryptonote::generate_multisig_N1_N_spend_public_key(spend_public_keys);                                              \
-			for(size_t msidx = 0; msidx < total; ++msidx)                                                                                                        \
-				account[msidx].finalize_multisig(spend_pkey);                                                                                                    \
-		}                                                                                                                                                        \
+			crypto::secret_key view_skey = cryptonote::generate_multisig_view_secret_key(account[msidx].get_keys().m_view_secret_key, view_keys[msidx]); \
+			account[msidx].make_multisig(view_skey, spend_skey, spend_pkey, multisig_keys); \
+			for(const auto &k : multisig_keys) \
+				all_multisig_keys.insert(rct::rct2pk(rct::scalarmultBase(rct::sk2rct(k)))); \
+		} \
+		if(threshold < total) \
+		{ \
+			std::vector<crypto::public_key> spend_public_keys; \
+			for(const auto &k : all_multisig_keys) \
+				spend_public_keys.push_back(k); \
+			crypto::public_key spend_pkey = cryptonote::generate_multisig_N1_N_spend_public_key(spend_public_keys); \
+			for(size_t msidx = 0; msidx < total; ++msidx) \
+				account[msidx].finalize_multisig(spend_pkey); \
+		} \
 	} while(0)
 
 #define MAKE_ACCOUNT(VEC_EVENTS, account) \
-	cryptonote::account_base account;     \
-	account.generate_new(false);          \
+	cryptonote::account_base account; \
+	account.generate_new(false); \
 	VEC_EVENTS.push_back(account);
 
-#define DO_CALLBACK(VEC_EVENTS, CB_NAME)        \
-	{                                           \
-		callback_entry CALLBACK_ENTRY;          \
+#define DO_CALLBACK(VEC_EVENTS, CB_NAME) \
+	{ \
+		callback_entry CALLBACK_ENTRY; \
 		CALLBACK_ENTRY.callback_name = CB_NAME; \
-		VEC_EVENTS.push_back(CALLBACK_ENTRY);   \
+		VEC_EVENTS.push_back(CALLBACK_ENTRY); \
 	}
 
 #define REGISTER_CALLBACK(CB_NAME, CLBACK) \
@@ -562,135 +564,135 @@ inline bool do_replay_file(const std::string &filename)
 	register_callback(#METHOD, boost::bind(&CLASS::METHOD, this, _1, _2, _3));
 
 #define MAKE_GENESIS_BLOCK(VEC_EVENTS, BLK_NAME, MINER_ACC, TS) \
-	test_generator generator;                                   \
-	cryptonote::block BLK_NAME;                                 \
-	generator.construct_block(BLK_NAME, MINER_ACC, TS);         \
+	test_generator generator; \
+	cryptonote::block BLK_NAME; \
+	generator.construct_block(BLK_NAME, MINER_ACC, TS); \
 	VEC_EVENTS.push_back(BLK_NAME);
 
 #define MAKE_NEXT_BLOCK(VEC_EVENTS, BLK_NAME, PREV_BLOCK, MINER_ACC) \
-	cryptonote::block BLK_NAME;                                      \
-	generator.construct_block(BLK_NAME, PREV_BLOCK, MINER_ACC);      \
+	cryptonote::block BLK_NAME; \
+	generator.construct_block(BLK_NAME, PREV_BLOCK, MINER_ACC); \
 	VEC_EVENTS.push_back(BLK_NAME);
 
 #define MAKE_NEXT_BLOCK_TX1(VEC_EVENTS, BLK_NAME, PREV_BLOCK, MINER_ACC, TX1) \
-	cryptonote::block BLK_NAME;                                               \
-	{                                                                         \
-		std::list<cryptonote::transaction> tx_list;                           \
-		tx_list.push_back(TX1);                                               \
-		generator.construct_block(BLK_NAME, PREV_BLOCK, MINER_ACC, tx_list);  \
-	}                                                                         \
+	cryptonote::block BLK_NAME; \
+	{ \
+		std::list<cryptonote::transaction> tx_list; \
+		tx_list.push_back(TX1); \
+		generator.construct_block(BLK_NAME, PREV_BLOCK, MINER_ACC, tx_list); \
+	} \
 	VEC_EVENTS.push_back(BLK_NAME);
 
 #define MAKE_NEXT_BLOCK_TX_LIST(VEC_EVENTS, BLK_NAME, PREV_BLOCK, MINER_ACC, TXLIST) \
-	cryptonote::block BLK_NAME;                                                      \
-	generator.construct_block(BLK_NAME, PREV_BLOCK, MINER_ACC, TXLIST);              \
+	cryptonote::block BLK_NAME; \
+	generator.construct_block(BLK_NAME, PREV_BLOCK, MINER_ACC, TXLIST); \
 	VEC_EVENTS.push_back(BLK_NAME);
 
 #define REWIND_BLOCKS_N(VEC_EVENTS, BLK_NAME, PREV_BLOCK, MINER_ACC, COUNT) \
-	cryptonote::block BLK_NAME;                                             \
-	{                                                                       \
-		cryptonote::block blk_last = PREV_BLOCK;                            \
-		for(size_t i = 0; i < COUNT; ++i)                                   \
-		{                                                                   \
-			MAKE_NEXT_BLOCK(VEC_EVENTS, blk, blk_last, MINER_ACC);          \
-			blk_last = blk;                                                 \
-		}                                                                   \
-		BLK_NAME = blk_last;                                                \
+	cryptonote::block BLK_NAME; \
+	{ \
+		cryptonote::block blk_last = PREV_BLOCK; \
+		for(size_t i = 0; i < COUNT; ++i) \
+		{ \
+			MAKE_NEXT_BLOCK(VEC_EVENTS, blk, blk_last, MINER_ACC); \
+			blk_last = blk; \
+		} \
+		BLK_NAME = blk_last; \
 	}
 
 #define REWIND_BLOCKS(VEC_EVENTS, BLK_NAME, PREV_BLOCK, MINER_ACC) REWIND_BLOCKS_N(VEC_EVENTS, BLK_NAME, PREV_BLOCK, MINER_ACC, CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW)
 
-#define MAKE_TX_MIX(VEC_EVENTS, TX_NAME, FROM, TO, AMOUNT, NMIX, HEAD)                         \
-	cryptonote::transaction TX_NAME;                                                           \
+#define MAKE_TX_MIX(VEC_EVENTS, TX_NAME, FROM, TO, AMOUNT, NMIX, HEAD) \
+	cryptonote::transaction TX_NAME; \
 	construct_tx_to_key(VEC_EVENTS, TX_NAME, HEAD, FROM, TO, AMOUNT, TESTS_DEFAULT_FEE, NMIX); \
 	VEC_EVENTS.push_back(TX_NAME);
 
 #define MAKE_TX(VEC_EVENTS, TX_NAME, FROM, TO, AMOUNT, HEAD) MAKE_TX_MIX(VEC_EVENTS, TX_NAME, FROM, TO, AMOUNT, 0, HEAD)
 
-#define MAKE_TX_MIX_LIST(VEC_EVENTS, SET_NAME, FROM, TO, AMOUNT, NMIX, HEAD)                 \
-	{                                                                                        \
-		cryptonote::transaction t;                                                           \
+#define MAKE_TX_MIX_LIST(VEC_EVENTS, SET_NAME, FROM, TO, AMOUNT, NMIX, HEAD) \
+	{ \
+		cryptonote::transaction t; \
 		construct_tx_to_key(VEC_EVENTS, t, HEAD, FROM, TO, AMOUNT, TESTS_DEFAULT_FEE, NMIX); \
-		SET_NAME.push_back(t);                                                               \
-		VEC_EVENTS.push_back(t);                                                             \
+		SET_NAME.push_back(t); \
+		VEC_EVENTS.push_back(t); \
 	}
 
 #define MAKE_TX_LIST(VEC_EVENTS, SET_NAME, FROM, TO, AMOUNT, HEAD) MAKE_TX_MIX_LIST(VEC_EVENTS, SET_NAME, FROM, TO, AMOUNT, 0, HEAD)
 
 #define MAKE_TX_LIST_START(VEC_EVENTS, SET_NAME, FROM, TO, AMOUNT, HEAD) \
-	std::list<cryptonote::transaction> SET_NAME;                         \
+	std::list<cryptonote::transaction> SET_NAME; \
 	MAKE_TX_LIST(VEC_EVENTS, SET_NAME, FROM, TO, AMOUNT, HEAD);
 
-#define MAKE_MINER_TX_AND_KEY_MANUALLY(TX, BLK, KEY)                                                       \
-	transaction TX;                                                                                        \
+#define MAKE_MINER_TX_AND_KEY_MANUALLY(TX, BLK, KEY) \
+	transaction TX; \
 	if(!construct_miner_tx_manually(get_block_height(BLK) + 1, generator.get_already_generated_coins(BLK), \
-									miner_account.get_keys().m_account_address, TX, 0, KEY))               \
+		   miner_account.get_keys().m_account_address, TX, 0, KEY)) \
 		return false;
 
 #define MAKE_MINER_TX_MANUALLY(TX, BLK) MAKE_MINER_TX_AND_KEY_MANUALLY(TX, BLK, 0)
 
 #define SET_EVENT_VISITOR_SETT(VEC_EVENTS, SETT, VAL) VEC_EVENTS.push_back(event_visitor_settings(SETT, VAL));
 
-#define GENERATE(filename, genclass)                                      \
-	{                                                                     \
-		std::vector<test_event_entry> events;                             \
-		genclass g;                                                       \
-		g.generate(events);                                               \
-		if(!tools::serialize_obj_to_file(events, filename))               \
-		{                                                                 \
-			std::cout << "Failed to serialize data to file: " << filename << std::endl;     \
+#define GENERATE(filename, genclass) \
+	{ \
+		std::vector<test_event_entry> events; \
+		genclass g; \
+		g.generate(events); \
+		if(!tools::serialize_obj_to_file(events, filename)) \
+		{ \
+			std::cout << "Failed to serialize data to file: " << filename << std::endl; \
 			throw std::runtime_error("Failed to serialize data to file"); \
-		}                                                                 \
+		} \
 	}
 
-#define PLAY(filename, genclass)                       \
-	if(!do_replay_file<genclass>(filename))            \
-	{                                                  \
+#define PLAY(filename, genclass) \
+	if(!do_replay_file<genclass>(filename)) \
+	{ \
 		std::cout << "Failed to pass test : " << #genclass << std::endl; \
-		return 1;                                      \
+		return 1; \
 	}
 
-#define GENERATE_AND_PLAY(genclass)                                        \
-	{                                                                      \
-		std::vector<test_event_entry> events;                              \
-		++tests_count;                                                     \
-		bool generated = false;                                            \
-		try                                                                \
-		{                                                                  \
-			genclass g;                                                    \
-			generated = g.generate(events);                                \
-			;                                                              \
-		}                                                                  \
-		catch(const std::exception &ex)                                    \
-		{                                                                  \
+#define GENERATE_AND_PLAY(genclass) \
+	{ \
+		std::vector<test_event_entry> events; \
+		++tests_count; \
+		bool generated = false; \
+		try \
+		{ \
+			genclass g; \
+			generated = g.generate(events); \
+			; \
+		} \
+		catch(const std::exception &ex) \
+		{ \
 			std::cout << #genclass << " generation failed: what=" << ex.what() << std::endl; \
-		}                                                                  \
-		catch(...)                                                         \
-		{                                                                  \
-			std::cout << #genclass << " generation failed: generic exception" << std::endl;  \
-		}                                                                  \
-		if(generated && do_replay_events<genclass>(events))                \
-		{                                                                  \
-			std::cout << "#TEST# Succeeded " << #genclass << std::endl;                \
-		}                                                                  \
-		else                                                               \
-		{                                                                  \
-			std::cout << "#TEST# Failed " << #genclass << std::endl;                         \
-			failed_tests.push_back(#genclass);                             \
-		}                                                                  \
+		} \
+		catch(...) \
+		{ \
+			std::cout << #genclass << " generation failed: generic exception" << std::endl; \
+		} \
+		if(generated && do_replay_events<genclass>(events)) \
+		{ \
+			std::cout << "#TEST# Succeeded " << #genclass << std::endl; \
+		} \
+		else \
+		{ \
+			std::cout << "#TEST# Failed " << #genclass << std::endl; \
+			failed_tests.push_back(#genclass); \
+		} \
 	}
 
-#define CALL_TEST(test_name, function)                      \
-	{                                                       \
-		if(!function())                                     \
-		{                                                   \
-			std::cout << "#TEST# Failed {}" << test_name << std::endl;          \
-			return 1;                                       \
-		}                                                   \
-		else                                                \
-		{                                                   \
+#define CALL_TEST(test_name, function) \
+	{ \
+		if(!function()) \
+		{ \
+			std::cout << "#TEST# Failed {}" << test_name << std::endl; \
+			return 1; \
+		} \
+		else \
+		{ \
 			std::cout << "#TEST# Succeeded " test_name << std::endl; \
-		}                                                   \
+		} \
 	}
 
 #define QUOTEME(x) #x

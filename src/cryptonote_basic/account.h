@@ -85,7 +85,6 @@ struct account_keys
 class account_base
 {
   public:
-
 	inline crypto::secret_key_16 generate_new(uint8_t acc_opt)
 	{
 		crypto::generate_wallet_secret(m_keys.m_short_seed);
@@ -153,4 +152,4 @@ class account_base
 	uint64_t m_creation_timestamp;
 	uint8_t m_acc_opt;
 };
-}
+} // namespace cryptonote

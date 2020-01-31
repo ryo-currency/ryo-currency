@@ -812,8 +812,10 @@ catch(...)
 }
 }
 //-----------------------------------------------------------------------------
+// clang-format off
 PUSH_WARNINGS
 DISABLE_GCC_WARNING(maybe-uninitialized)
+// clang-format on
 template <class t_protocol_handler>
 bool boosted_tcp_server<t_protocol_handler>::init_server(const std::string port, const std::string &address)
 {

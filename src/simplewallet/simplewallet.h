@@ -55,9 +55,9 @@
 
 #include <memory>
 
+#include <boost/archive/basic_archive.hpp>
 #include <boost/optional/optional.hpp>
 #include <boost/program_options/variables_map.hpp>
-#include <boost/archive/basic_archive.hpp>
 
 #include "common/i18n.h"
 #include "common/password.h"
@@ -66,8 +66,6 @@
 #include "cryptonote_basic/account.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
 #include "wallet/wallet2.h"
-
-
 
 /*!
  * \namespace cryptonote
@@ -81,6 +79,7 @@ namespace cryptonote
 class simple_wallet : public tools::i_wallet2_callback
 {
 	GULPS_CAT_MAJOR("wallet_cli");
+
   public:
 	static const char *tr(const char *str) { return i18n_translate(str, "cryptonote::simple_wallet"); }
 
@@ -110,21 +109,21 @@ class simple_wallet : public tools::i_wallet2_callback
 	boost::optional<tools::password_container> get_and_verify_password() const;
 
 	std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> make_new_wrapped(const boost::program_options::variables_map &vm,
-																			const std::function<boost::optional<tools::password_container>(const char *, bool)> &password_prompter);
+		const std::function<boost::optional<tools::password_container>(const char *, bool)> &password_prompter);
 
 	bool new_wallet_from_seed(const boost::program_options::variables_map &vm, std::string seed);
-	bool new_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key_16 *seed = nullptr, uint8_t seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS);
-	bool restore_legacy_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key &seed_legacy);
+	bool new_wallet(const boost::program_options::variables_map &vm, const std::string &seed_lang, const crypto::secret_key_16 *seed = nullptr, uint8_t seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS);
+	bool restore_legacy_wallet(const boost::program_options::variables_map &vm, const std::string &seed_lang, const crypto::secret_key &seed_legacy);
 
 	bool new_wallet(const boost::program_options::variables_map &vm, const cryptonote::account_public_address &address,
-					const boost::optional<crypto::secret_key> &spendkey, const crypto::secret_key &viewkey);
+		const boost::optional<crypto::secret_key> &spendkey, const crypto::secret_key &viewkey);
 	bool new_wallet_msig(const boost::program_options::variables_map &vm, const epee::wipeable_string &pass, std::string &multisig_keys);
 	bool new_wallet_dev(const boost::program_options::variables_map &vm, const std::string &device_name);
 	bool open_wallet(const boost::program_options::variables_map &vm);
 	bool close_wallet();
 
 	typedef bool (simple_wallet::*wallet_cmd_fun)(const std::vector<std::string> &args);
-	bool check_simple_variable(const std::vector<std::string> &args, const char* name, wallet_cmd_fun fun, const char* help);
+	bool check_simple_variable(const std::vector<std::string> &args, const char *name, wallet_cmd_fun fun, const char *help);
 
 	bool viewkey(const std::vector<std::string> &args = std::vector<std::string>());
 	bool spendkey(const std::vector<std::string> &args = std::vector<std::string>());
@@ -295,8 +294,8 @@ class simple_wallet : public tools::i_wallet2_callback
 	class refresh_progress_reporter_t
 	{
 	  public:
-		refresh_progress_reporter_t(cryptonote::simple_wallet &simple_wallet)
-			: m_simple_wallet(simple_wallet), m_blockchain_height(0), m_blockchain_height_update_time(), m_print_time()
+		refresh_progress_reporter_t(cryptonote::simple_wallet &simple_wallet) :
+			m_simple_wallet(simple_wallet), m_blockchain_height(0), m_blockchain_height_update_time(), m_print_time()
 		{
 		}
 
@@ -355,10 +354,10 @@ class simple_wallet : public tools::i_wallet2_callback
 
 	std::string m_electrum_seed;
 	bool m_restore_deterministic_wallet; // recover flag
-	bool m_restore_multisig_wallet;		 // recover flag
+	bool m_restore_multisig_wallet; // recover flag
 	bool m_trusted_daemon;
 	bool m_allow_mismatched_daemon_version;
-	bool m_restoring;		   // are we restoring, by whatever method?
+	bool m_restoring; // are we restoring, by whatever method?
 	uint64_t m_restore_height; // optional
 	bool m_do_not_relay;
 	bool m_use_english_language_names;
@@ -378,4 +377,4 @@ class simple_wallet : public tools::i_wallet2_callback
 	std::atomic<bool> m_in_manual_refresh;
 	uint32_t m_current_subaddress_account;
 };
-}
+} // namespace cryptonote

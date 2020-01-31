@@ -68,7 +68,7 @@ constexpr const char id_field[] = "id";
 constexpr const char method_field[] = "method";
 constexpr const char params_field[] = "params";
 constexpr const char result_field[] = "result";
-}
+} // namespace
 
 rapidjson::Value Message::toJson(rapidjson::Document &doc) const
 {

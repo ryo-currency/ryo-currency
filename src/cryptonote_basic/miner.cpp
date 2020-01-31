@@ -44,7 +44,6 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-
 #include "boost/logic/tribool.hpp"
 #include "common/command_line.h"
 #include "cryptonote_basic_impl.h"
@@ -104,28 +103,29 @@ const command_line::arg_descriptor<bool> arg_bg_mining_ignore_battery = {"bg-min
 const command_line::arg_descriptor<uint64_t> arg_bg_mining_min_idle_interval_seconds = {"bg-mining-min-idle-interval", "Specify min lookback interval in seconds for determining idle state", miner::BACKGROUND_MINING_DEFAULT_MIN_IDLE_INTERVAL_IN_SECONDS, true};
 const command_line::arg_descriptor<uint16_t> arg_bg_mining_idle_threshold_percentage = {"bg-mining-idle-threshold", "Specify minimum avg idle percentage over lookback interval", miner::BACKGROUND_MINING_DEFAULT_IDLE_THRESHOLD_PERCENTAGE, true};
 const command_line::arg_descriptor<uint16_t> arg_bg_mining_miner_target_percentage = {"bg-mining-miner-target", "Specify maximum percentage cpu use by miner(s)", miner::BACKGROUND_MINING_DEFAULT_MINING_TARGET_PERCENTAGE, true};
-}
+} // namespace
 
-miner::miner(i_miner_handler *phandler) : m_stop(1),
-										  m_template(boost::value_initialized<block>()),
-										  m_template_no(0),
-										  m_diffic(0),
-										  m_thread_index(0),
-										  m_phandler(phandler),
-										  m_height(0),
-										  m_pausers_count(0),
-										  m_threads_total(0),
-										  m_starter_nonce(0),
-										  m_last_hr_merge_time(0),
-										  m_hashes(0),
-										  m_do_print_hashrate(false),
-										  m_do_mining(false),
-										  m_current_hash_rate(0),
-										  m_is_background_mining_enabled(false),
-										  m_min_idle_seconds(BACKGROUND_MINING_DEFAULT_MIN_IDLE_INTERVAL_IN_SECONDS),
-										  m_idle_threshold(BACKGROUND_MINING_DEFAULT_IDLE_THRESHOLD_PERCENTAGE),
-										  m_mining_target(BACKGROUND_MINING_DEFAULT_MINING_TARGET_PERCENTAGE),
-										  m_miner_extra_sleep(BACKGROUND_MINING_DEFAULT_MINER_EXTRA_SLEEP_MILLIS)
+miner::miner(i_miner_handler *phandler) :
+	m_stop(1),
+	m_template(boost::value_initialized<block>()),
+	m_template_no(0),
+	m_diffic(0),
+	m_thread_index(0),
+	m_phandler(phandler),
+	m_height(0),
+	m_pausers_count(0),
+	m_threads_total(0),
+	m_starter_nonce(0),
+	m_last_hr_merge_time(0),
+	m_hashes(0),
+	m_do_print_hashrate(false),
+	m_do_mining(false),
+	m_current_hash_rate(0),
+	m_is_background_mining_enabled(false),
+	m_min_idle_seconds(BACKGROUND_MINING_DEFAULT_MIN_IDLE_INTERVAL_IN_SECONDS),
+	m_idle_threshold(BACKGROUND_MINING_DEFAULT_IDLE_THRESHOLD_PERCENTAGE),
+	m_mining_target(BACKGROUND_MINING_DEFAULT_MINING_TARGET_PERCENTAGE),
+	m_miner_extra_sleep(BACKGROUND_MINING_DEFAULT_MINER_EXTRA_SLEEP_MILLIS)
 {
 }
 //-----------------------------------------------------------------------------------------------------
@@ -236,7 +236,7 @@ bool miner::init(const boost::program_options::variables_map &vm, network_type n
 	{
 		std::string buff;
 		bool r = file_io_utils::load_file_to_string(command_line::get_arg(vm, arg_extra_messages), buff);
-		GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to load file with extra messages: " , command_line::get_arg(vm, arg_extra_messages));
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to load file with extra messages: ", command_line::get_arg(vm, arg_extra_messages));
 		std::vector<std::string> extra_vec;
 		boost::split(extra_vec, buff, boost::is_any_of("\n"), boost::token_compress_on);
 		m_extra_messages.resize(extra_vec.size());
@@ -260,13 +260,13 @@ bool miner::init(const boost::program_options::variables_map &vm, network_type n
 		address_parse_info info;
 		if(!cryptonote::get_account_address_from_str(nettype, info, command_line::get_arg(vm, arg_start_mining)) || info.is_subaddress)
 		{
-			GULPSF_LOG_ERROR("Target account address {} has wrong format, starting daemon canceled",  command_line::get_arg(vm, arg_start_mining) );
+			GULPSF_LOG_ERROR("Target account address {} has wrong format, starting daemon canceled", command_line::get_arg(vm, arg_start_mining));
 			return false;
 		}
 
 		if(command_line::get_arg(vm, arg_start_mining) == common_config::DEV_FUND_ADDRESS)
 		{
-			GULPSF_LOG_ERROR("Dev fund address is not mineable. If you would like to support the dev team please mine to {}",  common_config::RYO_DONATION_ADDR);
+			GULPSF_LOG_ERROR("Dev fund address is not mineable. If you would like to support the dev team please mine to {}", common_config::RYO_DONATION_ADDR);
 			return false;
 		}
 
@@ -340,7 +340,7 @@ bool miner::start(const account_public_address &adr, size_t threads_count, const
 		m_threads.push_back(boost::thread(attrs, boost::bind(&miner::worker_thread, this)));
 	}
 
-	GULPSF_PRINT("Mining has started with {} threads, good luck!",  threads_count );
+	GULPSF_PRINT("Mining has started with {} threads, good luck!", threads_count);
 
 	if(get_is_background_mining_enabled())
 	{
@@ -430,7 +430,7 @@ void miner::on_synchronized()
 void miner::pause()
 {
 	CRITICAL_REGION_LOCAL(m_miners_count_lock);
-	GULPSF_LOG_L1("miner::pause: {} -> {}", m_pausers_count , (m_pausers_count + 1));
+	GULPSF_LOG_L1("miner::pause: {} -> {}", m_pausers_count, (m_pausers_count + 1));
 	++m_pausers_count;
 	if(m_pausers_count == 1 && is_mining())
 		GULPS_LOG_L1("MINING PAUSED");
@@ -439,7 +439,7 @@ void miner::pause()
 void miner::resume()
 {
 	CRITICAL_REGION_LOCAL(m_miners_count_lock);
-	GULPSF_LOG_L1("miner::resume: {} -> {}", m_pausers_count , (m_pausers_count - 1));
+	GULPSF_LOG_L1("miner::resume: {} -> {}", m_pausers_count, (m_pausers_count - 1));
 	--m_pausers_count;
 	if(m_pausers_count < 0)
 	{
@@ -780,14 +780,14 @@ bool miner::get_system_times(uint64_t &total_time, uint64_t &idle_time)
 
 	if(!epee::file_io_utils::is_file_exist(STAT_FILE_PATH))
 	{
-		GULPSF_LOG_ERROR("'{}' file does not exist",  STAT_FILE_PATH );
+		GULPSF_LOG_ERROR("'{}' file does not exist", STAT_FILE_PATH);
 		return false;
 	}
 
 	std::ifstream stat_file_stream(STAT_FILE_PATH);
 	if(stat_file_stream.fail())
 	{
-		GULPSF_ERROR("failed to open '{}'",  STAT_FILE_PATH );
+		GULPSF_ERROR("failed to open '{}'", STAT_FILE_PATH);
 		return false;
 	}
 
@@ -798,7 +798,7 @@ bool miner::get_system_times(uint64_t &total_time, uint64_t &idle_time)
 	uint64_t utime, ntime, stime, itime;
 	if(!(stat_file_iss >> utime && stat_file_iss >> ntime && stat_file_iss >> stime && stat_file_iss >> itime))
 	{
-		GULPSF_LOG_ERROR("failed to read '{}'",  STAT_FILE_PATH );
+		GULPSF_LOG_ERROR("failed to read '{}'", STAT_FILE_PATH);
 		return false;
 	}
 
@@ -830,7 +830,7 @@ bool miner::get_system_times(uint64_t &total_time, uint64_t &idle_time)
 	size_t n = sizeof(s.cp_time);
 	if(sysctlbyname("kern.cp_time", s.cp_time, &n, NULL, 0) == -1)
 	{
-		GULPSF_LOG_ERROR("sysctlbyname(\"kern.cp_time\"): {}",  strerror(errno));
+		GULPSF_LOG_ERROR("sysctlbyname(\"kern.cp_time\"): {}", strerror(errno));
 		return false;
 	}
 	if(n != sizeof(s.cp_time))
@@ -928,7 +928,7 @@ boost::logic::tribool miner::on_battery_power()
 					std::ifstream power_supply_type_stream(power_supply_type_path.string());
 					if(power_supply_type_stream.fail())
 					{
-						GULPS_PRINT("Unable to read from ", power_supply_type_path, " to check power supply type" );
+						GULPS_PRINT("Unable to read from ", power_supply_type_path, " to check power supply type");
 						continue;
 					}
 
@@ -962,7 +962,7 @@ boost::logic::tribool miner::on_battery_power()
 							std::ifstream power_supply_status_stream(power_supply_status_path.string());
 							if(power_supply_status_stream.fail())
 							{
-								GULPS_PRINT("Unable to read from ",  power_supply_status_path, " to check battery power supply status");
+								GULPS_PRINT("Unable to read from ", power_supply_status_path, " to check battery power supply status");
 								continue;
 							}
 
@@ -988,7 +988,7 @@ boost::logic::tribool miner::on_battery_power()
 
 	if(boost::logic::indeterminate(on_battery))
 	{
-		GULPSF_LOG_ERROR("couldn't query power status from {}",  power_supply_class_path);
+		GULPSF_LOG_ERROR("couldn't query power status from {}", power_supply_class_path);
 	}
 	return on_battery;
 
@@ -1043,7 +1043,7 @@ boost::logic::tribool miner::on_battery_power()
 		}
 
 		GULPSF_LOG_ERROR("Cannot query battery status: sysctl hw.acpi.acline is not available and /dev/apm returns unexpected ac-line status ({}) and battery status ({}).",
-				  info.ai_acline, info.ai_batt_stat);
+			info.ai_acline, info.ai_batt_stat);
 		return boost::logic::tribool(boost::logic::indeterminate);
 	}
 	if(n != sizeof(ac))
@@ -1057,4 +1057,4 @@ boost::logic::tribool miner::on_battery_power()
 	GULPS_LOG_ERROR("couldn't query power status");
 	return boost::logic::tribool(boost::logic::indeterminate);
 }
-}
+} // namespace cryptonote

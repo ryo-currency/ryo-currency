@@ -43,6 +43,4 @@
 
 #pragma once
 
-
 void boost_locale_init();
-

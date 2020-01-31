@@ -114,4 +114,4 @@ class IWallet
 	virtual TransactionId sendTransaction(const std::vector<Transfer> &transfers, uint64_t fee, const std::string &extra = "", uint64_t mixIn = 0, uint64_t unlockTimestamp = 0) = 0;
 	virtual std::error_code cancelTransaction(size_t transferId) = 0;
 };
-}
+} // namespace CryptoNote

@@ -70,6 +70,7 @@ namespace cryptonote
 class core_rpc_server : public epee::http_server_impl_base<core_rpc_server>
 {
 	GULPS_CAT_MAJOR("c_rpc_serv");
+
   public:
 	static const command_line::arg_descriptor<std::string, false, true, 2> arg_rpc_bind_port;
 	static const command_line::arg_descriptor<std::string> arg_rpc_restricted_bind_port;
@@ -254,6 +255,6 @@ class core_rpc_server : public epee::http_server_impl_base<core_rpc_server>
 	network_type m_nettype;
 	bool m_restricted;
 };
-}
+} // namespace cryptonote
 
 BOOST_CLASS_VERSION(nodetool::node_server<cryptonote::t_cryptonote_protocol_handler<cryptonote::core>>, 1);

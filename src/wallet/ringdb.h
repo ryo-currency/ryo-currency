@@ -58,6 +58,7 @@ namespace tools
 class ringdb
 {
 	GULPS_CAT_MAJOR("ringdb");
+
   public:
 	ringdb(std::string filename, const std::string &genesis);
 	~ringdb();
@@ -81,4 +82,4 @@ class ringdb
 	MDB_dbi dbi_rings;
 	MDB_dbi dbi_blackballs;
 };
-}
+} // namespace tools

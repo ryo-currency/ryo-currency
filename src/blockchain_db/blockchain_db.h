@@ -46,8 +46,8 @@
 
 #pragma once
 
-#include "common/gulps.hpp"
 #include "common/command_line.h"
+#include "common/gulps.hpp"
 #include "crypto/hash.h"
 #include "cryptonote_basic/blobdatatype.h"
 #include "cryptonote_basic/cryptonote_basic.h"
@@ -132,9 +132,9 @@ extern const command_line::arg_descriptor<bool, false> arg_db_salvage;
 struct output_data_t
 {
 	crypto::public_key pubkey; //!< the output's public key (for spend verification)
-	uint64_t unlock_time;	  //!< the output's unlock time (or height)
-	uint64_t height;		   //!< the height of the block which created the output
-	rct::key commitment;	   //!< the output's amount commitment (for spend verification)
+	uint64_t unlock_time; //!< the output's unlock time (or height)
+	uint64_t height; //!< the height of the block which created the output
+	rct::key commitment; //!< the output's amount commitment (for spend verification)
 };
 #pragma pack(pop)
 
@@ -188,7 +188,8 @@ class DB_EXCEPTION : public std::exception
 	std::string m;
 
   protected:
-	DB_EXCEPTION(const char *s) : m(s) {}
+	DB_EXCEPTION(const char *s) :
+		m(s) {}
 
   public:
 	virtual ~DB_EXCEPTION() {}
@@ -205,8 +206,10 @@ class DB_EXCEPTION : public std::exception
 class DB_ERROR : public DB_EXCEPTION
 {
   public:
-	DB_ERROR() : DB_EXCEPTION("Generic DB Error") {}
-	DB_ERROR(const char *s) : DB_EXCEPTION(s) {}
+	DB_ERROR() :
+		DB_EXCEPTION("Generic DB Error") {}
+	DB_ERROR(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -215,8 +218,10 @@ class DB_ERROR : public DB_EXCEPTION
 class DB_ERROR_TXN_START : public DB_EXCEPTION
 {
   public:
-	DB_ERROR_TXN_START() : DB_EXCEPTION("DB Error in starting txn") {}
-	DB_ERROR_TXN_START(const char *s) : DB_EXCEPTION(s) {}
+	DB_ERROR_TXN_START() :
+		DB_EXCEPTION("DB Error in starting txn") {}
+	DB_ERROR_TXN_START(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -225,8 +230,10 @@ class DB_ERROR_TXN_START : public DB_EXCEPTION
 class DB_OPEN_FAILURE : public DB_EXCEPTION
 {
   public:
-	DB_OPEN_FAILURE() : DB_EXCEPTION("Failed to open the db") {}
-	DB_OPEN_FAILURE(const char *s) : DB_EXCEPTION(s) {}
+	DB_OPEN_FAILURE() :
+		DB_EXCEPTION("Failed to open the db") {}
+	DB_OPEN_FAILURE(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -235,8 +242,10 @@ class DB_OPEN_FAILURE : public DB_EXCEPTION
 class DB_CREATE_FAILURE : public DB_EXCEPTION
 {
   public:
-	DB_CREATE_FAILURE() : DB_EXCEPTION("Failed to create the db") {}
-	DB_CREATE_FAILURE(const char *s) : DB_EXCEPTION(s) {}
+	DB_CREATE_FAILURE() :
+		DB_EXCEPTION("Failed to create the db") {}
+	DB_CREATE_FAILURE(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -245,8 +254,10 @@ class DB_CREATE_FAILURE : public DB_EXCEPTION
 class DB_SYNC_FAILURE : public DB_EXCEPTION
 {
   public:
-	DB_SYNC_FAILURE() : DB_EXCEPTION("Failed to sync the db") {}
-	DB_SYNC_FAILURE(const char *s) : DB_EXCEPTION(s) {}
+	DB_SYNC_FAILURE() :
+		DB_EXCEPTION("Failed to sync the db") {}
+	DB_SYNC_FAILURE(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -255,8 +266,10 @@ class DB_SYNC_FAILURE : public DB_EXCEPTION
 class BLOCK_DNE : public DB_EXCEPTION
 {
   public:
-	BLOCK_DNE() : DB_EXCEPTION("The block requested does not exist") {}
-	BLOCK_DNE(const char *s) : DB_EXCEPTION(s) {}
+	BLOCK_DNE() :
+		DB_EXCEPTION("The block requested does not exist") {}
+	BLOCK_DNE(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -265,8 +278,10 @@ class BLOCK_DNE : public DB_EXCEPTION
 class BLOCK_PARENT_DNE : public DB_EXCEPTION
 {
   public:
-	BLOCK_PARENT_DNE() : DB_EXCEPTION("The parent of the block does not exist") {}
-	BLOCK_PARENT_DNE(const char *s) : DB_EXCEPTION(s) {}
+	BLOCK_PARENT_DNE() :
+		DB_EXCEPTION("The parent of the block does not exist") {}
+	BLOCK_PARENT_DNE(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -275,8 +290,10 @@ class BLOCK_PARENT_DNE : public DB_EXCEPTION
 class BLOCK_EXISTS : public DB_EXCEPTION
 {
   public:
-	BLOCK_EXISTS() : DB_EXCEPTION("The block to be added already exists!") {}
-	BLOCK_EXISTS(const char *s) : DB_EXCEPTION(s) {}
+	BLOCK_EXISTS() :
+		DB_EXCEPTION("The block to be added already exists!") {}
+	BLOCK_EXISTS(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -285,8 +302,10 @@ class BLOCK_EXISTS : public DB_EXCEPTION
 class BLOCK_INVALID : public DB_EXCEPTION
 {
   public:
-	BLOCK_INVALID() : DB_EXCEPTION("The block to be added did not pass validation!") {}
-	BLOCK_INVALID(const char *s) : DB_EXCEPTION(s) {}
+	BLOCK_INVALID() :
+		DB_EXCEPTION("The block to be added did not pass validation!") {}
+	BLOCK_INVALID(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -295,8 +314,10 @@ class BLOCK_INVALID : public DB_EXCEPTION
 class TX_DNE : public DB_EXCEPTION
 {
   public:
-	TX_DNE() : DB_EXCEPTION("The transaction requested does not exist") {}
-	TX_DNE(const char *s) : DB_EXCEPTION(s) {}
+	TX_DNE() :
+		DB_EXCEPTION("The transaction requested does not exist") {}
+	TX_DNE(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -305,8 +326,10 @@ class TX_DNE : public DB_EXCEPTION
 class TX_EXISTS : public DB_EXCEPTION
 {
   public:
-	TX_EXISTS() : DB_EXCEPTION("The transaction to be added already exists!") {}
-	TX_EXISTS(const char *s) : DB_EXCEPTION(s) {}
+	TX_EXISTS() :
+		DB_EXCEPTION("The transaction to be added already exists!") {}
+	TX_EXISTS(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -315,8 +338,10 @@ class TX_EXISTS : public DB_EXCEPTION
 class OUTPUT_DNE : public DB_EXCEPTION
 {
   public:
-	OUTPUT_DNE() : DB_EXCEPTION("The output requested does not exist!") {}
-	OUTPUT_DNE(const char *s) : DB_EXCEPTION(s) {}
+	OUTPUT_DNE() :
+		DB_EXCEPTION("The output requested does not exist!") {}
+	OUTPUT_DNE(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -325,8 +350,10 @@ class OUTPUT_DNE : public DB_EXCEPTION
 class OUTPUT_EXISTS : public DB_EXCEPTION
 {
   public:
-	OUTPUT_EXISTS() : DB_EXCEPTION("The output to be added already exists!") {}
-	OUTPUT_EXISTS(const char *s) : DB_EXCEPTION(s) {}
+	OUTPUT_EXISTS() :
+		DB_EXCEPTION("The output to be added already exists!") {}
+	OUTPUT_EXISTS(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /**
@@ -335,8 +362,10 @@ class OUTPUT_EXISTS : public DB_EXCEPTION
 class KEY_IMAGE_EXISTS : public DB_EXCEPTION
 {
   public:
-	KEY_IMAGE_EXISTS() : DB_EXCEPTION("The spent key image to be added already exists!") {}
-	KEY_IMAGE_EXISTS(const char *s) : DB_EXCEPTION(s) {}
+	KEY_IMAGE_EXISTS() :
+		DB_EXCEPTION("The spent key image to be added already exists!") {}
+	KEY_IMAGE_EXISTS(const char *s) :
+		DB_EXCEPTION(s) {}
 };
 
 /***********************************
@@ -358,6 +387,7 @@ class KEY_IMAGE_EXISTS : public DB_EXCEPTION
 class BlockchainDB
 {
 	GULPS_CAT_MAJOR("blockchain_db");
+
   private:
 	/*********************************************************************
    * private virtual members
@@ -520,9 +550,9 @@ class BlockchainDB
    */
 	void remove_transaction(const crypto::hash &tx_hash);
 
-	uint64_t num_calls = 0;			   //!< a performance metric
-	uint64_t time_blk_hash = 0;		   //!< a performance metric
-	uint64_t time_add_block1 = 0;	  //!< a performance metric
+	uint64_t num_calls = 0; //!< a performance metric
+	uint64_t time_blk_hash = 0; //!< a performance metric
+	uint64_t time_add_block1 = 0; //!< a performance metric
 	uint64_t time_add_transaction = 0; //!< a performance metric
 
   protected:
@@ -539,8 +569,8 @@ class BlockchainDB
 	void add_transaction(const crypto::hash &blk_hash, const transaction &tx, const crypto::hash *tx_hash_ptr = NULL);
 
 	mutable uint64_t time_tx_exists = 0; //!< a performance metric
-	uint64_t time_commit1 = 0;			 //!< a performance metric
-	bool m_auto_remove_logs = true;		 //!< whether or not to automatically remove old logs
+	uint64_t time_commit1 = 0; //!< a performance metric
+	bool m_auto_remove_logs = true; //!< whether or not to automatically remove old logs
 
 	HardFork *m_hardfork;
 
@@ -548,7 +578,8 @@ class BlockchainDB
 	/**
    * @brief An empty constructor.
    */
-	BlockchainDB() : m_open(false) {}
+	BlockchainDB() :
+		m_open(false) {}
 
 	/**
    * @brief An empty destructor.
@@ -1118,7 +1149,7 @@ class BlockchainDB
    * @return true iff the transaction was found
    */
 	virtual bool get_tx_blob(const crypto::hash &h, cryptonote::blobdata &tx) const = 0;
-	virtual bool get_tx_blob_indexed(const crypto::hash& h, cryptonote::blobdata& bd, std::vector<uint64_t>& o_idx) const = 0;
+	virtual bool get_tx_blob_indexed(const crypto::hash &h, cryptonote::blobdata &bd, std::vector<uint64_t> &o_idx) const = 0;
 
 	/**
    * @brief fetches the total number of transactions ever
@@ -1521,15 +1552,15 @@ class BlockchainDB
    */
 	void set_auto_remove_logs(bool auto_remove) { m_auto_remove_logs = auto_remove; }
 
-	bool m_open;										   //!< Whether or not the BlockchainDB is open/ready for use
+	bool m_open; //!< Whether or not the BlockchainDB is open/ready for use
 	mutable epee::critical_section m_synchronization_lock; //!< A lock, currently for when BlockchainLMDB needs to resize the backing db file
 
-	inline bool is_vout_bad(const cryptonote::tx_out& vout)
+	inline bool is_vout_bad(const cryptonote::tx_out &vout)
 	{
 		return vout.target.type() == typeid(txout_to_key) && bad_outpks.find(boost::get<txout_to_key>(vout.target).key) != bad_outpks.end();
 	}
 
-private:
+  private:
 	// Output public keys that we need to skip; because of a bug, including them
 	// would change the offset of every key after them. They were mined by the official pool
 	std::unordered_set<crypto::public_key> bad_outpks;

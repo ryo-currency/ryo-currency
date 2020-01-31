@@ -42,7 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include "zmq_server.h"
 #include <boost/chrono/chrono.hpp>
 
@@ -54,10 +53,11 @@ namespace cryptonote
 namespace rpc
 {
 
-ZmqServer::ZmqServer(RpcHandler &h) : handler(h),
-									  stop_signal(false),
-									  running(false),
-									  context(DEFAULT_NUM_ZMQ_THREADS) // TODO: make this configurable
+ZmqServer::ZmqServer(RpcHandler &h) :
+	handler(h),
+	stop_signal(false),
+	running(false),
+	context(DEFAULT_NUM_ZMQ_THREADS) // TODO: make this configurable
 {
 }
 
@@ -153,6 +153,6 @@ void ZmqServer::stop()
 	return;
 }
 
-} // namespace cryptonote
-
 } // namespace rpc
+
+} // namespace cryptonote

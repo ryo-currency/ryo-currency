@@ -141,8 +141,10 @@ bool parse_tpod_from_hex_string(const std::string &str_hash, t_pod_type &t_pod)
 	}
 }
 //----------------------------------------------------------------------------
+// clang-format off
 PUSH_WARNINGS
 DISABLE_GCC_WARNING(maybe-uninitialized)
+// clang-format on
 template <class XType>
 inline bool get_xtype_from_string(OUT XType &val, const std::string &str_id)
 {

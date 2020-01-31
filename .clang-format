@@ -1,0 +1,19 @@
+﻿---
+AlignAfterOpenBracket: DontAlign
+AlignConsecutiveAssignments: 'false'
+AlignConsecutiveDeclarations: 'false'
+AlignEscapedNewlines: DontAlign
+AlignOperands: 'false'
+AlignTrailingComments: 'false'
+BreakBeforeBraces: Allman
+BreakConstructorInitializers: AfterColon
+ColumnLimit: '0'
+ConstructorInitializerIndentWidth: '4'
+ContinuationIndentWidth: '4'
+DerivePointerAlignment: 'false'
+IndentWidth: '4'
+SpaceBeforeParens: Never
+TabWidth: '4'
+UseTab: Always
+
+...

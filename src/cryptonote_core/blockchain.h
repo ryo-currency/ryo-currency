@@ -82,9 +82,9 @@ struct test_options;
 enum blockchain_db_sync_mode
 {
 	db_defaultsync, //!< user didn't specify, use db_async
-	db_sync,		//!< handle syncing calls instead of the backing db, synchronously
-	db_async,		//!< handle syncing calls instead of the backing db, asynchronously
-	db_nosync		//!< Leave syncing up to the backing db (safest, but slowest because of disk I/O)
+	db_sync, //!< handle syncing calls instead of the backing db, synchronously
+	db_async, //!< handle syncing calls instead of the backing db, asynchronously
+	db_nosync //!< Leave syncing up to the backing db (safest, but slowest because of disk I/O)
 };
 
 /************************************************************************/
@@ -109,11 +109,11 @@ class Blockchain
      */
 	struct block_extended_info
 	{
-		block bl;							   //!< the block
-		uint64_t height;					   //!< the height of the block in the blockchain
-		size_t block_cumulative_size;		   //!< the size (in bytes) of the block
+		block bl; //!< the block
+		uint64_t height; //!< the height of the block in the blockchain
+		size_t block_cumulative_size; //!< the size (in bytes) of the block
 		difficulty_type cumulative_difficulty; //!< the accumulated difficulty after that block
-		uint64_t already_generated_coins;	  //!< the total coins minted after that block
+		uint64_t already_generated_coins; //!< the total coins minted after that block
 	};
 
 	/**
@@ -437,8 +437,8 @@ class Blockchain
      */
 	bool find_blockchain_supplement(const uint64_t req_start_block, const std::list<crypto::hash> &qblock_ids, std::list<std::pair<cryptonote::blobdata, std::list<cryptonote::blobdata>>> &blocks, uint64_t &total_height, uint64_t &start_height, size_t max_count) const;
 
-	bool find_blockchain_supplement_indexed(const uint64_t req_start_block, const std::list<crypto::hash> &qblock_ids, std::vector<block_complete_entry_v>& blocks,
-			std::vector<COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices>& out_idx, uint64_t &total_height, uint64_t &start_height, size_t max_count) const;
+	bool find_blockchain_supplement_indexed(const uint64_t req_start_block, const std::list<crypto::hash> &qblock_ids, std::vector<block_complete_entry_v> &blocks,
+		std::vector<COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices> &out_idx, uint64_t &total_height, uint64_t &start_height, size_t max_count) const;
 
 	/**
      * @brief retrieves a set of blocks and their transactions, and possibly other transactions
@@ -734,7 +734,7 @@ class Blockchain
      * @param fast_sync sync using built-in block hashes as trusted
      */
 	void set_user_options(uint64_t maxthreads, uint64_t blocks_per_sync,
-						  blockchain_db_sync_mode sync_mode, bool fast_sync);
+		blockchain_db_sync_mode sync_mode, bool fast_sync);
 
 	/**
      * @brief Put DB in safe sync mode
@@ -762,11 +762,11 @@ class Blockchain
      */
 	uint8_t get_current_hard_fork_version_num() const { return m_hardfork->get_current_version_num(); }
 
-	bool check_hard_fork_feature(hard_fork_feature ft) const 
+	bool check_hard_fork_feature(hard_fork_feature ft) const
 	{
 		if(get_fork_v(m_nettype, ft) == hardfork_conf::FORK_ID_DISABLED)
 			return false;
-		return m_hardfork->get_current_version_num() >= get_fork_v(m_nettype, ft); 
+		return m_hardfork->get_current_version_num() >= get_fork_v(m_nettype, ft);
 	}
 
 	/**
@@ -921,8 +921,7 @@ class Blockchain
      * @param txs unused, candidate for removal
      */
 	void output_scan_worker(const uint64_t amount, const std::vector<uint64_t> &offsets,
-							std::vector<output_data_t> &outputs, std::unordered_map<crypto::hash,
-																					cryptonote::transaction> &txs) const;
+		std::vector<output_data_t> &outputs, std::unordered_map<crypto::hash, cryptonote::transaction> &txs) const;
 
 	/**
      * @brief computes the "short" and "long" hashes for a set of blocks
@@ -1387,7 +1386,7 @@ class Blockchain
      * @param result false if the ring signature is invalid, otherwise true
      */
 	void check_ring_signature(const crypto::hash &tx_prefix_hash, const crypto::key_image &key_image,
-							  const std::vector<rct::ctkey> &pubkeys, const std::vector<crypto::signature> &sig, uint64_t &result);
+		const std::vector<rct::ctkey> &pubkeys, const std::vector<crypto::signature> &sig, uint64_t &result);
 
 	/**
      * @brief loads block hashes from compiled-in data set

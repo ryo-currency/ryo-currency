@@ -76,7 +76,7 @@ class BootstrapFile
 	uint64_t seek_to_first_chunk(std::ifstream &import_file);
 
 	bool store_blockchain_raw(cryptonote::Blockchain *cs, cryptonote::tx_memory_pool *txp,
-							  boost::filesystem::path &output_file, uint64_t use_block_height = 0);
+		boost::filesystem::path &output_file, uint64_t use_block_height = 0);
 
   protected:
 	Blockchain *m_blockchain_storage;

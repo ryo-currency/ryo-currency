@@ -118,8 +118,8 @@ class linked_ptr_internal
 		while(p->next_ != ptr)
 		{
 			assert(p->next_ != this &&
-				   "Trying to join() a linked ring we are already in. "
-				   "Is GMock thread safety enabled?");
+				"Trying to join() a linked ring we are already in. "
+				"Is GMock thread safety enabled?");
 			p = p->next_;
 		}
 		p->next_ = this;
@@ -139,8 +139,8 @@ class linked_ptr_internal
 		while(p->next_ != this)
 		{
 			assert(p->next_ != next_ &&
-				   "Trying to depart() a linked ring we are not in. "
-				   "Is GMock thread safety enabled?");
+				"Trying to depart() a linked ring we are not in. "
+				"Is GMock thread safety enabled?");
 			p = p->next_;
 		}
 		p->next_ = next_;

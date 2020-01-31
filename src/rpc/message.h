@@ -53,17 +53,17 @@
  * writing the below if block for every single RPC call.
  */
 #define REQ_RESP_TYPES_MACRO(runtime_str, type, reqjson, resp_message_ptr, handler) \
-                                                                                    \
-	if(runtime_str == type::name)                                                   \
-	{                                                                               \
-		type::Request reqvar;                                                       \
-		type::Response *respvar = new type::Response();                             \
-                                                                                    \
-		reqvar.fromJson(reqjson);                                                   \
-                                                                                    \
-		handler(reqvar, *respvar);                                                  \
-                                                                                    \
-		resp_message_ptr = respvar;                                                 \
+\
+	if(runtime_str == type::name) \
+	{ \
+		type::Request reqvar; \
+		type::Response *respvar = new type::Response(); \
+\
+		reqvar.fromJson(reqjson); \
+\
+		handler(reqvar, *respvar); \
+\
+		resp_message_ptr = respvar; \
 	}
 
 namespace cryptonote
@@ -81,7 +81,8 @@ class Message
 	static const char *STATUS_BAD_REQUEST;
 	static const char *STATUS_BAD_JSON;
 
-	Message() : status(STATUS_OK) {}
+	Message() :
+		status(STATUS_OK) {}
 
 	virtual ~Message() {}
 
@@ -99,7 +100,8 @@ class FullMessage
   public:
 	~FullMessage() {}
 
-	FullMessage(FullMessage &&rhs) noexcept : doc(std::move(rhs.doc)) {}
+	FullMessage(FullMessage &&rhs) noexcept :
+		doc(std::move(rhs.doc)) {}
 
 	FullMessage(const std::string &json_string, bool request = false);
 

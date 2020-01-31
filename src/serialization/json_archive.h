@@ -71,8 +71,8 @@ struct json_archive_base
 
 	typedef const char *variant_tag_type;
 
-	json_archive_base(stream_type &s, bool indent = false)
-		: stream_(s), indent_(indent), object_begin(false), depth_(0) {}
+	json_archive_base(stream_type &s, bool indent = false) :
+		stream_(s), indent_(indent), object_begin(false), depth_(0) {}
 
 	void tag(const char *tag)
 	{
@@ -130,7 +130,8 @@ struct json_archive;
 template <>
 struct json_archive<true> : public json_archive_base<std::ostream, true>
 {
-	json_archive(stream_type &s, bool indent = false) : base_type(s, indent) {}
+	json_archive(stream_type &s, bool indent = false) :
+		base_type(s, indent) {}
 
 	template <typename T>
 	static auto promote_to_printable_integer_type(T v) -> decltype(+v)

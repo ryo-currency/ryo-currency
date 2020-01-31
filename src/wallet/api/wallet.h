@@ -71,27 +71,27 @@ class WalletImpl : public Wallet
 	WalletImpl(NetworkType nettype = MAINNET);
 	~WalletImpl();
 	bool create(const std::string &path, const std::string &password,
-				const std::string &language);
+		const std::string &language);
 	bool createWatchOnly(const std::string &path, const std::string &password,
-						 const std::string &language) const;
+		const std::string &language) const;
 	bool open(const std::string &path, const std::string &password);
 	bool recover(const std::string &path, const std::string &password,
-				 const std::string &seed);
+		const std::string &seed);
 	bool recoverFromKeysWithPassword(const std::string &path,
-									 const std::string &password,
-									 const std::string &language,
-									 const std::string &address_string,
-									 const std::string &viewkey_string,
-									 const std::string &spendkey_string = "");
+		const std::string &password,
+		const std::string &language,
+		const std::string &address_string,
+		const std::string &viewkey_string,
+		const std::string &spendkey_string = "");
 	// following two methods are deprecated since they create passwordless wallets
 	// use the two equivalent methods above
 	bool recover(const std::string &path, const std::string &seed);
 	// deprecated: use recoverFromKeysWithPassword() instead
 	bool recoverFromKeys(const std::string &path,
-						 const std::string &language,
-						 const std::string &address_string,
-						 const std::string &viewkey_string,
-						 const std::string &spendkey_string = "");
+		const std::string &language,
+		const std::string &address_string,
+		const std::string &viewkey_string,
+		const std::string &spendkey_string = "");
 	bool close(bool store = true);
 	std::string seed() const;
 	std::string getSeedLanguage() const;
@@ -142,10 +142,10 @@ class WalletImpl : public Wallet
 	void setSubaddressLabel(uint32_t accountIndex, uint32_t addressIndex, const std::string &label);
 
 	PendingTransaction *createTransaction(const std::string &dst_addr, const std::string &payment_id,
-										  optional<uint64_t> amount, uint32_t mixin_count,
-										  PendingTransaction::Priority priority = PendingTransaction::Priority_Low,
-										  uint32_t subaddr_account = 0,
-										  std::set<uint32_t> subaddr_indices = {});
+		optional<uint64_t> amount, uint32_t mixin_count,
+		PendingTransaction::Priority priority = PendingTransaction::Priority_Low,
+		uint32_t subaddr_account = 0,
+		std::set<uint32_t> subaddr_indices = {});
 	bool submitTransaction(const std::string &fileName);
 	virtual UnsignedTransaction *loadUnsignedTx(const std::string &unsigned_filename);
 	bool exportKeyImages(const std::string &filename);
@@ -237,6 +237,6 @@ class WalletImpl : public Wallet
 	boost::optional<epee::net_utils::http::login> m_daemon_login{};
 };
 
-} // namespace
+} // namespace Ryo
 
 #endif

@@ -44,8 +44,8 @@
 
 #include <atomic>
 
-#include "common/gulps.hpp"
 #include "blockchain_db/blockchain_db.h"
+#include "common/gulps.hpp"
 #include "cryptonote_basic/blobdatatype.h" // for type blobdata
 #include "ringct/rctTypes.h"
 #include <boost/thread/tss.hpp>
@@ -110,9 +110,9 @@ typedef struct mdb_rflags
 
 typedef struct mdb_threadinfo
 {
-	MDB_txn *m_ti_rtxn;			   // per-thread read txn
+	MDB_txn *m_ti_rtxn; // per-thread read txn
 	mdb_txn_cursors m_ti_rcursors; // per-thread read cursors
-	mdb_rflags m_ti_rflags;		   // per-thread read state
+	mdb_rflags m_ti_rflags; // per-thread read state
 
 	~mdb_threadinfo();
 } mdb_threadinfo;
@@ -173,6 +173,7 @@ struct mdb_txn_safe
 class BlockchainLMDB : public BlockchainDB
 {
 	GULPS_CAT_MAJOR("db_lmdb");
+
   public:
 	BlockchainLMDB(bool batch_transactions = false);
 	~BlockchainLMDB();
@@ -235,7 +236,7 @@ class BlockchainLMDB : public BlockchainDB
 	virtual uint64_t get_tx_unlock_time(const crypto::hash &h) const;
 
 	virtual bool get_tx_blob(const crypto::hash &h, cryptonote::blobdata &tx) const;
-	virtual bool get_tx_blob_indexed(const crypto::hash& h, cryptonote::blobdata& bd, std::vector<uint64_t>& o_idx) const;
+	virtual bool get_tx_blob_indexed(const crypto::hash &h, cryptonote::blobdata &bd, std::vector<uint64_t> &o_idx) const;
 
 	virtual uint64_t get_tx_count() const;
 
@@ -251,7 +252,7 @@ class BlockchainLMDB : public BlockchainDB
 
 	virtual tx_out_index get_output_tx_and_index_from_global(const uint64_t &index) const;
 	virtual void get_output_tx_and_index_from_global(const std::vector<uint64_t> &global_indices,
-													 std::vector<tx_out_index> &tx_out_indices) const;
+		std::vector<tx_out_index> &tx_out_indices) const;
 
 	virtual tx_out_index get_output_tx_and_index(const uint64_t &amount, const uint64_t &index) const;
 	virtual void get_output_tx_and_index(const uint64_t &amount, const std::vector<uint64_t> &offsets, std::vector<tx_out_index> &indices) const;
@@ -324,13 +325,13 @@ class BlockchainLMDB : public BlockchainDB
 	virtual void remove_transaction_data(const crypto::hash &tx_hash, const transaction &tx);
 
 	virtual uint64_t add_output(const crypto::hash &tx_hash,
-								const tx_out &tx_output,
-								const uint64_t &local_index,
-								const uint64_t unlock_time,
-								const rct::key *commitment);
+		const tx_out &tx_output,
+		const uint64_t &local_index,
+		const uint64_t unlock_time,
+		const rct::key *commitment);
 
 	virtual void add_tx_amount_output_indices(const uint64_t tx_id,
-											  const std::vector<uint64_t> &amount_output_indices);
+		const std::vector<uint64_t> &amount_output_indices);
 
 	void remove_tx_outputs(const uint64_t tx_id, const transaction &tx);
 
@@ -408,12 +409,12 @@ class BlockchainLMDB : public BlockchainDB
 	mutable uint64_t m_cum_size; // used in batch size estimation
 	mutable unsigned int m_cum_count;
 	std::string m_folder;
-	mdb_txn_safe *m_write_txn;		 // may point to either a short-lived txn or a batch txn
+	mdb_txn_safe *m_write_txn; // may point to either a short-lived txn or a batch txn
 	mdb_txn_safe *m_write_batch_txn; // persist batch txn outside of BlockchainLMDB
 	boost::thread::id m_writer;
 
 	bool m_batch_transactions; // support for batch transactions
-	bool m_batch_active;	   // whether batch transaction is in progress
+	bool m_batch_active; // whether batch transaction is in progress
 
 	mdb_txn_cursors m_wcursors;
 	mutable boost::thread_specific_ptr<mdb_threadinfo> m_tinfo;

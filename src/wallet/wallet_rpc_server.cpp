@@ -50,8 +50,8 @@
 #include <boost/filesystem/operations.hpp>
 #include <cstdint>
 
-
 #include "common/command_line.h"
+#include "common/gulps.hpp"
 #include "common/i18n.h"
 #include "crypto/hash.h"
 #include "cryptonote_basic/account.h"
@@ -67,9 +67,7 @@
 #include "wallet/wallet_args.h"
 #include "wallet_rpc_server.h"
 #include "wallet_rpc_server_commands_defs.h"
-#include "common/gulps.hpp"
 using namespace epee;
-
 
 namespace
 {
@@ -91,7 +89,7 @@ boost::optional<tools::password_container> password_prompter(const char *prompt,
 	}
 	return pwd_container;
 }
-}
+} // namespace
 
 namespace tools
 {
@@ -101,7 +99,8 @@ const char *wallet_rpc_server::tr(const char *str)
 }
 
 //------------------------------------------------------------------------------------------------------------------------------
-wallet_rpc_server::wallet_rpc_server(cryptonote::network_type nettype) : m_wallet(nullptr), rpc_login_file(), m_stop(false), m_trusted_daemon(false), m_vm(NULL), m_nettype(nettype)
+wallet_rpc_server::wallet_rpc_server(cryptonote::network_type nettype) :
+	m_wallet(nullptr), rpc_login_file(), m_stop(false), m_trusted_daemon(false), m_vm(NULL), m_nettype(nettype)
 {
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -125,7 +124,7 @@ bool wallet_rpc_server::run()
 		}
 		return true;
 	},
-								  20000);
+		20000);
 	m_net_server.add_idle_handler([this]() {
 		if(m_stop.load(std::memory_order_relaxed))
 		{
@@ -134,7 +133,7 @@ bool wallet_rpc_server::run()
 		}
 		return true;
 	},
-								  500);
+		500);
 
 	//DO NOT START THIS SERVER IN MORE THEN 1 THREADS WITHOUT REFACTORING
 	return epee::http_server_impl_base<wallet_rpc_server, connection_context>::run(1, true);
@@ -180,7 +179,7 @@ bool wallet_rpc_server::init(const boost::program_options::variables_map *vm)
 		if(!m_wallet_dir.empty() && MKDIR(m_wallet_dir.c_str(), 0700) < 0 && errno != EEXIST)
 		{
 #ifdef _WIN32
-			GULPS_ERROR(tr("Failed to create directory "),  m_wallet_dir);
+			GULPS_ERROR(tr("Failed to create directory "), m_wallet_dir);
 #else
 			GULPSF_ERROR(tr("Failed to create directory {}: {}"), m_wallet_dir, strerror(errno));
 #endif
@@ -586,7 +585,7 @@ bool wallet_rpc_server::on_getheight(const wallet_rpc::COMMAND_RPC_GET_HEIGHT::r
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-bool wallet_rpc_server::validate_transfer(const std::list<wallet_rpc::transfer_destination> &destinations, const std::string &s_payment_id, std::vector<cryptonote::tx_destination_entry> &dsts,  crypto::uniform_payment_id& payment_id, bool at_least_one_destination, epee::json_rpc::error &er)
+bool wallet_rpc_server::validate_transfer(const std::list<wallet_rpc::transfer_destination> &destinations, const std::string &s_payment_id, std::vector<cryptonote::tx_destination_entry> &dsts, crypto::uniform_payment_id &payment_id, bool at_least_one_destination, epee::json_rpc::error &er)
 {
 	payment_id.zero = (-1); // lack of id
 	std::string extra_nonce;
@@ -689,8 +688,8 @@ static uint64_t total_amount(const tools::wallet2::pending_tx &ptx)
 //------------------------------------------------------------------------------------------------------------------------------
 template <typename Ts, typename Tu>
 bool wallet_rpc_server::fill_response(std::vector<tools::wallet2::pending_tx> &ptx_vector,
-									  bool get_tx_key, Ts &tx_key, Tu &amount, Tu &fee, std::string &multisig_txset, bool do_not_relay,
-									  Ts &tx_hash, bool get_tx_hex, Ts &tx_blob, bool get_tx_metadata, Ts &tx_metadata, epee::json_rpc::error &er)
+	bool get_tx_key, Ts &tx_key, Tu &amount, Tu &fee, std::string &multisig_txset, bool do_not_relay,
+	Ts &tx_hash, bool get_tx_hex, Ts &tx_blob, bool get_tx_metadata, Ts &tx_metadata, epee::json_rpc::error &er)
 {
 	for(const auto &ptx : ptx_vector)
 	{
@@ -738,7 +737,7 @@ bool wallet_rpc_server::fill_response(std::vector<tools::wallet2::pending_tx> &p
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-inline crypto::uniform_payment_id* check_pid(crypto::uniform_payment_id& pid)
+inline crypto::uniform_payment_id *check_pid(crypto::uniform_payment_id &pid)
 {
 	return pid.zero == 0 ? &pid : nullptr;
 }
@@ -783,7 +782,7 @@ bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::requ
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
 		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, check_pid(pid),
-				req.account_index, req.subaddr_indices, m_trusted_daemon);
+			req.account_index, req.subaddr_indices, m_trusted_daemon);
 		if(ptx_vector.empty())
 		{
 			er.code = WALLET_RPC_ERROR_CODE_TX_NOT_POSSIBLE;
@@ -800,7 +799,7 @@ bool wallet_rpc_server::on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::requ
 		}
 
 		return fill_response(ptx_vector, req.get_tx_key, res.tx_key, res.amount, res.fee, res.multisig_txset, req.do_not_relay,
-							 res.tx_hash, req.get_tx_hex, res.tx_blob, req.get_tx_metadata, res.tx_metadata, er);
+			res.tx_hash, req.get_tx_hex, res.tx_blob, req.get_tx_metadata, res.tx_metadata, er);
 	}
 	catch(const std::exception &e)
 	{
@@ -850,7 +849,7 @@ bool wallet_rpc_server::on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER
 		GULPS_LOG_L2("on_transfer_split called create_transactions_2");
 
 		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
-							 res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, er);
+			res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, er);
 	}
 	catch(const std::exception &e)
 	{
@@ -897,10 +896,10 @@ bool wallet_rpc_server::on_sweep_all(const wallet_rpc::COMMAND_RPC_SWEEP_ALL::re
 		}
 		uint32_t priority = m_wallet->adjust_priority(req.priority);
 		std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_all(req.below_amount, dsts[0].addr, dsts[0].is_subaddress,
-				mixin, req.unlock_time, priority, check_pid(pid), req.account_index, req.subaddr_indices, m_trusted_daemon);
+			mixin, req.unlock_time, priority, check_pid(pid), req.account_index, req.subaddr_indices, m_trusted_daemon);
 
 		return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.multisig_txset, req.do_not_relay,
-							 res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, er);
+			res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, er);
 	}
 	catch(const std::exception &e)
 	{
@@ -977,7 +976,7 @@ bool wallet_rpc_server::on_sweep_single(const wallet_rpc::COMMAND_RPC_SWEEP_SING
 		}
 
 		return fill_response(ptx_vector, req.get_tx_key, res.tx_key, res.amount, res.fee, res.multisig_txset, req.do_not_relay,
-							 res.tx_hash, req.get_tx_hex, res.tx_blob, req.get_tx_metadata, res.tx_metadata, er);
+			res.tx_hash, req.get_tx_hex, res.tx_blob, req.get_tx_metadata, res.tx_metadata, er);
 	}
 	catch(const std::exception &e)
 	{
@@ -2208,7 +2207,7 @@ bool wallet_rpc_server::on_get_languages(const wallet_rpc::COMMAND_RPC_GET_LANGU
 }
 //------------------------------------------------------------------------------------------------------------------------------
 // Pick the password from the RPC call or from command line - used by wallet open / create
-boost::program_options::variables_map wallet_rpc_server::wallet_password_helper(const char* rpc_pwd)
+boost::program_options::variables_map wallet_rpc_server::wallet_password_helper(const char *rpc_pwd)
 {
 	boost::program_options::options_description desc("dummy");
 	const command_line::arg_descriptor<std::string, true> arg_password = {"password", "password"};
@@ -2226,7 +2225,7 @@ boost::program_options::variables_map wallet_rpc_server::wallet_password_helper(
 }
 //------------------------------------------------------------------------------------------------------------------------------
 // Check basic stuff to do with paths and filenames - used by wallet open / create
-bool wallet_rpc_server::wallet_path_helper(const std::string& filename, epee::json_rpc::error &er)
+bool wallet_rpc_server::wallet_path_helper(const std::string &filename, epee::json_rpc::error &er)
 {
 	if(m_wallet_dir.empty())
 	{
@@ -2318,7 +2317,7 @@ bool wallet_rpc_server::on_restore_view_wallet(const wallet_rpc::COMMAND_RPC_RES
 		return false;
 
 	cryptonote::address_parse_info info;
-	if(!get_account_address_from_str(m_nettype,  info, req.address) || info.is_subaddress || info.is_kurz)
+	if(!get_account_address_from_str(m_nettype, info, req.address) || info.is_subaddress || info.is_kurz)
 	{
 		er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
 		er.message = "Invalid wallet address";
@@ -2476,7 +2475,7 @@ bool wallet_rpc_server::on_close_wallet(const wallet_rpc::COMMAND_RPC_CLOSE_WALL
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-bool wallet_rpc_server::on_change_wallet_password(const wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::request& req, wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::response& res, epee::json_rpc::error& er)
+bool wallet_rpc_server::on_change_wallet_password(const wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::request &req, wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::response &res, epee::json_rpc::error &er)
 {
 	if(!m_wallet)
 		return not_open(er);
@@ -2494,7 +2493,7 @@ bool wallet_rpc_server::on_change_wallet_password(const wallet_rpc::COMMAND_RPC_
 			m_wallet->store();
 			GULPS_PRINT("Wallet password changed.");
 		}
-		catch(const std::exception& e)
+		catch(const std::exception &e)
 		{
 			handle_rpc_exception(std::current_exception(), er, WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR);
 			return false;
@@ -2543,11 +2542,11 @@ void wallet_rpc_server::handle_rpc_exception(const std::exception_ptr &e, epee::
 	catch(const tools::error::tx_not_possible &e)
 	{
 		er.code = WALLET_RPC_ERROR_CODE_TX_NOT_POSSIBLE;
-		er.message = (fmt::format(tr("Transaction not possible. Available only {}, transaction amount {} = {} + {} (fee)")) ,
-					  cryptonote::print_money(e.available()) ,
-					  cryptonote::print_money(e.tx_amount() + e.fee()) ,
-					  cryptonote::print_money(e.tx_amount()) ,
-					  cryptonote::print_money(e.fee()));
+		er.message = (fmt::format(tr("Transaction not possible. Available only {}, transaction amount {} = {} + {} (fee)")),
+			cryptonote::print_money(e.available()),
+			cryptonote::print_money(e.tx_amount() + e.fee()),
+			cryptonote::print_money(e.tx_amount()),
+			cryptonote::print_money(e.fee()));
 		er.message = e.what();
 	}
 	catch(const tools::error::not_enough_outs_to_mix &e)
@@ -2964,13 +2963,13 @@ bool wallet_rpc_server::on_submit_multisig(const wallet_rpc::COMMAND_RPC_SUBMIT_
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-}
+} // namespace tools
 
 int main(int argc, char **argv)
 {
 	GULPS_CAT_MAJOR("wallet_rpc");
 #ifdef WIN32
-	std::vector<char*> argptrs;
+	std::vector<char *> argptrs;
 	command_line::set_console_utf8();
 	if(command_line::get_windows_args(argptrs))
 	{
@@ -2988,7 +2987,7 @@ int main(int argc, char **argv)
 
 	//Temp error output
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
+	out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
 	auto temp_handle = gulps::inst().add_output(std::move(out));
 
 	po::options_description desc_params(wallet_args::tr("Wallet options"));

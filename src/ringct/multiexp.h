@@ -46,18 +46,18 @@
 
 #pragma once
 
-#include "cryptonote_config.h"
-#include "crypto/crypto.h"
 #include "common/gulps.hpp"
+#include "crypto/crypto.h"
+#include "cryptonote_config.h"
 #include "rctTypes.h"
-#include <vector>
 #include <boost/align/aligned_delete.hpp>
+#include <vector>
 
 //Unfortunately this is a C++17 feature... but we can roll our own
-template<typename T>
+template <typename T>
 using aligned_ptr = std::unique_ptr<T, boost::alignment::aligned_delete>;
 
-template<typename T>
+template <typename T>
 inline aligned_ptr<T[]> make_aligned_array(size_t align, size_t n)
 {
 	return aligned_ptr<T[]>(::new(boost::alignment::aligned_alloc(align, sizeof(T) * n)) T[n]);
@@ -87,8 +87,10 @@ struct MultiexpData
 	ge_p3 point;
 
 	MultiexpData() {}
-	MultiexpData(const rct::key &s, const ge_p3 &p) : scalar(s), point(p) {}
-	MultiexpData(const rct::key &s, const rct::key &p) : scalar(s)
+	MultiexpData(const rct::key &s, const ge_p3 &p) :
+		scalar(s), point(p) {}
+	MultiexpData(const rct::key &s, const rct::key &p) :
+		scalar(s)
 	{
 		GULPS_CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&point, p.bytes) == 0, "ge_frombytes_vartime failed");
 	}
@@ -105,16 +107,17 @@ struct alignas(8) ge_cached_pad
 // Algorithm specific cache
 class pippenger_cache
 {
-public:
-	pippenger_cache() : size(0), alloc_size(0) {}
+  public:
+	pippenger_cache() :
+		size(0), alloc_size(0) {}
 
-	inline ge_cached* pp_offset(size_t n) { return &cache[n].gec; };
-	inline const ge_cached& pp_offset(size_t n) const { return cache[n].gec; };
+	inline ge_cached *pp_offset(size_t n) { return &cache[n].gec; };
+	inline const ge_cached &pp_offset(size_t n) const { return cache[n].gec; };
 
 	inline size_t get_size() { return size * sizeof(ge_cached_pad); };
 	void init_cache(const std::vector<MultiexpData> &data, size_t N = 0, bool over_alloc = true);
 
-	rct::key pippenger(const std::vector<MultiexpData> &data, aligned_ptr<ge_p3[]>& buckets, size_t c = 0) const;
+	rct::key pippenger(const std::vector<MultiexpData> &data, aligned_ptr<ge_p3[]> &buckets, size_t c = 0) const;
 
 	static inline size_t get_pippenger_c(size_t N)
 	{
@@ -139,7 +142,7 @@ public:
 		return 9;
 	}
 
-private:
+  private:
 	size_t size;
 	size_t alloc_size;
 	aligned_ptr<ge_cached_pad[]> cache;
@@ -148,20 +151,21 @@ private:
 // Algorithm specific cache
 class straus_cache
 {
-public:
-	straus_cache() : size(0) {}
+  public:
+	straus_cache() :
+		size(0) {}
 
 	static constexpr size_t STRAUS_C = 4;
 
-	inline ge_cached* st_offset(size_t point, size_t digit) { return &cache[point + size * (digit-1)].gec; }
-	inline const ge_cached& st_offset(size_t point, size_t digit) const { return cache[point + size * (digit-1)].gec; };
+	inline ge_cached *st_offset(size_t point, size_t digit) { return &cache[point + size * (digit - 1)].gec; }
+	inline const ge_cached &st_offset(size_t point, size_t digit) const { return cache[point + size * (digit - 1)].gec; };
 
 	inline size_t get_size() { return size * sizeof(ge_cached_pad); };
 	void init_cache(const std::vector<MultiexpData> &data, size_t N = 0);
 
 	rct::key straus(const std::vector<MultiexpData> &data, size_t STEP) const;
 
-private:
+  private:
 	size_t size;
 	size_t alloc_size;
 	aligned_ptr<ge_cached_pad[]> cache;
@@ -170,7 +174,7 @@ private:
 // This cache is global and read-only
 class multiexp_cache
 {
-private:
+  private:
 	static constexpr size_t STRAUS_SIZE_LIMIT = 128;
 	static constexpr size_t PIPPENGER_SIZE_LIMIT = maxN * maxM;
 
@@ -181,40 +185,40 @@ private:
 
 	multiexp_cache();
 
-public:
-	inline static const multiexp_cache& inst()
+  public:
+	inline static const multiexp_cache &inst()
 	{
 		static_assert(128 <= STRAUS_SIZE_LIMIT, "Straus in precalc mode can only be calculated till STRAUS_SIZE_LIMIT");
 		static multiexp_cache th;
 		return th;
 	}
 
-	inline static const rct::key& Hi(size_t n)
+	inline static const rct::key &Hi(size_t n)
 	{
 		return inst().Hi_cache[n];
 	}
 
-	inline static const rct::key& Gi(size_t n)
+	inline static const rct::key &Gi(size_t n)
 	{
 		return inst().Gi_cache[n];
 	}
 
-	inline static const ge_p3& Hi_p3(size_t n)
+	inline static const ge_p3 &Hi_p3(size_t n)
 	{
 		return inst().Hi_p3_cache[n];
 	}
 
-	inline static const ge_p3& Gi_p3(size_t n)
+	inline static const ge_p3 &Gi_p3(size_t n)
 	{
 		return inst().Gi_p3_cache[n];
 	}
 
-	inline static const pippenger_cache& get_pc()
+	inline static const pippenger_cache &get_pc()
 	{
 		return inst().p_cache;
 	}
 
-	inline static const straus_cache& get_sc()
+	inline static const straus_cache &get_sc()
 	{
 		return inst().s_cache;
 	}
@@ -223,10 +227,10 @@ public:
 // This cache is unique to each proof or verify
 class bp_cache
 {
-template <test_multiexp_algorithm algorithm, size_t npoints, size_t c>
-friend class ::test_multiexp;
+	template <test_multiexp_algorithm algorithm, size_t npoints, size_t c>
+	friend class ::test_multiexp;
 
-public:
+  public:
 	inline rct::key multiexp_higi()
 	{
 		return me_pad.size() <= 128 ? multiexp_cache::get_sc().straus(me_pad, 0) : multiexp_cache::get_pc().pippenger(me_pad, buckets, pippenger_cache::get_pippenger_c(me_pad.size()));
@@ -257,12 +261,16 @@ public:
 
 	//This allows the scratchpad to be filled by the user
 	std::vector<MultiexpData> me_pad;
-	inline void clear_pad(size_t res_size) { me_pad.clear(); if(me_pad.capacity() < res_size) me_pad.reserve(res_size); }
+	inline void clear_pad(size_t res_size)
+	{
+		me_pad.clear();
+		if(me_pad.capacity() < res_size)
+			me_pad.reserve(res_size);
+	}
 
-private:
-	 straus_cache s_cache;
-	 pippenger_cache p_cache;
-	 aligned_ptr<ge_p3[]> buckets;
+  private:
+	straus_cache s_cache;
+	pippenger_cache p_cache;
+	aligned_ptr<ge_p3[]> buckets;
 };
-}
-
+} // namespace rct

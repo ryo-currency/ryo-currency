@@ -44,9 +44,9 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
 #include <functional>
+#include <memory>
+#include <string>
 
 namespace tools
 {
@@ -59,4 +59,4 @@ bool download_error(const download_async_handle &h);
 bool download_finished(const download_async_handle &h);
 bool download_wait(const download_async_handle &h);
 bool download_cancel(const download_async_handle &h);
-}
+} // namespace tools

@@ -55,8 +55,8 @@ namespace Ryo
 
 SubaddressAccount::~SubaddressAccount() {}
 
-SubaddressAccountImpl::SubaddressAccountImpl(WalletImpl *wallet)
-	: m_wallet(wallet) {}
+SubaddressAccountImpl::SubaddressAccountImpl(WalletImpl *wallet) :
+	m_wallet(wallet) {}
 
 void SubaddressAccountImpl::addRow(const std::string &label)
 {
@@ -105,4 +105,4 @@ SubaddressAccountImpl::~SubaddressAccountImpl()
 	clearRows();
 }
 
-} // namespace
+} // namespace Ryo

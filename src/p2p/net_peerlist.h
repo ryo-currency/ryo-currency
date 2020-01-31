@@ -118,7 +118,8 @@ class peerlist_manager
 
 	struct modify_all_but_id
 	{
-		modify_all_but_id(const peerlist_entry &ple) : m_ple(ple) {}
+		modify_all_but_id(const peerlist_entry &ple) :
+			m_ple(ple) {}
 		void operator()(peerlist_entry &e)
 		{
 			e.id = m_ple.id;
@@ -130,7 +131,8 @@ class peerlist_manager
 
 	struct modify_all
 	{
-		modify_all(const peerlist_entry &ple) : m_ple(ple) {}
+		modify_all(const peerlist_entry &ple) :
+			m_ple(ple) {}
 		void operator()(peerlist_entry &e)
 		{
 			e = m_ple;
@@ -142,7 +144,8 @@ class peerlist_manager
 
 	struct modify_last_seen
 	{
-		modify_last_seen(time_t last_seen) : m_last_seen(last_seen) {}
+		modify_last_seen(time_t last_seen) :
+			m_last_seen(last_seen) {}
 		void operator()(peerlist_entry &e)
 		{
 			e.last_seen = m_last_seen;
@@ -536,6 +539,6 @@ inline bool peerlist_manager::remove_from_peer_anchor(const epee::net_utils::net
 	GULPS_CATCH_ENTRY_L0("peerlist_manager::remove_from_peer_anchor()", false);
 }
 //--------------------------------------------------------------------------------------------------
-}
+} // namespace nodetool
 
 BOOST_CLASS_VERSION(nodetool::peerlist_manager, CURRENT_PEERLIST_STORAGE_ARCHIVE_VER)

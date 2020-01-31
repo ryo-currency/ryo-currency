@@ -100,16 +100,16 @@ extern "C"
 	void sV_fe64_add(fe64 r, const fe64 x, const fe64 y);
 	void sV_fe64_sub(fe64 r, const fe64 x, const fe64 y);
 	void sV_fe64_reduce(fe64 r);
-	void sV_ge64_add(ge64_p1p1* r, const ge64_p3* p, const ge64_p3* q);
-	void sV_ge64_p1p1_to_p2(ge64_p2* r, const ge64_p1p1* p);
-	void sV_ge64_p1p1_to_p3(ge64_p3* r, const ge64_p1p1* p);
-	void sV_ge64_nielsadd2(ge64_p3* r, const ge64_niels* q);
-	void sV_ge64_pnielsadd_p1p1(ge64_p1p1* r, const ge64_p3* p,
-		const ge64_pniels* q);
-	void sV_ge64_p2_dbl(ge64_p1p1* r, const ge64_p2* p);
+	void sV_ge64_add(ge64_p1p1 *r, const ge64_p3 *p, const ge64_p3 *q);
+	void sV_ge64_p1p1_to_p2(ge64_p2 *r, const ge64_p1p1 *p);
+	void sV_ge64_p1p1_to_p3(ge64_p3 *r, const ge64_p1p1 *p);
+	void sV_ge64_nielsadd2(ge64_p3 *r, const ge64_niels *q);
+	void sV_ge64_pnielsadd_p1p1(ge64_p1p1 *r, const ge64_p3 *p,
+		const ge64_pniels *q);
+	void sV_ge64_p2_dbl(ge64_p1p1 *r, const ge64_p2 *p);
 
 #ifdef _WIN32
-	void win64_wrapper(void* f, ...);
+	void win64_wrapper(void *f, ...);
 #define fe64_mul(r, x, y) win64_wrapper(sV_fe64_mul, r, x, y)
 #define fe64_square(r, x) win64_wrapper(sV_fe64_square, r, x)
 #define fe64_add(r, x, y) win64_wrapper(sV_fe64_add, r, x, y)
@@ -137,15 +137,15 @@ extern "C"
 #endif // !_WIN32
 
 	///// C FUNCTIONS
-	void ge64_p3_to_p2(ge64_p2* r, const ge64_p3* p);
-	void ge64_mul8(ge64_p1p1* r, const ge64_p2* t);
-	int ge64_frombytes_vartime(ge64_p3* h, const unsigned char p[32]);
-	void ge64_tobytes(unsigned char s[32], const ge64_p2* h);
+	void ge64_p3_to_p2(ge64_p2 *r, const ge64_p3 *p);
+	void ge64_mul8(ge64_p1p1 *r, const ge64_p2 *t);
+	int ge64_frombytes_vartime(ge64_p3 *h, const unsigned char p[32]);
+	void ge64_tobytes(unsigned char s[32], const ge64_p2 *h);
 	void sc64_reduce32(unsigned char x[32]);
-	void ge64_scalarmult_base(ge64_p3* r, const unsigned char s[32]);
-	void ge64_scalarmult(ge64_p2* r, const unsigned char a[32], const ge64_p3* A);
+	void ge64_scalarmult_base(ge64_p3 *r, const unsigned char s[32]);
+	void ge64_scalarmult(ge64_p2 *r, const unsigned char a[32], const ge64_p3 *A);
 
-	void ge64_sub(ge64_p1p1* r, const ge64_p3* p, const ge64_p3* q);
+	void ge64_sub(ge64_p1p1 *r, const ge64_p3 *p, const ge64_p3 *q);
 
 #ifdef __cplusplus
 }

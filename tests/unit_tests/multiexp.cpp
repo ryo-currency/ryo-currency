@@ -152,7 +152,7 @@ TEST(multiexp, pippenger_only_zeroes)
 	rct::bp_cache exp;
 	for(int n = 0; n < 16; ++n)
 		exp.me_pad.push_back({rct::zero(), get_p3(TESTPOINT)});
-	ASSERT_TRUE(basic(exp.me_pad) ==  exp.multiexp_p());
+	ASSERT_TRUE(basic(exp.me_pad) == exp.multiexp_p());
 }
 
 TEST(multiexp, bos_coster_only_identities)

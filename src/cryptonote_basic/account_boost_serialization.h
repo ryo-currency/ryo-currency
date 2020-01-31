@@ -68,5 +68,5 @@ inline void serialize(Archive &a, cryptonote::account_public_address &x, const b
 	a &x.m_spend_public_key;
 	a &x.m_view_public_key;
 }
-}
-}
+} // namespace serialization
+} // namespace boost

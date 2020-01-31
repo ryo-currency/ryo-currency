@@ -358,7 +358,7 @@ inline void serialize(Archive &a, rct::rctSig &x, const boost::serialization::ve
 	if(x.type == rct::RCTTypeBulletproof)
 		a &x.p.pseudoOuts;
 }
-}
-}
+} // namespace serialization
+} // namespace boost
 
 //}

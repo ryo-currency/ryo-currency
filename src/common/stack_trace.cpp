@@ -42,7 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #if !defined __GNUC__ || defined __MINGW32__ || defined __MINGW64__ || defined __ANDROID__
 #define USE_UNWIND
 #else
@@ -85,9 +84,9 @@ extern "C"
 extern "C" typedef
 #ifdef __clang__ // only clang, not GCC, lets apply the attr in typedef
 	__attribute__((noreturn))
-#endif			 // __clang__
+#endif // __clang__
 	void(cxa_throw_t)(void *ex, CXA_THROW_INFO_T *info, void (*dest)(void *));
-#endif			 // !STATICLIB
+#endif // !STATICLIB
 
 extern "C"
 	__attribute__((noreturn)) void

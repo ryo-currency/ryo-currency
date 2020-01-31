@@ -66,7 +66,8 @@ class writer
      * @param filename name of the file, if empty output is written to stdout
      * @param remove_spaces if true print data without spaces
      */
-	writer(const std::string &filename, const bool remove_spaces = false) : m_filename(filename), m_remove_spaces(remove_spaces)
+	writer(const std::string &filename, const bool remove_spaces = false) :
+		m_filename(filename), m_remove_spaces(remove_spaces)
 	{
 		if(!m_filename.empty())
 		{
@@ -111,4 +112,4 @@ class writer
 	std::ofstream m_out;
 	bool m_has_filestream = false;
 };
-}
+} // namespace cryptonote

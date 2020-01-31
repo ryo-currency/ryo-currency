@@ -96,7 +96,7 @@ struct is_not_container
 								   sizeof(v_type<T>(0)) == sizeof(true_type) &&
 								   sizeof(k_type<T>(0)) == sizeof(true_type) &&
 								   sizeof(m_type<T>(0)) == sizeof(true_type)) ||
-							   std::is_same<T, std::string>::value);
+		std::is_same<T, std::string>::value);
 
 	typedef T type;
 };
@@ -131,10 +131,10 @@ struct is_vector_like
 
   public:
 	static const bool value = (sizeof(c_iter<T>(0)) == sizeof(true_type) &&
-							   sizeof(v_type<T>(0)) == sizeof(true_type) &&
-							   sizeof(k_type<T>(0)) == sizeof(true_type) &&
-							   sizeof(m_type<T>(0)) == sizeof(true_type) &&
-							   !std::is_same<T, std::string>::value);
+		sizeof(v_type<T>(0)) == sizeof(true_type) &&
+		sizeof(k_type<T>(0)) == sizeof(true_type) &&
+		sizeof(m_type<T>(0)) == sizeof(true_type) &&
+		!std::is_same<T, std::string>::value);
 
 	typedef T type;
 };
@@ -169,10 +169,10 @@ struct is_map_like
 
   public:
 	static const bool value = (sizeof(c_iter<T>(0)) == sizeof(true_type) &&
-							   sizeof(v_type<T>(0)) == sizeof(true_type) &&
-							   sizeof(k_type<T>(0)) == sizeof(true_type) &&
-							   sizeof(m_type<T>(0)) == sizeof(true_type) &&
-							   !std::is_same<T, std::string>::value);
+		sizeof(v_type<T>(0)) == sizeof(true_type) &&
+		sizeof(k_type<T>(0)) == sizeof(true_type) &&
+		sizeof(m_type<T>(0)) == sizeof(true_type) &&
+		!std::is_same<T, std::string>::value);
 
 	typedef T type;
 };

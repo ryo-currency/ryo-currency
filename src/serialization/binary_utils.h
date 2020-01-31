@@ -72,4 +72,4 @@ bool dump_binary(T &v, std::string &blob)
 	blob = ostr.str();
 	return success && ostr.good();
 };
-}
+} // namespace serialization

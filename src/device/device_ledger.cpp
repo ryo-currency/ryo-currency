@@ -219,11 +219,11 @@ void device_ledger::logCMD()
 	{
 		char strbuffer[1024];
 		sprintf(strbuffer, "%.02x %.02x %.02x %.02x %.02x ",
-				this->buffer_send[0],
-				this->buffer_send[1],
-				this->buffer_send[2],
-				this->buffer_send[3],
-				this->buffer_send[4]);
+			this->buffer_send[0],
+			this->buffer_send[1],
+			this->buffer_send[2],
+			this->buffer_send[3],
+			this->buffer_send[4]);
 		buffer_to_str(strbuffer + strlen(strbuffer), sizeof(strbuffer), (char *)(this->buffer_send + 5), this->length_send - 5);
 		MDEBUG("CMD  :" << strbuffer);
 	}
@@ -235,8 +235,8 @@ void device_ledger::logRESP()
 	{
 		char strbuffer[1024];
 		sprintf(strbuffer, "%.02x%.02x ",
-				this->buffer_recv[this->length_recv - 2],
-				this->buffer_recv[this->length_recv - 1]);
+			this->buffer_recv[this->length_recv - 2],
+			this->buffer_recv[this->length_recv - 1]);
 		buffer_to_str(strbuffer + strlen(strbuffer), sizeof(strbuffer), (char *)(this->buffer_recv), this->length_recv - 2);
 		MDEBUG("RESP :" << strbuffer);
 	}
@@ -265,10 +265,10 @@ device_ledger::~device_ledger()
 /* ======================================================================= */
 
 //automatic lock one more level on device ensuring the current thread is allowed to use it
-#define AUTO_LOCK_CMD()                                                                \
-	/* lock both mutexes without deadlock*/                                            \
-	boost::lock(device_locker, command_locker);                                        \
-	/* make sure both already-locked mutexes are unlocked at the end of scope */       \
+#define AUTO_LOCK_CMD() \
+	/* lock both mutexes without deadlock*/ \
+	boost::lock(device_locker, command_locker); \
+	/* make sure both already-locked mutexes are unlocked at the end of scope */ \
 	boost::lock_guard<boost::recursive_mutex> lock1(device_locker, boost::adopt_lock); \
 	boost::lock_guard<boost::mutex> lock2(command_locker, boost::adopt_lock)
 
@@ -342,8 +342,8 @@ unsigned int device_ledger::exchange(unsigned int ok, unsigned int mask)
 	logCMD();
 	this->length_recv = BUFFER_RECV_SIZE;
 	rv = SCardTransmit(this->hCard,
-					   SCARD_PCI_T0, this->buffer_send, this->length_send,
-					   NULL, this->buffer_recv, &this->length_recv);
+		SCARD_PCI_T0, this->buffer_send, this->length_send,
+		NULL, this->buffer_recv, &this->length_recv);
 	ASSERT_RV(rv);
 	ASSERT_T0(this->length_recv <= BUFFER_RECV_SIZE);
 	logRESP();
@@ -441,8 +441,8 @@ bool device_ledger::connect(void)
 			{
 				MDEBUG("Device Match: " << std::string(p));
 				if((rv = SCardConnect(this->hContext,
-									  p, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0,
-									  &this->hCard, &dwProtocol)) != SCARD_S_SUCCESS)
+						p, SCARD_SHARE_EXCLUSIVE, SCARD_PROTOCOL_T0,
+						&this->hCard, &dwProtocol)) != SCARD_S_SUCCESS)
 				{
 					break;
 				}
@@ -1567,7 +1567,7 @@ bool device_ledger::encrypt_payment_id(crypto::hash8 &payment_id, const crypto::
 }
 
 bool device_ledger::add_output_key_mapping(const crypto::public_key &Aout, const crypto::public_key &Bout, const bool is_subaddress, const size_t real_output_index,
-										   const rct::key &amount_key, const crypto::public_key &out_eph_public_key)
+	const rct::key &amount_key, const crypto::public_key &out_eph_public_key)
 {
 	AUTO_LOCK_CMD();
 	key_map.add(ABPkeys(rct::pk2rct(Aout), rct::pk2rct(Bout), is_subaddress, real_output_index, rct::pk2rct(out_eph_public_key), amount_key));
@@ -1671,8 +1671,8 @@ bool device_ledger::ecdhDecode(rct::ecdhTuple &masked, const rct::key &AKout)
 }
 
 bool device_ledger::mlsag_prehash(const std::string &blob, size_t inputs_size, size_t outputs_size,
-								  const rct::keyV &hashes, const rct::ctkeyV &outPk,
-								  rct::key &prehash)
+	const rct::keyV &hashes, const rct::ctkeyV &outPk,
+	rct::key &prehash)
 {
 	AUTO_LOCK_CMD();
 	unsigned int data_offset, C_offset, kv_offset, i;
@@ -1880,7 +1880,7 @@ bool device_ledger::mlsag_prehash(const std::string &blob, size_t inputs_size, s
 }
 
 bool device_ledger::mlsag_prepare(const rct::key &H, const rct::key &xx,
-								  rct::key &a, rct::key &aG, rct::key &aHP, rct::key &II)
+	rct::key &a, rct::key &aG, rct::key &aHP, rct::key &II)
 {
 	AUTO_LOCK_CMD();
 	int offset;
@@ -2132,5 +2132,5 @@ void register_all(std::map<std::string, std::unique_ptr<device>> &registry)
 }
 
 #endif //WITH_DEVICE_LEDGER
-}
-}
+} // namespace ledger
+} // namespace hw

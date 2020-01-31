@@ -46,11 +46,11 @@
 
 #pragma once
 
+#include "common/gulps.hpp"
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/portable_binary_iarchive.hpp>
 #include <boost/archive/portable_binary_oarchive.hpp>
 #include <boost/filesystem/operations.hpp>
-#include "common/gulps.hpp"
 
 namespace tools
 {
@@ -139,4 +139,4 @@ bool unserialize_obj_from_file(t_object &obj, const std::string &file_path)
 	return !data_file.fail();
 	GULPS_CATCH_ENTRY_L0("unserialize_obj_from_file", false);
 }
-}
+} // namespace tools

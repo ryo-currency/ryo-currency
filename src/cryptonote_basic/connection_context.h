@@ -55,8 +55,9 @@ namespace cryptonote
 
 struct cryptonote_connection_context : public epee::net_utils::connection_context_base
 {
-	cryptonote_connection_context() : m_state(state_before_handshake), m_remote_blockchain_height(0), m_last_response_height(0),
-									  m_last_request_time(boost::posix_time::microsec_clock::universal_time()), m_callback_request_count(0), m_last_known_hash(crypto::null_hash) {}
+	cryptonote_connection_context() :
+		m_state(state_before_handshake), m_remote_blockchain_height(0), m_last_response_height(0),
+		m_last_request_time(boost::posix_time::microsec_clock::universal_time()), m_callback_request_count(0), m_last_known_hash(crypto::null_hash) {}
 
 	enum state
 	{
@@ -96,4 +97,4 @@ inline std::string get_protocol_state_string(cryptonote_connection_context::stat
 		return "unknown";
 	}
 }
-}
+} // namespace cryptonote

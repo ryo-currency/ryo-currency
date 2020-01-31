@@ -152,5 +152,5 @@ inline void serialize(Archive &a, std::unordered_set<hval> &x, const boost::seri
 {
 	split_free(a, x, ver);
 }
-}
-}
+} // namespace serialization
+} // namespace boost

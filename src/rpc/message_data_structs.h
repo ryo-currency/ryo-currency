@@ -153,7 +153,8 @@ struct hard_fork_info
 struct error
 {
 	// not really using code, maybe later.
-	error() : use(false), code(1) {}
+	error() :
+		use(false), code(1) {}
 
 	bool use; // do not serialize
 

@@ -44,16 +44,16 @@
 //
 // Adapted from Java code by Sarang Noether
 
-#include "common/perf_timer.h"
 #include "common/gulps.hpp"
+#include "common/perf_timer.h"
 #include <stdlib.h>
-extern "C" {
+extern "C"
+{
 #include "crypto/crypto-ops.h"
 }
 #include "bulletproofs.h"
 #include "multiexp.h"
 #include "rctOps.h"
-
 
 #define DEBUG_BP
 
@@ -1130,7 +1130,7 @@ bool bulletproof_VERIFY(const std::vector<const Bulletproof *> &proofs)
 		PERF_TIMER_START_BP(VERIFY_line_26_new);
 		sc_muladd(z1.bytes, proof.mu.bytes, weight.bytes, z1.bytes);
 
-		exp_cache.clear_pad(2*rounds);
+		exp_cache.clear_pad(2 * rounds);
 		for(size_t i = 0; i < rounds; ++i)
 		{
 			sc_mul(tmp.bytes, w[i].bytes, w[i].bytes);
@@ -1201,4 +1201,4 @@ bool bulletproof_VERIFY(const Bulletproof &proof)
 	proofs.push_back(&proof);
 	return bulletproof_VERIFY(proofs);
 }
-}
+} // namespace rct

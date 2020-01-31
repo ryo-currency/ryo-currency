@@ -82,4 +82,4 @@ struct rpc_args
 	std::vector<std::string> access_control_origins;
 	boost::optional<tools::login> login; // currently `boost::none` if unspecified by user
 };
-}
+} // namespace cryptonote

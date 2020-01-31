@@ -68,17 +68,20 @@ namespace Utils
 {
 bool isAddressLocal(const std::string &hostaddr);
 void onStartup();
-}
+} // namespace Utils
 
 template <typename T>
 class optional
 {
   public:
-	optional() : set(false) {}
-	optional(const T &t) : t(t), set(true) {}
+	optional() :
+		set(false) {}
+	optional(const T &t) :
+		t(t), set(true) {}
 	const T &operator*() const { return t; }
 	T &operator*() { return t; }
 	operator bool() const { return set; }
+
   private:
 	T t;
 	bool set;
@@ -215,10 +218,11 @@ struct TransactionHistory
 struct AddressBookRow
 {
   public:
-	AddressBookRow(std::size_t _rowId, const std::string &_address, const std::string &_paymentId, const std::string &_description) : m_rowId(_rowId),
-																																	  m_address(_address),
-																																	  m_paymentId(_paymentId),
-																																	  m_description(_description) {}
+	AddressBookRow(std::size_t _rowId, const std::string &_address, const std::string &_paymentId, const std::string &_description) :
+		m_rowId(_rowId),
+		m_address(_address),
+		m_paymentId(_paymentId),
+		m_description(_description) {}
 
   private:
 	std::size_t m_rowId;
@@ -260,9 +264,10 @@ struct AddressBook
 struct SubaddressRow
 {
   public:
-	SubaddressRow(std::size_t _rowId, const std::string &_address, const std::string &_label) : m_rowId(_rowId),
-																								m_address(_address),
-																								m_label(_label) {}
+	SubaddressRow(std::size_t _rowId, const std::string &_address, const std::string &_label) :
+		m_rowId(_rowId),
+		m_address(_address),
+		m_label(_label) {}
 
   private:
 	std::size_t m_rowId;
@@ -288,11 +293,12 @@ struct Subaddress
 struct SubaddressAccountRow
 {
   public:
-	SubaddressAccountRow(std::size_t _rowId, const std::string &_address, const std::string &_label, const std::string &_balance, const std::string &_unlockedBalance) : m_rowId(_rowId),
-																																										 m_address(_address),
-																																										 m_label(_label),
-																																										 m_balance(_balance),
-																																										 m_unlockedBalance(_unlockedBalance) {}
+	SubaddressAccountRow(std::size_t _rowId, const std::string &_address, const std::string &_label, const std::string &_balance, const std::string &_unlockedBalance) :
+		m_rowId(_rowId),
+		m_address(_address),
+		m_label(_label),
+		m_balance(_balance),
+		m_unlockedBalance(_unlockedBalance) {}
 
   private:
 	std::size_t m_rowId;
@@ -673,10 +679,10 @@ struct Wallet
      */
 
 	virtual PendingTransaction *createTransaction(const std::string &dst_addr, const std::string &payment_id,
-												  optional<uint64_t> amount, uint32_t mixin_count,
-												  PendingTransaction::Priority = PendingTransaction::Priority_Low,
-												  uint32_t subaddr_account = 0,
-												  std::set<uint32_t> subaddr_indices = {}) = 0;
+		optional<uint64_t> amount, uint32_t mixin_count,
+		PendingTransaction::Priority = PendingTransaction::Priority_Low,
+		uint32_t subaddr_account = 0,
+		std::set<uint32_t> subaddr_indices = {}) = 0;
 
 	/*!
     * \brief loadUnsignedTx  - creates transaction from unsigned tx file
@@ -852,9 +858,9 @@ struct WalletManager
      * \return                Wallet instance (Wallet::status() needs to be called to check if recovered successfully)
      */
 	virtual Wallet *recoveryWallet(const std::string &path, const std::string &password, const std::string &mnemonic,
-								   NetworkType nettype = MAINNET, uint64_t restoreHeight = 0) = 0;
+		NetworkType nettype = MAINNET, uint64_t restoreHeight = 0) = 0;
 	Wallet *recoveryWallet(const std::string &path, const std::string &password, const std::string &mnemonic,
-						   bool testnet = false, uint64_t restoreHeight = 0) // deprecated
+		bool testnet = false, uint64_t restoreHeight = 0) // deprecated
 	{
 		return recoveryWallet(path, password, mnemonic, testnet ? TESTNET : MAINNET, restoreHeight);
 	}
@@ -887,21 +893,21 @@ struct WalletManager
      * \return                Wallet instance (Wallet::status() needs to be called to check if recovered successfully)
      */
 	virtual Wallet *createWalletFromKeys(const std::string &path,
-										 const std::string &password,
-										 const std::string &language,
-										 NetworkType nettype,
-										 uint64_t restoreHeight,
-										 const std::string &addressString,
-										 const std::string &viewKeyString,
-										 const std::string &spendKeyString = "") = 0;
+		const std::string &password,
+		const std::string &language,
+		NetworkType nettype,
+		uint64_t restoreHeight,
+		const std::string &addressString,
+		const std::string &viewKeyString,
+		const std::string &spendKeyString = "") = 0;
 	Wallet *createWalletFromKeys(const std::string &path,
-								 const std::string &password,
-								 const std::string &language,
-								 bool testnet,
-								 uint64_t restoreHeight,
-								 const std::string &addressString,
-								 const std::string &viewKeyString,
-								 const std::string &spendKeyString = "") // deprecated
+		const std::string &password,
+		const std::string &language,
+		bool testnet,
+		uint64_t restoreHeight,
+		const std::string &addressString,
+		const std::string &viewKeyString,
+		const std::string &spendKeyString = "") // deprecated
 	{
 		return createWalletFromKeys(path, password, language, testnet ? TESTNET : MAINNET, restoreHeight, addressString, viewKeyString, spendKeyString);
 	}
@@ -919,19 +925,19 @@ struct WalletManager
     * \return                Wallet instance (Wallet::status() needs to be called to check if recovered successfully)
     */
 	virtual Wallet *createWalletFromKeys(const std::string &path,
-										 const std::string &language,
-										 NetworkType nettype,
-										 uint64_t restoreHeight,
-										 const std::string &addressString,
-										 const std::string &viewKeyString,
-										 const std::string &spendKeyString = "") = 0;
+		const std::string &language,
+		NetworkType nettype,
+		uint64_t restoreHeight,
+		const std::string &addressString,
+		const std::string &viewKeyString,
+		const std::string &spendKeyString = "") = 0;
 	Wallet *createWalletFromKeys(const std::string &path,
-								 const std::string &language,
-								 bool testnet,
-								 uint64_t restoreHeight,
-								 const std::string &addressString,
-								 const std::string &viewKeyString,
-								 const std::string &spendKeyString = "") // deprecated
+		const std::string &language,
+		bool testnet,
+		uint64_t restoreHeight,
+		const std::string &addressString,
+		const std::string &viewKeyString,
+		const std::string &spendKeyString = "") // deprecated
 	{
 		return createWalletFromKeys(path, language, testnet ? TESTNET : MAINNET, restoreHeight, addressString, viewKeyString, spendKeyString);
 	}
@@ -1026,4 +1032,4 @@ struct WalletManagerFactory
 	static void setLogLevel(int level);
 	static void setLogCategories(const std::string &categories);
 };
-}
+} // namespace Ryo

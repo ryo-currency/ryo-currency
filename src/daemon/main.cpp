@@ -74,10 +74,10 @@ namespace bf = boost::filesystem;
 
 gulps_log_level log_scr, log_dsk;
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 #ifdef WIN32
-	std::vector<char*> argptrs;
+	std::vector<char *> argptrs;
 	command_line::set_console_utf8();
 	if(command_line::get_windows_args(argptrs))
 	{
@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
 
 	// Temporary output
 	std::unique_ptr<gulps::gulps_output> gout_ptr(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
-	gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { if(msg.lvl != gulps::LEVEL_INFO ) return !printed; return false; });
+	gout_ptr->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool { if(msg.lvl != gulps::LEVEL_INFO ) return !printed; return false; });
 	uint64_t temp_out_id = gulps::inst().add_output(std::move(gout_ptr));
 
 	try
@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 
 		if(command_line::get_arg(vm, command_line::arg_help))
 		{
-			GULPSF_PRINT("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
+			GULPSF_PRINT("Ryo '{}' ({})\n", RYO_RELEASE_NAME, RYO_VERSION_FULL);
 			GULPSF_PRINT("\nUsage: {} [options|settings] [daemon_command...]\n\n", std::string{argv[0]});
 			GULPS_PRINT(visible_options);
 			return 0;
@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
 		// Ryo Version
 		if(command_line::get_arg(vm, command_line::arg_version))
 		{
-			GULPSF_PRINT("Ryo '{}' ({})\n", RYO_RELEASE_NAME , RYO_VERSION_FULL );
+			GULPSF_PRINT("Ryo '{}' ({})\n", RYO_RELEASE_NAME, RYO_VERSION_FULL);
 			return 0;
 		}
 
@@ -322,7 +322,7 @@ int main(int argc, char* argv[])
 			tools::set_max_concurrency(command_line::get_arg(vm, daemon_args::arg_max_concurrency));
 
 		gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
-		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
+		gout_ptr->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool {
 			if(msg.out == gulps::OUT_USER_1)
 				return true;
 			return false;
@@ -338,7 +338,7 @@ int main(int argc, char* argv[])
 		{
 			gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
 		}
-		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
+		gout_ptr->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool {
 			if(printed)
 				return false;
 			return log_scr.match_msg(msg);
@@ -348,7 +348,7 @@ int main(int argc, char* argv[])
 		if(log_dsk.is_active())
 		{
 			gout_ptr.reset(new gulps::gulps_async_file_output(log_file_path.string()));
-			gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return log_dsk.match_msg(msg); });
+			gout_ptr->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool { return log_dsk.match_msg(msg); });
 			gulps::inst().add_output(std::move(gout_ptr));
 		}
 		gulps::inst().remove_output(temp_out_id);

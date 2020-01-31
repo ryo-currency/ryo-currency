@@ -62,4 +62,4 @@ class INode
 	virtual uint64_t getLastLocalBlockHeight() = 0;
 	virtual uint64_t getLastKnownBlockHeight() = 0;
 };
-}
+} // namespace CryptoNote

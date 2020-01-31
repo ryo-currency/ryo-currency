@@ -69,9 +69,9 @@ and fitness for purpose.
 ---------------------------------------------------------------------------
 */
 
-#define saes_data(w)                                                                \
-	{                                                                               \
-		w(0x63), w(0x7c), w(0x77), w(0x7b), w(0xf2), w(0x6b), w(0x6f), w(0xc5),     \
+#define saes_data(w) \
+	{ \
+		w(0x63), w(0x7c), w(0x77), w(0x7b), w(0xf2), w(0x6b), w(0x6f), w(0xc5), \
 			w(0x30), w(0x01), w(0x67), w(0x2b), w(0xfe), w(0xd7), w(0xab), w(0x76), \
 			w(0xca), w(0x82), w(0xc9), w(0x7d), w(0xfa), w(0x59), w(0x47), w(0xf0), \
 			w(0xad), w(0xd4), w(0xa2), w(0xaf), w(0x9c), w(0xa4), w(0x72), w(0xc0), \
@@ -102,13 +102,13 @@ and fitness for purpose.
 			w(0xe1), w(0xf8), w(0x98), w(0x11), w(0x69), w(0xd9), w(0x8e), w(0x94), \
 			w(0x9b), w(0x1e), w(0x87), w(0xe9), w(0xce), w(0x55), w(0x28), w(0xdf), \
 			w(0x8c), w(0xa1), w(0x89), w(0x0d), w(0xbf), w(0xe6), w(0x42), w(0x68), \
-			w(0x41), w(0x99), w(0x2d), w(0x0f), w(0xb0), w(0x54), w(0xbb), w(0x16)  \
+			w(0x41), w(0x99), w(0x2d), w(0x0f), w(0xb0), w(0x54), w(0xbb), w(0x16) \
 	}
 
 #define SAES_WPOLY 0x011b
 
 #define saes_b2w(b0, b1, b2, b3) (((uint32_t)(b3) << 24) | \
-								  ((uint32_t)(b2) << 16) | ((uint32_t)(b1) << 8) | (b0))
+	((uint32_t)(b2) << 16) | ((uint32_t)(b1) << 8) | (b0))
 
 #define saes_f2(x) ((x << 1) ^ (((x >> 7) & 1) * SAES_WPOLY))
 #define saes_f3(x) (saes_f2(x) ^ x)
@@ -145,21 +145,21 @@ struct aesdata
 		mem.as_uqword(1) = v64x1;
 	}
 
-	inline aesdata& operator=(const aesdata& rhs) noexcept
+	inline aesdata &operator=(const aesdata &rhs) noexcept
 	{
 		v64x0 = rhs.v64x0;
 		v64x1 = rhs.v64x1;
 		return *this;
 	}
 
-	inline aesdata& operator^=(const aesdata& rhs) noexcept
+	inline aesdata &operator^=(const aesdata &rhs) noexcept
 	{
 		v64x0 ^= rhs.v64x0;
 		v64x1 ^= rhs.v64x1;
 		return *this;
 	}
 
-	inline aesdata& operator^=(uint32_t rhs) noexcept
+	inline aesdata &operator^=(uint32_t rhs) noexcept
 	{
 		uint64_t t = (uint64_t(rhs) << 32) | uint64_t(rhs);
 		v64x0 ^= t;
@@ -167,7 +167,7 @@ struct aesdata
 		return *this;
 	}
 
-	inline void get_quad(uint32_t& x0, uint32_t& x1, uint32_t& x2, uint32_t& x3)
+	inline void get_quad(uint32_t &x0, uint32_t &x1, uint32_t &x2, uint32_t &x3)
 	{
 		x0 = v64x0;
 		x1 = v64x0 >> 32;
@@ -185,7 +185,7 @@ struct aesdata
 inline uint32_t sub_word(uint32_t key)
 {
 	return (saes_sbox[key >> 24] << 24) | (saes_sbox[(key >> 16) & 0xff] << 16) |
-		   (saes_sbox[(key >> 8) & 0xff] << 8) | saes_sbox[key & 0xff];
+		(saes_sbox[(key >> 8) & 0xff] << 8) | saes_sbox[key & 0xff];
 }
 
 #if defined(__clang__) || defined(__arm__) || defined(__aarch64__)
@@ -201,7 +201,7 @@ inline uint32_t rotr(uint32_t value, uint32_t amount)
 #endif
 
 // sl_xor(a1 a2 a3 a4) = a1 (a2^a1) (a3^a2^a1) (a4^a3^a2^a1)
-inline void sl_xor(aesdata& x)
+inline void sl_xor(aesdata &x)
 {
 	uint32_t x0, x1, x2, x3;
 	x.get_quad(x0, x1, x2, x3);
@@ -212,7 +212,7 @@ inline void sl_xor(aesdata& x)
 }
 
 template <uint8_t rcon>
-inline void soft_aes_genkey_sub(aesdata& xout0, aesdata& xout2)
+inline void soft_aes_genkey_sub(aesdata &xout0, aesdata &xout2)
 {
 	sl_xor(xout0);
 	xout0 ^= rotr(sub_word(xout2.v64x1 >> 32), 8) ^ rcon;
@@ -220,7 +220,7 @@ inline void soft_aes_genkey_sub(aesdata& xout0, aesdata& xout2)
 	xout2 ^= sub_word(xout0.v64x1 >> 32);
 }
 
-inline void aes_genkey(const cn_sptr memory, aesdata& k0, aesdata& k1, aesdata& k2, aesdata& k3, aesdata& k4, aesdata& k5, aesdata& k6, aesdata& k7, aesdata& k8, aesdata& k9)
+inline void aes_genkey(const cn_sptr memory, aesdata &k0, aesdata &k1, aesdata &k2, aesdata &k3, aesdata &k4, aesdata &k5, aesdata &k6, aesdata &k7, aesdata &k8, aesdata &k9)
 {
 	aesdata xout0, xout2;
 
@@ -246,18 +246,18 @@ inline void aes_genkey(const cn_sptr memory, aesdata& k0, aesdata& k1, aesdata& 
 	k9 = xout2;
 }
 
-inline void aes_round(aesdata& val, const aesdata& key)
+inline void aes_round(aesdata &val, const aesdata &key)
 {
 	uint32_t x0, x1, x2, x3;
 	val.get_quad(x0, x1, x2, x3);
 	val.set_quad(saes_table[0][x0 & 0xff] ^ saes_table[1][(x1 >> 8) & 0xff] ^ saes_table[2][(x2 >> 16) & 0xff] ^ saes_table[3][x3 >> 24],
-				 saes_table[0][x1 & 0xff] ^ saes_table[1][(x2 >> 8) & 0xff] ^ saes_table[2][(x3 >> 16) & 0xff] ^ saes_table[3][x0 >> 24],
-				 saes_table[0][x2 & 0xff] ^ saes_table[1][(x3 >> 8) & 0xff] ^ saes_table[2][(x0 >> 16) & 0xff] ^ saes_table[3][x1 >> 24],
-				 saes_table[0][x3 & 0xff] ^ saes_table[1][(x0 >> 8) & 0xff] ^ saes_table[2][(x1 >> 16) & 0xff] ^ saes_table[3][x2 >> 24]);
+		saes_table[0][x1 & 0xff] ^ saes_table[1][(x2 >> 8) & 0xff] ^ saes_table[2][(x3 >> 16) & 0xff] ^ saes_table[3][x0 >> 24],
+		saes_table[0][x2 & 0xff] ^ saes_table[1][(x3 >> 8) & 0xff] ^ saes_table[2][(x0 >> 16) & 0xff] ^ saes_table[3][x1 >> 24],
+		saes_table[0][x3 & 0xff] ^ saes_table[1][(x0 >> 8) & 0xff] ^ saes_table[2][(x1 >> 16) & 0xff] ^ saes_table[3][x2 >> 24]);
 	val ^= key;
 }
 
-inline void aes_round8(const aesdata& key, aesdata& x0, aesdata& x1, aesdata& x2, aesdata& x3, aesdata& x4, aesdata& x5, aesdata& x6, aesdata& x7)
+inline void aes_round8(const aesdata &key, aesdata &x0, aesdata &x1, aesdata &x2, aesdata &x3, aesdata &x4, aesdata &x5, aesdata &x6, aesdata &x7)
 {
 	aes_round(x0, key);
 	aes_round(x1, key);
@@ -269,7 +269,7 @@ inline void aes_round8(const aesdata& key, aesdata& x0, aesdata& x1, aesdata& x2
 	aes_round(x7, key);
 }
 
-inline void xor_shift(aesdata& x0, aesdata& x1, aesdata& x2, aesdata& x3, aesdata& x4, aesdata& x5, aesdata& x6, aesdata& x7)
+inline void xor_shift(aesdata &x0, aesdata &x1, aesdata &x2, aesdata &x3, aesdata &x4, aesdata &x5, aesdata &x6, aesdata &x7)
 {
 	aesdata tmp = x0;
 	x0 ^= x1;
@@ -437,7 +437,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::explode_scratchpad_soft()
 }
 
 #if defined(__arm__)
-inline void generate_512(uint64_t idx, const uint64_t* in, uint8_t* out)
+inline void generate_512(uint64_t idx, const uint64_t *in, uint8_t *out)
 {
 	constexpr size_t hash_size = 200; // 25x8 bytes
 	alignas(8) uint64_t hash[25];
@@ -457,7 +457,7 @@ inline void generate_512(uint64_t idx, const uint64_t* in, uint8_t* out)
 	memcpy(out, hash, 176);
 }
 #else
-inline void generate_512(uint64_t idx, const uint64_t* in, uint8_t* out)
+inline void generate_512(uint64_t idx, const uint64_t *in, uint8_t *out)
 {
 	constexpr size_t hash_size = 200; // 25x8 bytes
 	alignas(16) uint64_t hash[25];
@@ -488,7 +488,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::explode_scratchpad_3()
 }
 
 #ifdef BUILD32
-inline uint64_t _umul128(uint64_t multiplier, uint64_t multiplicand, uint64_t* product_hi)
+inline uint64_t _umul128(uint64_t multiplier, uint64_t multiplicand, uint64_t *product_hi)
 {
 	// multiplier   = ab = a * 2^32 + b
 	// multiplicand = cd = c * 2^32 + d
@@ -515,7 +515,7 @@ inline uint64_t _umul128(uint64_t multiplier, uint64_t multiplicand, uint64_t* p
 }
 #else
 #if !defined(HAS_WIN_INTRIN_API)
-inline uint64_t _umul128(uint64_t a, uint64_t b, uint64_t* hi)
+inline uint64_t _umul128(uint64_t a, uint64_t b, uint64_t *hi)
 {
 	unsigned __int128 r = (unsigned __int128)a * (unsigned __int128)b;
 	*hi = r >> 64;
@@ -525,13 +525,13 @@ inline uint64_t _umul128(uint64_t a, uint64_t b, uint64_t* hi)
 #endif
 
 template <size_t MEMORY, size_t ITER, size_t VERSION>
-void cn_slow_hash<MEMORY, ITER, VERSION>::software_hash(const void* in, size_t len, void* out)
+void cn_slow_hash<MEMORY, ITER, VERSION>::software_hash(const void *in, size_t len, void *out)
 {
-	keccak((const uint8_t*)in, len, spad.as_byte(), 200);
+	keccak((const uint8_t *)in, len, spad.as_byte(), 200);
 
 	explode_scratchpad_soft();
 
-	uint64_t* h0 = spad.as_uqword();
+	uint64_t *h0 = spad.as_uqword();
 
 	aesdata ax;
 	ax.v64x0 = h0[0] ^ h0[4];
@@ -616,16 +616,16 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::software_hash(const void* in, size_t l
 	switch(spad.as_byte(0) & 3)
 	{
 	case 0:
-		blake256_hash(spad.as_byte(), (uint8_t*)out);
+		blake256_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	case 1:
-		groestl_hash(spad.as_byte(), (uint8_t*)out);
+		groestl_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	case 2:
-		jh_hash(spad.as_byte(), (uint8_t*)out);
+		jh_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	case 3:
-		skein_hash(spad.as_byte(), (uint8_t*)out);
+		skein_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	}
 }

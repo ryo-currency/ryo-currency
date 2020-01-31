@@ -106,30 +106,30 @@ std::vector<unsigned char> get_all_bytes()
 }
 
 #define CHECK_EQUAL(lhs, rhs) \
-	EXPECT_TRUE(lhs == rhs);  \
-	EXPECT_TRUE(rhs == lhs);  \
+	EXPECT_TRUE(lhs == rhs); \
+	EXPECT_TRUE(rhs == lhs); \
 	EXPECT_FALSE(lhs != rhs); \
 	EXPECT_FALSE(rhs != lhs); \
-	EXPECT_FALSE(lhs < rhs);  \
-	EXPECT_FALSE(rhs < lhs);  \
-	EXPECT_TRUE(lhs <= rhs);  \
-	EXPECT_TRUE(rhs <= lhs);  \
-	EXPECT_FALSE(lhs > rhs);  \
-	EXPECT_FALSE(rhs > lhs);  \
-	EXPECT_TRUE(lhs >= rhs);  \
+	EXPECT_FALSE(lhs < rhs); \
+	EXPECT_FALSE(rhs < lhs); \
+	EXPECT_TRUE(lhs <= rhs); \
+	EXPECT_TRUE(rhs <= lhs); \
+	EXPECT_FALSE(lhs > rhs); \
+	EXPECT_FALSE(rhs > lhs); \
+	EXPECT_TRUE(lhs >= rhs); \
 	EXPECT_TRUE(rhs >= lhs)
 
-#define CHECK_LESS(lhs, rhs)  \
+#define CHECK_LESS(lhs, rhs) \
 	EXPECT_FALSE(lhs == rhs); \
 	EXPECT_FALSE(rhs == lhs); \
-	EXPECT_TRUE(lhs != rhs);  \
-	EXPECT_TRUE(rhs != lhs);  \
-	EXPECT_TRUE(lhs < rhs);   \
-	EXPECT_FALSE(rhs < lhs);  \
-	EXPECT_TRUE(lhs <= rhs);  \
+	EXPECT_TRUE(lhs != rhs); \
+	EXPECT_TRUE(rhs != lhs); \
+	EXPECT_TRUE(lhs < rhs); \
+	EXPECT_FALSE(rhs < lhs); \
+	EXPECT_TRUE(lhs <= rhs); \
 	EXPECT_FALSE(rhs <= lhs); \
-	EXPECT_FALSE(lhs > rhs);  \
-	EXPECT_TRUE(rhs > lhs);   \
+	EXPECT_FALSE(lhs > rhs); \
+	EXPECT_TRUE(rhs > lhs); \
 	EXPECT_FALSE(lhs >= rhs); \
 	EXPECT_TRUE(rhs >= lhs)
 
@@ -138,7 +138,7 @@ std::vector<unsigned char> get_all_bytes()
 #else
 #define CHECK_LESS_ENDIAN(lhs, rhs) CHECK_LESS(lhs, rhs)
 #endif
-}
+} // namespace
 
 TEST(Span, Traits)
 {

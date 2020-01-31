@@ -31,32 +31,32 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 
-#include "include_base_utils.h"
 #include "common/gulps.hpp"
+#include "include_base_utils.h"
 #include "storages/levin_abstract_invoke2.h"
 
 #include "net_load_tests.h"
 
 using namespace net_load_tests;
 
-#define EXIT_ON_ERROR(cond)                   \
-	{                                         \
-		if(!(cond))                           \
-		{                                     \
+#define EXIT_ON_ERROR(cond) \
+	{ \
+		if(!(cond)) \
+		{ \
 			std::cout << "ERROR: " << #cond << std::endl; \
-			exit(1);                          \
-		}                                     \
-		else                                  \
-		{                                     \
-		}                                     \
+			exit(1); \
+		} \
+		else \
+		{ \
+		} \
 	}
 
 namespace
 {
 struct srv_levin_commands_handler : public test_levin_commands_handler
 {
-	srv_levin_commands_handler(test_tcp_server &tcp_server)
-		: m_tcp_server(tcp_server), m_open_close_test_conn_id(boost::uuids::nil_uuid())
+	srv_levin_commands_handler(test_tcp_server &tcp_server) :
+		m_tcp_server(tcp_server), m_open_close_test_conn_id(boost::uuids::nil_uuid())
 	{
 	}
 
@@ -156,12 +156,12 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
 				req2.data.resize(req.request_size);
 
 				bool r = epee::net_utils::async_invoke_remote_command2<CMD_DATA_REQUEST::response>(ctx.m_connection_id, CMD_DATA_REQUEST::ID, req2,
-																								   m_tcp_server.get_config_object(), [=](int code, const CMD_DATA_REQUEST::response &rsp, const test_connection_context &) {
-																									   if(code <= 0)
-																									   {
-																										   std::cout << "Failed to invoke CMD_DATA_REQUEST. code = " << code << std::endl;
-																									   }
-																								   });
+					m_tcp_server.get_config_object(), [=](int code, const CMD_DATA_REQUEST::response &rsp, const test_connection_context &) {
+						if(code <= 0)
+						{
+							std::cout << "Failed to invoke CMD_DATA_REQUEST. code = " << code << std::endl;
+						}
+					});
 				if(!r)
 					std::cout << "Failed to invoke CMD_DATA_REQUEST" << std::endl;
 			}
@@ -219,13 +219,12 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
 	boost::mutex m_open_close_test_mutex;
 	std::unique_ptr<open_close_test_helper> m_open_close_test_helper;
 };
-}
+} // namespace
 
 int main(int argc, char **argv)
 {
 	tools::on_startup();
 	//set up logging options
-	
 
 	size_t thread_count = (std::max)(min_thread_count, boost::thread::hardware_concurrency() / 2);
 

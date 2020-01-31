@@ -68,7 +68,6 @@ using namespace epee;
 
 #include "common/gulps.hpp"
 
-
 #define MAX_RESTRICTED_FAKE_OUTS_COUNT 40
 #define MAX_RESTRICTED_GLOBAL_FAKE_OUTS_COUNT 5000
 
@@ -82,7 +81,7 @@ void add_reason(std::string &reasons, const char *reason)
 		reasons += ", ";
 	reasons += reason;
 }
-}
+} // namespace
 
 namespace cryptonote
 {
@@ -99,8 +98,9 @@ void core_rpc_server::init_options(boost::program_options::options_description &
 }
 //------------------------------------------------------------------------------------------------------------------------------
 core_rpc_server::core_rpc_server(
-	core &cr, nodetool::node_server<cryptonote::t_cryptonote_protocol_handler<cryptonote::core>> &p2p)
-	: m_core(cr), m_p2p(p2p)
+	core &cr, nodetool::node_server<cryptonote::t_cryptonote_protocol_handler<cryptonote::core>> &p2p) :
+	m_core(cr),
+	m_p2p(p2p)
 {
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -157,14 +157,14 @@ bool core_rpc_server::check_core_ready()
 	}
 	return true;
 }
-#define CHECK_CORE_READY()                     \
-	do                                         \
-	{                                          \
-		if(!check_core_ready())                \
-		{                                      \
+#define CHECK_CORE_READY() \
+	do \
+	{ \
+		if(!check_core_ready()) \
+		{ \
 			res.status = CORE_RPC_STATUS_BUSY; \
-			return true;                       \
-		}                                      \
+			return true; \
+		} \
 	} while(0)
 
 //------------------------------------------------------------------------------------------------------------------------------
@@ -245,7 +245,7 @@ bool core_rpc_server::on_get_blocks(const COMMAND_RPC_GET_BLOCKS_FAST::request &
 	}
 
 	if(!m_core.find_blockchain_supplement_indexed(req.start_height, req.block_ids, res.blocks, res.output_indices,
-		res.current_height, res.start_height, COMMAND_RPC_GET_BLOCKS_FAST_MAX_COUNT))
+		   res.current_height, res.start_height, COMMAND_RPC_GET_BLOCKS_FAST_MAX_COUNT))
 	{
 		res.status = "Failed";
 		return false;
@@ -276,7 +276,7 @@ bool core_rpc_server::on_get_alt_blocks_hashes(const COMMAND_RPC_GET_ALT_BLOCKS_
 		res.blks_hashes.push_back(epee::string_tools::pod_to_hex(get_block_hash(blk)));
 	}
 
-	GULPSF_LOG_L1("on_get_alt_blocks_hashes: {} blocks ", blks.size() );
+	GULPSF_LOG_L1("on_get_alt_blocks_hashes: {} blocks ", blks.size());
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
 }
@@ -367,7 +367,7 @@ bool core_rpc_server::on_get_random_outs(const COMMAND_RPC_GET_RANDOM_OUTPUTS_FO
 	typedef COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS::out_entry out_entry;
 	std::for_each(res.outs.begin(), res.outs.end(), [&](outs_for_amount &ofa) {
 		ss << "[" << ofa.amount << "]:";
-		GULPS_CHECK_AND_ASSERT_MES(ofa.outs.size(), ;, "internal error: ofa.outs.size() is empty for amount " , ofa.amount);
+		GULPS_CHECK_AND_ASSERT_MES(ofa.outs.size(), ;, "internal error: ofa.outs.size() is empty for amount ", ofa.amount);
 		std::for_each(ofa.outs.begin(), ofa.outs.end(), [&](out_entry &oe) {
 			ss << oe.global_amount_index << " ";
 		});
@@ -489,7 +489,7 @@ bool core_rpc_server::on_get_indexes(const COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_IND
 		return true;
 	}
 	res.status = CORE_RPC_STATUS_OK;
-	GULPSF_LOG_L2("COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_INDEXES: [{}]", res.o_indexes.size() );
+	GULPSF_LOG_L2("COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_INDEXES: [{}]", res.o_indexes.size());
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
@@ -524,7 +524,7 @@ bool core_rpc_server::on_get_transactions(const COMMAND_RPC_GET_TRANSACTIONS::re
 		res.status = "Failed";
 		return true;
 	}
-	GULPSF_LOG_L2("Found {}/{} transactions on the blockchain", txs.size() , vh.size() );
+	GULPSF_LOG_L2("Found {}/{} transactions on the blockchain", txs.size(), vh.size());
 
 	// try the pool for any missing txes
 	size_t found_in_pool = 0;
@@ -583,7 +583,7 @@ bool core_rpc_server::on_get_transactions(const COMMAND_RPC_GET_TRANSACTIONS::re
 			}
 			txs = sorted_txs;
 		}
-		GULPSF_LOG_L2("Found {}/{} transactions in the pool", found_in_pool , vh.size() );
+		GULPSF_LOG_L2("Found {}/{} transactions in the pool", found_in_pool, vh.size());
 	}
 
 	std::list<std::string>::const_iterator txhi = req.txs_hashes.begin();
@@ -895,7 +895,7 @@ bool core_rpc_server::on_get_peer_list(const COMMAND_RPC_GET_PEER_LIST::request 
 	{
 		if(entry.adr.get_type_id() == epee::net_utils::ipv4_network_address::ID)
 			res.white_list.emplace_back(entry.id, entry.adr.as<epee::net_utils::ipv4_network_address>().ip(),
-										entry.adr.as<epee::net_utils::ipv4_network_address>().port(), entry.last_seen);
+				entry.adr.as<epee::net_utils::ipv4_network_address>().port(), entry.last_seen);
 		else
 			res.white_list.emplace_back(entry.id, entry.adr.str(), entry.last_seen);
 	}
@@ -904,7 +904,7 @@ bool core_rpc_server::on_get_peer_list(const COMMAND_RPC_GET_PEER_LIST::request 
 	{
 		if(entry.adr.get_type_id() == epee::net_utils::ipv4_network_address::ID)
 			res.gray_list.emplace_back(entry.id, entry.adr.as<epee::net_utils::ipv4_network_address>().ip(),
-									   entry.adr.as<epee::net_utils::ipv4_network_address>().port(), entry.last_seen);
+				entry.adr.as<epee::net_utils::ipv4_network_address>().port(), entry.last_seen);
 		else
 			res.gray_list.emplace_back(entry.id, entry.adr.str(), entry.last_seen);
 	}
@@ -1083,7 +1083,7 @@ bool core_rpc_server::on_getblocktemplate(const COMMAND_RPC_GETBLOCKTEMPLATE::re
 	if(req.wallet_address == common_config::DEV_FUND_ADDRESS)
 	{
 		error_resp.code = CORE_RPC_ERROR_CODE_WRONG_WALLET_ADDRESS;
-		error_resp.message =  "Dev fund address is not mineable. If you would like to support the dev team please mine to ";
+		error_resp.message = "Dev fund address is not mineable. If you would like to support the dev team please mine to ";
 		error_resp.message += common_config::RYO_DONATION_ADDR;
 		return false;
 	}
@@ -1763,7 +1763,7 @@ bool core_rpc_server::on_get_alternate_chains(const COMMAND_RPC_GET_ALTERNATE_CH
 		for(const auto &i : chains)
 		{
 			res.chains.emplace_back(COMMAND_RPC_GET_ALTERNATE_CHAINS::chain_info{epee::string_tools::pod_to_hex(get_block_hash(i.first.bl)), i.first.height,
-					    i.second, i.first.cumulative_difficulty});
+				i.second, i.first.cumulative_difficulty});
 		}
 		res.status = CORE_RPC_STATUS_OK;
 	}
@@ -2053,7 +2053,8 @@ bool core_rpc_server::on_get_output_distribution(const COMMAND_RPC_GET_OUTPUT_DI
 				std::vector<uint64_t> cached_distribution;
 				uint64_t cached_from, cached_to, cached_start_height, cached_base;
 				bool cached;
-				D() : cached_from(0), cached_to(0), cached_start_height(0), cached_base(0), cached(false) {}
+				D() :
+					cached_from(0), cached_to(0), cached_start_height(0), cached_base(0), cached(false) {}
 			} d;
 			boost::unique_lock<boost::mutex> lock(d.mutex);
 

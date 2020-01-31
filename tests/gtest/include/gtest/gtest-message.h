@@ -47,7 +47,7 @@
 #define GTEST_INCLUDE_GTEST_GTEST_MESSAGE_H_
 
 #include <limits>
-#include <sstream> 
+#include <sstream>
 
 #include "gtest/internal/gtest-port.h"
 
@@ -96,13 +96,15 @@ class GTEST_API_ Message
 	Message();
 
 	// Copy constructor.
-	Message(const Message &msg) : ss_(new ::std::stringstream)
+	Message(const Message &msg) :
+		ss_(new ::std::stringstream)
 	{ // NOLINT
 		*ss_ << msg.GetString();
 	}
 
 	// Constructs a Message from a C-string.
-	explicit Message(const char *str) : ss_(new ::std::stringstream)
+	explicit Message(const char *str) :
+		ss_(new ::std::stringstream)
 	{
 		*ss_ << str;
 	}
@@ -228,7 +230,7 @@ class GTEST_API_ Message
 	}
 	template <typename T>
 	inline void StreamHelper(internal::false_type /*is_pointer*/,
-							 const T &value)
+		const T &value)
 	{
 		// See the comments in Message& operator <<(const T&) above for why
 		// we need this using statement.

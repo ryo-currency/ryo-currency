@@ -152,8 +152,8 @@ bool is_unauthorized(const http::http_response_info &response)
 	EXPECT_STREQ(u8"Unauthorized", response.m_response_comment.c_str());
 	EXPECT_STREQ(u8"text/html", response.m_mime_tipe.c_str());
 	return response.m_response_code == 401 &&
-		   response.m_response_comment == u8"Unauthorized" &&
-		   response.m_mime_tipe == u8"text/html";
+		response.m_response_comment == u8"Unauthorized" &&
+		response.m_mime_tipe == u8"text/html";
 }
 
 fields parse_fields(const std::string &value)
@@ -166,8 +166,8 @@ fields parse_fields(const std::string &value)
 		qi::lit(u8"Digest ") >> ((
 									 +qi::ascii::alpha >>
 									 qi::lit('=') >> ((qi::lit('"') >> +(qi::ascii::char_ - '"') >> qi::lit('"')) |
-													  +(qi::ascii::graph - qi::ascii::char_(u8"()<>@,;:\\\"/[]?={}")))) %
-								 ',') >>
+														 +(qi::ascii::graph - qi::ascii::char_(u8"()<>@,;:\\\"/[]?={}")))) %
+									',') >>
 			qi::eoi,
 		out);
 	if(!rc)
@@ -244,7 +244,7 @@ std::string get_nc(std::uint32_t count)
 
 	return out;
 }
-}
+} // namespace
 
 TEST(HTTP_Server_Auth, NotRequired)
 {
@@ -297,10 +297,10 @@ TEST(HTTP_Server_Auth, MD5)
 		boost::join(std::vector<std::string>{md5_hex(a1), nonce, md5_hex(a2)}, u8":"));
 
 	const auto request = make_request({{u8"nonce", quoted(nonce)},
-									   {u8"realm", quoted(fields[0].at(u8"realm"))},
-									   {u8"response", quoted(auth_code)},
-									   {u8"uri", quoted(uri)},
-									   {u8"username", quoted(user.username)}});
+		{u8"realm", quoted(fields[0].at(u8"realm"))},
+		{u8"response", quoted(auth_code)},
+		{u8"uri", quoted(uri)},
+		{u8"username", quoted(user.username)}});
 
 	EXPECT_FALSE(bool(auth.get_response(request)));
 
@@ -343,12 +343,12 @@ TEST(HTTP_Server_Auth, MD5_sess)
 		boost::join(std::vector<std::string>{md5_hex(a1), nonce, md5_hex(a2)}, u8":"));
 
 	const auto request = make_request({{u8"algorithm", u8"md5-sess"},
-									   {u8"cnonce", quoted(cnonce)},
-									   {u8"nonce", quoted(nonce)},
-									   {u8"realm", quoted(fields[0].at(u8"realm"))},
-									   {u8"response", quoted(auth_code)},
-									   {u8"uri", quoted(uri)},
-									   {u8"username", quoted(user.username)}});
+		{u8"cnonce", quoted(cnonce)},
+		{u8"nonce", quoted(nonce)},
+		{u8"realm", quoted(fields[0].at(u8"realm"))},
+		{u8"response", quoted(auth_code)},
+		{u8"uri", quoted(uri)},
+		{u8"username", quoted(user.username)}});
 
 	EXPECT_FALSE(bool(auth.get_response(request)));
 
@@ -602,12 +602,12 @@ TEST(HTTP_Client_Auth, MD5)
 
 	auto response = make_response({
 		{{u8"domain", quoted("ignored")},
-		 {u8"nonce", quoted(nonce)},
-		 {u8"REALM", quoted(realm)}},
+			{u8"nonce", quoted(nonce)},
+			{u8"REALM", quoted(realm)}},
 		{{u8"algorithm", "null"},
-		 {u8"domain", quoted("ignored")},
-		 {u8"nonce", quoted(std::string{"e"} + nonce)},
-		 {u8"realm", quoted(std::string{"e"} + realm)}},
+			{u8"domain", quoted("ignored")},
+			{u8"nonce", quoted(std::string{"e"} + nonce)},
+			{u8"realm", quoted(std::string{"e"} + realm)}},
 	});
 
 	EXPECT_EQ(http::http_client_auth::kSuccess, auth.handle_401(response));
@@ -655,16 +655,16 @@ TEST(HTTP_Client_Auth, MD5_auth)
 	http::http_client_auth auth{user};
 
 	auto response = make_response({{{u8"algorithm", u8"MD5"},
-									{u8"domain", quoted("ignored")},
-									{u8"nonce", quoted(std::string{"e"} + nonce)},
-									{u8"realm", quoted(std::string{"e"} + realm)},
-									{u8"qop", quoted("some,thing,to,ignore")}},
-								   {{u8"algorIthm", quoted(u8"md5")},
-									{u8"domain", quoted("ignored")},
-									{u8"noNce", quoted(nonce)},
-									{u8"opaque", quoted(opaque)},
-									{u8"realm", quoted(realm)},
-									{u8"QoP", quoted(qop)}}});
+									   {u8"domain", quoted("ignored")},
+									   {u8"nonce", quoted(std::string{"e"} + nonce)},
+									   {u8"realm", quoted(std::string{"e"} + realm)},
+									   {u8"qop", quoted("some,thing,to,ignore")}},
+		{{u8"algorIthm", quoted(u8"md5")},
+			{u8"domain", quoted("ignored")},
+			{u8"noNce", quoted(nonce)},
+			{u8"opaque", quoted(opaque)},
+			{u8"realm", quoted(realm)},
+			{u8"QoP", quoted(qop)}}});
 
 	EXPECT_EQ(http::http_client_auth::kSuccess, auth.handle_401(response));
 

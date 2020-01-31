@@ -55,8 +55,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 
-
-
 namespace epee
 {
 unsigned int g_test_dbg_lock_sleep = 0;
@@ -66,7 +64,7 @@ namespace Ryo
 {
 
 Wallet *WalletManagerImpl::createWallet(const std::string &path, const std::string &password,
-										const std::string &language, NetworkType nettype)
+	const std::string &language, NetworkType nettype)
 {
 	WalletImpl *wallet = new WalletImpl(nettype);
 	wallet->create(path, password, language);
@@ -88,22 +86,22 @@ Wallet *WalletManagerImpl::recoveryWallet(const std::string &path, const std::st
 }
 
 Wallet *WalletManagerImpl::createWalletFromKeys(const std::string &path,
-												const std::string &language,
-												NetworkType nettype,
-												uint64_t restoreHeight,
-												const std::string &addressString,
-												const std::string &viewKeyString,
-												const std::string &spendKeyString)
+	const std::string &language,
+	NetworkType nettype,
+	uint64_t restoreHeight,
+	const std::string &addressString,
+	const std::string &viewKeyString,
+	const std::string &spendKeyString)
 {
 	return createWalletFromKeys(path, "", language, nettype, restoreHeight,
-								addressString, viewKeyString, spendKeyString);
+		addressString, viewKeyString, spendKeyString);
 }
 
 Wallet *WalletManagerImpl::recoveryWallet(const std::string &path,
-										  const std::string &password,
-										  const std::string &mnemonic,
-										  NetworkType nettype,
-										  uint64_t restoreHeight)
+	const std::string &password,
+	const std::string &mnemonic,
+	NetworkType nettype,
+	uint64_t restoreHeight)
 {
 	WalletImpl *wallet = new WalletImpl(nettype);
 	if(restoreHeight > 0)
@@ -115,13 +113,13 @@ Wallet *WalletManagerImpl::recoveryWallet(const std::string &path,
 }
 
 Wallet *WalletManagerImpl::createWalletFromKeys(const std::string &path,
-												const std::string &password,
-												const std::string &language,
-												NetworkType nettype,
-												uint64_t restoreHeight,
-												const std::string &addressString,
-												const std::string &viewKeyString,
-												const std::string &spendKeyString)
+	const std::string &password,
+	const std::string &language,
+	NetworkType nettype,
+	uint64_t restoreHeight,
+	const std::string &addressString,
+	const std::string &viewKeyString,
+	const std::string &spendKeyString)
 {
 	WalletImpl *wallet = new WalletImpl(nettype);
 	if(restoreHeight > 0)
@@ -175,7 +173,7 @@ std::vector<std::string> WalletManagerImpl::findWallets(const std::string &path)
 	{
 		return result;
 	}
-	const boost::regex wallet_rx("(.*)\\.(keys)$");			 // searching for <wallet_name>.keys files
+	const boost::regex wallet_rx("(.*)\\.(keys)$"); // searching for <wallet_name>.keys files
 	boost::filesystem::recursive_directory_iterator end_itr; // Default ctor yields past-the-end
 	for(boost::filesystem::recursive_directory_iterator itr(path); itr != end_itr; ++itr)
 	{
@@ -366,4 +364,4 @@ void WalletManagerFactory::setLogCategories(const std::string &categories)
 {
 	mlog_set_log(categories.c_str());
 }
-}
+} // namespace Ryo

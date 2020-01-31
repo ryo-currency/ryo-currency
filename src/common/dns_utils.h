@@ -177,6 +177,6 @@ bool load_txt_records_from_dns(std::vector<std::string> &records, const std::vec
 
 std::vector<std::string> parse_dns_public(const char *s);
 
-} // namespace tools::dns_utils
+} // namespace dns_utils
 
 } // namespace tools

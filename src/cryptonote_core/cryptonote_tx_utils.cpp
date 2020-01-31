@@ -91,7 +91,7 @@ void classify_addresses(const std::vector<tx_destination_entry> &destinations, c
 			}
 		}
 	}
-	GULPSF_LOG_L2("destinations include {} standard addresses and {} subaddresses", num_stdaddresses , num_subaddresses);
+	GULPSF_LOG_L2("destinations include {} standard addresses and {} subaddresses", num_stdaddresses, num_subaddresses);
 }
 //---------------------------------------------------------------
 bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t median_size, uint64_t already_generated_coins, size_t current_block_size, uint64_t fee, const account_public_address &miner_address, transaction &tx, const blobdata &extra_nonce)
@@ -114,7 +114,7 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 	}
 
 #if defined(DEBUG_CREATE_BLOCK_TEMPLATE)
-	GULPSF_LOG_L1("Creating block template: reward {}, fee {}", block_reward , fee);
+	GULPSF_LOG_L1("Creating block template: reward {}, fee {}", block_reward, fee);
 #endif
 	block_reward += fee;
 
@@ -122,12 +122,12 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 	crypto::key_derivation derivation = AUTO_VAL_INIT(derivation);
 	crypto::public_key out_eph_public_key = AUTO_VAL_INIT(out_eph_public_key);
 	bool r = crypto::generate_key_derivation(miner_address.m_view_public_key, txkey.sec, derivation);
-	GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" , miner_address.m_view_public_key , ", " , txkey.sec , ")");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(", miner_address.m_view_public_key, ", ", txkey.sec, ")");
 
 	r = crypto::derive_public_key(derivation, 0, miner_address.m_spend_public_key, out_eph_public_key);
-	GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" , derivation , ", 0, " , miner_address.m_spend_public_key , ")");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(", derivation, ", 0, ", miner_address.m_spend_public_key, ")");
 
-	tx_out out = { block_reward, txout_to_key(out_eph_public_key) };
+	tx_out out = {block_reward, txout_to_key(out_eph_public_key)};
 	tx.vout.push_back(out);
 
 	uint64_t dev_fund_amount;
@@ -138,12 +138,12 @@ bool construct_miner_tx(cryptonote::network_type nettype, size_t height, size_t 
 		GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to parse dev address");
 
 		r = crypto::generate_key_derivation(dev_addr.address.m_view_public_key, txkey.sec, derivation);
-		GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(" , dev_addr.address.m_view_public_key , ", " , txkey.sec , ")");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to generate_key_derivation(", dev_addr.address.m_view_public_key, ", ", txkey.sec, ")");
 
 		r = crypto::derive_public_key(derivation, 1, dev_addr.address.m_spend_public_key, out_eph_public_key);
-		GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(" , derivation , ", 1, " , dev_addr.address.m_spend_public_key , ")");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "while creating outs: failed to derive_public_key(", derivation, ", 1, ", dev_addr.address.m_spend_public_key, ")");
 
-		out = { dev_fund_amount, txout_to_key(out_eph_public_key) };
+		out = {dev_fund_amount, txout_to_key(out_eph_public_key)};
 		tx.vout.push_back(out);
 	}
 
@@ -187,7 +187,7 @@ crypto::public_key get_destination_view_key_pub(const std::vector<tx_destination
 	return addr.m_view_public_key;
 }
 //---------------------------------------------------------------
-bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout)
+bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id *payment_id, transaction &tx, uint64_t unlock_time, const crypto::secret_key &tx_key, const std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout)
 {
 	hw::device &hwdev = sender_account_keys.get_device();
 
@@ -255,8 +255,8 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		//check that derivated key is equal with real output key (if non multisig)
 		if(!msout && !(in_ephemeral.pub == src_entr.outputs[src_entr.real_output].second.dest))
 		{
-			GULPSF_LOG_ERROR("derived public key mismatch with output public key at index{} , real out {}!\nderived_key:{}\nreal output_public_key:{}", idx, src_entr.real_output ,
-																				string_tools::pod_to_hex(in_ephemeral.pub), string_tools::pod_to_hex(src_entr.outputs[src_entr.real_output].second.dest));
+			GULPSF_LOG_ERROR("derived public key mismatch with output public key at index{} , real out {}!\nderived_key:{}\nreal output_public_key:{}", idx, src_entr.real_output,
+				string_tools::pod_to_hex(in_ephemeral.pub), string_tools::pod_to_hex(src_entr.outputs[src_entr.real_output].second.dest));
 			GULPSF_LOG_ERROR("amount {}, rct {}", src_entr.amount, src_entr.rct);
 			GULPSF_LOG_ERROR("tx pubkey {}, real_output_in_tx_index {}", src_entr.real_out_tx_key, src_entr.real_output_in_tx_index);
 			return false;
@@ -321,7 +321,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	size_t output_index = 0;
 	for(const tx_destination_entry &dst_entr : destinations)
 	{
-		GULPS_CHECK_AND_ASSERT_MES(dst_entr.amount > 0 || tx.version >= 2, false, "Destination with wrong amount: " , dst_entr.amount);
+		GULPS_CHECK_AND_ASSERT_MES(dst_entr.amount > 0 || tx.version >= 2, false, "Destination with wrong amount: ", dst_entr.amount);
 		crypto::key_derivation derivation;
 		crypto::public_key out_eph_public_key;
 
@@ -341,13 +341,13 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		{
 			// sending change to yourself; derivation = a*R
 			r = hwdev.generate_key_derivation(txkey_pub, sender_account_keys.m_view_secret_key, derivation);
-			GULPS_CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to generate_key_derivation(" , txkey_pub , ", " , sender_account_keys.m_view_secret_key , ")");
+			GULPS_CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to generate_key_derivation(", txkey_pub, ", ", sender_account_keys.m_view_secret_key, ")");
 		}
 		else
 		{
 			// sending to the recipient; derivation = r*A (or s*C in the subaddress scheme)
 			r = hwdev.generate_key_derivation(dst_entr.addr.m_view_public_key, dst_entr.is_subaddress && need_additional_txkeys ? additional_txkey.sec : tx_key, derivation);
-			GULPS_CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to generate_key_derivation(" , dst_entr.addr.m_view_public_key , ", " , (dst_entr.is_subaddress && need_additional_txkeys ? additional_txkey.sec : tx_key) , ")");
+			GULPS_CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to generate_key_derivation(", dst_entr.addr.m_view_public_key, ", ", (dst_entr.is_subaddress && need_additional_txkeys ? additional_txkey.sec : tx_key), ")");
 		}
 
 		if(need_additional_txkeys)
@@ -360,7 +360,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 		amount_keys.push_back(rct::sk2rct(scalar1));
 
 		r = hwdev.derive_public_key(derivation, output_index, dst_entr.addr.m_spend_public_key, out_eph_public_key);
-		GULPS_CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to derive_public_key(" , derivation , ", " , output_index , ", " , dst_entr.addr.m_spend_public_key , ")");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "at creation outs: failed to derive_public_key(", derivation, ", ", output_index, ", ", dst_entr.addr.m_spend_public_key, ")");
 
 		hwdev.add_output_key_mapping(dst_entr.addr.m_view_public_key, dst_entr.addr.m_spend_public_key, dst_entr.is_subaddress, output_index, amount_keys.back(), out_eph_public_key);
 
@@ -383,7 +383,6 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 			GULPS_LOG_L2(additional_tx_public_keys[i]);
 		add_additional_tx_pub_keys_to_extra(tx.extra, additional_tx_public_keys);
 	}
-
 
 	tx_extra_uniform_payment_id pid;
 	//Add payment id after pubkeys
@@ -552,7 +551,7 @@ bool construct_tx_with_tx_key(const account_keys &sender_account_keys, const std
 	return true;
 }
 //---------------------------------------------------------------
-bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout)
+bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id *payment_id, transaction &tx, uint64_t unlock_time, crypto::secret_key &tx_key, std::vector<crypto::secret_key> &additional_tx_keys, bool bulletproof, rct::multisig_out *msout)
 {
 	hw::device &hwdev = sender_account_keys.get_device();
 	hwdev.open_tx(tx_key);
@@ -579,7 +578,7 @@ bool construct_tx_and_get_tx_key(const account_keys &sender_account_keys, const 
 	return r;
 }
 //---------------------------------------------------------------
-bool construct_tx(const account_keys &sender_account_keys, std::vector<tx_source_entry> &sources, const std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id* payment_id, transaction &tx, uint64_t unlock_time)
+bool construct_tx(const account_keys &sender_account_keys, std::vector<tx_source_entry> &sources, const std::vector<tx_destination_entry> &destinations, const boost::optional<cryptonote::account_public_address> &change_addr, const crypto::uniform_payment_id *payment_id, transaction &tx, uint64_t unlock_time)
 {
 	std::unordered_map<crypto::public_key, cryptonote::subaddress_index> subaddresses;
 	subaddresses[sender_account_keys.m_account_address.m_spend_public_key] = {0, 0};
@@ -591,7 +590,7 @@ bool construct_tx(const account_keys &sender_account_keys, std::vector<tx_source
 //---------------------------------------------------------------
 bool generate_genesis_block(network_type nettype, block &bl, std::string const &genesis_tx, uint32_t nonce)
 {
-	GULPSF_LOG_L1("Generating genesis_tx tx : {}, nonce : {}", genesis_tx , nonce);
+	GULPSF_LOG_L1("Generating genesis_tx tx : {}, nonce : {}", genesis_tx, nonce);
 
 	//genesis block
 	bl = boost::value_initialized<block>();
@@ -610,4 +609,4 @@ bool generate_genesis_block(network_type nettype, block &bl, std::string const &
 	return true;
 }
 //---------------------------------------------------------------
-}
+} // namespace cryptonote

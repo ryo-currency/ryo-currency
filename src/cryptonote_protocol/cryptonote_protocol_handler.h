@@ -77,6 +77,7 @@ class cryptonote_protocol_handler_base_pimpl;
 class cryptonote_protocol_handler_base
 {
 	GULPS_CAT_MAJOR("cn_pcl_hand");
+
   private:
 	std::unique_ptr<cryptonote_protocol_handler_base_pimpl> mI;
 
@@ -94,6 +95,7 @@ template <class t_core>
 class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_protocol_handler_base
 {
 	GULPS_CAT_MAJOR("cn_pcl_hand");
+
   public:
 	typedef cryptonote_connection_context connection_context;
 	typedef core_stat_info stat_info;
@@ -190,6 +192,6 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	}
 };
 
-} // namespace
+} // namespace cryptonote
 
 POP_WARNINGS

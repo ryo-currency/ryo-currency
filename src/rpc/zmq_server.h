@@ -65,6 +65,7 @@ static constexpr int DEFAULT_RPC_RECV_TIMEOUT_MS = 1000;
 class ZmqServer
 {
 	GULPS_CAT_MAJOR("zmq_serv");
+
   public:
 	ZmqServer(RpcHandler &h);
 
@@ -93,6 +94,6 @@ class ZmqServer
 	std::unique_ptr<zmq::socket_t> rep_socket;
 };
 
-} // namespace cryptonote
-
 } // namespace rpc
+
+} // namespace cryptonote

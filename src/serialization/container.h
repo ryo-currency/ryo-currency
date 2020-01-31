@@ -74,8 +74,8 @@ bool serialize_container_element(Archive &ar, uint64_t &e)
 
 template <typename C>
 void do_reserve(C &c, size_t N) {}
-}
-}
+} // namespace detail
+} // namespace serialization
 
 template <template <bool> class Archive, typename C>
 bool do_serialize_container(Archive<false> &ar, C &v)

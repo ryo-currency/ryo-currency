@@ -50,8 +50,6 @@
 #include "ringct/rctOps.h"
 #include <unordered_set>
 
-
-
 using namespace std;
 
 static const rct::key multisig_salt = {{'M', 'u', 'l', 't', 'i', 's', 'i', 'g', 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}};
@@ -154,4 +152,4 @@ bool generate_multisig_composite_key_image(const account_keys &keys, const std::
 	return true;
 }
 //-----------------------------------------------------------------
-}
+} // namespace cryptonote

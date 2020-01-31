@@ -60,13 +60,13 @@ namespace bf = boost::filesystem;
 GULPS_CAT_MAJOR("dns_utils");
 
 static const char *DEFAULT_DNS_PUBLIC_ADDR[] =
-{
-	"194.150.168.168",    // CCC (Germany)
-	"80.67.169.40",       // FDN (France)
-	"89.233.43.71",       // http://censurfridns.dk (Denmark)
-	"109.69.8.51",        // punCAT (Spain)
-	"77.109.148.137",     // Xiala.net (Switzerland)
-	"193.58.251.251",     // SkyDNS (Russia)
+	{
+		"194.150.168.168", // CCC (Germany)
+		"80.67.169.40", // FDN (France)
+		"89.233.43.71", // http://censurfridns.dk (Denmark)
+		"109.69.8.51", // punCAT (Spain)
+		"77.109.148.137", // Xiala.net (Switzerland)
+		"193.58.251.251", // SkyDNS (Russia)
 };
 
 static boost::mutex instance_lock;
@@ -114,15 +114,15 @@ get_builtin_cert(void)
 */
 
 /** return the built in root DS trust anchor */
-static const char* const*
+static const char *const *
 get_builtin_ds(void)
 {
-	static const char * const ds[] =
-	{
-		". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5\n",
-		". IN DS 20326 8 2 E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D\n",
-		nullptr // mark the last entry
-	};
+	static const char *const ds[] =
+		{
+			". IN DS 19036 8 2 49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5\n",
+			". IN DS 20326 8 2 E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D\n",
+			nullptr // mark the last entry
+		};
 	return ds;
 }
 
@@ -189,10 +189,12 @@ template <typename type, void (*freefunc)(type *)>
 class scoped_ptr
 {
   public:
-	scoped_ptr() : ptr(nullptr)
+	scoped_ptr() :
+		ptr(nullptr)
 	{
 	}
-	scoped_ptr(type *p) : ptr(p)
+	scoped_ptr(type *p) :
+		ptr(p)
 	{
 	}
 	~scoped_ptr()
@@ -219,7 +221,8 @@ struct DNSResolverData
 class string_copy
 {
   public:
-	string_copy(const char *s) : str(strdup(s)) {}
+	string_copy(const char *s) :
+		str(strdup(s)) {}
 	~string_copy() { free(str); }
 	operator char *() { return str; }
 
@@ -227,7 +230,8 @@ class string_copy
 	char *str;
 };
 
-DNSResolver::DNSResolver() : m_data(new DNSResolverData())
+DNSResolver::DNSResolver() :
+	m_data(new DNSResolverData())
 {
 	int use_dns_public = 0;
 	std::vector<std::string> dns_public_addr;
@@ -262,8 +266,8 @@ DNSResolver::DNSResolver() : m_data(new DNSResolverData())
 		ub_ctx_hosts(m_data->m_ub_context, NULL);
 	}
 
-	const char * const *ds = ::get_builtin_ds();
-	while (*ds)
+	const char *const *ds = ::get_builtin_ds();
+	while(*ds)
 	{
 		GULPSF_INFO("adding trust anchor: {}", *ds);
 		ub_ctx_add_ta(m_data->m_ub_context, string_copy(*ds++));
@@ -391,7 +395,7 @@ bool dns_records_match(const std::vector<std::string> &a, const std::vector<std:
 
 	return true;
 }
-}
+} // namespace
 
 bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std::vector<std::string> &dns_urls)
 {
@@ -494,7 +498,7 @@ std::vector<std::string> parse_dns_public(const char *s)
 	{
 		for(size_t i = 0; i < sizeof(DEFAULT_DNS_PUBLIC_ADDR) / sizeof(DEFAULT_DNS_PUBLIC_ADDR[0]); ++i)
 			dns_public_addr.push_back(DEFAULT_DNS_PUBLIC_ADDR[i]);
-			GULPSF_LOG_L0("Using default public DNS server(s):{}  (TCP)", boost::join(dns_public_addr, ", "));
+		GULPSF_LOG_L0("Using default public DNS server(s):{}  (TCP)", boost::join(dns_public_addr, ", "));
 	}
 	else if(sscanf(s, "tcp://%u.%u.%u.%u%c", &ip0, &ip1, &ip2, &ip3, &c) == 4)
 	{
@@ -514,6 +518,6 @@ std::vector<std::string> parse_dns_public(const char *s)
 	return dns_public_addr;
 }
 
-} // namespace tools::dns_utils
+} // namespace dns_utils
 
 } // namespace tools

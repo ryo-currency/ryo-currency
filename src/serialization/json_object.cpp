@@ -62,8 +62,8 @@ template <typename Source, typename Destination>
 constexpr bool precision_loss()
 {
 	return std::numeric_limits<Destination>::is_signed != std::numeric_limits<Source>::is_signed ||
-		   std::numeric_limits<Destination>::min() > std::numeric_limits<Source>::min() ||
-		   std::numeric_limits<Destination>::max() < std::numeric_limits<Source>::max();
+		std::numeric_limits<Destination>::min() > std::numeric_limits<Source>::min() ||
+		std::numeric_limits<Destination>::max() < std::numeric_limits<Source>::max();
 }
 
 template <typename Source, typename Type>
@@ -121,7 +121,7 @@ void to_uint64(const rapidjson::Value &val, Type &i)
 	}
 	convert_numeric(val.GetUint64(), i);
 }
-}
+} // namespace
 
 void toJsonValue(rapidjson::Document &doc, const std::string &i, rapidjson::Value &val)
 {

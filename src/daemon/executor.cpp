@@ -51,8 +51,6 @@
 
 #include "common/gulps.hpp"
 
-
-
 namespace daemonize
 {
 std::string const t_executor::NAME = "Ryo Daemon";
@@ -86,4 +84,4 @@ bool t_executor::run_interactive(
 {
 	return t_daemon{vm}.run(true);
 }
-}
+} // namespace daemonize

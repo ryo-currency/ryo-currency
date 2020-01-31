@@ -55,11 +55,12 @@
 #include <tuple>
 #include <vector>
 
-#include "cryptonote_config.h"
 #include "crypto/generic-ops.h"
 #include "crypto/random.hpp"
+#include "cryptonote_config.h"
 
-extern "C" {
+extern "C"
+{
 #include "crypto/keccak.h"
 }
 #include "crypto/crypto.h"
@@ -136,30 +137,30 @@ std::tuple<ctkeyM, ryo_amount> populateFromBlockchain(ctkeyV inPk, int mixin);
 //decodeRct: (c.f. http://eprint.iacr.org/2015/1098 section 5.1.1)
 //   uses the attached ecdh info to find the amounts represented by each output commitment
 //   must know the destination private key to find the correct amount, else will return a random number
-rctSig genRct(const key &message, const ctkeyV & inSk, const keyV & destinations, const std::vector<ryo_amount> & amounts, const ctkeyM &mixRing, const keyV &amount_keys, const multisig_kLRki *kLRki, multisig_out *msout, unsigned int index, ctkeyV &outSk, hw::device &hwdev);
-rctSig genRct(const key &message, const ctkeyV & inSk, const ctkeyV  & inPk, const keyV & destinations, const std::vector<ryo_amount> & amounts, const keyV &amount_keys, const multisig_kLRki *kLRki, multisig_out *msout, const int mixin, hw::device &hwdev);
-rctSig genRctSimple(const key & message, const ctkeyV & inSk, const ctkeyV & inPk, const keyV & destinations, const std::vector<ryo_amount> & inamounts, const std::vector<ryo_amount> & outamounts, const keyV &amount_keys, const std::vector<multisig_kLRki> *kLRki, multisig_out *msout, ryo_amount txnFee, unsigned int mixin, hw::device &hwdev);
-rctSig genRctSimple(const key & message, const ctkeyV & inSk, const keyV & destinations, const std::vector<ryo_amount> & inamounts, const std::vector<ryo_amount> & outamounts, ryo_amount txnFee, const ctkeyM & mixRing, const keyV &amount_keys, const std::vector<multisig_kLRki> *kLRki, multisig_out *msout, const std::vector<unsigned int> & index, ctkeyV &outSk, bool bulletproof, hw::device &hwdev);
-bool verRct(const rctSig & rv, bool semantics);
-bool verRctSemanticsSimple(const rctSig & rv);
-bool verRctSemanticsSimple(const std::vector<const rctSig*> & rv);
-bool verRctNonSemanticsSimple(const rctSig & rv);
-ryo_amount decodeRct(const rctSig & rv, const key & sk, unsigned int i, key & mask, hw::device &hwdev);
-ryo_amount decodeRct(const rctSig & rv, const key & sk, unsigned int i, hw::device &hwdev);
-ryo_amount decodeRctSimple(const rctSig & rv, const key & sk, unsigned int i, key & mask, hw::device &hwdev);
-ryo_amount decodeRctSimple(const rctSig & rv, const key & sk, unsigned int i, hw::device &hwdev);
+rctSig genRct(const key &message, const ctkeyV &inSk, const keyV &destinations, const std::vector<ryo_amount> &amounts, const ctkeyM &mixRing, const keyV &amount_keys, const multisig_kLRki *kLRki, multisig_out *msout, unsigned int index, ctkeyV &outSk, hw::device &hwdev);
+rctSig genRct(const key &message, const ctkeyV &inSk, const ctkeyV &inPk, const keyV &destinations, const std::vector<ryo_amount> &amounts, const keyV &amount_keys, const multisig_kLRki *kLRki, multisig_out *msout, const int mixin, hw::device &hwdev);
+rctSig genRctSimple(const key &message, const ctkeyV &inSk, const ctkeyV &inPk, const keyV &destinations, const std::vector<ryo_amount> &inamounts, const std::vector<ryo_amount> &outamounts, const keyV &amount_keys, const std::vector<multisig_kLRki> *kLRki, multisig_out *msout, ryo_amount txnFee, unsigned int mixin, hw::device &hwdev);
+rctSig genRctSimple(const key &message, const ctkeyV &inSk, const keyV &destinations, const std::vector<ryo_amount> &inamounts, const std::vector<ryo_amount> &outamounts, ryo_amount txnFee, const ctkeyM &mixRing, const keyV &amount_keys, const std::vector<multisig_kLRki> *kLRki, multisig_out *msout, const std::vector<unsigned int> &index, ctkeyV &outSk, bool bulletproof, hw::device &hwdev);
+bool verRct(const rctSig &rv, bool semantics);
+bool verRctSemanticsSimple(const rctSig &rv);
+bool verRctSemanticsSimple(const std::vector<const rctSig *> &rv);
+bool verRctNonSemanticsSimple(const rctSig &rv);
+ryo_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, key &mask, hw::device &hwdev);
+ryo_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, hw::device &hwdev);
+ryo_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, key &mask, hw::device &hwdev);
+ryo_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, hw::device &hwdev);
 
 bool signMultisig(rctSig &rv, const std::vector<unsigned int> &indices, const keyV &k, const multisig_out &msout, const key &secret_key);
 
 inline bool is_canonical_bulletproof_layout(const std::vector<rct::Bulletproof> &proofs)
 {
-	if (proofs.size() != 1)
+	if(proofs.size() != 1)
 		return false;
 	const size_t sz = proofs[0].V.size();
-	if (sz == 0 || sz > cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS)
+	if(sz == 0 || sz > cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS)
 		return false;
 	return true;
 }
 
-}
+} // namespace rct
 #endif /* RCTSIGS_H */

@@ -46,7 +46,8 @@
 
 #pragma once
 
-extern "C" {
+extern "C"
+{
 #include "crypto/crypto-ops.h"
 }
 

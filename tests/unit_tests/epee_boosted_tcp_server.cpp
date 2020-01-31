@@ -80,7 +80,7 @@ struct test_protocol_handler
 };
 
 typedef epee::net_utils::boosted_tcp_server<test_protocol_handler> test_tcp_server;
-}
+} // namespace
 
 TEST(boosted_tcp_server, worker_threads_are_exception_resistant)
 {

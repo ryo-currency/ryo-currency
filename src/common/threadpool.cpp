@@ -55,7 +55,8 @@ static __thread int depth = 0;
 
 namespace tools
 {
-threadpool::threadpool() : running(true), active(0)
+threadpool::threadpool() :
+	running(true), active(0)
 {
 	boost::thread::attributes attrs;
 	attrs.set_stack_size(THREAD_STACK_SIZE);
@@ -170,4 +171,4 @@ void threadpool::run()
 		active--;
 	}
 }
-}
+} // namespace tools

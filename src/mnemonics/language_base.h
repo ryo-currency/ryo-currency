@@ -77,18 +77,19 @@ inline std::string utf8prefix(const std::string &s, size_t count)
 class Base
 {
 	GULPS_CAT_MAJOR("lan_base");
+
   protected:
 	enum
 	{
 		ALLOW_SHORT_WORDS = 1 << 0,
 		ALLOW_DUPLICATE_PREFIXES = 1 << 1,
 	};
-	const std::vector<std::string> word_list;					/*!< A pointer to the array of words */
-	std::unordered_map<std::string, uint32_t> word_map;			/*!< hash table to find word's index */
+	const std::vector<std::string> word_list; /*!< A pointer to the array of words */
+	std::unordered_map<std::string, uint32_t> word_map; /*!< hash table to find word's index */
 	std::unordered_map<std::string, uint32_t> trimmed_word_map; /*!< hash table to find word's trimmed index */
-	std::string language_name;									/*!< Name of language */
-	std::string english_language_name;							/*!< Name of language */
-	uint32_t unique_prefix_length;								/*!< Number of unique starting characters to trim the wordlist to when matching */
+	std::string language_name; /*!< Name of language */
+	std::string english_language_name; /*!< Name of language */
+	uint32_t unique_prefix_length; /*!< Number of unique starting characters to trim the wordlist to when matching */
 	/*!
      * \brief Populates the word maps after the list is ready.
      */
@@ -104,7 +105,7 @@ class Base
 			if((*it).size() < unique_prefix_length)
 			{
 				if(flags & ALLOW_SHORT_WORDS)
-					GULPS_LOG_L2("{} word {}' is shorter than its prefix length, {}'", language_name,  *it, unique_prefix_length);
+					GULPS_LOG_L2("{} word {}' is shorter than its prefix length, {}'", language_name, *it, unique_prefix_length);
 				else
 					throw std::runtime_error("Too short word in " + language_name + " word list: " + *it);
 			}
@@ -129,10 +130,11 @@ class Base
 	}
 
   public:
-	Base(const char *language_name, const char *english_language_name, const std::vector<std::string> &words, uint32_t prefix_length) : word_list(words),
-																																		unique_prefix_length(prefix_length),
-																																		language_name(language_name),
-																																		english_language_name(english_language_name)
+	Base(const char *language_name, const char *english_language_name, const std::vector<std::string> &words, uint32_t prefix_length) :
+		word_list(words),
+		unique_prefix_length(prefix_length),
+		language_name(language_name),
+		english_language_name(english_language_name)
 	{
 	}
 	virtual ~Base()
@@ -187,6 +189,6 @@ class Base
 		return unique_prefix_length;
 	}
 };
-}
+} // namespace Language
 
 #endif

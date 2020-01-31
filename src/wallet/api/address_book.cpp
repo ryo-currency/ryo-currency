@@ -57,8 +57,8 @@ namespace Ryo
 
 AddressBook::~AddressBook() {}
 
-AddressBookImpl::AddressBookImpl(WalletImpl *wallet)
-	: m_wallet(wallet), m_errorCode(Status_Ok) {}
+AddressBookImpl::AddressBookImpl(WalletImpl *wallet) :
+	m_wallet(wallet), m_errorCode(Status_Ok) {}
 
 bool AddressBookImpl::addRow(const std::string &dst_addr, const std::string &payment_id_str, const std::string &description)
 {
@@ -201,4 +201,4 @@ AddressBookImpl::~AddressBookImpl()
 	clearRows();
 }
 
-} // namespace
+} // namespace Ryo

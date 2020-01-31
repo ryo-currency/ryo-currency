@@ -56,8 +56,8 @@
 namespace cryptonote
 {
 GULPS_CAT_MAJOR("rpc_args");
-rpc_args::descriptors::descriptors()
-	: rpc_bind_ip({"rpc-bind-ip", rpc_args::tr("Specify IP to bind RPC server"), "127.0.0.1"}), rpc_login({"rpc-login", rpc_args::tr("Specify username[:password] required for RPC server"), "", true}), confirm_external_bind({"confirm-external-bind", rpc_args::tr("Confirm rpc-bind-ip value is NOT a loopback (local) IP")}), rpc_access_control_origins({"rpc-access-control-origins", rpc_args::tr("Specify a comma separated list of origins to allow cross origin resource sharing"), ""})
+rpc_args::descriptors::descriptors() :
+	rpc_bind_ip({"rpc-bind-ip", rpc_args::tr("Specify IP to bind RPC server"), "127.0.0.1"}), rpc_login({"rpc-login", rpc_args::tr("Specify username[:password] required for RPC server"), "", true}), confirm_external_bind({"confirm-external-bind", rpc_args::tr("Confirm rpc-bind-ip value is NOT a loopback (local) IP")}), rpc_access_control_origins({"rpc-access-control-origins", rpc_args::tr("Specify a comma separated list of origins to allow cross origin resource sharing"), ""})
 {
 }
 
@@ -129,4 +129,4 @@ boost::optional<rpc_args> rpc_args::process(const boost::program_options::variab
 
 	return {std::move(config)};
 }
-}
+} // namespace cryptonote

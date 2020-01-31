@@ -68,8 +68,8 @@ void do_add(std::deque<T> &c, T &&e)
 {
 	c.emplace_back(std::move(e));
 }
-}
-}
+} // namespace detail
+} // namespace serialization
 
 #include "serialization.h"
 

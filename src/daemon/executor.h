@@ -49,13 +49,12 @@
 #include <boost/program_options/variables_map.hpp>
 #include <string>
 
-
-
 namespace daemonize
 {
 class t_executor final
 {
 	GULPS_CAT_MAJOR("daemon_exe");
+
   public:
 	typedef ::daemonize::t_daemon t_daemon;
 
@@ -75,4 +74,4 @@ class t_executor final
 	bool run_interactive(
 		boost::program_options::variables_map const &vm);
 };
-}
+} // namespace daemonize

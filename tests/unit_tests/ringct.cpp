@@ -97,7 +97,7 @@ TEST(ringct, MG_sigs)
 
 	//Tests for MG Sigs
 	//#MG sig: true one
-	N = 3;	 // #cols
+	N = 3; // #cols
 	int R = 3; // #rows
 	keyV xtmp = skvGen(R);
 	keyM xm = keyMInit(R, N); // = [[None]*N] #just used to generate test public keys
@@ -381,7 +381,7 @@ static rct::rctSig make_sample_simple_rct_sig(int n_inputs, const uint64_t input
 }
 
 static bool range_proof_test(bool expected_valid,
-							 int n_inputs, const uint64_t input_amounts[], int n_outputs, const uint64_t output_amounts[], bool last_is_fee, bool simple)
+	int n_inputs, const uint64_t input_amounts[], int n_outputs, const uint64_t output_amounts[], bool last_is_fee, bool simple)
 {
 	//compute rct data
 	bool valid;
@@ -392,7 +392,7 @@ static bool range_proof_test(bool expected_valid,
 		if(simple)
 		{
 			s = make_sample_simple_rct_sig(n_inputs, input_amounts, last_is_fee ? n_outputs - 1 : n_outputs, output_amounts, last_is_fee ? output_amounts[n_outputs - 1] : 0);
-			valid = verRctSemanticsSimple(s)  && verRctNonSemanticsSimple(s);
+			valid = verRctSemanticsSimple(s) && verRctNonSemanticsSimple(s);
 		}
 		else
 		{
@@ -975,15 +975,15 @@ TEST(ringct, fee_burn_valid_zero_out_simple)
 	EXPECT_TRUE(range_proof_test(true, NELTS(inputs), inputs, NELTS(outputs), outputs, true, true));
 }
 
-#define TEST_rctSig_elements(name, op)                                                               \
-	TEST(ringct, rctSig_##name)                                                                      \
-	{                                                                                                \
-		const uint64_t inputs[] = {1000, 1000};                                                      \
-		const uint64_t outputs[] = {1000, 1000};                                                     \
+#define TEST_rctSig_elements(name, op) \
+	TEST(ringct, rctSig_##name) \
+	{ \
+		const uint64_t inputs[] = {1000, 1000}; \
+		const uint64_t outputs[] = {1000, 1000}; \
 		rct::rctSig sig = make_sample_rct_sig(NELTS(inputs), inputs, NELTS(outputs), outputs, true); \
-		ASSERT_TRUE(rct::verRct(sig, true) && rct::verRct(sig, false));                              \
-		op;                                                                                          \
-		ASSERT_FALSE(rct::verRct(sig, true) && rct::verRct(sig, false));                             \
+		ASSERT_TRUE(rct::verRct(sig, true) && rct::verRct(sig, false)); \
+		op; \
+		ASSERT_FALSE(rct::verRct(sig, true) && rct::verRct(sig, false)); \
 	}
 
 TEST_rctSig_elements(rangeSigs_empty, sig.p.rangeSigs.resize(0));
@@ -1012,15 +1012,15 @@ TEST_rctSig_elements(outPk_empty, sig.outPk.resize(0));
 TEST_rctSig_elements(outPk_too_many, sig.outPk.push_back(sig.outPk.back()));
 TEST_rctSig_elements(outPk_too_few, sig.outPk.pop_back());
 
-#define TEST_rctSig_elements_simple(name, op)                                                               \
-	TEST(ringct, rctSig_##name##_simple)                                                                    \
-	{                                                                                                       \
-		const uint64_t inputs[] = {1000, 1000};                                                             \
-		const uint64_t outputs[] = {1000};                                                                  \
+#define TEST_rctSig_elements_simple(name, op) \
+	TEST(ringct, rctSig_##name##_simple) \
+	{ \
+		const uint64_t inputs[] = {1000, 1000}; \
+		const uint64_t outputs[] = {1000}; \
 		rct::rctSig sig = make_sample_simple_rct_sig(NELTS(inputs), inputs, NELTS(outputs), outputs, 1000); \
-		ASSERT_TRUE(rct::verRctSemanticsSimple(sig) && rct::verRctNonSemanticsSimple(sig));                 \
-		op;                                                                                                 \
-		ASSERT_FALSE(rct::verRctSemanticsSimple(sig) && rct::verRctNonSemanticsSimple(sig));                \
+		ASSERT_TRUE(rct::verRctSemanticsSimple(sig) && rct::verRctNonSemanticsSimple(sig)); \
+		op; \
+		ASSERT_FALSE(rct::verRctSemanticsSimple(sig) && rct::verRctNonSemanticsSimple(sig)); \
 	}
 
 TEST_rctSig_elements_simple(rangeSigs_empty, sig.p.rangeSigs.resize(0));

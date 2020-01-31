@@ -70,12 +70,12 @@ void append_tx_source_entry(std::vector<cryptonote::tx_source_entry> &sources, c
 
 	sources.push_back(se);
 }
-}
+} // namespace
 
 //======================================================================================================================
 
-gen_uint_overflow_base::gen_uint_overflow_base()
-	: m_last_valid_block_event_idx(static_cast<size_t>(-1))
+gen_uint_overflow_base::gen_uint_overflow_base() :
+	m_last_valid_block_event_idx(static_cast<size_t>(-1))
 {
 	REGISTER_CALLBACK_METHOD(gen_uint_overflow_1, mark_last_valid_block);
 }

@@ -41,27 +41,27 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "gtest/gtest.h"
 #include "cryptonote_basic/difficulty.h"
+#include "gtest/gtest.h"
 
 #define ASSERT_ARRAYS(x, y) \
 	ASSERT_EQ(x.size(), y.size()) << "Vectors x and y are of unequal length"; \
-	for (int i = 0; i < x.size(); ++i) \
+	for(int i = 0; i < x.size(); ++i) \
 		EXPECT_EQ(x[i], y[i]) << "Vectors x and y differ at index " << i;
 
 TEST(timestamp_interpolation, null)
 {
-	std::vector<uint64_t> ts     = { 100, 200, 300, 400, 500 };
-	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500 };
-	
+	std::vector<uint64_t> ts = {100, 200, 300, 400, 500};
+	std::vector<uint64_t> ts_exp = {100, 200, 300, 400, 500};
+
 	cryptonote::interpolate_timestamps<4>(ts);
 	ASSERT_ARRAYS(ts, ts_exp);
 }
 
 TEST(timestamp_interpolation, one)
 {
-	std::vector<uint64_t> ts     = { 100, 600, 100, 400, 500 };
-	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500 };
+	std::vector<uint64_t> ts = {100, 600, 100, 400, 500};
+	std::vector<uint64_t> ts_exp = {100, 200, 300, 400, 500};
 
 	cryptonote::interpolate_timestamps<4>(ts);
 	ASSERT_ARRAYS(ts, ts_exp);
@@ -69,36 +69,36 @@ TEST(timestamp_interpolation, one)
 
 TEST(timestamp_interpolation, two)
 {
-	std::vector<uint64_t> ts     = { 100, 600, 100,  50, 500 };
-	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500 };
-	
+	std::vector<uint64_t> ts = {100, 600, 100, 50, 500};
+	std::vector<uint64_t> ts_exp = {100, 200, 300, 400, 500};
+
 	cryptonote::interpolate_timestamps<4>(ts);
 	ASSERT_ARRAYS(ts, ts_exp);
 }
 
 TEST(timestamp_interpolation, three)
 {
-	std::vector<uint64_t> ts     = { 100, 600, 100,  50,  70, 600 };
-	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500, 600 };
-	
+	std::vector<uint64_t> ts = {100, 600, 100, 50, 70, 600};
+	std::vector<uint64_t> ts_exp = {100, 200, 300, 400, 500, 600};
+
 	cryptonote::interpolate_timestamps<5>(ts);
 	ASSERT_ARRAYS(ts, ts_exp);
 }
 
 TEST(timestamp_interpolation, three_1)
 {
-	std::vector<uint64_t> ts     = { 100, 200, 300, 150, 150, 600 };
-	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500, 600 };
-	
+	std::vector<uint64_t> ts = {100, 200, 300, 150, 150, 600};
+	std::vector<uint64_t> ts_exp = {100, 200, 300, 400, 500, 600};
+
 	cryptonote::interpolate_timestamps<5>(ts);
 	ASSERT_ARRAYS(ts, ts_exp);
 }
 
 TEST(timestamp_interpolation, four)
 {
-	std::vector<uint64_t> ts     = { 100, 600, 100, 400, 500,  50,  70, 800 };
-	std::vector<uint64_t> ts_exp = { 100, 200, 300, 400, 500, 600, 700, 800 };
-	
+	std::vector<uint64_t> ts = {100, 600, 100, 400, 500, 50, 70, 800};
+	std::vector<uint64_t> ts_exp = {100, 200, 300, 400, 500, 600, 700, 800};
+
 	cryptonote::interpolate_timestamps<7>(ts);
 	ASSERT_ARRAYS(ts, ts_exp);
 }

@@ -60,6 +60,7 @@ namespace tools
 class threadpool
 {
 	GULPS_CAT_MAJOR("thdpool");
+
   public:
 	static threadpool &getInstance()
 	{
@@ -79,7 +80,8 @@ class threadpool
 		void inc();
 		void dec();
 		void wait(); //! Wait for a set of tasks to finish.
-		waiter() : num(0) {}
+		waiter() :
+			num(0) {}
 		~waiter();
 	};
 
@@ -107,4 +109,4 @@ class threadpool
 	bool running;
 	void run();
 };
-}
+} // namespace tools

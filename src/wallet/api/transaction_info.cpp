@@ -53,11 +53,11 @@ namespace Ryo
 
 TransactionInfo::~TransactionInfo() {}
 
-TransactionInfo::Transfer::Transfer(uint64_t _amount, const string &_address)
-	: amount(_amount), address(_address) {}
+TransactionInfo::Transfer::Transfer(uint64_t _amount, const string &_address) :
+	amount(_amount), address(_address) {}
 
-TransactionInfoImpl::TransactionInfoImpl()
-	: m_direction(Direction_Out), m_pending(false), m_failed(false), m_amount(0), m_fee(0), m_blockheight(0), m_subaddrAccount(0), m_timestamp(0), m_confirmations(0), m_unlock_time(0)
+TransactionInfoImpl::TransactionInfoImpl() :
+	m_direction(Direction_Out), m_pending(false), m_failed(false), m_amount(0), m_fee(0), m_blockheight(0), m_subaddrAccount(0), m_timestamp(0), m_confirmations(0), m_unlock_time(0)
 {
 }
 
@@ -140,4 +140,4 @@ uint64_t TransactionInfoImpl::unlockTime() const
 	return m_unlock_time;
 }
 
-} // namespace
+} // namespace Ryo

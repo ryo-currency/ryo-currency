@@ -58,5 +58,5 @@
 
 #define BOOST_FILESYSTEM_VERSION 3
 #define ENABLE_RELEASE_LOGGING
-#include "log_opt_defs.h"
 #include "common/gulps.hpp"
+#include "log_opt_defs.h"

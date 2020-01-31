@@ -59,7 +59,6 @@
 
 #include "common/gulps.hpp"
 
-
 namespace command_line
 {
 
@@ -211,7 +210,7 @@ void add_arg(boost::program_options::options_description &description, const arg
 {
 	if(0 != description.find_nothrow(arg.name, false))
 	{
-		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " , arg.name);
+		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: ", arg.name);
 		return;
 	}
 
@@ -223,7 +222,7 @@ void add_arg(boost::program_options::options_description &description, const arg
 {
 	if(0 != description.find_nothrow(arg.name, false))
 	{
-		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " , arg.name);
+		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: ", arg.name);
 		return;
 	}
 
@@ -235,7 +234,7 @@ inline void add_arg(boost::program_options::options_description &description, co
 {
 	if(0 != description.find_nothrow(arg.name, false))
 	{
-		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " , arg.name);
+		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: ", arg.name);
 		return;
 	}
 
@@ -244,7 +243,7 @@ inline void add_arg(boost::program_options::options_description &description, co
 
 template <typename charT>
 boost::program_options::basic_parsed_options<charT> parse_command_line(int argc, const charT *const argv[],
-																	   const boost::program_options::options_description &desc, bool allow_unregistered = false)
+	const boost::program_options::options_description &desc, bool allow_unregistered = false)
 {
 	auto parser = boost::program_options::command_line_parser(argc, argv);
 	parser.options(desc);
@@ -317,10 +316,10 @@ inline bool has_arg(const boost::program_options::variables_map &vm, const arg_d
 }
 
 #ifdef WIN32
-bool get_windows_args(std::vector<char*>& argptrs);
+bool get_windows_args(std::vector<char *> &argptrs);
 void set_console_utf8();
 #endif
 
 extern const arg_descriptor<bool> arg_help;
 extern const arg_descriptor<bool> arg_version;
-}
+} // namespace command_line

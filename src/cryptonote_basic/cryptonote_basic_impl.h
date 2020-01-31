@@ -88,7 +88,7 @@ inline std::string return_first_address(const std::string &url, const std::vecto
 		return {};
 	return addresses[0];
 }
-}
+} // namespace
 
 struct address_parse_info
 {
@@ -106,13 +106,13 @@ size_t get_min_block_size();
 size_t get_max_tx_size();
 
 template <network_type NETTYPE>
-bool get_dev_fund_amount(uint64_t height, uint64_t& amount);
+bool get_dev_fund_amount(uint64_t height, uint64_t &amount);
 
-extern template bool get_dev_fund_amount<MAINNET>(uint64_t height, uint64_t& amount);
-extern template bool get_dev_fund_amount<TESTNET>(uint64_t height, uint64_t& amount);
-extern template bool get_dev_fund_amount<STAGENET>(uint64_t height, uint64_t& amount);
+extern template bool get_dev_fund_amount<MAINNET>(uint64_t height, uint64_t &amount);
+extern template bool get_dev_fund_amount<TESTNET>(uint64_t height, uint64_t &amount);
+extern template bool get_dev_fund_amount<STAGENET>(uint64_t height, uint64_t &amount);
 
-inline bool get_dev_fund_amount(network_type nettype, uint64_t height, uint64_t& amount)
+inline bool get_dev_fund_amount(network_type nettype, uint64_t height, uint64_t &amount)
 {
 	switch(nettype)
 	{
@@ -199,6 +199,6 @@ bool is_coinbase(const transaction &tx);
 
 bool operator==(const cryptonote::transaction &a, const cryptonote::transaction &b);
 bool operator==(const cryptonote::block &a, const cryptonote::block &b);
-}
+} // namespace cryptonote
 
 bool parse_hash256(const std::string str_hash, crypto::hash &hash);

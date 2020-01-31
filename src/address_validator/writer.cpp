@@ -86,4 +86,4 @@ writer &writer::operator<<(const char value)
 	this->operator<<(std::string(1, value));
 	return *this;
 }
-}
+} // namespace cryptonote

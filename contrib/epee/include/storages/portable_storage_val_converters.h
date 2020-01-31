@@ -48,7 +48,9 @@ void convert_int_to_uint(const from_type &from, to_type &to)
 	PUSH_WARNINGS
 	DISABLE_VS_WARNINGS(4018)
 	GULPS_CHECK_AND_ASSERT_THROW_MES(from >= 0, "unexpected int value with signed storage value less than 0, and unsigned receiver value");
+	// clang-format off
 	DISABLE_GCC_AND_CLANG_WARNING(sign-compare)
+	// clang-format on
 	GULPS_CHECK_AND_ASSERT_THROW_MES(from <= std::numeric_limits<to_type>::max(), "int value overhead: try to set value ", from, " to type ", typeid(to_type).name(), " with max possible value = ", std::numeric_limits<to_type>::max());
 	to = static_cast<to_type>(from);
 	POP_WARNINGS

@@ -33,8 +33,8 @@
 
 struct gen_rct_tx_validation_base : public test_chain_unit_base
 {
-	gen_rct_tx_validation_base()
-		: m_invalid_tx_index(0), m_invalid_block_index(0)
+	gen_rct_tx_validation_base() :
+		m_invalid_tx_index(0), m_invalid_block_index(0)
 	{
 		REGISTER_CALLBACK_METHOD(gen_rct_tx_validation_base, mark_invalid_tx);
 		REGISTER_CALLBACK_METHOD(gen_rct_tx_validation_base, mark_invalid_block);
@@ -69,9 +69,9 @@ struct gen_rct_tx_validation_base : public test_chain_unit_base
 	}
 
 	bool generate_with(std::vector<test_event_entry> &events, const int *out_idx, int mixin,
-					   uint64_t amount_paid, bool valid,
-					   const std::function<void(std::vector<cryptonote::tx_source_entry> &sources, std::vector<cryptonote::tx_destination_entry> &destinations)> &pre_tx,
-					   const std::function<void(cryptonote::transaction &tx)> &post_tx) const;
+		uint64_t amount_paid, bool valid,
+		const std::function<void(std::vector<cryptonote::tx_source_entry> &sources, std::vector<cryptonote::tx_destination_entry> &destinations)> &pre_tx,
+		const std::function<void(cryptonote::transaction &tx)> &post_tx) const;
 
   private:
 	size_t m_invalid_tx_index;
@@ -325,4 +325,3 @@ template <>
 struct get_test_options<gen_rct_tx_rct_add_vout> : public get_test_options<gen_rct_tx_validation_base>
 {
 };
-

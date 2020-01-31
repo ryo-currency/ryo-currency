@@ -66,7 +66,7 @@ inline __m128i sl_xor(__m128i tmp1)
 }
 
 template <uint8_t rcon>
-inline void aes_genkey_sub(__m128i& xout0, __m128i& xout2)
+inline void aes_genkey_sub(__m128i &xout0, __m128i &xout2)
 {
 	__m128i xout1 = _mm_aeskeygenassist_si128(xout2, rcon);
 	xout1 = _mm_shuffle_epi32(xout1, 0xFF);
@@ -78,8 +78,8 @@ inline void aes_genkey_sub(__m128i& xout0, __m128i& xout2)
 	xout2 = _mm_xor_si128(xout2, xout1);
 }
 
-inline void aes_genkey(const __m128i* memory, __m128i& k0, __m128i& k1, __m128i& k2, __m128i& k3, __m128i& k4,
-					   __m128i& k5, __m128i& k6, __m128i& k7, __m128i& k8, __m128i& k9)
+inline void aes_genkey(const __m128i *memory, __m128i &k0, __m128i &k1, __m128i &k2, __m128i &k3, __m128i &k4,
+	__m128i &k5, __m128i &k6, __m128i &k7, __m128i &k8, __m128i &k9)
 {
 	__m128i xout0, xout2;
 
@@ -105,7 +105,7 @@ inline void aes_genkey(const __m128i* memory, __m128i& k0, __m128i& k1, __m128i&
 	k9 = xout2;
 }
 
-inline void aes_round8(const __m128i& key, __m128i& x0, __m128i& x1, __m128i& x2, __m128i& x3, __m128i& x4, __m128i& x5, __m128i& x6, __m128i& x7)
+inline void aes_round8(const __m128i &key, __m128i &x0, __m128i &x1, __m128i &x2, __m128i &x3, __m128i &x4, __m128i &x5, __m128i &x6, __m128i &x7)
 {
 	x0 = _mm_aesenc_si128(x0, key);
 	x1 = _mm_aesenc_si128(x1, key);
@@ -117,7 +117,7 @@ inline void aes_round8(const __m128i& key, __m128i& x0, __m128i& x1, __m128i& x2
 	x7 = _mm_aesenc_si128(x7, key);
 }
 
-inline void xor_shift(__m128i& x0, __m128i& x1, __m128i& x2, __m128i& x3, __m128i& x4, __m128i& x5, __m128i& x6, __m128i& x7)
+inline void xor_shift(__m128i &x0, __m128i &x1, __m128i &x2, __m128i &x3, __m128i &x4, __m128i &x5, __m128i &x6, __m128i &x7)
 {
 	__m128i tmp0 = x0;
 	x0 = _mm_xor_si128(x0, x1);
@@ -282,7 +282,7 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::explode_scratchpad_hard()
 }
 
 #ifdef BUILD32
-inline uint64_t _umul128(uint64_t multiplier, uint64_t multiplicand, uint64_t* product_hi)
+inline uint64_t _umul128(uint64_t multiplier, uint64_t multiplicand, uint64_t *product_hi)
 {
 	// multiplier   = ab = a * 2^32 + b
 	// multiplicand = cd = c * 2^32 + d
@@ -309,7 +309,7 @@ inline uint64_t _umul128(uint64_t multiplier, uint64_t multiplicand, uint64_t* p
 }
 #else
 #if !defined(HAS_WIN_INTRIN_API)
-inline uint64_t _umul128(uint64_t a, uint64_t b, uint64_t* hi)
+inline uint64_t _umul128(uint64_t a, uint64_t b, uint64_t *hi)
 {
 	unsigned __int128 r = (unsigned __int128)a * (unsigned __int128)b;
 	*hi = r >> 64;
@@ -331,13 +331,13 @@ inline uint64_t xmm_extract_64(__m128i x)
 }
 
 template <size_t MEMORY, size_t ITER, size_t VERSION>
-void cn_slow_hash<MEMORY, ITER, VERSION>::hardware_hash(const void* in, size_t len, void* out)
+void cn_slow_hash<MEMORY, ITER, VERSION>::hardware_hash(const void *in, size_t len, void *out)
 {
-	keccak((const uint8_t*)in, len, spad.as_byte(), 200);
+	keccak((const uint8_t *)in, len, spad.as_byte(), 200);
 
 	explode_scratchpad_hard();
 
-	uint64_t* h0 = spad.as_uqword();
+	uint64_t *h0 = spad.as_uqword();
 
 	uint64_t al0 = h0[0] ^ h0[4];
 	uint64_t ah0 = h0[1] ^ h0[5];
@@ -388,21 +388,21 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::hardware_hash(const void* in, size_t l
 	switch(spad.as_byte(0) & 3)
 	{
 	case 0:
-		blake256_hash(spad.as_byte(), (uint8_t*)out);
+		blake256_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	case 1:
-		groestl_hash(spad.as_byte(), (uint8_t*)out);
+		groestl_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	case 2:
-		jh_hash(spad.as_byte(), (uint8_t*)out);
+		jh_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	case 3:
-		skein_hash(spad.as_byte(), (uint8_t*)out);
+		skein_hash(spad.as_byte(), (uint8_t *)out);
 		break;
 	}
 }
 
-inline void prep_dv(cn_sptr& idx, __m128i& v, __m128& n)
+inline void prep_dv(cn_sptr &idx, __m128i &v, __m128 &n)
 {
 	v = _mm_load_si128(idx.as_ptr<__m128i>());
 	n = _mm_cvtepi32_ps(v);
@@ -413,15 +413,15 @@ inline __m128 _mm_set1_ps_epi32(uint32_t x)
 	return _mm_castsi128_ps(_mm_set1_epi32(x));
 }
 
-inline __m128 fma_break(__m128 x) 
-{ 
-	// Break the dependency chain by setitng the exp to ?????01 
-	__m128 xx = _mm_and_ps(_mm_set1_ps_epi32(0xFEFFFFFF), x); 
-	return _mm_or_ps(_mm_set1_ps_epi32(0x00800000), xx); 
+inline __m128 fma_break(__m128 x)
+{
+	// Break the dependency chain by setitng the exp to ?????01
+	__m128 xx = _mm_and_ps(_mm_set1_ps_epi32(0xFEFFFFFF), x);
+	return _mm_or_ps(_mm_set1_ps_epi32(0x00800000), xx);
 }
 
 // 14
-inline void sub_round(__m128 n0, __m128 n1, __m128 n2, __m128 n3, __m128 rnd_c, __m128& n, __m128& d, __m128& c)
+inline void sub_round(__m128 n0, __m128 n1, __m128 n2, __m128 n3, __m128 rnd_c, __m128 &n, __m128 &d, __m128 &c)
 {
 	n1 = _mm_add_ps(n1, c);
 	__m128 nn = _mm_mul_ps(n0, c);
@@ -445,7 +445,7 @@ inline void sub_round(__m128 n0, __m128 n1, __m128 n2, __m128 n3, __m128 rnd_c, 
 }
 
 // 14*8 + 2 = 112
-inline void round_compute(__m128 n0, __m128 n1, __m128 n2, __m128 n3, __m128 rnd_c, __m128& c, __m128& r)
+inline void round_compute(__m128 n0, __m128 n1, __m128 n2, __m128 n3, __m128 rnd_c, __m128 &c, __m128 &r)
 {
 	__m128 n = _mm_setzero_ps(), d = _mm_setzero_ps();
 
@@ -466,7 +466,7 @@ inline void round_compute(__m128 n0, __m128 n1, __m128 n2, __m128 n3, __m128 rnd
 
 // 112×4 = 448
 template <bool add>
-inline __m128i single_comupte(__m128 n0, __m128 n1, __m128 n2, __m128 n3, float cnt, __m128 rnd_c, __m128& sum)
+inline __m128i single_comupte(__m128 n0, __m128 n1, __m128 n2, __m128 n3, float cnt, __m128 rnd_c, __m128 &sum)
 {
 	__m128 c = _mm_set1_ps(cnt);
 	__m128 r = _mm_setzero_ps();
@@ -490,7 +490,7 @@ inline __m128i single_comupte(__m128 n0, __m128 n1, __m128 n2, __m128 n3, float 
 }
 
 template <size_t rot>
-inline void single_comupte_wrap(__m128 n0, __m128 n1, __m128 n2, __m128 n3, float cnt, __m128 rnd_c, __m128& sum, __m128i& out)
+inline void single_comupte_wrap(__m128 n0, __m128 n1, __m128 n2, __m128 n3, float cnt, __m128 rnd_c, __m128 &sum, __m128i &out)
 {
 	__m128i r = single_comupte<rot % 2 != 0>(n0, n1, n2, n3, cnt, rnd_c, sum);
 	if(rot != 0)
@@ -581,9 +581,9 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::inner_hash_3()
 }
 
 template <size_t MEMORY, size_t ITER, size_t VERSION>
-void cn_slow_hash<MEMORY, ITER, VERSION>::hardware_hash_3(const void* in, size_t len, void* pout)
+void cn_slow_hash<MEMORY, ITER, VERSION>::hardware_hash_3(const void *in, size_t len, void *pout)
 {
-	keccak((const uint8_t*)in, len, spad.as_byte(), 200);
+	keccak((const uint8_t *)in, len, spad.as_byte(), 200);
 
 	explode_scratchpad_3();
 	if(check_avx2())
@@ -597,9 +597,9 @@ void cn_slow_hash<MEMORY, ITER, VERSION>::hardware_hash_3(const void* in, size_t
 }
 
 template <size_t MEMORY, size_t ITER, size_t VERSION>
-void cn_slow_hash<MEMORY, ITER, VERSION>::software_hash_3(const void* in, size_t len, void* pout)
+void cn_slow_hash<MEMORY, ITER, VERSION>::software_hash_3(const void *in, size_t len, void *pout)
 {
-	keccak((const uint8_t*)in, len, spad.as_byte(), 200);
+	keccak((const uint8_t *)in, len, spad.as_byte(), 200);
 
 	explode_scratchpad_3();
 	if(check_avx2())

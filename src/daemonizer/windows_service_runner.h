@@ -65,7 +65,7 @@ std::vector<char> vecstring(std::string const &str)
 	result.push_back('\0');
 	return result;
 }
-}
+} // namespace
 
 template <typename T_handler>
 class t_service_runner final
@@ -81,8 +81,9 @@ class t_service_runner final
 
   public:
 	t_service_runner(
-		std::string name, T_handler handler)
-		: m_name{std::move(name)}, m_handler{std::move(handler)}
+		std::string name, T_handler handler) :
+		m_name{std::move(name)},
+		m_handler{std::move(handler)}
 	{
 		m_status.dwServiceType = SERVICE_WIN32;
 		m_status.dwCurrentState = SERVICE_STOPPED;
@@ -190,6 +191,6 @@ class t_service_runner final
 
 template <typename T_handler>
 std::unique_ptr<t_service_runner<T_handler>> t_service_runner<T_handler>::sp_instance;
-}
+} // namespace windows
 
 #endif

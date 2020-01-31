@@ -44,7 +44,7 @@ const command_line::arg_descriptor<bool> arg_generate_test_data = {"generate_tes
 const command_line::arg_descriptor<bool> arg_play_test_data = {"play_test_data", ""};
 const command_line::arg_descriptor<bool> arg_generate_and_play_test_data = {"generate_and_play_test_data", ""};
 const command_line::arg_descriptor<bool> arg_test_transactions = {"test_transactions", ""};
-}
+} // namespace
 
 int main(int argc, char *argv[])
 {
@@ -53,8 +53,6 @@ int main(int argc, char *argv[])
 	epee::string_tools::set_module_name_and_folder(argv[0]);
 
 	//set up logging options
-
-
 
 	po::options_description desc_options("Allowed options");
 	command_line::add_arg(desc_options, command_line::arg_help);
@@ -217,13 +215,13 @@ int main(int argc, char *argv[])
 		GENERATE_AND_PLAY(gen_multisig_tx_invalid_33_1_2_no_threshold);
 		GENERATE_AND_PLAY(gen_multisig_tx_invalid_33_1_3_no_threshold);
 
-		std::string level_str  = (failed_tests.empty() ? "" : "Error: ");
+		std::string level_str = (failed_tests.empty() ? "" : "Error: ");
 		std::cout << level_str << "\nREPORT:" << std::endl;
 		std::cout << level_str << "  Test run: " << tests_count << std::endl;
 		std::cout << level_str << "  Failures: " << failed_tests.size() << std::endl;
 		if(!failed_tests.empty())
 		{
-			std::cout << level_str <<"FAILED TESTS:" << std::endl;
+			std::cout << level_str << "FAILED TESTS:" << std::endl;
 			BOOST_FOREACH(auto test_name, failed_tests)
 			{
 				std::cout << level_str << "  " << test_name << std::endl;

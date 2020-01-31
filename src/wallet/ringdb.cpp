@@ -180,7 +180,7 @@ static int resize_env(MDB_env *env, const char *db_path, size_t needed)
 			boost::filesystem::space_info si = boost::filesystem::space(path);
 			if(si.available < needed)
 			{
-				GULPSF_ERROR("!! WARNING: Insufficient free space to extend database !!: {} MB available", (si.available >> 20L) );
+				GULPSF_ERROR("!! WARNING: Insufficient free space to extend database !!: {} MB available", (si.available >> 20L));
 				return ENOSPC;
 			}
 		}
@@ -211,7 +211,8 @@ enum
 namespace tools
 {
 
-ringdb::ringdb(std::string filename, const std::string &genesis) : filename(filename)
+ringdb::ringdb(std::string filename, const std::string &genesis) :
+	filename(filename)
 {
 	MDB_txn *txn;
 	bool tx_active = false;
@@ -461,4 +462,4 @@ bool ringdb::clear_blackballs()
 {
 	return blackball_worker(crypto::public_key(), BLACKBALL_CLEAR);
 }
-}
+} // namespace tools

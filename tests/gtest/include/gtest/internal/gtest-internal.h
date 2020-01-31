@@ -88,11 +88,11 @@ namespace testing
 // Forward declarations.
 
 class AssertionResult; // Result of an assertion.
-class Message;		   // Represents a failure message.
-class Test;			   // Represents a test.
-class TestInfo;		   // Information about a test.
-class TestPartResult;  // Result of a test part.
-class UnitTest;		   // A collection of test cases.
+class Message; // Represents a failure message.
+class Test; // Represents a test.
+class TestInfo; // Information about a test.
+class TestPartResult; // Result of a test part.
+class UnitTest; // A collection of test cases.
 
 template <typename T>
 ::std::string PrintToString(const T &value);
@@ -100,8 +100,8 @@ template <typename T>
 namespace internal
 {
 
-struct TraceInfo;   // Information about a trace point.
-class ScopedTrace;  // Implements scoped trace.
+struct TraceInfo; // Information about a trace point.
+class ScopedTrace; // Implements scoped trace.
 class TestInfoImpl; // Opaque implementation of TestInfo
 class UnitTestImpl; // Opaque implementation of UnitTest
 
@@ -175,8 +175,8 @@ class GTEST_API_ ScopedTrace
   private:
 	GTEST_DISALLOW_COPY_AND_ASSIGN_(ScopedTrace);
 } GTEST_ATTRIBUTE_UNUSED_; // A ScopedTrace object does its job in its
-						   // c'tor and d'tor.  Therefore it doesn't
-						   // need to be used otherwise.
+	// c'tor and d'tor.  Therefore it doesn't
+	// need to be used otherwise.
 
 namespace edit_distance
 {
@@ -202,8 +202,8 @@ GTEST_API_ std::vector<EditType> CalculateOptimalEdits(
 
 // Create a diff of the input strings in Unified diff format.
 GTEST_API_ std::string CreateUnifiedDiff(const std::vector<std::string> &left,
-										 const std::vector<std::string> &right,
-										 size_t context = 2);
+	const std::vector<std::string> &right,
+	size_t context = 2);
 
 } // namespace edit_distance
 
@@ -212,8 +212,8 @@ GTEST_API_ std::string CreateUnifiedDiff(const std::vector<std::string> &left,
 // If not null, stores in 'total_line_count' the total number of lines found
 // in left + right.
 GTEST_API_ std::string DiffStrings(const std::string &left,
-								   const std::string &right,
-								   size_t *total_line_count);
+	const std::string &right,
+	size_t *total_line_count);
 
 // Constructs and returns the message for an equality assertion
 // (e.g. ASSERT_EQ, EXPECT_STREQ, etc) failure.
@@ -231,10 +231,10 @@ GTEST_API_ std::string DiffStrings(const std::string &left,
 // *_STRCASEEQ*.  When it's true, the string " (ignoring case)" will
 // be inserted into the message.
 GTEST_API_ AssertionResult EqFailure(const char *expected_expression,
-									 const char *actual_expression,
-									 const std::string &expected_value,
-									 const std::string &actual_value,
-									 bool ignoring_case);
+	const char *actual_expression,
+	const std::string &expected_value,
+	const std::string &actual_value,
+	bool ignoring_case);
 
 // Constructs a failure message for Boolean assertions such as EXPECT_TRUE.
 GTEST_API_ std::string GetBoolAssertionFailureMessage(
@@ -387,7 +387,7 @@ class FloatingPoint
 	// The data type used to store the actual floating-point number.
 	union FloatingPointUnion {
 		RawType value_; // The raw floating-point number.
-		Bits bits_;		// The bits that represent the number.
+		Bits bits_; // The bits that represent the number.
 	};
 
 	// Converts an integer from the sign-and-magnitude representation to
@@ -422,7 +422,7 @@ class FloatingPoint
 	// Given two numbers in the sign-and-magnitude representation,
 	// returns the distance between them as an unsigned number.
 	static Bits DistanceBetweenSignAndMagnitudeNumbers(const Bits &sam1,
-													   const Bits &sam2)
+		const Bits &sam2)
 	{
 		const Bits biased1 = SignAndMagnitudeToBiased(sam1);
 		const Bits biased2 = SignAndMagnitudeToBiased(sam2);
@@ -519,9 +519,9 @@ class TestFactoryImpl : public TestFactoryBase
 // We pass a long instead of HRESULT to avoid causing an
 // include dependency for the HRESULT type.
 GTEST_API_ AssertionResult IsHRESULTSuccess(const char *expr,
-											long hr); // NOLINT
+	long hr); // NOLINT
 GTEST_API_ AssertionResult IsHRESULTFailure(const char *expr,
-											long hr); // NOLINT
+	long hr); // NOLINT
 
 #endif // GTEST_OS_WINDOWS
 
@@ -531,7 +531,8 @@ typedef void (*TearDownTestCaseFunc)();
 
 struct CodeLocation
 {
-	CodeLocation(const string &a_file, int a_line) : file(a_file), line(a_line) {}
+	CodeLocation(const string &a_file, int a_line) :
+		file(a_file), line(a_line) {}
 
 	string file;
 	int line;
@@ -577,19 +578,20 @@ GTEST_API_ bool SkipPrefix(const char *prefix, const char **pstr);
 class GTEST_API_ TypedTestCasePState
 {
   public:
-	TypedTestCasePState() : registered_(false) {}
+	TypedTestCasePState() :
+		registered_(false) {}
 
 	// Adds the given test name to defined_test_names_ and return true
 	// if the test case hasn't been registered; otherwise aborts the
 	// program.
 	bool AddTestName(const char *file, int line, const char *case_name,
-					 const char *test_name)
+		const char *test_name)
 	{
 		if(registered_)
 		{
 			fprintf(stderr, "%s Test %s must be defined before "
 							"REGISTER_TYPED_TEST_CASE_P(%s, ...).\n",
-					FormatFileLocation(file, line).c_str(), test_name, case_name);
+				FormatFileLocation(file, line).c_str(), test_name, case_name);
 			fflush(stderr);
 			posix::Abort();
 		}
@@ -649,7 +651,7 @@ inline std::string GetPrefixUntilComma(const char *str)
 // Splits a given string on a given delimiter, populating a given
 // vector with the fields.
 void SplitString(const ::std::string &str, char delimiter,
-				 ::std::vector<::std::string> *dest);
+	::std::vector<::std::string> *dest);
 
 // TypeParameterizedTest<Fixture, TestSel, Types>::Register()
 // registers a list of type-parameterized tests with Google Test.  The
@@ -667,9 +669,9 @@ class TypeParameterizedTest
 	// Types).  Valid values for 'index' are [0, N - 1] where N is the
 	// length of Types.
 	static bool Register(const char *prefix,
-						 CodeLocation code_location,
-						 const char *case_name, const char *test_names,
-						 int index)
+		CodeLocation code_location,
+		const char *case_name, const char *test_names,
+		int index)
 	{
 		typedef typename Types::Head Type;
 		typedef Fixture<Type> FixtureClass;
@@ -699,8 +701,8 @@ class TypeParameterizedTest<Fixture, TestSel, Types0>
 {
   public:
 	static bool Register(const char * /*prefix*/, CodeLocation,
-						 const char * /*case_name*/, const char * /*test_names*/,
-						 int /*index*/)
+		const char * /*case_name*/, const char * /*test_names*/,
+		int /*index*/)
 	{
 		return true;
 	}
@@ -715,18 +717,18 @@ class TypeParameterizedTestCase
 {
   public:
 	static bool Register(const char *prefix, CodeLocation code_location,
-						 const TypedTestCasePState *state,
-						 const char *case_name, const char *test_names)
+		const TypedTestCasePState *state,
+		const char *case_name, const char *test_names)
 	{
 		std::string test_name = StripTrailingSpaces(
 			GetPrefixUntilComma(test_names));
 		if(!state->TestExists(test_name))
 		{
 			fprintf(stderr, "Failed to get code location for test %s.%s at %s.",
-					case_name, test_name.c_str(),
-					FormatFileLocation(code_location.file.c_str(),
-									   code_location.line)
-						.c_str());
+				case_name, test_name.c_str(),
+				FormatFileLocation(code_location.file.c_str(),
+					code_location.line)
+					.c_str());
 			fflush(stderr);
 			posix::Abort();
 		}
@@ -740,7 +742,7 @@ class TypeParameterizedTestCase
 
 		// Next, recurses (at compile time) with the tail of the test list.
 		return TypeParameterizedTestCase<Fixture, typename Tests::Tail, Types>::Register(prefix, code_location, state,
-																						 case_name, SkipComma(test_names));
+			case_name, SkipComma(test_names));
 	}
 };
 
@@ -750,8 +752,8 @@ class TypeParameterizedTestCase<Fixture, Templates0, Types>
 {
   public:
 	static bool Register(const char * /*prefix*/, CodeLocation,
-						 const TypedTestCasePState * /*state*/,
-						 const char * /*case_name*/, const char * /*test_names*/)
+		const TypedTestCasePState * /*state*/,
+		const char * /*case_name*/, const char * /*test_names*/)
 	{
 		return true;
 	}
@@ -786,7 +788,8 @@ inline bool AlwaysFalse() { return !AlwaysTrue(); }
 // the else branch.
 struct GTEST_API_ ConstCharPtr
 {
-	ConstCharPtr(const char *str) : value(str) {}
+	ConstCharPtr(const char *str) :
+		value(str) {}
 	operator bool() const { return true; }
 	const char *value;
 };
@@ -801,7 +804,8 @@ class GTEST_API_ Random
   public:
 	static const UInt32 kMaxRange = 1u << 31;
 
-	explicit Random(UInt32 seed) : state_(seed) {}
+	explicit Random(UInt32 seed) :
+		state_(seed) {}
 
 	void Reseed(UInt32 seed) { state_ = seed; }
 
@@ -1001,8 +1005,8 @@ struct IsAProtocolMessage
 typedef int IsContainer;
 template <class C>
 IsContainer IsContainerTest(int /* dummy */,
-							typename C::iterator * /* it */ = NULL,
-							typename C::const_iterator * /* const_it */ = NULL)
+	typename C::iterator * /* it */ = NULL,
+	typename C::const_iterator * /* const_it */ = NULL)
 {
 	return 0;
 }
@@ -1159,7 +1163,7 @@ class NativeArray
 	bool operator==(const NativeArray &rhs) const
 	{
 		return size() == rhs.size() &&
-			   ArrayEq(begin(), size(), rhs.begin());
+			ArrayEq(begin(), size(), rhs.begin());
 	}
 
   private:
@@ -1216,135 +1220,136 @@ class NativeArray
 // statement if it returns or throws (or doesn't return or throw in some
 // situations).
 #define GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement) \
-	if(::testing::internal::AlwaysTrue())                         \
-	{                                                             \
-		statement;                                                \
+	if(::testing::internal::AlwaysTrue()) \
+	{ \
+		statement; \
 	}
 
-#define GTEST_TEST_THROW_(statement, expected_exception, fail)                                                                          \
-	GTEST_AMBIGUOUS_ELSE_BLOCKER_                                                                                                       \
-	if(::testing::internal::ConstCharPtr gtest_msg = "")                                                                                \
-	{                                                                                                                                   \
-		bool gtest_caught_expected = false;                                                                                             \
-		try                                                                                                                             \
-		{                                                                                                                               \
-			GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement);                                                                  \
-		}                                                                                                                               \
-		catch(expected_exception const &)                                                                                               \
-		{                                                                                                                               \
-			gtest_caught_expected = true;                                                                                               \
-		}                                                                                                                               \
-		catch(...)                                                                                                                      \
-		{                                                                                                                               \
-			gtest_msg.value =                                                                                                           \
+#define GTEST_TEST_THROW_(statement, expected_exception, fail) \
+	GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
+	if(::testing::internal::ConstCharPtr gtest_msg = "") \
+	{ \
+		bool gtest_caught_expected = false; \
+		try \
+		{ \
+			GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement); \
+		} \
+		catch(expected_exception const &) \
+		{ \
+			gtest_caught_expected = true; \
+		} \
+		catch(...) \
+		{ \
+			gtest_msg.value = \
 				"Expected: " #statement " throws an exception of type " #expected_exception ".\n  Actual: it throws a different type."; \
-			goto GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__);                                                                 \
-		}                                                                                                                               \
-		if(!gtest_caught_expected)                                                                                                      \
-		{                                                                                                                               \
-			gtest_msg.value =                                                                                                           \
-				"Expected: " #statement " throws an exception of type " #expected_exception ".\n  Actual: it throws nothing.";          \
-			goto GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__);                                                                 \
-		}                                                                                                                               \
-	}                                                                                                                                   \
-	else                                                                                                                                \
-	GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__) : fail(gtest_msg.value)
+			goto GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__); \
+		} \
+		if(!gtest_caught_expected) \
+		{ \
+			gtest_msg.value = \
+				"Expected: " #statement " throws an exception of type " #expected_exception ".\n  Actual: it throws nothing."; \
+			goto GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__); \
+		} \
+	} \
+	else \
+		GTEST_CONCAT_TOKEN_(gtest_label_testthrow_, __LINE__) : fail(gtest_msg.value)
 
-#define GTEST_TEST_NO_THROW_(statement, fail)                                                                               \
-	GTEST_AMBIGUOUS_ELSE_BLOCKER_                                                                                           \
-	if(::testing::internal::AlwaysTrue())                                                                                   \
-	{                                                                                                                       \
-		try                                                                                                                 \
-		{                                                                                                                   \
-			GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement);                                                      \
-		}                                                                                                                   \
-		catch(...)                                                                                                          \
-		{                                                                                                                   \
-			goto GTEST_CONCAT_TOKEN_(gtest_label_testnothrow_, __LINE__);                                                   \
-		}                                                                                                                   \
-	}                                                                                                                       \
-	else                                                                                                                    \
-	GTEST_CONCAT_TOKEN_(gtest_label_testnothrow_, __LINE__) : fail("Expected: " #statement " doesn't throw an exception.\n" \
-																   "  Actual: it throws.")
+#define GTEST_TEST_NO_THROW_(statement, fail) \
+	GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
+	if(::testing::internal::AlwaysTrue()) \
+	{ \
+		try \
+		{ \
+			GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement); \
+		} \
+		catch(...) \
+		{ \
+			goto GTEST_CONCAT_TOKEN_(gtest_label_testnothrow_, __LINE__); \
+		} \
+	} \
+	else \
+		GTEST_CONCAT_TOKEN_(gtest_label_testnothrow_, __LINE__) : fail("Expected: " #statement " doesn't throw an exception.\n" \
+																	   "  Actual: it throws.")
 
-#define GTEST_TEST_ANY_THROW_(statement, fail)                                                                        \
-	GTEST_AMBIGUOUS_ELSE_BLOCKER_                                                                                     \
-	if(::testing::internal::AlwaysTrue())                                                                             \
-	{                                                                                                                 \
-		bool gtest_caught_any = false;                                                                                \
-		try                                                                                                           \
-		{                                                                                                             \
-			GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement);                                                \
-		}                                                                                                             \
-		catch(...)                                                                                                    \
-		{                                                                                                             \
-			gtest_caught_any = true;                                                                                  \
-		}                                                                                                             \
-		if(!gtest_caught_any)                                                                                         \
-		{                                                                                                             \
-			goto GTEST_CONCAT_TOKEN_(gtest_label_testanythrow_, __LINE__);                                            \
-		}                                                                                                             \
-	}                                                                                                                 \
-	else                                                                                                              \
-	GTEST_CONCAT_TOKEN_(gtest_label_testanythrow_, __LINE__) : fail("Expected: " #statement " throws an exception.\n" \
-																	"  Actual: it doesn't.")
+#define GTEST_TEST_ANY_THROW_(statement, fail) \
+	GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
+	if(::testing::internal::AlwaysTrue()) \
+	{ \
+		bool gtest_caught_any = false; \
+		try \
+		{ \
+			GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement); \
+		} \
+		catch(...) \
+		{ \
+			gtest_caught_any = true; \
+		} \
+		if(!gtest_caught_any) \
+		{ \
+			goto GTEST_CONCAT_TOKEN_(gtest_label_testanythrow_, __LINE__); \
+		} \
+	} \
+	else \
+		GTEST_CONCAT_TOKEN_(gtest_label_testanythrow_, __LINE__) : fail("Expected: " #statement " throws an exception.\n" \
+																		"  Actual: it doesn't.")
 
 // Implements Boolean test assertions such as EXPECT_TRUE. expression can be
 // either a boolean expression or an AssertionResult. text is a textual
 // represenation of expression as it was passed into the EXPECT_TRUE.
 #define GTEST_TEST_BOOLEAN_(expression, text, actual, expected, fail) \
-	GTEST_AMBIGUOUS_ELSE_BLOCKER_                                     \
-	if(const ::testing::AssertionResult gtest_ar_ =                   \
-		   ::testing::AssertionResult(expression))                    \
-		;                                                             \
-	else                                                              \
-	fail(::testing::internal::GetBoolAssertionFailureMessage(         \
-			 gtest_ar_, text, #actual, #expected)                     \
-			 .c_str())
+	GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
+	if(const ::testing::AssertionResult gtest_ar_ = \
+			::testing::AssertionResult(expression)) \
+		; \
+	else \
+		fail(::testing::internal::GetBoolAssertionFailureMessage( \
+			gtest_ar_, text, #actual, #expected) \
+				 .c_str())
 
-#define GTEST_TEST_NO_FATAL_FAILURE_(statement, fail)                                                                     \
-	GTEST_AMBIGUOUS_ELSE_BLOCKER_                                                                                         \
-	if(::testing::internal::AlwaysTrue())                                                                                 \
-	{                                                                                                                     \
-		::testing::internal::HasNewFatalFailureHelper gtest_fatal_failure_checker;                                        \
-		GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement);                                                        \
-		if(gtest_fatal_failure_checker.has_new_fatal_failure())                                                           \
-		{                                                                                                                 \
-			goto GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__);                                                 \
-		}                                                                                                                 \
-	}                                                                                                                     \
-	else                                                                                                                  \
-	GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__) : fail("Expected: " #statement " doesn't generate new fatal " \
-																   "failures in the current thread.\n"                    \
-																   "  Actual: it does.")
+#define GTEST_TEST_NO_FATAL_FAILURE_(statement, fail) \
+	GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
+	if(::testing::internal::AlwaysTrue()) \
+	{ \
+		::testing::internal::HasNewFatalFailureHelper gtest_fatal_failure_checker; \
+		GTEST_SUPPRESS_UNREACHABLE_CODE_WARNING_BELOW_(statement); \
+		if(gtest_fatal_failure_checker.has_new_fatal_failure()) \
+		{ \
+			goto GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__); \
+		} \
+	} \
+	else \
+		GTEST_CONCAT_TOKEN_(gtest_label_testnofatal_, __LINE__) : fail("Expected: " #statement " doesn't generate new fatal " \
+																	   "failures in the current thread.\n" \
+																	   "  Actual: it does.")
 
 // Expands to the name of the class that implements the given test.
 #define GTEST_TEST_CLASS_NAME_(test_case_name, test_name) \
 	test_case_name##_##test_name##_Test
 
 // Helper macro for defining tests.
-#define GTEST_TEST_(test_case_name, test_name, parent_class, parent_id)                        \
-	class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class              \
-	{                                                                                          \
-	  public:                                                                                  \
-		GTEST_TEST_CLASS_NAME_(test_case_name, test_name)                                      \
-		() {}                                                                                  \
-	  private:                                                                                 \
-		virtual void TestBody();                                                               \
-		static ::testing::TestInfo *const test_info_ GTEST_ATTRIBUTE_UNUSED_;                  \
-		GTEST_DISALLOW_COPY_AND_ASSIGN_(                                                       \
-			GTEST_TEST_CLASS_NAME_(test_case_name, test_name));                                \
-	};                                                                                         \
-                                                                                               \
+#define GTEST_TEST_(test_case_name, test_name, parent_class, parent_id) \
+	class GTEST_TEST_CLASS_NAME_(test_case_name, test_name) : public parent_class \
+	{ \
+	  public: \
+		GTEST_TEST_CLASS_NAME_(test_case_name, test_name) \
+		() {} \
+\
+	  private: \
+		virtual void TestBody(); \
+		static ::testing::TestInfo *const test_info_ GTEST_ATTRIBUTE_UNUSED_; \
+		GTEST_DISALLOW_COPY_AND_ASSIGN_( \
+			GTEST_TEST_CLASS_NAME_(test_case_name, test_name)); \
+	}; \
+\
 	::testing::TestInfo *const GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::test_info_ = \
-		::testing::internal::MakeAndRegisterTestInfo(                                          \
-			#test_case_name, #test_name, NULL, NULL,                                           \
-			::testing::internal::CodeLocation(__FILE__, __LINE__),                             \
-			(parent_id),                                                                       \
-			parent_class::SetUpTestCase,                                                       \
-			parent_class::TearDownTestCase,                                                    \
-			new ::testing::internal::TestFactoryImpl<                                          \
-				GTEST_TEST_CLASS_NAME_(test_case_name, test_name)>);                           \
+		::testing::internal::MakeAndRegisterTestInfo( \
+			#test_case_name, #test_name, NULL, NULL, \
+			::testing::internal::CodeLocation(__FILE__, __LINE__), \
+			(parent_id), \
+			parent_class::SetUpTestCase, \
+			parent_class::TearDownTestCase, \
+			new ::testing::internal::TestFactoryImpl< \
+				GTEST_TEST_CLASS_NAME_(test_case_name, test_name)>); \
 	void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::TestBody()
 
 #endif // GTEST_INCLUDE_GTEST_INTERNAL_GTEST_INTERNAL_H_

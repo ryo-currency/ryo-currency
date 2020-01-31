@@ -61,6 +61,6 @@ Bulletproof bulletproof_PROVE(const std::vector<uint64_t> &v, const rct::keyV &g
 bool bulletproof_VERIFY(const Bulletproof &proof);
 bool bulletproof_VERIFY(const std::vector<const Bulletproof *> &proofs);
 bool bulletproof_VERIFY(const std::vector<Bulletproof> &proofs);
-}
+} // namespace rct
 
 #endif

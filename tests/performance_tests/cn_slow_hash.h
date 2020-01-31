@@ -52,9 +52,8 @@ class test_cn_slow_hash
 
 	bool init()
 	{
-		const char* exp_result = VERSION1 ? "bbec2cacf69866a8e740380fe7b818fc78f8571221742d729d9d02d7f8989b87" :
-			"45f1fbd7ecdbbf9a94c1d55ce7e5aa9ca37de9f77568cdde243f77f6663cc278";
-		
+		const char *exp_result = VERSION1 ? "bbec2cacf69866a8e740380fe7b818fc78f8571221742d729d9d02d7f8989b87" : "45f1fbd7ecdbbf9a94c1d55ce7e5aa9ca37de9f77568cdde243f77f6663cc278";
+
 		if(!epee::string_tools::hex_to_pod("63617665617420656d70746f72", m_data))
 			return false;
 

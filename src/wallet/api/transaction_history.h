@@ -69,4 +69,4 @@ class TransactionHistoryImpl : public TransactionHistory
 	WalletImpl *m_wallet;
 	mutable boost::shared_mutex m_historyMutex;
 };
-}
+} // namespace Ryo

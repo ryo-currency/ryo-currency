@@ -59,9 +59,9 @@ std::string TestPartResult::ExtractSummary(const char *message)
 std::ostream &operator<<(std::ostream &os, const TestPartResult &result)
 {
 	return os
-		   << result.file_name() << ":" << result.line_number() << ": "
-		   << (result.type() == TestPartResult::kSuccess ? "Success" : result.type() == TestPartResult::kFatalFailure ? "Fatal failure" : "Non-fatal failure") << ":\n"
-		   << result.message() << std::endl;
+		<< result.file_name() << ":" << result.line_number() << ": "
+		<< (result.type() == TestPartResult::kSuccess ? "Success" : result.type() == TestPartResult::kFatalFailure ? "Fatal failure" : "Non-fatal failure") << ":\n"
+		<< result.message() << std::endl;
 }
 
 // Appends a TestPartResult to the array.
@@ -91,9 +91,9 @@ int TestPartResultArray::size() const
 namespace internal
 {
 
-HasNewFatalFailureHelper::HasNewFatalFailureHelper()
-	: has_new_fatal_failure_(false),
-	  original_reporter_(GetUnitTestImpl()->GetTestPartResultReporterForCurrentThread())
+HasNewFatalFailureHelper::HasNewFatalFailureHelper() :
+	has_new_fatal_failure_(false),
+	original_reporter_(GetUnitTestImpl()->GetTestPartResultReporterForCurrentThread())
 {
 	GetUnitTestImpl()->SetTestPartResultReporterForCurrentThread(this);
 }

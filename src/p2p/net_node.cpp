@@ -74,4 +74,4 @@ const command_line::arg_descriptor<int> arg_tos_flag = {"tos-flag", "set TOS fla
 const command_line::arg_descriptor<int64_t> arg_limit_rate_up = {"limit-rate-up", "set limit-rate-up [kB/s]", -1};
 const command_line::arg_descriptor<int64_t> arg_limit_rate_down = {"limit-rate-down", "set limit-rate-down [kB/s]", -1};
 const command_line::arg_descriptor<int64_t> arg_limit_rate = {"limit-rate", "set limit-rate [kB/s]", -1};
-}
+} // namespace nodetool

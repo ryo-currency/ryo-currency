@@ -44,7 +44,7 @@
 
 #include "bootstrap_serialization.h"
 #include "serialization/binary_utils.h" // dump_binary(), parse_binary()
-#include "serialization/json_utils.h"   // dump_json()
+#include "serialization/json_utils.h" // dump_json()
 
 #include "bootstrap_file.h"
 
@@ -65,7 +65,7 @@ const uint32_t blockchain_raw_magic = 0x28721586;
 const uint32_t header_size = 1024;
 
 std::string refresh_string = "\r                                    \r";
-}
+} // namespace
 
 bool BootstrapFile::open_writer(const boost::filesystem::path &file_path)
 {
@@ -76,7 +76,7 @@ bool BootstrapFile::open_writer(const boost::filesystem::path &file_path)
 		{
 			if(!boost::filesystem::is_directory(dir_path))
 			{
-				GULPS_ERROR("export directory path is a file: " , dir_path);
+				GULPS_ERROR("export directory path is a file: ", dir_path);
 				return false;
 			}
 		}
@@ -84,7 +84,7 @@ bool BootstrapFile::open_writer(const boost::filesystem::path &file_path)
 		{
 			if(!boost::filesystem::create_directory(dir_path))
 			{
-				GULPS_ERROR("Failed to create directory " , dir_path);
+				GULPS_ERROR("Failed to create directory ", dir_path);
 				return false;
 			}
 		}
@@ -318,7 +318,7 @@ bool BootstrapFile::store_blockchain_raw(Blockchain *_blockchain_storage, tx_mem
 		if(m_cur_height % progress_interval == 0)
 		{
 			GULPS_PRINT(refresh_string);
-			GULPSF_PRINT("block {}/{}\r", m_cur_height, block_stop );
+			GULPSF_PRINT("block {}/{}\r", m_cur_height, block_stop);
 		}
 	}
 	// NOTE: use of NUM_BLOCKS_PER_CHUNK is a placeholder in case multi-block chunks are later supported.
@@ -327,8 +327,8 @@ bool BootstrapFile::store_blockchain_raw(Blockchain *_blockchain_storage, tx_mem
 		flush_chunk();
 	}
 	// print message for last block, which may not have been printed yet due to progress_interval
-	GULPS_PRINT( refresh_string);
-	GULPSF_PRINT( "block {}/{}" , m_cur_height - 1, block_stop );
+	GULPS_PRINT(refresh_string);
+	GULPSF_PRINT("block {}/{}", m_cur_height - 1, block_stop);
 
 	GULPSF_INFO("Number of blocks exported: {}", num_blocks_written);
 	if(num_blocks_written > 0)
@@ -400,7 +400,7 @@ uint64_t BootstrapFile::count_bytes(std::ifstream &import_file, uint64_t blocks,
 		import_file.read(buf1, sizeof(chunk_size));
 		if(!import_file)
 		{
-			GULPS_PRINT( refresh_string);
+			GULPS_PRINT(refresh_string);
 			GULPS_LOG_L1("End of file reached");
 			quit = true;
 			break;
@@ -413,18 +413,18 @@ uint64_t BootstrapFile::count_bytes(std::ifstream &import_file, uint64_t blocks,
 
 		if(chunk_size > BUFFER_SIZE)
 		{
-			GULPS_PRINT( refresh_string);
+			GULPS_PRINT(refresh_string);
 			GULPSF_WARN("WARNING: chunk_size {} > BUFFER_SIZE {}  height: {}", chunk_size, BUFFER_SIZE, h - 1);
 			throw std::runtime_error("Aborting: chunk size exceeds buffer size");
 		}
 		if(chunk_size > CHUNK_SIZE_WARNING_THRESHOLD)
 		{
-			GULPS_PRINT( refresh_string);
+			GULPS_PRINT(refresh_string);
 			GULPSF_LOG_L1("NOTE: chunk_size {} > {} << height: {}", chunk_size, CHUNK_SIZE_WARNING_THRESHOLD, h - 1);
 		}
 		else if(chunk_size <= 0)
 		{
-			GULPS_PRINT( refresh_string);
+			GULPS_PRINT(refresh_string);
 			GULPSF_LOG_L1("ERROR: chunk_size {} <= 0  height: {}", chunk_size, h - 1);
 			throw std::runtime_error("Aborting");
 		}
@@ -432,7 +432,7 @@ uint64_t BootstrapFile::count_bytes(std::ifstream &import_file, uint64_t blocks,
 		import_file.seekg(chunk_size, std::ios_base::cur);
 		if(!import_file)
 		{
-			GULPS_PRINT( refresh_string);
+			GULPS_PRINT(refresh_string);
 			GULPSF_ERROR("ERROR: unexpected end of file: bytes read before error: {} of chunk_size {}", import_file.gcount(), chunk_size);
 			throw std::runtime_error("Aborting");
 		}
@@ -460,7 +460,7 @@ uint64_t BootstrapFile::count_blocks(const std::string &import_file_path, std::s
 	boost::system::error_code ec;
 	if(!boost::filesystem::exists(raw_file_path, ec))
 	{
-		GULPS_ERROR("bootstrap file not found: " , raw_file_path);
+		GULPS_ERROR("bootstrap file not found: ", raw_file_path);
 		throw std::runtime_error("Aborting");
 	}
 	std::ifstream import_file;
@@ -500,13 +500,13 @@ uint64_t BootstrapFile::count_blocks(const std::string &import_file_path, std::s
 
 	import_file.close();
 
-	GULPS_PRINT( "\n");
-	GULPS_PRINT( "Done scanning bootstrap file");
-	GULPSF_PRINT( "Full header length: {} bytes", full_header_size);
-	GULPSF_PRINT( "Scanned for blocks: {} bytes",  bytes_read);
-	GULPSF_PRINT( "Total:              {} bytes",  full_header_size + bytes_read);
+	GULPS_PRINT("\n");
+	GULPS_PRINT("Done scanning bootstrap file");
+	GULPSF_PRINT("Full header length: {} bytes", full_header_size);
+	GULPSF_PRINT("Scanned for blocks: {} bytes", bytes_read);
+	GULPSF_PRINT("Total:              {} bytes", full_header_size + bytes_read);
 	GULPSF_PRINT("Number of blocks: {}", h);
-	GULPS_PRINT( "\n");
+	GULPS_PRINT("\n");
 
 	// NOTE: h is the number of blocks.
 	// Note that a block's stored height is zero-based, but parts of the code use

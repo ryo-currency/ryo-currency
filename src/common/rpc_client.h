@@ -66,8 +66,8 @@ class t_rpc_client final
 
   public:
 	t_rpc_client(
-		uint32_t ip, uint16_t port, boost::optional<epee::net_utils::http::login> user)
-		: m_http_client{}
+		uint32_t ip, uint16_t port, boost::optional<epee::net_utils::http::login> user) :
+		m_http_client{}
 	{
 		m_http_client.set_server(
 			epee::string_tools::get_ip_string_from_int32(ip), std::to_string(port), std::move(user));
@@ -136,7 +136,7 @@ class t_rpc_client final
 		ok = epee::net_utils::invoke_http_json(relative_url, req, res, m_http_client, t_http_connection::TIMEOUT());
 		if(!ok || res.status != CORE_RPC_STATUS_OK) // TODO - handle CORE_RPC_STATUS_BUSY ?
 		{
-		GULPSF_ERROR("{}-- rpc_request: {}", fail_msg, res.status);
+			GULPSF_ERROR("{}-- rpc_request: {}", fail_msg, res.status);
 			return false;
 		}
 		else
@@ -151,4 +151,4 @@ class t_rpc_client final
 		return connection.is_open();
 	}
 };
-}
+} // namespace tools

@@ -92,7 +92,8 @@ struct txout_to_scripthash
 struct txout_to_key
 {
 	txout_to_key() {}
-	txout_to_key(const crypto::public_key &_key) : key(_key) {}
+	txout_to_key(const crypto::public_key &_key) :
+		key(_key) {}
 	crypto::public_key key;
 };
 
@@ -207,7 +208,8 @@ class transaction : public transaction_prefix
 	mutable size_t blob_size;
 
 	transaction();
-	transaction(const transaction &t) : transaction_prefix(t), hash_valid(false), blob_size_valid(false), signatures(t.signatures), rct_signatures(t.rct_signatures)
+	transaction(const transaction &t) :
+		transaction_prefix(t), hash_valid(false), blob_size_valid(false), signatures(t.signatures), rct_signatures(t.rct_signatures)
 	{
 		if(t.is_hash_valid())
 		{
@@ -302,7 +304,7 @@ class transaction : public transaction_prefix
 				ar.tag("rctsig_prunable");
 				ar.begin_object();
 				r = rct_signatures.p.serialize_rctsig_prunable(ar, rct_signatures.type, vin.size(), vout.size(),
-															   vin.size() > 0 && vin[0].type() == typeid(txin_to_key) ? boost::get<txin_to_key>(vin[0]).key_offsets.size() - 1 : 0);
+					vin.size() > 0 && vin[0].type() == typeid(txin_to_key) ? boost::get<txin_to_key>(vin[0]).key_offsets.size() - 1 : 0);
 				if(!r || !ar.stream().good())
 					return false;
 				ar.end_object();
@@ -407,8 +409,10 @@ struct block : public block_header
 	mutable std::atomic<bool> hash_valid;
 
   public:
-	block() : block_header(), hash_valid(false) {}
-	block(const block &b) : block_header(b), hash_valid(false), miner_tx(b.miner_tx), tx_hashes(b.tx_hashes)
+	block() :
+		block_header(), hash_valid(false) {}
+	block(const block &b) :
+		block_header(b), hash_valid(false), miner_tx(b.miner_tx), tx_hashes(b.tx_hashes)
 	{
 		if(b.is_hash_valid())
 		{
@@ -454,9 +458,10 @@ struct block : public block_header
 /************************************************************************/
 struct account_public_address
 {
-	account_public_address(const crypto::public_key m_spend_public_key, const  crypto::public_key m_view_public_key) : m_spend_public_key(m_spend_public_key), 
-			      m_view_public_key(m_view_public_key) {}
-  
+	account_public_address(const crypto::public_key m_spend_public_key, const crypto::public_key m_view_public_key) :
+		m_spend_public_key(m_spend_public_key),
+		m_view_public_key(m_view_public_key) {}
+
 	crypto::public_key m_spend_public_key;
 	crypto::public_key m_view_public_key;
 
@@ -473,7 +478,7 @@ struct account_public_address
 	bool operator==(const account_public_address &rhs) const
 	{
 		return m_spend_public_key == rhs.m_spend_public_key &&
-			   m_view_public_key == rhs.m_view_public_key;
+			m_view_public_key == rhs.m_view_public_key;
 	}
 
 	bool operator!=(const account_public_address &rhs) const
@@ -496,7 +501,7 @@ struct keypair
 	}
 };
 //---------------------------------------------------------------
-}
+} // namespace cryptonote
 
 namespace std
 {
@@ -512,7 +517,7 @@ struct hash<cryptonote::account_public_address>
 		return res;
 	}
 };
-}
+} // namespace std
 
 BLOB_SERIALIZER(cryptonote::txout_to_key);
 BLOB_SERIALIZER(cryptonote::txout_to_scripthash);

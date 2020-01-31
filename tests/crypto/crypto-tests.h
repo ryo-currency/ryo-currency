@@ -33,10 +33,11 @@
 #if defined(__cplusplus)
 #include "crypto/crypto.h"
 
-extern "C" {
+extern "C"
+{
 #endif
 
-void setup_random(void);
+	void setup_random(void);
 
 #if defined(__cplusplus)
 }

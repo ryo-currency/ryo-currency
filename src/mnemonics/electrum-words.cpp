@@ -52,15 +52,15 @@
  * that method of "backing up" one's wallet keys.
  */
 
+#include "common/boost_locale.hpp"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/crc.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>
-#include "common/boost_locale.hpp"
 
-#include "mnemonics/electrum-words.h"
 #include "crypto/crypto.h" // for declaration of crypto::secret_key
+#include "mnemonics/electrum-words.h"
 #include <cassert>
 #include <cstdint>
 #include <fstream>
@@ -154,17 +154,17 @@ bool find_seed_language(const std::vector<std::string> &seed, Language::Base **l
 
 	// If there's a new language added, add an instance of it here.
 	std::vector<sort_pair> language_instances({{Language::Singleton<Language::Chinese_Simplified>::instance(), 0},
-											   {Language::Singleton<Language::English>::instance(), 0},
-											   {Language::Singleton<Language::Dutch>::instance(), 0},
-											   {Language::Singleton<Language::French>::instance(), 0},
-											   {Language::Singleton<Language::Spanish>::instance(), 0},
-											   {Language::Singleton<Language::German>::instance(), 0},
-											   {Language::Singleton<Language::Italian>::instance(), 0},
-											   {Language::Singleton<Language::Portuguese>::instance(), 0},
-											   {Language::Singleton<Language::Japanese>::instance(), 0},
-											   {Language::Singleton<Language::Russian>::instance(), 0},
-											   {Language::Singleton<Language::Esperanto>::instance(), 0},
-											   {Language::Singleton<Language::Lojban>::instance(), 0}});
+		{Language::Singleton<Language::English>::instance(), 0},
+		{Language::Singleton<Language::Dutch>::instance(), 0},
+		{Language::Singleton<Language::French>::instance(), 0},
+		{Language::Singleton<Language::Spanish>::instance(), 0},
+		{Language::Singleton<Language::German>::instance(), 0},
+		{Language::Singleton<Language::Italian>::instance(), 0},
+		{Language::Singleton<Language::Portuguese>::instance(), 0},
+		{Language::Singleton<Language::Japanese>::instance(), 0},
+		{Language::Singleton<Language::Russian>::instance(), 0},
+		{Language::Singleton<Language::Esperanto>::instance(), 0},
+		{Language::Singleton<Language::Lojban>::instance(), 0}});
 
 	// Assumption here is that the end user will spell more words correctly than get at random in a foreign lang
 	for(sort_pair &pair : language_instances)
@@ -215,17 +215,17 @@ namespace Electrum
 const std::vector<const Language::Base *> &get_language_list()
 {
 	static const std::vector<const Language::Base *> language_instances({Language::Singleton<Language::German>::instance(),
-																		 Language::Singleton<Language::English>::instance(),
-																		 Language::Singleton<Language::Spanish>::instance(),
-																		 Language::Singleton<Language::French>::instance(),
-																		 Language::Singleton<Language::Italian>::instance(),
-																		 Language::Singleton<Language::Dutch>::instance(),
-																		 Language::Singleton<Language::Portuguese>::instance(),
-																		 Language::Singleton<Language::Russian>::instance(),
-																		 Language::Singleton<Language::Japanese>::instance(),
-																		 Language::Singleton<Language::Chinese_Simplified>::instance(),
-																		 Language::Singleton<Language::Esperanto>::instance(),
-																		 Language::Singleton<Language::Lojban>::instance()});
+		Language::Singleton<Language::English>::instance(),
+		Language::Singleton<Language::Spanish>::instance(),
+		Language::Singleton<Language::French>::instance(),
+		Language::Singleton<Language::Italian>::instance(),
+		Language::Singleton<Language::Dutch>::instance(),
+		Language::Singleton<Language::Portuguese>::instance(),
+		Language::Singleton<Language::Russian>::instance(),
+		Language::Singleton<Language::Japanese>::instance(),
+		Language::Singleton<Language::Chinese_Simplified>::instance(),
+		Language::Singleton<Language::Esperanto>::instance(),
+		Language::Singleton<Language::Lojban>::instance()});
 	return language_instances;
 }
 
@@ -256,17 +256,17 @@ std::string verify_language_input(std::string input)
 	boost_locale_init();
 	input = boost::locale::to_title(input);
 
-	for(const Language::Base* lng : get_language_list())
+	for(const Language::Base *lng : get_language_list())
 	{
 		if(lng->get_language_name() == input)
 			return lng->get_language_name();
-		
+
 		if(lng->get_english_language_name() == input)
 			return lng->get_language_name();
 	}
 	return "";
 }
-}
+} // namespace Electrum
 
 namespace Electrum14Words
 {
@@ -301,7 +301,7 @@ bool words_to_bytes(std::string words, crypto::secret_key_16 &dst, uint8_t &extr
 		w3 = matched_indices[i * 3 + 2];
 
 		val = w1 + word_list_length * (((word_list_length - w1) + w2) % word_list_length) +
-			  word_list_length * word_list_length * (((word_list_length - w2) + w3) % word_list_length);
+			word_list_length * word_list_length * (((word_list_length - w2) + w3) % word_list_length);
 
 		if(!(val % word_list_length == w1))
 			return false;
@@ -377,7 +377,7 @@ bool bytes_to_words(const crypto::secret_key_16 &src, uint8_t extra, std::string
 
 	return true;
 }
-}
+} // namespace Electrum14Words
 
 namespace Electrum25Words
 {
@@ -492,7 +492,7 @@ bool words_to_bytes(std::string words, std::string &dst, size_t len, std::string
 		w3 = matched_indices[i * 3 + 2];
 
 		val = w1 + word_list_length * (((word_list_length - w1) + w2) % word_list_length) +
-			  word_list_length * word_list_length * (((word_list_length - w2) + w3) % word_list_length);
+			word_list_length * word_list_length * (((word_list_length - w2) + w3) % word_list_length);
 
 		if(!(val % word_list_length == w1))
 			return false;
@@ -585,5 +585,5 @@ bool bytes_to_words(const crypto::secret_key &src, std::string &words, const std
 {
 	return bytes_to_words(src.data, sizeof(src), words, language_name);
 }
-}
-}
+} // namespace Electrum25Words
+} // namespace crypto

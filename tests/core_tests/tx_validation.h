@@ -33,8 +33,8 @@
 
 struct get_tx_validation_base : public test_chain_unit_base
 {
-	get_tx_validation_base()
-		: m_invalid_tx_index(0), m_invalid_block_index(0)
+	get_tx_validation_base() :
+		m_invalid_tx_index(0), m_invalid_block_index(0)
 	{
 		REGISTER_CALLBACK_METHOD(get_tx_validation_base, mark_invalid_tx);
 		REGISTER_CALLBACK_METHOD(get_tx_validation_base, mark_invalid_block);

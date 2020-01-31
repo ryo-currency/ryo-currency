@@ -70,7 +70,7 @@ const command_line::arg_descriptor<bool> arg_stop_service = {
 const command_line::arg_descriptor<bool> arg_is_service = {
 	"run-as-service", "Hidden -- true if running as windows service"};
 
-std::string get_argument_string(int argc, char* argv[])
+std::string get_argument_string(int argc, char *argv[])
 {
 	std::string result = "";
 	for(int i = 1; i < argc; ++i)
@@ -79,7 +79,7 @@ std::string get_argument_string(int argc, char* argv[])
 	}
 	return result;
 }
-}
+} // namespace
 
 inline void init_options(
 	boost::program_options::options_description &hidden_options, boost::program_options::options_description &normal_options)
@@ -132,7 +132,7 @@ inline boost::filesystem::path get_relative_path_base(
 
 template <typename T_executor>
 inline bool daemonize(
-	int argc, char* argv[], T_executor &&executor // universal ref
+	int argc, char *argv[], T_executor &&executor // universal ref
 	,
 	boost::program_options::variables_map const &vm)
 {
@@ -181,4 +181,4 @@ inline bool daemonize(
 
 	return false;
 }
-}
+} // namespace daemonizer

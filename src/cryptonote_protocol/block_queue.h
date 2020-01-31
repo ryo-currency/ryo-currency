@@ -46,14 +46,12 @@
 
 #pragma once
 
+#include "crypto/hash.h"
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <list>
 #include <set>
 #include <string>
-#include "crypto/hash.h"
-
-
 
 namespace cryptonote
 {
@@ -73,8 +71,10 @@ class block_queue
 		size_t size;
 		boost::posix_time::ptime time;
 
-		span(uint64_t start_block_height, std::list<cryptonote::block_complete_entry> blocks, const boost::uuids::uuid &connection_id, float rate, size_t size) : start_block_height(start_block_height), blocks(std::move(blocks)), connection_id(connection_id), nblocks(this->blocks.size()), rate(rate), size(size), time() {}
-		span(uint64_t start_block_height, uint64_t nblocks, const boost::uuids::uuid &connection_id, boost::posix_time::ptime time) : start_block_height(start_block_height), connection_id(connection_id), nblocks(nblocks), rate(0.0f), size(0), time(time) {}
+		span(uint64_t start_block_height, std::list<cryptonote::block_complete_entry> blocks, const boost::uuids::uuid &connection_id, float rate, size_t size) :
+			start_block_height(start_block_height), blocks(std::move(blocks)), connection_id(connection_id), nblocks(this->blocks.size()), rate(rate), size(size), time() {}
+		span(uint64_t start_block_height, uint64_t nblocks, const boost::uuids::uuid &connection_id, boost::posix_time::ptime time) :
+			start_block_height(start_block_height), connection_id(connection_id), nblocks(nblocks), rate(0.0f), size(0), time(time) {}
 
 		bool operator<(const span &s) const { return start_block_height < s.start_block_height; }
 	};
@@ -110,4 +110,4 @@ class block_queue
 	block_map blocks;
 	mutable boost::recursive_mutex mutex;
 };
-}
+} // namespace cryptonote

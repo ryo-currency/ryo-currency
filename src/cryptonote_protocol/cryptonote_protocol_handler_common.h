@@ -75,4 +75,4 @@ struct cryptonote_protocol_stub : public i_cryptonote_protocol
 		return false;
 	}
 };
-}
+} // namespace cryptonote

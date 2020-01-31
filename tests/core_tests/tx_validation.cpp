@@ -138,8 +138,8 @@ struct tx_builder
 };
 
 transaction make_simple_tx_with_unlock_time(const std::vector<test_event_entry> &events,
-											const cryptonote::block &blk_head, const cryptonote::account_base &from, const cryptonote::account_base &to,
-											uint64_t amount, uint64_t unlock_time)
+	const cryptonote::block &blk_head, const cryptonote::account_base &from, const cryptonote::account_base &to,
+	uint64_t amount, uint64_t unlock_time)
 {
 	std::vector<tx_source_entry> sources;
 	std::vector<tx_destination_entry> destinations;
@@ -178,7 +178,7 @@ crypto::key_image generate_invalid_key_image()
 		throw std::runtime_error("invalid key image wasn't found");
 	return key_image;
 }
-}
+} // namespace
 
 //----------------------------------------------------------------------------------------------------------------------
 // Tests
@@ -591,7 +591,7 @@ bool gen_tx_check_input_unlock_time::generate(std::vector<test_event_entry> &eve
 	std::list<transaction> txs_0;
 	auto make_tx_to_acc = [&](size_t acc_idx, uint64_t unlock_time) {
 		txs_0.push_back(make_simple_tx_with_unlock_time(events, blk_1, miner_account, accounts[acc_idx],
-														MK_COINS(1) + TESTS_DEFAULT_FEE, unlock_time));
+			MK_COINS(1) + TESTS_DEFAULT_FEE, unlock_time));
 		events.push_back(txs_0.back());
 	};
 

@@ -51,4 +51,4 @@ constexpr boost::uuids::uuid cryptonote::config<cryptonote::MAINNET>::NETWORK_ID
 constexpr boost::uuids::uuid cryptonote::config<cryptonote::TESTNET>::NETWORK_ID;
 constexpr boost::uuids::uuid cryptonote::config<cryptonote::STAGENET>::NETWORK_ID;
 
-constexpr const char* cryptonote::common_config::RYO_DONATION_ADDR;
+constexpr const char *cryptonote::common_config::RYO_DONATION_ADDR;

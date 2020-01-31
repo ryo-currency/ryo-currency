@@ -44,8 +44,8 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#include "include_base_utils.h"
 #include "common/gulps.hpp"
+#include "include_base_utils.h"
 
 #include "common/base58.h"
 #include "common/dns_utils.h"
@@ -68,7 +68,8 @@ namespace cryptonote
 
 struct integrated_address
 {
-	integrated_address(account_public_address adr, crypto::hash8 payment_id) : adr(adr), payment_id(payment_id) {}
+	integrated_address(account_public_address adr, crypto::hash8 payment_id) :
+		adr(adr), payment_id(payment_id) {}
 
 	account_public_address adr;
 	crypto::hash8 payment_id;
@@ -86,7 +87,8 @@ struct integrated_address
 
 struct kurz_address
 {
-	kurz_address(crypto::public_key m_public_key) : m_public_key(m_public_key) {}
+	kurz_address(crypto::public_key m_public_key) :
+		m_public_key(m_public_key) {}
 
 	crypto::public_key m_public_key;
 
@@ -114,7 +116,7 @@ size_t get_max_tx_size()
 }
 //-----------------------------------------------------------------------------------------------
 template <network_type NETTYPE>
-bool get_dev_fund_amount(uint64_t height, uint64_t& amount)
+bool get_dev_fund_amount(uint64_t height, uint64_t &amount)
 {
 	amount = 0;
 	if(height < config<NETTYPE>::DEV_FUND_START)
@@ -126,15 +128,15 @@ bool get_dev_fund_amount(uint64_t height, uint64_t& amount)
 		return false; // No dev fund output needed because the dev fund has ended
 
 	if(height % config<NETTYPE>::DEV_FUND_PERIOD != 0)
-		return false;  // No dev fund output needed because it isn't on the period
+		return false; // No dev fund output needed because it isn't on the period
 
 	amount = config<NETTYPE>::DEV_FUND_AMOUNT / config<NETTYPE>::DEV_FUND_LENGTH;
 	return true;
 }
 
-template bool get_dev_fund_amount<MAINNET>(uint64_t height, uint64_t& amount);
-template bool get_dev_fund_amount<TESTNET>(uint64_t height, uint64_t& amount);
-template bool get_dev_fund_amount<STAGENET>(uint64_t height, uint64_t& amount);
+template bool get_dev_fund_amount<MAINNET>(uint64_t height, uint64_t &amount);
+template bool get_dev_fund_amount<TESTNET>(uint64_t height, uint64_t &amount);
+template bool get_dev_fund_amount<STAGENET>(uint64_t height, uint64_t &amount);
 
 //-----------------------------------------------------------------------------------------------
 uint64_t get_base_reward_tabular(uint64_t height, uint64_t already_generated_coins)
@@ -300,7 +302,7 @@ bool get_account_address_from_str(address_parse_info &info, std::string const &s
 	case config<NETTYPE>::RYO_KURZ_ADDRESS_BASE58_PREFIX:
 		info.is_kurz = true;
 		break;
-/* Kurz subaddress are impossible to generate yet, so parsig them should error out
+		/* Kurz subaddress are impossible to generate yet, so parsig them should error out
 	case config<NETTYPE>::RYO_KURZ_SUBADDRESS_BASE58_PREFIX:
 		info.is_subaddress = true;
 		info.is_kurz = true;
@@ -366,7 +368,7 @@ bool operator==(const cryptonote::block &a, const cryptonote::block &b)
 {
 	return cryptonote::get_block_hash(a) == cryptonote::get_block_hash(b);
 }
-}
+} // namespace cryptonote
 
 //--------------------------------------------------------------------------------
 bool parse_hash256(const std::string str_hash, crypto::hash &hash)

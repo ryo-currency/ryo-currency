@@ -47,9 +47,10 @@ struct block_index
 	cryptonote::blobdata blob;
 	std::list<cryptonote::transaction> txes;
 
-	block_index() : height(0), id(crypto::null_hash), longhash(crypto::null_hash) {}
-	block_index(size_t _height, const crypto::hash &_id, const crypto::hash &_longhash, const cryptonote::block &_blk, const cryptonote::blobdata &_blob, const std::list<cryptonote::transaction> &_txes)
-		: height(_height), id(_id), longhash(_longhash), blk(_blk), blob(_blob), txes(_txes) {}
+	block_index() :
+		height(0), id(crypto::null_hash), longhash(crypto::null_hash) {}
+	block_index(size_t _height, const crypto::hash &_id, const crypto::hash &_longhash, const cryptonote::block &_blk, const cryptonote::blobdata &_blob, const std::list<cryptonote::transaction> &_txes) :
+		height(_height), id(_id), longhash(_longhash), blk(_blk), blob(_blob), txes(_txes) {}
 };
 
 class proxy_core
@@ -104,4 +105,4 @@ class proxy_core
 	bool fluffy_blocks_enabled() const { return false; }
 	uint64_t prevalidate_block_hashes(uint64_t height, const std::list<crypto::hash> &hashes) { return 0; }
 };
-}
+} // namespace tests

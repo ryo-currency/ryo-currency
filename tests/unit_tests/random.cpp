@@ -30,7 +30,8 @@
 
 #include "crypto/crypto.h"
 
-extern "C" {
+extern "C"
+{
 #include "crypto/crypto-ops.h"
 }
 

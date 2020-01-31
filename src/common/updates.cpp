@@ -136,4 +136,4 @@ std::string get_update_url(const std::string &software, const std::string &subdi
 #endif
 	return "";
 }
-}
+} // namespace tools

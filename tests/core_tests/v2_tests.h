@@ -33,8 +33,8 @@
 
 struct gen_v2_tx_validation_base : public test_chain_unit_base
 {
-	gen_v2_tx_validation_base()
-		: m_invalid_tx_index(0), m_invalid_block_index(0)
+	gen_v2_tx_validation_base() :
+		m_invalid_tx_index(0), m_invalid_block_index(0)
 	{
 		REGISTER_CALLBACK_METHOD(gen_v2_tx_validation_base, mark_invalid_tx);
 		REGISTER_CALLBACK_METHOD(gen_v2_tx_validation_base, mark_invalid_block);
@@ -69,7 +69,7 @@ struct gen_v2_tx_validation_base : public test_chain_unit_base
 	}
 
 	bool generate_with(std::vector<test_event_entry> &events, const int *out_idx, int mixin,
-					   uint64_t amount_paid, bool valid) const;
+		uint64_t amount_paid, bool valid) const;
 
   private:
 	size_t m_invalid_tx_index;

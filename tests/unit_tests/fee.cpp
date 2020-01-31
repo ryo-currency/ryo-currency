@@ -134,4 +134,4 @@ TEST_F(fee, double_at_full)
 		}
 	}
 }
-}
+} // namespace

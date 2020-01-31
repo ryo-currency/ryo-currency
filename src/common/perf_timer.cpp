@@ -94,7 +94,7 @@ uint64_t ticks_to_ns(uint64_t ticks)
 	return ticks;
 #endif
 }
-}
+} // namespace tools
 
 namespace tools
 {
@@ -113,7 +113,8 @@ void set_performance_timer_log_level(gulps::level level)
 	performance_timer_log_level = level;
 }
 
-PerformanceTimer::PerformanceTimer(bool paused) : started(true), paused(paused)
+PerformanceTimer::PerformanceTimer(bool paused) :
+	started(true), paused(paused)
 {
 	if(paused)
 		ticks = 0;
@@ -121,7 +122,8 @@ PerformanceTimer::PerformanceTimer(bool paused) : started(true), paused(paused)
 		ticks = get_tick_count();
 }
 
-LoggingPerformanceTimer::LoggingPerformanceTimer(const std::string &s, const std::string &cat, uint64_t unit, gulps::level l) : PerformanceTimer(), name(s), cat(cat), unit(unit)
+LoggingPerformanceTimer::LoggingPerformanceTimer(const std::string &s, const std::string &cat, uint64_t unit, gulps::level l) :
+	PerformanceTimer(), name(s), cat(cat), unit(unit)
 {
 	if(!performance_timers)
 	{
@@ -186,4 +188,4 @@ void PerformanceTimer::resume()
 	ticks = get_tick_count() - ticks;
 	paused = false;
 }
-}
+} // namespace tools

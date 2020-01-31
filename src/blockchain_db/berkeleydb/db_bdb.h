@@ -57,7 +57,8 @@ namespace cryptonote
 
 struct bdb_txn_safe
 {
-	bdb_txn_safe() : m_txn(NULL) {}
+	bdb_txn_safe() :
+		m_txn(NULL) {}
 	~bdb_txn_safe()
 	{
 		LOG_PRINT_L3("bdb_txn_safe: destructor");
@@ -226,7 +227,8 @@ template <typename T>
 class bdb_safe_buffer_autolock
 {
   public:
-	bdb_safe_buffer_autolock(T &safe_buffer, typename T::type &buffer) : m_safe_buffer(safe_buffer), m_buffer(nullptr)
+	bdb_safe_buffer_autolock(T &safe_buffer, typename T::type &buffer) :
+		m_safe_buffer(safe_buffer), m_buffer(nullptr)
 	{
 		m_buffer = m_safe_buffer.acquire_buffer();
 		buffer = m_buffer;
@@ -324,7 +326,7 @@ class BlockchainBDB : public BlockchainDB
 
 	virtual tx_out_index get_output_tx_and_index_from_global(const uint64_t &index) const;
 	virtual void get_output_tx_and_index_from_global(const std::vector<uint64_t> &global_indices,
-													 std::vector<tx_out_index> &tx_out_indices) const;
+		std::vector<tx_out_index> &tx_out_indices) const;
 
 	virtual tx_out_index get_output_tx_and_index(const uint64_t &amount, const uint64_t &index);
 	virtual void get_output_tx_and_index(const uint64_t &amount, const std::vector<uint64_t> &offsets, std::vector<tx_out_index> &indices);

@@ -63,7 +63,8 @@ device &get_device(const std::string device_descriptor)
 	struct s_devices
 	{
 		std::map<std::string, std::unique_ptr<device>> registry;
-		s_devices() : registry()
+		s_devices() :
+			registry()
 		{
 			hw::core::register_all(registry);
 #ifdef HAVE_PCSC
@@ -82,10 +83,10 @@ device &get_device(const std::string device_descriptor)
 
 		for(const auto &sm_pair : devices.registry)
 		{
-			GULPS_ERROR(" - " , sm_pair.first);
+			GULPS_ERROR(" - ", sm_pair.first);
 		}
 		throw std::runtime_error("device not found: " + device_descriptor);
 	}
 	return *device->second;
 }
-}
+} // namespace hw

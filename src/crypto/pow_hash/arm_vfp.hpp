@@ -67,7 +67,7 @@ struct uint32x4_t
 	uint32_t v[4];
 };
 
-inline int32x4_t vld1q_s32(int32_t* v)
+inline int32x4_t vld1q_s32(int32_t *v)
 {
 	int32x4_t r;
 	r.v[0] = v[0];
@@ -77,7 +77,7 @@ inline int32x4_t vld1q_s32(int32_t* v)
 	return r;
 }
 
-inline void vst1q_s32(int32_t* v, const int32x4_t& a)
+inline void vst1q_s32(int32_t *v, const int32x4_t &a)
 {
 	v[0] = a.v[0];
 	v[1] = a.v[1];
@@ -116,10 +116,10 @@ inline uint32x4_t vdupq_n_u32(uint32_t a)
 }
 
 template <size_t v>
-inline void vrot_si32(int32x4_t& r)
+inline void vrot_si32(int32x4_t &r)
 {
 	uint8_t tmp[v];
-	uint8_t* vt = (uint8_t*)&r;
+	uint8_t *vt = (uint8_t *)&r;
 	for(size_t i = 0; i < v; i++)
 		tmp[i] = vt[i];
 	for(size_t i = 0; i < 16 - v; i++)
@@ -130,11 +130,11 @@ inline void vrot_si32(int32x4_t& r)
 }
 
 template <>
-inline void vrot_si32<0>(int32x4_t& r)
+inline void vrot_si32<0>(int32x4_t &r)
 {
 }
 
-inline float32x4_t vcvtq_f32_s32(const int32x4_t& v)
+inline float32x4_t vcvtq_f32_s32(const int32x4_t &v)
 {
 	float32x4_t r;
 	r.v[0] = v.v[0];
@@ -144,7 +144,7 @@ inline float32x4_t vcvtq_f32_s32(const int32x4_t& v)
 	return r;
 }
 
-inline int32x4_t vcvtq_s32_f32(const float32x4_t& v)
+inline int32x4_t vcvtq_s32_f32(const float32x4_t &v)
 {
 	int32x4_t r;
 	r.v[0] = v.v[0];
@@ -154,7 +154,7 @@ inline int32x4_t vcvtq_s32_f32(const float32x4_t& v)
 	return r;
 }
 
-inline int32x4_t vorrq_s32(const int32x4_t& a, const int32x4_t& b)
+inline int32x4_t vorrq_s32(const int32x4_t &a, const int32x4_t &b)
 {
 	int32x4_t r;
 	r.v[0] = a.v[0] | b.v[0];
@@ -164,7 +164,7 @@ inline int32x4_t vorrq_s32(const int32x4_t& a, const int32x4_t& b)
 	return r;
 }
 
-inline int32x4_t veorq_s32(const int32x4_t& a, const int32x4_t& b)
+inline int32x4_t veorq_s32(const int32x4_t &a, const int32x4_t &b)
 {
 	int32x4_t r;
 	r.v[0] = a.v[0] ^ b.v[0];
@@ -174,7 +174,7 @@ inline int32x4_t veorq_s32(const int32x4_t& a, const int32x4_t& b)
 	return r;
 }
 
-inline float32x4_t vaddq_f32(const float32x4_t& a, const float32x4_t& b)
+inline float32x4_t vaddq_f32(const float32x4_t &a, const float32x4_t &b)
 {
 	float32x4_t r;
 	r.v[0] = a.v[0] + b.v[0];
@@ -184,7 +184,7 @@ inline float32x4_t vaddq_f32(const float32x4_t& a, const float32x4_t& b)
 	return r;
 }
 
-inline float32x4_t vsubq_f32(const float32x4_t& a, const float32x4_t& b)
+inline float32x4_t vsubq_f32(const float32x4_t &a, const float32x4_t &b)
 {
 	float32x4_t r;
 	r.v[0] = a.v[0] - b.v[0];
@@ -194,7 +194,7 @@ inline float32x4_t vsubq_f32(const float32x4_t& a, const float32x4_t& b)
 	return r;
 }
 
-inline float32x4_t vmulq_f32(const float32x4_t& a, const float32x4_t& b)
+inline float32x4_t vmulq_f32(const float32x4_t &a, const float32x4_t &b)
 {
 	float32x4_t r;
 	r.v[0] = a.v[0] * b.v[0];
@@ -204,7 +204,7 @@ inline float32x4_t vmulq_f32(const float32x4_t& a, const float32x4_t& b)
 	return r;
 }
 
-inline float32x4_t vdivq_f32(const float32x4_t& a, const float32x4_t& b)
+inline float32x4_t vdivq_f32(const float32x4_t &a, const float32x4_t &b)
 {
 	float32x4_t r;
 	r.v[0] = a.v[0] / b.v[0];
@@ -214,34 +214,34 @@ inline float32x4_t vdivq_f32(const float32x4_t& a, const float32x4_t& b)
 	return r;
 }
 
-inline void vandq_f32(float32x4_t& v, uint32_t v2)
+inline void vandq_f32(float32x4_t &v, uint32_t v2)
 {
-	uint32x4_t* vt = (uint32x4_t*)&v;
+	uint32x4_t *vt = (uint32x4_t *)&v;
 	vt->v[0] &= v2;
 	vt->v[1] &= v2;
 	vt->v[2] &= v2;
 	vt->v[3] &= v2;
 }
 
-inline void vorq_f32(float32x4_t& v, uint32_t v2)
+inline void vorq_f32(float32x4_t &v, uint32_t v2)
 {
-	uint32x4_t* vt = (uint32x4_t*)&v;
+	uint32x4_t *vt = (uint32x4_t *)&v;
 	vt->v[0] |= v2;
 	vt->v[1] |= v2;
 	vt->v[2] |= v2;
 	vt->v[3] |= v2;
 }
 
-inline void veorq_f32(float32x4_t& v, uint32_t v2)
+inline void veorq_f32(float32x4_t &v, uint32_t v2)
 {
-	uint32x4_t* vt = (uint32x4_t*)&v;
+	uint32x4_t *vt = (uint32x4_t *)&v;
 	vt->v[0] ^= v2;
 	vt->v[1] ^= v2;
 	vt->v[2] ^= v2;
 	vt->v[3] ^= v2;
 }
 
-inline uint32_t vheor_s32(const int32x4_t& a)
+inline uint32_t vheor_s32(const int32x4_t &a)
 {
 	int32_t r;
 	r = a.v[0] ^ a.v[1] ^ a.v[2] ^ a.v[3];

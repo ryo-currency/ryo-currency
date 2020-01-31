@@ -79,4 +79,4 @@ class PendingTransactionImpl : public PendingTransaction
 	std::string m_errorString;
 	std::vector<tools::wallet2::pending_tx> m_pending_tx;
 };
-}
+} // namespace Ryo

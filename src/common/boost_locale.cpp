@@ -41,7 +41,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include "boost_locale.hpp"
 
 #include <boost/locale.hpp>
@@ -49,11 +48,11 @@
 void boost_locale_init()
 {
 	static bool init_done = false;
-	if(init_done) return;
+	if(init_done)
+		return;
 
 	boost::locale::generator gen;
 	std::locale loc = gen.generate("");
 	std::locale::global(loc);
 	init_done = true;
 }
-

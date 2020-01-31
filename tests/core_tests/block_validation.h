@@ -35,6 +35,7 @@ template <size_t invalid_block_idx = 0>
 class gen_block_verification_base : public test_chain_unit_base
 {
 	GULPS_CAT_MAJOR("gen_block_verification_base");
+
   public:
 	gen_block_verification_base()
 	{

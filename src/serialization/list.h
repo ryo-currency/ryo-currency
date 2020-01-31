@@ -62,8 +62,8 @@ void do_add(std::list<T> &c, T &&e)
 {
 	c.emplace_back(std::move(e));
 }
-}
-}
+} // namespace detail
+} // namespace serialization
 
 #include "serialization.h"
 

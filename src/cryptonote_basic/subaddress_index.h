@@ -53,8 +53,12 @@ namespace cryptonote
 {
 struct subaddress_index
 {
-	subaddress_index(uint32_t maj, uint32_t min) { major = maj; minor = min; }
-  
+	subaddress_index(uint32_t maj, uint32_t min)
+	{
+		major = maj;
+		minor = min;
+	}
+
 	uint32_t major;
 	uint32_t minor;
 	bool operator==(const subaddress_index &rhs) const { return !memcmp(this, &rhs, sizeof(subaddress_index)); }
@@ -71,7 +75,7 @@ struct subaddress_index
 	KV_SERIALIZE(minor)
 	END_KV_SERIALIZE_MAP()
 };
-}
+} // namespace cryptonote
 
 namespace cryptonote
 {
@@ -79,7 +83,7 @@ inline std::ostream &operator<<(std::ostream &out, const cryptonote::subaddress_
 {
 	return out << subaddr_index.major << '/' << subaddr_index.minor;
 }
-}
+} // namespace cryptonote
 
 namespace std
 {
@@ -103,7 +107,7 @@ struct hash<cryptonote::subaddress_index>
 		return res;
 	}
 };
-}
+} // namespace std
 
 BOOST_CLASS_VERSION(cryptonote::subaddress_index, 0)
 
@@ -117,5 +121,5 @@ inline void serialize(Archive &a, cryptonote::subaddress_index &x, const boost::
 	a &x.major;
 	a &x.minor;
 }
-}
-}
+} // namespace serialization
+} // namespace boost

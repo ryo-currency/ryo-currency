@@ -45,7 +45,7 @@
 
 #include <boost/filesystem.hpp>
 #include <cstring> // memcpy
-#include <memory>  // std::unique_ptr
+#include <memory> // std::unique_ptr
 
 #include "crypto/crypto.h"
 #include "cryptonote_basic/cryptonote_format_utils.h"
@@ -159,7 +159,8 @@ const unsigned int DB_BUFFER_COUNT = 1;
 template <typename T>
 struct Dbt_copy : public Dbt
 {
-	Dbt_copy(const T &t) : t_copy(t)
+	Dbt_copy(const T &t) :
+		t_copy(t)
 	{
 		init();
 	}
@@ -189,7 +190,8 @@ struct Dbt_copy : public Dbt
 template <>
 struct Dbt_copy<cryptonote::blobdata> : public Dbt
 {
-	Dbt_copy(const cryptonote::blobdata &bd) : m_data(new char[bd.size()])
+	Dbt_copy(const cryptonote::blobdata &bd) :
+		m_data(new char[bd.size()])
 	{
 		memcpy(m_data.get(), bd.data(), bd.size());
 		set_data(m_data.get());
@@ -205,7 +207,8 @@ struct Dbt_copy<cryptonote::blobdata> : public Dbt
 template <>
 struct Dbt_copy<const char *> : public Dbt
 {
-	Dbt_copy(const char *s) : m_data(strdup(s))
+	Dbt_copy(const char *s) :
+		m_data(strdup(s))
 	{
 		size_t len = strlen(s) + 1; // include the NUL, makes it easier for compare
 		set_data(m_data.get());
@@ -785,8 +788,9 @@ BlockchainBDB::~BlockchainBDB()
 	}
 }
 
-BlockchainBDB::BlockchainBDB(bool batch_transactions) : BlockchainDB(),
-														m_buffer(DB_BUFFER_COUNT, DB_BUFFER_LENGTH)
+BlockchainBDB::BlockchainBDB(bool batch_transactions) :
+	BlockchainDB(),
+	m_buffer(DB_BUFFER_COUNT, DB_BUFFER_LENGTH)
 {
 	LOG_PRINT_L3("BlockchainBDB::" << __func__);
 	// initialize folder to something "safe" just in case
@@ -1974,17 +1978,17 @@ void BlockchainBDB::get_output_global_indices(const uint64_t &amount, const std:
 	}
 
 // get returned keypairs count
-#define DB_COUNT_RECORDS(dbt, cnt)                                   \
-	do                                                               \
-	{                                                                \
-		uint32_t *_p = (uint32_t *)((uint8_t *)(dbt)->data +         \
-									(dbt)->ulen - sizeof(uint32_t)); \
-		cnt = 0;                                                     \
-		while(*_p != (uint32_t)-1)                                   \
-		{                                                            \
-			_p -= 2;                                                 \
-			++cnt;                                                   \
-		}                                                            \
+#define DB_COUNT_RECORDS(dbt, cnt) \
+	do \
+	{ \
+		uint32_t *_p = (uint32_t *)((uint8_t *)(dbt)->data + \
+			(dbt)->ulen - sizeof(uint32_t)); \
+		cnt = 0; \
+		while(*_p != (uint32_t)-1) \
+		{ \
+			_p -= 2; \
+			++cnt; \
+		} \
 	} while(0);
 
 	Dbt_copy<uint64_t> k(amount);

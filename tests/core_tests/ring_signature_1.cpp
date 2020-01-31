@@ -51,7 +51,7 @@ namespace
 const uint64_t rnd_11 = 475921;
 const uint64_t rnd_20 = 360934;
 const uint64_t rnd_29 = 799665;
-}
+} // namespace
 
 bool gen_ring_signature_1::generate(std::vector<test_event_entry> &events) const
 {
@@ -60,37 +60,37 @@ bool gen_ring_signature_1::generate(std::vector<test_event_entry> &events) const
 	GENERATE_ACCOUNT(miner_account);
 
 	//                                                                                                   events
-	MAKE_GENESIS_BLOCK(events, blk_0, miner_account, ts_start);									  //  0
-	MAKE_ACCOUNT(events, some_account_1);														  //  1
-	MAKE_ACCOUNT(events, some_account_2);														  //  2
-	MAKE_ACCOUNT(events, bob_account);															  //  3
-	MAKE_ACCOUNT(events, alice_account);														  //  4
-	MAKE_NEXT_BLOCK(events, blk_1, blk_0, miner_account);										  //  5
-	MAKE_NEXT_BLOCK(events, blk_2, blk_1, miner_account);										  //  6
-	MAKE_NEXT_BLOCK(events, blk_3, blk_2, miner_account);										  //  7
-	MAKE_NEXT_BLOCK(events, blk_4, blk_3, miner_account);										  //  8
-	REWIND_BLOCKS(events, blk_5, blk_4, miner_account);											  // <N blocks>
-	REWIND_BLOCKS(events, blk_5r, blk_5, miner_account);										  // <N blocks>
-	MAKE_TX_LIST_START(events, txs_blk_6, miner_account, bob_account, MK_COINS(1), blk_5);		  //  9 + 2N
-	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(11) + rnd_11, blk_5);	// 10 + 2N
-	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(11) + rnd_11, blk_5);	// 11 + 2N
-	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(20) + rnd_20, blk_5);	// 12 + 2N
-	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(29) + rnd_29, blk_5);	// 13 + 2N
-	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(29) + rnd_29, blk_5);	// 14 + 2N
-	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(29) + rnd_29, blk_5);	// 15 + 2N
+	MAKE_GENESIS_BLOCK(events, blk_0, miner_account, ts_start); //  0
+	MAKE_ACCOUNT(events, some_account_1); //  1
+	MAKE_ACCOUNT(events, some_account_2); //  2
+	MAKE_ACCOUNT(events, bob_account); //  3
+	MAKE_ACCOUNT(events, alice_account); //  4
+	MAKE_NEXT_BLOCK(events, blk_1, blk_0, miner_account); //  5
+	MAKE_NEXT_BLOCK(events, blk_2, blk_1, miner_account); //  6
+	MAKE_NEXT_BLOCK(events, blk_3, blk_2, miner_account); //  7
+	MAKE_NEXT_BLOCK(events, blk_4, blk_3, miner_account); //  8
+	REWIND_BLOCKS(events, blk_5, blk_4, miner_account); // <N blocks>
+	REWIND_BLOCKS(events, blk_5r, blk_5, miner_account); // <N blocks>
+	MAKE_TX_LIST_START(events, txs_blk_6, miner_account, bob_account, MK_COINS(1), blk_5); //  9 + 2N
+	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(11) + rnd_11, blk_5); // 10 + 2N
+	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(11) + rnd_11, blk_5); // 11 + 2N
+	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(20) + rnd_20, blk_5); // 12 + 2N
+	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(29) + rnd_29, blk_5); // 13 + 2N
+	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(29) + rnd_29, blk_5); // 14 + 2N
+	MAKE_TX_LIST(events, txs_blk_6, miner_account, bob_account, MK_COINS(29) + rnd_29, blk_5); // 15 + 2N
 	MAKE_TX_LIST(events, txs_blk_6, miner_account, some_account_1, MK_COINS(11) + rnd_11, blk_5); // 16 + 2N
 	MAKE_TX_LIST(events, txs_blk_6, miner_account, some_account_1, MK_COINS(11) + rnd_11, blk_5); // 17 + 2N
 	MAKE_TX_LIST(events, txs_blk_6, miner_account, some_account_1, MK_COINS(11) + rnd_11, blk_5); // 18 + 2N
 	MAKE_TX_LIST(events, txs_blk_6, miner_account, some_account_1, MK_COINS(11) + rnd_11, blk_5); // 19 + 2N
 	MAKE_TX_LIST(events, txs_blk_6, miner_account, some_account_1, MK_COINS(20) + rnd_20, blk_5); // 20 + 2N
 	MAKE_TX_LIST(events, txs_blk_6, miner_account, some_account_2, MK_COINS(20) + rnd_20, blk_5); // 21 + 2N
-	MAKE_NEXT_BLOCK_TX_LIST(events, blk_6, blk_5r, miner_account, txs_blk_6);					  // 22 + 2N
-	DO_CALLBACK(events, "check_balances_1");													  // 23 + 2N
-	REWIND_BLOCKS(events, blk_6r, blk_6, miner_account);										  // <N blocks>
+	MAKE_NEXT_BLOCK_TX_LIST(events, blk_6, blk_5r, miner_account, txs_blk_6); // 22 + 2N
+	DO_CALLBACK(events, "check_balances_1"); // 23 + 2N
+	REWIND_BLOCKS(events, blk_6r, blk_6, miner_account); // <N blocks>
 	// 129 = 11 + 11 + 20 + 29 + 29 + 29
 	MAKE_TX_MIX(events, tx_0, bob_account, alice_account, MK_COINS(129) + 2 * rnd_11 + rnd_20 + 3 * rnd_29 - TESTS_DEFAULT_FEE, 2, blk_6); // 24 + 3N
-	MAKE_NEXT_BLOCK_TX1(events, blk_7, blk_6r, miner_account, tx_0);																	   // 25 + 3N
-	DO_CALLBACK(events, "check_balances_2");																							   // 26 + 3N
+	MAKE_NEXT_BLOCK_TX1(events, blk_7, blk_6r, miner_account, tx_0); // 25 + 3N
+	DO_CALLBACK(events, "check_balances_2"); // 26 + 3N
 
 	return true;
 }
@@ -154,23 +154,23 @@ bool gen_ring_signature_2::generate(std::vector<test_event_entry> &events) const
 	GENERATE_ACCOUNT(miner_account);
 
 	//                                                                                                    events
-	MAKE_GENESIS_BLOCK(events, blk_0, miner_account, ts_start);										   //  0
-	MAKE_ACCOUNT(events, bob_account);																   //  1
-	MAKE_ACCOUNT(events, alice_account);															   //  2
-	MAKE_NEXT_BLOCK(events, blk_1, blk_0, miner_account);											   //  3
-	MAKE_NEXT_BLOCK(events, blk_2, blk_1, miner_account);											   //  4
-	MAKE_NEXT_BLOCK(events, blk_3, blk_2, miner_account);											   //  5
-	REWIND_BLOCKS(events, blk_3r, blk_3, miner_account);											   // <N blocks>
-	MAKE_TX_LIST_START(events, txs_blk_4, miner_account, bob_account, MK_COINS(13), blk_3);			   //  6 + N
-	MAKE_TX_LIST(events, txs_blk_4, miner_account, bob_account, MK_COINS(13), blk_3);				   //  7 + N
-	MAKE_TX_LIST(events, txs_blk_4, miner_account, bob_account, MK_COINS(13), blk_3);				   //  8 + N
-	MAKE_TX_LIST(events, txs_blk_4, miner_account, bob_account, MK_COINS(13), blk_3);				   //  9 + N
-	MAKE_NEXT_BLOCK_TX_LIST(events, blk_4, blk_3r, miner_account, txs_blk_4);						   // 10 + N
-	DO_CALLBACK(events, "check_balances_1");														   // 11 + N
-	REWIND_BLOCKS(events, blk_4r, blk_4, miner_account);											   // <N blocks>
+	MAKE_GENESIS_BLOCK(events, blk_0, miner_account, ts_start); //  0
+	MAKE_ACCOUNT(events, bob_account); //  1
+	MAKE_ACCOUNT(events, alice_account); //  2
+	MAKE_NEXT_BLOCK(events, blk_1, blk_0, miner_account); //  3
+	MAKE_NEXT_BLOCK(events, blk_2, blk_1, miner_account); //  4
+	MAKE_NEXT_BLOCK(events, blk_3, blk_2, miner_account); //  5
+	REWIND_BLOCKS(events, blk_3r, blk_3, miner_account); // <N blocks>
+	MAKE_TX_LIST_START(events, txs_blk_4, miner_account, bob_account, MK_COINS(13), blk_3); //  6 + N
+	MAKE_TX_LIST(events, txs_blk_4, miner_account, bob_account, MK_COINS(13), blk_3); //  7 + N
+	MAKE_TX_LIST(events, txs_blk_4, miner_account, bob_account, MK_COINS(13), blk_3); //  8 + N
+	MAKE_TX_LIST(events, txs_blk_4, miner_account, bob_account, MK_COINS(13), blk_3); //  9 + N
+	MAKE_NEXT_BLOCK_TX_LIST(events, blk_4, blk_3r, miner_account, txs_blk_4); // 10 + N
+	DO_CALLBACK(events, "check_balances_1"); // 11 + N
+	REWIND_BLOCKS(events, blk_4r, blk_4, miner_account); // <N blocks>
 	MAKE_TX_MIX(events, tx_0, bob_account, alice_account, MK_COINS(52) - TESTS_DEFAULT_FEE, 3, blk_4); // 12 + 2N
-	MAKE_NEXT_BLOCK_TX1(events, blk_5, blk_4r, miner_account, tx_0);								   // 13 + 2N
-	DO_CALLBACK(events, "check_balances_2");														   // 14 + 2N
+	MAKE_NEXT_BLOCK_TX1(events, blk_5, blk_4r, miner_account, tx_0); // 13 + 2N
+	DO_CALLBACK(events, "check_balances_2"); // 14 + 2N
 
 	return true;
 }
@@ -217,8 +217,8 @@ bool gen_ring_signature_2::check_balances_2(cryptonote::core &c, size_t ev_index
 ////////
 // class gen_ring_signature_big;
 
-gen_ring_signature_big::gen_ring_signature_big()
-	: m_test_size(100), m_tx_amount(MK_COINS(29))
+gen_ring_signature_big::gen_ring_signature_big() :
+	m_test_size(100), m_tx_amount(MK_COINS(29))
 {
 	REGISTER_CALLBACK("check_balances_1", gen_ring_signature_big::check_balances_1);
 	REGISTER_CALLBACK("check_balances_2", gen_ring_signature_big::check_balances_2);

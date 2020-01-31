@@ -98,4 +98,4 @@ class TransactionInfoImpl : public TransactionInfo
 	friend class TransactionHistoryImpl;
 };
 
-} // namespace
+} // namespace Ryo

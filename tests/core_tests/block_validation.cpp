@@ -40,8 +40,8 @@ GULPS_CAT_MAJOR("test");
 namespace
 {
 bool lift_up_difficulty(std::vector<test_event_entry> &events, std::vector<uint64_t> &timestamps,
-						std::vector<difficulty_type> &cummulative_difficulties, test_generator &generator,
-						size_t new_block_count, const block &blk_last, const account_base &miner_account)
+	std::vector<difficulty_type> &cummulative_difficulties, test_generator &generator,
+	size_t new_block_count, const block &blk_last, const account_base &miner_account)
 {
 	difficulty_type commulative_diffic = cummulative_difficulties.empty() ? 0 : cummulative_difficulties.back();
 	block blk_prev = blk_last;
@@ -50,7 +50,7 @@ bool lift_up_difficulty(std::vector<test_event_entry> &events, std::vector<uint6
 		block blk_next;
 		difficulty_type diffic = next_difficulty_v1(timestamps, cummulative_difficulties, common_config::DIFFICULTY_TARGET);
 		if(!generator.construct_block_manually(blk_next, blk_prev, miner_account,
-											   test_generator::bf_timestamp | test_generator::bf_diffic, 0, 0, blk_prev.timestamp, crypto::hash(), diffic))
+			   test_generator::bf_timestamp | test_generator::bf_diffic, 0, 0, blk_prev.timestamp, crypto::hash(), diffic))
 			return false;
 
 		commulative_diffic += diffic;
@@ -68,10 +68,10 @@ bool lift_up_difficulty(std::vector<test_event_entry> &events, std::vector<uint6
 
 	return true;
 }
-}
+} // namespace
 
 #define BLOCK_VALIDATION_INIT_GENERATE() \
-	GENERATE_ACCOUNT(miner_account);     \
+	GENERATE_ACCOUNT(miner_account); \
 	MAKE_GENESIS_BLOCK(events, blk_0, miner_account, 1338224400);
 
 //----------------------------------------------------------------------------------------------------------------------
@@ -188,7 +188,7 @@ bool gen_block_invalid_nonce::generate(std::vector<test_event_entry> &events) co
 		++timestamp;
 		blk_3.miner_tx.set_null();
 		if(!generator.construct_block_manually(blk_3, blk_last, miner_account,
-											   test_generator::bf_diffic | test_generator::bf_timestamp, 0, 0, timestamp, crypto::hash(), diffic))
+			   test_generator::bf_diffic | test_generator::bf_timestamp, 0, 0, timestamp, crypto::hash(), diffic))
 			return false;
 	} while(0 == blk_3.nonce);
 	--blk_3.nonce;
@@ -543,8 +543,8 @@ bool gen_block_is_too_big::generate(std::vector<test_event_entry> &events) const
 	return true;
 }
 
-gen_block_invalid_binary_format::gen_block_invalid_binary_format()
-	: m_corrupt_blocks_begin_idx(0)
+gen_block_invalid_binary_format::gen_block_invalid_binary_format() :
+	m_corrupt_blocks_begin_idx(0)
 {
 	REGISTER_CALLBACK("check_all_blocks_purged", gen_block_invalid_binary_format::check_all_blocks_purged);
 	REGISTER_CALLBACK("corrupt_blocks_boundary", gen_block_invalid_binary_format::corrupt_blocks_boundary);
@@ -590,8 +590,8 @@ bool gen_block_invalid_binary_format::generate(std::vector<test_event_entry> &ev
 	size_t txs_size = get_object_blobsize(tx_0);
 	diffic = next_difficulty_v1(timestamps, cummulative_difficulties, common_config::DIFFICULTY_TARGET);
 	if(!generator.construct_block_manually(blk_test, blk_last, miner_account,
-										   test_generator::bf_diffic | test_generator::bf_timestamp | test_generator::bf_tx_hashes, 0, 0, blk_last.timestamp,
-										   crypto::hash(), diffic, transaction(), tx_hashes, txs_size))
+		   test_generator::bf_diffic | test_generator::bf_timestamp | test_generator::bf_tx_hashes, 0, 0, blk_last.timestamp,
+		   crypto::hash(), diffic, transaction(), tx_hashes, txs_size))
 		return false;
 
 	blobdata blob = t_serializable_object_to_blob(blk_test);
@@ -613,7 +613,7 @@ bool gen_block_invalid_binary_format::generate(std::vector<test_event_entry> &ev
 }
 
 bool gen_block_invalid_binary_format::check_block_verification_context(const cryptonote::block_verification_context &bvc,
-																	   size_t event_idx, const cryptonote::block &blk)
+	size_t event_idx, const cryptonote::block &blk)
 {
 	if(0 == m_corrupt_blocks_begin_idx || event_idx < m_corrupt_blocks_begin_idx)
 	{

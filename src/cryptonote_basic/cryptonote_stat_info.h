@@ -65,4 +65,4 @@ struct core_stat_info
 	KV_SERIALIZE(top_block_id_str)
 	END_KV_SERIALIZE_MAP()
 };
-}
+} // namespace cryptonote

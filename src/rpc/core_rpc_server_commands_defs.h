@@ -607,7 +607,7 @@ struct COMMAND_RPC_GET_TRANSACTIONS
 	struct response
 	{
 		// older compatibility stuff
-		std::list<std::string> txs_as_hex;  //transactions blobs as hex (old compat)
+		std::list<std::string> txs_as_hex; //transactions blobs as hex (old compat)
 		std::list<std::string> txs_as_json; //transactions decoded as json (old compat)
 
 		// in both old and new
@@ -732,8 +732,9 @@ struct COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS
 //-----------------------------------------------
 struct get_outputs_out
 {
-	get_outputs_out(uint64_t amount, uint64_t index) : amount(amount), index(index) {}
-  
+	get_outputs_out(uint64_t amount, uint64_t index) :
+		amount(amount), index(index) {}
+
 	uint64_t amount;
 	uint64_t index;
 
@@ -756,9 +757,10 @@ struct COMMAND_RPC_GET_OUTPUTS_BIN
 
 	struct outkey
 	{
-		outkey(crypto::public_key key, rct::key mask, bool unlocked, uint64_t height, crypto::hash txid) : key(key), mask(mask),
-			unlocked(unlocked), height(height), txid(txid)  {}
-	  
+		outkey(crypto::public_key key, rct::key mask, bool unlocked, uint64_t height, crypto::hash txid) :
+			key(key), mask(mask),
+			unlocked(unlocked), height(height), txid(txid) {}
+
 		crypto::public_key key;
 		rct::key mask;
 		bool unlocked;
@@ -1305,12 +1307,12 @@ struct peer
 	uint16_t port;
 	uint64_t last_seen;
 
-	peer(uint64_t id, const std::string &host, uint64_t last_seen)
-		: id(id), host(host), ip(0), port(0), last_seen(last_seen)
+	peer(uint64_t id, const std::string &host, uint64_t last_seen) :
+		id(id), host(host), ip(0), port(0), last_seen(last_seen)
 	{
 	}
-	peer(uint64_t id, uint32_t ip, uint16_t port, uint64_t last_seen)
-		: id(id), host(std::to_string(ip)), ip(ip), port(port), last_seen(last_seen)
+	peer(uint64_t id, uint32_t ip, uint16_t port, uint64_t last_seen) :
+		id(id), host(std::to_string(ip)), ip(ip), port(port), last_seen(last_seen)
 	{
 	}
 
@@ -1559,7 +1561,7 @@ struct txpool_stats
 	uint32_t num_double_spends;
 
 	void clear()
-	{	
+	{
 		bytes_total = 0;
 		bytes_min = 0;
 		bytes_max = 0;
@@ -1950,7 +1952,8 @@ struct COMMAND_RPC_GET_OUTPUT_HISTOGRAM
 		KV_SERIALIZE(recent_instances);
 		END_KV_SERIALIZE_MAP()
 
-		entry(uint64_t amount, uint64_t total_instances, uint64_t unlocked_instances, uint64_t recent_instances) : amount(amount), total_instances(total_instances), unlocked_instances(unlocked_instances), recent_instances(recent_instances) {}
+		entry(uint64_t amount, uint64_t total_instances, uint64_t unlocked_instances, uint64_t recent_instances) :
+			amount(amount), total_instances(total_instances), unlocked_instances(unlocked_instances), recent_instances(recent_instances) {}
 	};
 
 	struct response
@@ -2026,7 +2029,8 @@ struct COMMAND_RPC_GET_ALTERNATE_CHAINS
 
 	struct chain_info
 	{
-		chain_info(std::string block_hash, const uint64_t height, const uint64_t length, const uint64_t difficulty) : block_hash(block_hash), height(height), length(length), difficulty(difficulty) {}
+		chain_info(std::string block_hash, const uint64_t height, const uint64_t length, const uint64_t difficulty) :
+			block_hash(block_hash), height(height), length(length), difficulty(difficulty) {}
 
 		std::string block_hash;
 		uint64_t height;
@@ -2119,7 +2123,8 @@ struct COMMAND_RPC_SYNC_INFO
 
 	struct peer
 	{
-		peer(connection_info info) : info(info) {}
+		peer(connection_info info) :
+			info(info) {}
 
 		connection_info info;
 
@@ -2131,8 +2136,8 @@ struct COMMAND_RPC_SYNC_INFO
 	struct span
 	{
 		span(uint64_t start_block_height, uint64_t nblocks, std::string connection_id, uint32_t rate, uint32_t speed, uint64_t size, std::string remote_address) :
-		    start_block_height(start_block_height), nblocks(nblocks), connection_id(connection_id), rate(rate), speed(speed), size(size), remote_address(remote_address)  {}
-	  
+			start_block_height(start_block_height), nblocks(nblocks), connection_id(connection_id), rate(rate), speed(speed), size(size), remote_address(remote_address) {}
+
 		uint64_t start_block_height;
 		uint64_t nblocks;
 		std::string connection_id;
@@ -2190,7 +2195,7 @@ struct COMMAND_RPC_GET_OUTPUT_DISTRIBUTION
 	struct distribution_data
 	{
 		distribution_data(uint64_t amount, uint64_t start_height, std::vector<uint64_t> distribution, uint64_t base) :
-				  amount(amount), start_height(start_height), distribution(distribution), base(base) {}
+			amount(amount), start_height(start_height), distribution(distribution), base(base) {}
 		uint64_t amount;
 		uint64_t start_height;
 		std::vector<uint64_t> distribution;
@@ -2215,4 +2220,4 @@ struct COMMAND_RPC_GET_OUTPUT_DISTRIBUTION
 		END_KV_SERIALIZE_MAP()
 	};
 };
-}
+} // namespace cryptonote

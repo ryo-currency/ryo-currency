@@ -94,13 +94,13 @@ std::string verify_language_input(std::string input);
      * \return      the name of the language in English
      */
 std::string get_english_name_for(const std::string &name);
-}
+} // namespace Electrum
 
 namespace Electrum14Words
 {
 bool words_to_bytes(std::string words, crypto::secret_key_16 &dst, uint8_t &extra, std::string &language_name);
 bool bytes_to_words(const crypto::secret_key_16 &dst, uint8_t extra, std::string &words, const std::string &language_name);
-}
+} // namespace Electrum14Words
 
 namespace Electrum25Words
 {
@@ -142,7 +142,7 @@ bool bytes_to_words(const char *src, size_t len, std::string &words, const std::
      * \return               true if successful false if not. Unsuccessful if wrong key size.
      */
 bool bytes_to_words(const crypto::secret_key &src, std::string &words, const std::string &language_name);
-}
-}
+} // namespace Electrum25Words
+} // namespace crypto
 
 #endif

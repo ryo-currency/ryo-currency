@@ -45,10 +45,10 @@ using namespace cryptonote;
 // Tests
 
 bool gen_multisig_tx_validation_base::generate_with(std::vector<test_event_entry> &events,
-													size_t inputs, size_t mixin, uint64_t amount_paid, bool valid,
-													size_t threshold, size_t total, size_t creator, std::vector<size_t> signers,
-													const std::function<void(std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations)> &pre_tx,
-													const std::function<void(transaction &tx)> &post_tx) const
+	size_t inputs, size_t mixin, uint64_t amount_paid, bool valid,
+	size_t threshold, size_t total, size_t creator, std::vector<size_t> signers,
+	const std::function<void(std::vector<tx_source_entry> &sources, std::vector<tx_destination_entry> &destinations)> &pre_tx,
+	const std::function<void(transaction &tx)> &post_tx) const
 {
 	uint64_t ts_start = 1338224400;
 	bool r;
@@ -95,10 +95,10 @@ bool gen_multisig_tx_validation_base::generate_with(std::vector<test_event_entry
 		miner_accounts[n].generate_new(false);
 		account_base &account = n < inputs ? miner_account[creator] : miner_accounts[n];
 		GULPS_CHECK_AND_ASSERT_MES(generator.construct_block_manually(blocks[n], *prev_block, account,
-																test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp | test_generator::bf_hf_version | test_generator::bf_max_outs,
-																4, 4, prev_block->timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
-																crypto::hash(), 0, transaction(), std::vector<crypto::hash>(), 0, 1, 4),
-							 false, "Failed to generate block");
+									   test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp | test_generator::bf_hf_version | test_generator::bf_max_outs,
+									   4, 4, prev_block->timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
+									   crypto::hash(), 0, transaction(), std::vector<crypto::hash>(), 0, 1, 4),
+			false, "Failed to generate block");
 		events.push_back(blocks[n]);
 		prev_block = blocks + n;
 		std::cout << "Initial miner tx " << n << ": " << obj_to_json_str(blocks[n].miner_tx) << std::endl;
@@ -113,10 +113,10 @@ bool gen_multisig_tx_validation_base::generate_with(std::vector<test_event_entry
 		{
 			cryptonote::block blk;
 			GULPS_CHECK_AND_ASSERT_MES(generator.construct_block_manually(blk, blk_last, miner_accounts[0],
-																	test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp | test_generator::bf_hf_version | test_generator::bf_max_outs,
-																	4, 4, blk_last.timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
-																	crypto::hash(), 0, transaction(), std::vector<crypto::hash>(), 0, 1, 4),
-								 false, "Failed to generate block");
+										   test_generator::bf_major_ver | test_generator::bf_minor_ver | test_generator::bf_timestamp | test_generator::bf_hf_version | test_generator::bf_max_outs,
+										   4, 4, blk_last.timestamp + DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 2, // v2 has blocks twice as long
+										   crypto::hash(), 0, transaction(), std::vector<crypto::hash>(), 0, 1, 4),
+				false, "Failed to generate block");
 			events.push_back(blk);
 			blk_last = blk;
 		}
@@ -147,7 +147,7 @@ bool gen_multisig_tx_validation_base::generate_with(std::vector<test_event_entry
 	for(size_t msidx = 0; msidx < total; ++msidx)
 	{
 		GULPS_CHECK_AND_ASSERT_MES(miner_account[msidx].get_keys().m_account_address.m_spend_public_key == miner_account[0].get_keys().m_account_address.m_spend_public_key,
-							 false, "Mismatched spend public keys");
+			false, "Mismatched spend public keys");
 
 		size_t nlr = threshold < total ? threshold - 1 : 1;
 		account_k[msidx].resize(inputs);
@@ -297,7 +297,7 @@ bool gen_multisig_tx_validation_base::generate_with(std::vector<test_event_entry
 			for(size_t idx = 0; idx < sources_copy.size(); ++idx)
 			{
 				GULPS_CHECK_AND_ASSERT_MES((size_t)sources_copy[idx].real_output < sources_copy[idx].outputs.size(),
-									 false, "Invalid real_output");
+					false, "Invalid real_output");
 				if(sources_copy[idx].outputs[sources_copy[idx].real_output].second.dest == sources[n].outputs[sources[n].real_output].second.dest)
 					ins_order.push_back(idx);
 			}

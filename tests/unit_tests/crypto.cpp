@@ -28,8 +28,8 @@
 
 #include <cstdint>
 #include <gtest/gtest.h>
-#include <sodium/crypto_verify_32.h>
 #include <memory>
+#include <sodium/crypto_verify_32.h>
 #include <sstream>
 #include <string>
 
@@ -61,7 +61,7 @@ bool is_formatted()
 	out << "BEGIN" << value << "END";
 	return out.str() == "BEGIN<" + std::string{expected, sizeof(T) * 2} + ">END";
 }
-}
+} // namespace
 
 TEST(Crypto, Ostream)
 {

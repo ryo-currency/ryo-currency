@@ -61,10 +61,8 @@
 
 #include "common/gulps.hpp"
 
-
 #define GULPS_PRINT_FAIL(...) GULPS_ERROR("Error: ", __VA_ARGS__)
 #define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
-
 
 namespace windows
 {
@@ -120,7 +118,7 @@ void pause_to_display_admin_window_messages()
 	boost::chrono::milliseconds how_long{1500};
 	boost::this_thread::sleep_for(how_long);
 }
-}
+} // namespace
 
 bool check_admin(bool &result)
 {

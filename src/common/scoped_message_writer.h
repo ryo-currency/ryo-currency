@@ -58,6 +58,7 @@ namespace tools
 class scoped_message_writer
 {
 	GULPS_CAT_MAJOR("scpd_msg_wrt");
+
   private:
 	bool m_flush;
 	std::stringstream m_oss;
@@ -66,24 +67,25 @@ class scoped_message_writer
 
   public:
 	scoped_message_writer(
-		gulps::color color = gulps::COLOR_WHITE, std::string &&prefix = std::string(), gulps::level log_level = gulps::LEVEL_INFO)
-		: m_flush(true), m_color(color), m_log_level(log_level)
+		gulps::color color = gulps::COLOR_WHITE, std::string &&prefix = std::string(), gulps::level log_level = gulps::LEVEL_INFO) :
+		m_flush(true),
+		m_color(color), m_log_level(log_level)
 	{
 		m_oss << prefix;
 	}
 
-	scoped_message_writer(scoped_message_writer &&rhs)
-		: m_flush(std::move(rhs.m_flush))
+	scoped_message_writer(scoped_message_writer &&rhs) :
+		m_flush(std::move(rhs.m_flush))
 #if defined(_MSC_VER)
-		  ,
-		  m_oss(std::move(rhs.m_oss))
+		,
+		m_oss(std::move(rhs.m_oss))
 #else
-		  // GCC bug: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54316
-		  ,
-		  m_oss(rhs.m_oss.str(), std::ios_base::out | std::ios_base::ate)
+		// GCC bug: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54316
+		,
+		m_oss(rhs.m_oss.str(), std::ios_base::out | std::ios_base::ate)
 #endif
-		  ,
-		  m_color(std::move(rhs.m_color)), m_log_level(std::move(rhs.m_log_level))
+		,
+		m_color(std::move(rhs.m_color)), m_log_level(std::move(rhs.m_log_level))
 	{
 		rhs.m_flush = false;
 	}

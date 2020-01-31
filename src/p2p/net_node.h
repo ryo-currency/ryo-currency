@@ -72,7 +72,8 @@ namespace nodetool
 template <class base_type>
 struct p2p_connection_context_t : base_type //t_payload_net_handler::connection_context //public net_utils::connection_context_base
 {
-	p2p_connection_context_t() : peer_id(0), support_flags(0), m_in_timedsync(false) {}
+	p2p_connection_context_t() :
+		peer_id(0), support_flags(0), m_in_timedsync(false) {}
 
 	peerid_type peer_id;
 	uint32_t support_flags;
@@ -103,16 +104,16 @@ class node_server : public epee::levin::levin_commands_handler<p2p_connection_co
   public:
 	typedef t_payload_net_handler payload_net_handler;
 
-	node_server(t_payload_net_handler &payload_handler)
-		: m_payload_handler(payload_handler),
-		  m_current_number_of_out_peers(0),
-		  m_current_number_of_in_peers(0),
-		  m_allow_local_ip(false),
-		  m_hide_my_port(false),
-		  m_no_igd(false),
-		  m_offline(false),
-		  is_closing(false),
-		  m_net_server(epee::net_utils::e_connection_type_P2P) // this is a P2P connection of the main p2p node server, because this is class node_server<>
+	node_server(t_payload_net_handler &payload_handler) :
+		m_payload_handler(payload_handler),
+		m_current_number_of_out_peers(0),
+		m_current_number_of_in_peers(0),
+		m_allow_local_ip(false),
+		m_hide_my_port(false),
+		m_no_igd(false),
+		m_offline(false),
+		is_closing(false),
+		m_net_server(epee::net_utils::e_connection_type_P2P) // this is a P2P connection of the main p2p node server, because this is class node_server<>
 	{
 	}
 	virtual ~node_server()
@@ -159,13 +160,13 @@ class node_server : public epee::levin::levin_commands_handler<p2p_connection_co
   private:
 	const std::vector<std::string> m_seed_nodes_list =
 		{"seed1.ryo-currency.com",
-		 "seed2.ryo-currency.com",
-		 "seed3.ryo-currency.com",
-		 "seed1.ryo-currency.org",
-		 "seed2.ryo-currency.org",
-		 "seed3.ryo-currency.org",
-		 "testnet-seed.ryo-currency.com",
-		 "testnet-seed.ryo-currency.org"};
+			"seed2.ryo-currency.com",
+			"seed3.ryo-currency.com",
+			"seed1.ryo-currency.org",
+			"seed2.ryo-currency.org",
+			"seed3.ryo-currency.org",
+			"testnet-seed.ryo-currency.com",
+			"testnet-seed.ryo-currency.org"};
 
 	bool islimitup = false;
 	bool islimitdown = false;
@@ -365,7 +366,7 @@ class node_server : public epee::levin::levin_commands_handler<p2p_connection_co
 	cryptonote::network_type m_nettype;
 };
 
-const int64_t default_limit_up = 2048;   // kB/s
+const int64_t default_limit_up = 2048; // kB/s
 const int64_t default_limit_down = 8192; // kB/s
 extern const command_line::arg_descriptor<std::string> arg_p2p_bind_ip;
 extern const command_line::arg_descriptor<std::string, false, true, 2> arg_p2p_bind_port;
@@ -386,6 +387,6 @@ extern const command_line::arg_descriptor<int> arg_tos_flag;
 extern const command_line::arg_descriptor<int64_t> arg_limit_rate_up;
 extern const command_line::arg_descriptor<int64_t> arg_limit_rate_down;
 extern const command_line::arg_descriptor<int64_t> arg_limit_rate;
-}
+} // namespace nodetool
 
 POP_WARNINGS

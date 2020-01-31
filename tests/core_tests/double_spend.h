@@ -130,15 +130,15 @@ class gen_double_spend_in_different_chains : public test_chain_unit_base
 	bool check_double_spend(cryptonote::core &c, size_t ev_index, const std::vector<test_event_entry> &events);
 };
 
-#define INIT_DOUBLE_SPEND_TEST()                                           \
-	uint64_t ts_start = 1338224400;                                        \
-	GENERATE_ACCOUNT(miner_account);                                       \
-	MAKE_GENESIS_BLOCK(events, blk_0, miner_account, ts_start);            \
-	MAKE_ACCOUNT(events, bob_account);                                     \
-	MAKE_ACCOUNT(events, alice_account);                                   \
-	REWIND_BLOCKS(events, blk_0r, blk_0, miner_account);                   \
+#define INIT_DOUBLE_SPEND_TEST() \
+	uint64_t ts_start = 1338224400; \
+	GENERATE_ACCOUNT(miner_account); \
+	MAKE_GENESIS_BLOCK(events, blk_0, miner_account, ts_start); \
+	MAKE_ACCOUNT(events, bob_account); \
+	MAKE_ACCOUNT(events, alice_account); \
+	REWIND_BLOCKS(events, blk_0r, blk_0, miner_account); \
 	MAKE_TX(events, tx_0, miner_account, bob_account, send_amount, blk_0); \
-	MAKE_NEXT_BLOCK_TX1(events, blk_1, blk_0r, miner_account, tx_0);       \
+	MAKE_NEXT_BLOCK_TX1(events, blk_1, blk_0r, miner_account, tx_0); \
 	REWIND_BLOCKS(events, blk_1r, blk_1, miner_account);
 
 #include "double_spend.inl"

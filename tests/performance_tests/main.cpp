@@ -30,11 +30,11 @@
 
 #include <boost/regex.hpp>
 
-#include "ringct/multiexp.h"
 #include "common/command_line.h"
 #include "common/util.h"
 #include "performance_tests.h"
 #include "performance_utils.h"
+#include "ringct/multiexp.h"
 
 // tests
 #include "bulletproof.h"
@@ -56,7 +56,6 @@
 #include "multiexp.h"
 #include "range_proof.h"
 #include "rct_mlsag.h"
-#include "rct_mlsag.h"
 #include "sc_check.h"
 #include "sc_reduce32.h"
 #include "signature.h"
@@ -70,8 +69,6 @@ int main(int argc, char **argv)
 	tools::on_startup();
 	set_process_affinity(1);
 	set_thread_high_priority();
-
-	
 
 	po::options_description desc_options("Command line options");
 	const command_line::arg_descriptor<std::string> arg_filter = {"filter", "Regular expression filter for which tests to run"};
@@ -221,7 +218,7 @@ int main(int argc, char **argv)
 	//TEST_PERFORMANCE1(filter, p, test_crypto_ops, op_isInMainSubgroup); - only used in tests
 	TEST_PERFORMANCE1(filter, p, test_crypto_ops, op_zeroCommitUncached);
 	TEST_PERFORMANCE1(filter, p, test_crypto_ops, op_zeroCommitCached);
-/*
+	/*
 	TEST_PERFORMANCE2(filter, p, test_multiexp, multiexp_bos_coster, 2);
 	TEST_PERFORMANCE2(filter, p, test_multiexp, multiexp_bos_coster, 4);
 	TEST_PERFORMANCE2(filter, p, test_multiexp, multiexp_bos_coster, 8);

@@ -111,4 +111,4 @@ struct login
 	std::string username;
 	password_container password;
 };
-}
+} // namespace tools

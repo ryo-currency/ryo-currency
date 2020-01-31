@@ -51,4 +51,4 @@
  * auto foo = "Hello World!"_s; // type of foo is std::string
  * @endcode
  */
-std::string operator ""_s(const char * str, size_t len);
+std::string operator""_s(const char *str, size_t len);

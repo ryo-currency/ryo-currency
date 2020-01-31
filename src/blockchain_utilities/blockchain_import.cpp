@@ -42,7 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include <algorithm>
 #include <atomic>
 #include <cstdio>
@@ -55,7 +54,7 @@
 #include "cryptonote_core/cryptonote_core.h"
 #include "include_base_utils.h"
 #include "serialization/binary_utils.h" // dump_binary(), parse_binary()
-#include "serialization/json_utils.h"   // dump_json()
+#include "serialization/json_utils.h" // dump_json()
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
@@ -86,7 +85,7 @@ uint64_t db_batch_size = 100;
 uint64_t db_batch_size_verify = 5000;
 
 std::string refresh_string = "\r                                    \r";
-}
+} // namespace
 
 namespace po = boost::program_options;
 
@@ -119,7 +118,7 @@ int parse_db_arguments(const std::string &db_arg_str, std::string &db_type, int 
 	}
 	else if(db_args.size() > 2)
 	{
-		GULPS_ERROR( "unrecognized database argument format: " , db_arg_str );
+		GULPS_ERROR("unrecognized database argument format: ", db_arg_str);
 		return 1;
 	}
 
@@ -196,7 +195,7 @@ int check_flush(cryptonote::core &core, std::list<block_complete_entry> &blocks,
 		if(!parse_and_validate_block_from_blob(b.block, block))
 		{
 			GULPS_ERROR("Failed to parse block: ",
-				   epee::string_tools::pod_to_hex(get_blob_hash(b.block)));
+				epee::string_tools::pod_to_hex(get_blob_hash(b.block)));
 			core.cleanup_handle_incoming_blocks();
 			return 1;
 		}
@@ -216,7 +215,7 @@ int check_flush(cryptonote::core &core, std::list<block_complete_entry> &blocks,
 			if(tvc.m_verifivation_failed)
 			{
 				GULPS_ERROR("transaction verification failed, tx_id = ",
-					   epee::string_tools::pod_to_hex(get_blob_hash(tx_blob)));
+					epee::string_tools::pod_to_hex(get_blob_hash(tx_blob)));
 				core.cleanup_handle_incoming_blocks();
 				return 1;
 			}
@@ -231,7 +230,7 @@ int check_flush(cryptonote::core &core, std::list<block_complete_entry> &blocks,
 		if(bvc.m_verifivation_failed)
 		{
 			GULPS_ERROR("Block verification failed, id = ",
-				   epee::string_tools::pod_to_hex(get_blob_hash(block_entry.block)));
+				epee::string_tools::pod_to_hex(get_blob_hash(block_entry.block)));
 			core.cleanup_handle_incoming_blocks();
 			return 1;
 		}
@@ -281,7 +280,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		return false;
 	}
 
-	GULPS_PRINT( "\nPreparing to read blocks...\n" );
+	GULPS_PRINT("\nPreparing to read blocks...\n");
 
 	std::ifstream import_file;
 	import_file.open(import_file_path, std::ios_base::binary | std::ifstream::in);
@@ -315,7 +314,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 
 	// These are what we'll try to use, and they don't have to be a determination
 	// from source and destination blockchains, but those are the defaults.
-	GULPS_INFO("start block: {}  stop block: {}" , std::to_string(start_height), std::to_string(block_stop));
+	GULPS_INFO("start block: {}  stop block: {}", std::to_string(start_height), std::to_string(block_stop));
 
 	bool use_batch = opt_batch && !opt_verify;
 
@@ -354,7 +353,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		// TODO: bootstrap.read_chunk();
 		if(!import_file)
 		{
-			GULPS_PRINT( refresh_string);
+			GULPS_PRINT(refresh_string);
 			GULPS_INFO("End of file reached");
 			quit = 1;
 			break;
@@ -366,7 +365,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		{
 			throw std::runtime_error("Error in deserialization of chunk size");
 		}
-		GULPSF_LOG_L1("chunk_size: {}" , chunk_size);
+		GULPSF_LOG_L1("chunk_size: {}", chunk_size);
 
 		if(chunk_size > BUFFER_SIZE)
 		{
@@ -375,7 +374,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		}
 		if(chunk_size > CHUNK_SIZE_WARNING_THRESHOLD)
 		{
-			GULPSF_INFO("NOTE: chunk_size {} > {}",  chunk_size, CHUNK_SIZE_WARNING_THRESHOLD);
+			GULPSF_INFO("NOTE: chunk_size {} > {}", chunk_size, CHUNK_SIZE_WARNING_THRESHOLD);
 		}
 		else if(chunk_size == 0)
 		{
@@ -387,7 +386,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		{
 			if(import_file.eof())
 			{
-				GULPS_PRINT( refresh_string);
+				GULPS_PRINT(refresh_string);
 				GULPS_INFO("End of file reached - file was truncated");
 				quit = 1;
 				break;
@@ -395,12 +394,12 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 			else
 			{
 				GULPSF_ERROR("ERROR: unexpected end of file: bytes read before error: {} of chunk_size {}",
-						import_file.gcount(), chunk_size);
+					import_file.gcount(), chunk_size);
 				return 2;
 			}
 		}
 		bytes_read += chunk_size;
-		GULPSF_LOG_L1("Total bytes read: {}" , bytes_read);
+		GULPSF_LOG_L1("Total bytes read: {}", bytes_read);
 
 		if(h > block_stop)
 		{
@@ -425,19 +424,19 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 				++h;
 				if((h - 1) % display_interval == 0)
 				{
-					GULPS_PRINT( refresh_string);
-					GULPSF_LOG_L1("loading block number {}" , h - 1);
+					GULPS_PRINT(refresh_string);
+					GULPSF_LOG_L1("loading block number {}", h - 1);
 				}
 				else
 				{
-					GULPSF_LOG_L1("loading block number {}" , h - 1);
+					GULPSF_LOG_L1("loading block number {}", h - 1);
 				}
 				b = bp.block;
 				GULPSF_LOG_L1("block prev_id: {}", b.prev_id);
 
 				if((h - 1) % progress_interval == 0)
 				{
-					GULPSF_PRINT("{}block {} / {}\r", refresh_string,  h - 1, block_stop);
+					GULPSF_PRINT("{}block {} / {}\r", refresh_string, h - 1, block_stop);
 				}
 
 				if(opt_verify)
@@ -494,7 +493,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 					}
 					catch(const std::exception &e)
 					{
-						GULPS_PRINT( refresh_string);
+						GULPS_PRINT(refresh_string);
 						GULPS_ERROR("Error adding block to blockchain: ", e.what());
 						quit = 2; // make sure we don't commit partial block data
 						break;
@@ -506,7 +505,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 						{
 							uint64_t bytes, h2;
 							bool q2;
-							GULPS_PRINT( refresh_string);
+							GULPS_PRINT(refresh_string);
 							// zero-based height
 							GULPSF_PRINT("\n[- batch commit at height {} -]\n", h - 1);
 							core.get_blockchain_storage().get_db().batch_stop();
@@ -514,7 +513,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 							bytes = bootstrap.count_bytes(import_file, db_batch_size, h2, q2);
 							import_file.seekg(pos);
 							core.get_blockchain_storage().get_db().batch_start(db_batch_size, bytes);
-							GULPS_PRINT( "\n");
+							GULPS_PRINT("\n");
 							core.get_blockchain_storage().get_db().show_stats();
 						}
 					}
@@ -524,7 +523,7 @@ int import_from_file(cryptonote::core &core, const std::string &import_file_path
 		}
 		catch(const std::exception &e)
 		{
-			GULPS_PRINT( refresh_string);
+			GULPS_PRINT(refresh_string);
 			GULPSF_ERROR("exception while reading from file, height={}: {}", h, e.what());
 			return 2;
 		}
@@ -554,12 +553,12 @@ quitting:
 	}
 
 	core.get_blockchain_storage().get_db().show_stats();
-	GULPSF_INFO("Number of blocks imported: {}" , num_imported);
+	GULPSF_INFO("Number of blocks imported: {}", num_imported);
 	if(h > 0)
 		// TODO: if there was an error, the last added block is probably at zero-based height h-2
 		GULPSF_INFO("Finished at block: {}  total blocks: {}", h - 1, h);
 
-	GULPS_PRINT( "\n");
+	GULPS_PRINT("\n");
 	return 0;
 }
 
@@ -568,7 +567,7 @@ gulps_log_level log_scr;
 int main(int argc, char *argv[])
 {
 #ifdef WIN32
-	std::vector<char*> argptrs;
+	std::vector<char *> argptrs;
 	command_line::set_console_utf8();
 	if(command_line::get_windows_args(argptrs))
 	{
@@ -609,11 +608,11 @@ int main(int argc, char *argv[])
 	const command_line::arg_descriptor<std::string> arg_database = {
 		"database", available_dbs.c_str(), default_db_type};
 	const command_line::arg_descriptor<bool> arg_verify = {"guard-against-pwnage",
-														   "Verify blocks and transactions during import (only disable if you exported the file yourself)", true};
+		"Verify blocks and transactions during import (only disable if you exported the file yourself)", true};
 	const command_line::arg_descriptor<bool> arg_batch = {"batch",
-														  "Batch transactions for faster import", true};
+		"Batch transactions for faster import", true};
 	const command_line::arg_descriptor<bool> arg_resume = {"resume",
-														   "Resume from current height if output database already exists", true};
+		"Resume from current height if output database already exists", true};
 
 	command_line::add_arg(desc_cmd_sett, arg_input_file);
 	command_line::add_arg(desc_cmd_sett, arg_log_level);
@@ -656,7 +655,7 @@ int main(int argc, char *argv[])
 
 	//Temp error output
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
+	out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
 	auto temp_handle = gulps::inst().add_output(std::move(out));
 
 	if(!command_line::is_arg_defaulted(vm, arg_log_level))
@@ -681,31 +680,31 @@ int main(int argc, char *argv[])
 	if(log_scr.is_active())
 	{
 		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
-		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
-				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
-					return false;
-				if(printed)
-					return false;
-				return log_scr.match_msg(msg);
-				});
+		out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool {
+			if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
+				return false;
+			if(printed)
+				return false;
+			return log_scr.match_msg(msg);
+		});
 		gulps::inst().add_output(std::move(out));
 	}
 
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
 		GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, "' (", RYO_VERSION_FULL, ")\n\n");
-		GULPS_PRINT( desc_options );
+		GULPS_PRINT(desc_options);
 		return 0;
 	}
 
 	if(!opt_batch && !command_line::is_arg_defaulted(vm, arg_batch_size))
 	{
-		GULPS_ERROR( "Error: batch-size set, but batch option not enabled" );
+		GULPS_ERROR("Error: batch-size set, but batch option not enabled");
 		return 1;
 	}
 	if(!db_batch_size)
 	{
-		GULPS_ERROR( "Error: batch-size must be > 0" );
+		GULPS_ERROR("Error: batch-size must be > 0");
 		return 1;
 	}
 	if(opt_verify && command_line::is_arg_defaulted(vm, arg_batch_size))
@@ -724,7 +723,7 @@ int main(int argc, char *argv[])
 	opt_stagenet = command_line::get_arg(vm, cryptonote::arg_stagenet_on);
 	if(opt_testnet && opt_stagenet)
 	{
-		GULPS_ERROR( "Error: Can't specify more than one of --testnet and --stagenet" );
+		GULPS_ERROR("Error: Can't specify more than one of --testnet and --stagenet");
 		return 1;
 	}
 
@@ -752,32 +751,32 @@ int main(int argc, char *argv[])
 	res = parse_db_arguments(db_arg_str, db_type, db_flags);
 	if(res)
 	{
-		GULPS_ERROR( "Error parsing database argument(s)" );
+		GULPS_ERROR("Error parsing database argument(s)");
 		return 1;
 	}
 
 	if(!cryptonote::blockchain_valid_db_type(db_type))
 	{
-		GULPS_ERROR( "Invalid database type: " ,  db_type );
+		GULPS_ERROR("Invalid database type: ", db_type);
 		return 1;
 	}
 
-	GULPS_INFO("database: " , db_type);
-	GULPSF_INFO("database flags: {}" , db_flags);
-	GULPS_INFO("verify:  " , std::boolalpha , opt_verify , std::noboolalpha);
+	GULPS_INFO("database: ", db_type);
+	GULPSF_INFO("database flags: {}", db_flags);
+	GULPS_INFO("verify:  ", std::boolalpha, opt_verify, std::noboolalpha);
 	if(opt_batch)
 	{
 		GULPS_INFO("batch:   ", std::boolalpha, opt_batch, std::noboolalpha, " batch size: ", db_batch_size);
 	}
 	else
 	{
-		GULPS_INFO("batch:   " , std::boolalpha , opt_batch , std::noboolalpha);
+		GULPS_INFO("batch:   ", std::boolalpha, opt_batch, std::noboolalpha);
 	}
-	GULPS_INFO("resume:  " , std::boolalpha , opt_resume , std::noboolalpha);
+	GULPS_INFO("resume:  ", std::boolalpha, opt_resume, std::noboolalpha);
 	GULPS_INFO("nettype: ", (opt_testnet ? "testnet" : opt_stagenet ? "stagenet" : "mainnet"));
 
-	GULPS_INFO("bootstrap file path: " , import_file_path);
-	GULPS_INFO("database path:       " , m_config_folder);
+	GULPS_INFO("bootstrap file path: ", import_file_path);
+	GULPS_INFO("database path:       ", m_config_folder);
 
 	cryptonote::cryptonote_protocol_stub pr; //TODO: stub only for this kind of test, make real validation of relayed objects
 	cryptonote::core core(&pr);
@@ -788,7 +787,7 @@ int main(int argc, char *argv[])
 		core.disable_dns_checkpoints(true);
 		if(!core.init(vm, NULL))
 		{
-			GULPS_ERROR( "Failed to initialize core" );
+			GULPS_ERROR("Failed to initialize core");
 			return 1;
 		}
 		core.get_blockchain_storage().get_db().set_batch_transactions(true);
@@ -796,9 +795,9 @@ int main(int argc, char *argv[])
 		if(!command_line::is_arg_defaulted(vm, arg_pop_blocks))
 		{
 			num_blocks = command_line::get_arg(vm, arg_pop_blocks);
-			GULPSF_INFO("height: {}" , core.get_blockchain_storage().get_current_blockchain_height());
+			GULPSF_INFO("height: {}", core.get_blockchain_storage().get_current_blockchain_height());
 			pop_blocks(core, num_blocks);
-			GULPSF_INFO("height: {}" , core.get_blockchain_storage().get_current_blockchain_height());
+			GULPSF_INFO("height: {}", core.get_blockchain_storage().get_current_blockchain_height());
 			return 0;
 		}
 
@@ -820,7 +819,7 @@ int main(int argc, char *argv[])
 	}
 	catch(const DB_ERROR &e)
 	{
-		GULPS_PRINT("Error loading blockchain db: ", e.what(), " -- shutting down now" );
+		GULPS_PRINT("Error loading blockchain db: ", e.what(), " -- shutting down now");
 		core.deinit();
 		return 1;
 	}

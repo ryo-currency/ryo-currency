@@ -80,7 +80,8 @@ struct binary_archive_base
 
 	typedef uint8_t variant_tag_type;
 
-	explicit binary_archive_base(stream_type &s) : stream_(s) {}
+	explicit binary_archive_base(stream_type &s) :
+		stream_(s) {}
 
 	/* definition of standard API functions */
 	void tag(const char *) {}
@@ -113,7 +114,8 @@ template <>
 struct binary_archive<false> : public binary_archive_base<std::istream, false>
 {
 
-	explicit binary_archive(stream_type &s) : base_type(s)
+	explicit binary_archive(stream_type &s) :
+		base_type(s)
 	{
 		stream_type::streampos pos = stream_.tellg();
 		stream_.seekg(0, std::ios_base::end);
@@ -199,7 +201,8 @@ struct binary_archive<false> : public binary_archive_base<std::istream, false>
 template <>
 struct binary_archive<true> : public binary_archive_base<std::ostream, true>
 {
-	explicit binary_archive(stream_type &s) : base_type(s) {}
+	explicit binary_archive(stream_type &s) :
+		base_type(s) {}
 
 	template <class T>
 	void serialize_int(T v)

@@ -55,14 +55,14 @@
 #include <type_traits>
 #include <vector>
 
-#include "fmt/format.h"
 #include "common/util.h"
+#include "fmt/format.h"
 #include "generic-ops.h"
 #include "hash.h"
 #include "hex.h"
 #include "memwipe.h"
-#include "span.h"
 #include "random.hpp"
+#include "span.h"
 
 namespace crypto
 {
@@ -135,13 +135,13 @@ struct uniform_payment_id
 #pragma pack(pop)
 
 void hash_to_scalar(const void *data, size_t length, ec_scalar &res);
-void random_scalar(unsigned char* v32);
+void random_scalar(unsigned char *v32);
 
 static_assert(sizeof(ec_point) == 32 && sizeof(ec_scalar) == 32 &&
-				  sizeof(public_key) == 32 && sizeof(secret_key) == 32 &&
-				  sizeof(key_derivation) == 32 && sizeof(key_image) == 32 &&
-				  sizeof(signature) == 64 && sizeof(uniform_payment_id) == 40,
-			  "Invalid structure size");
+		sizeof(public_key) == 32 && sizeof(secret_key) == 32 &&
+		sizeof(key_derivation) == 32 && sizeof(key_image) == 32 &&
+		sizeof(signature) == 64 && sizeof(uniform_payment_id) == 40,
+	"Invalid structure size");
 
 static constexpr uint32_t KEY_VARIANT_KURZ = 0;
 static constexpr uint32_t KEY_VARIANT_VIEWKEY = 1;
@@ -188,16 +188,16 @@ class crypto_ops
 	static void generate_key_image(const public_key &, const secret_key &, key_image &);
 	friend void generate_key_image(const public_key &, const secret_key &, key_image &);
 	static void generate_ring_signature(const hash &, const key_image &,
-										const public_key *const *, std::size_t, const secret_key &, std::size_t, signature *);
+		const public_key *const *, std::size_t, const secret_key &, std::size_t, signature *);
 	friend void generate_ring_signature(const hash &, const key_image &,
-										const public_key *const *, std::size_t, const secret_key &, std::size_t, signature *);
+		const public_key *const *, std::size_t, const secret_key &, std::size_t, signature *);
 	static bool check_ring_signature(const hash &, const key_image &,
-									 const public_key *const *, std::size_t, const signature *);
+		const public_key *const *, std::size_t, const signature *);
 	friend bool check_ring_signature(const hash &, const key_image &,
-									 const public_key *const *, std::size_t, const signature *);
+		const public_key *const *, std::size_t, const signature *);
 };
 
-inline uniform_payment_id make_paymenet_id(const hash& long_id)
+inline uniform_payment_id make_paymenet_id(const hash &long_id)
 {
 	uniform_payment_id id;
 	id.zero = 0;
@@ -205,7 +205,7 @@ inline uniform_payment_id make_paymenet_id(const hash& long_id)
 	return id;
 }
 
-inline uniform_payment_id make_paymenet_id(const hash8& short_id)
+inline uniform_payment_id make_paymenet_id(const hash8 &short_id)
 {
 	uniform_payment_id id;
 	id.zero = 0;
@@ -265,7 +265,7 @@ inline bool generate_key_derivation(const public_key &key1, const secret_key &ke
 	return crypto_ops::generate_key_derivation(key1, key2, derivation);
 }
 inline bool derive_public_key(const key_derivation &derivation, std::size_t output_index,
-							  const public_key &base, public_key &derived_key)
+	const public_key &base, public_key &derived_key)
 {
 	return crypto_ops::derive_public_key(derivation, output_index, base, derived_key);
 }
@@ -274,7 +274,7 @@ inline void derivation_to_scalar(const key_derivation &derivation, size_t output
 	return crypto_ops::derivation_to_scalar(derivation, output_index, res);
 }
 inline void derive_secret_key(const key_derivation &derivation, std::size_t output_index,
-							  const secret_key &base, secret_key &derived_key)
+	const secret_key &base, secret_key &derived_key)
 {
 	crypto_ops::derive_secret_key(derivation, output_index, base, derived_key);
 }
@@ -329,15 +329,15 @@ inline void generate_key_image(const public_key &pub, const secret_key &sec, key
 	crypto_ops::generate_key_image(pub, sec, image);
 }
 inline void generate_ring_signature(const hash &prefix_hash, const key_image &image,
-									const public_key *const *pubs, std::size_t pubs_count,
-									const secret_key &sec, std::size_t sec_index,
-									signature *sig)
+	const public_key *const *pubs, std::size_t pubs_count,
+	const secret_key &sec, std::size_t sec_index,
+	signature *sig)
 {
 	crypto_ops::generate_ring_signature(prefix_hash, image, pubs, pubs_count, sec, sec_index, sig);
 }
 inline bool check_ring_signature(const hash &prefix_hash, const key_image &image,
-								 const public_key *const *pubs, std::size_t pubs_count,
-								 const signature *sig)
+	const public_key *const *pubs, std::size_t pubs_count,
+	const signature *sig)
 {
 	return crypto_ops::check_ring_signature(prefix_hash, image, pubs, pubs_count, sig);
 }
@@ -345,15 +345,15 @@ inline bool check_ring_signature(const hash &prefix_hash, const key_image &image
 /* Variants with vector<const public_key *> parameters.
    */
 inline void generate_ring_signature(const hash &prefix_hash, const key_image &image,
-									const std::vector<const public_key *> &pubs,
-									const secret_key &sec, std::size_t sec_index,
-									signature *sig)
+	const std::vector<const public_key *> &pubs,
+	const secret_key &sec, std::size_t sec_index,
+	signature *sig)
 {
 	generate_ring_signature(prefix_hash, image, pubs.data(), pubs.size(), sec, sec_index, sig);
 }
 inline bool check_ring_signature(const hash &prefix_hash, const key_image &image,
-								 const std::vector<const public_key *> &pubs,
-								 const signature *sig)
+	const std::vector<const public_key *> &pubs,
+	const signature *sig)
 {
 	return check_ring_signature(prefix_hash, image, pubs.data(), pubs.size(), sig);
 }
@@ -386,7 +386,7 @@ inline std::ostream &operator<<(std::ostream &o, const crypto::signature &v)
 
 const static crypto::public_key null_pkey = boost::value_initialized<crypto::public_key>();
 const static crypto::secret_key null_skey = boost::value_initialized<crypto::secret_key>();
-}
+} // namespace crypto
 
 namespace fmt
 {
@@ -394,12 +394,12 @@ template <>
 struct formatter<crypto::public_key> : formatter<string_view>
 {
 	template <typename FormatContext>
-	auto format(const crypto::public_key &pk, FormatContext &ctx)  -> decltype(ctx.out())
+	auto format(const crypto::public_key &pk, FormatContext &ctx) -> decltype(ctx.out())
 	{
 		return formatter<string_view>::format(epee::string_tools::pod_to_hex(pk), ctx);
 	}
 };
-}
+} // namespace fmt
 
 CRYPTO_MAKE_HASHABLE(public_key)
 CRYPTO_MAKE_HASHABLE(secret_key)

@@ -85,4 +85,4 @@ class UnsignedTransactionImpl : public UnsignedTransaction
 	tools::wallet2::unsigned_tx_set m_unsigned_tx_set;
 	std::string m_confirmationMessage;
 };
-}
+} // namespace Ryo
