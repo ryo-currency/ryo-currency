@@ -138,7 +138,7 @@ void test_language(const Language::Base &language)
 	ASSERT_EQ(seed_vector.size(), return_seed_vector.size());
 	compare_vectors(seed_vector, return_seed_vector);
 }
-}
+} // namespace
 
 TEST(mnemonics, consistency)
 {
@@ -158,17 +158,17 @@ TEST(mnemonics, all_languages)
 {
 	srand(time(NULL));
 	std::vector<Language::Base *> languages({Language::Singleton<Language::Chinese_Simplified>::instance(),
-											 Language::Singleton<Language::English>::instance(),
-											 Language::Singleton<Language::Spanish>::instance(),
-											 Language::Singleton<Language::Portuguese>::instance(),
-											 Language::Singleton<Language::Japanese>::instance(),
-											 Language::Singleton<Language::German>::instance(),
-											 Language::Singleton<Language::Italian>::instance(),
-											 Language::Singleton<Language::Russian>::instance(),
-											 Language::Singleton<Language::French>::instance(),
-											 Language::Singleton<Language::Dutch>::instance(),
-											 Language::Singleton<Language::Esperanto>::instance(),
-											 Language::Singleton<Language::Lojban>::instance()});
+		Language::Singleton<Language::English>::instance(),
+		Language::Singleton<Language::Spanish>::instance(),
+		Language::Singleton<Language::Portuguese>::instance(),
+		Language::Singleton<Language::Japanese>::instance(),
+		Language::Singleton<Language::German>::instance(),
+		Language::Singleton<Language::Italian>::instance(),
+		Language::Singleton<Language::Russian>::instance(),
+		Language::Singleton<Language::French>::instance(),
+		Language::Singleton<Language::Dutch>::instance(),
+		Language::Singleton<Language::Esperanto>::instance(),
+		Language::Singleton<Language::Lojban>::instance()});
 
 	for(std::vector<Language::Base *>::iterator it = languages.begin(); it != languages.end(); it++)
 	{

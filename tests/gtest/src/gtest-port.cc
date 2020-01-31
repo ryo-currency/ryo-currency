@@ -131,8 +131,8 @@ size_t GetThreadCount()
 		// task_threads allocates resources in thread_list and we need to free them
 		// to avoid leaks.
 		vm_deallocate(task,
-					  reinterpret_cast<vm_address_t>(thread_list),
-					  sizeof(thread_t) * thread_count);
+			reinterpret_cast<vm_address_t>(thread_list),
+			sizeof(thread_t) * thread_count);
 		return static_cast<size_t>(thread_count);
 	}
 	else
@@ -201,11 +201,11 @@ void SleepMilliseconds(int n)
 	::Sleep(n);
 }
 
-AutoHandle::AutoHandle()
-	: handle_(INVALID_HANDLE_VALUE) {}
+AutoHandle::AutoHandle() :
+	handle_(INVALID_HANDLE_VALUE) {}
 
-AutoHandle::AutoHandle(Handle handle)
-	: handle_(handle) {}
+AutoHandle::AutoHandle(Handle handle) :
+	handle_(handle) {}
 
 AutoHandle::~AutoHandle()
 {
@@ -248,11 +248,11 @@ bool AutoHandle::IsCloseable() const
 	return handle_ != NULL && handle_ != INVALID_HANDLE_VALUE;
 }
 
-Notification::Notification()
-	: event_(::CreateEvent(NULL,  // Default security attributes.
-						   TRUE,  // Do not reset automatically.
-						   FALSE, // Initially unset.
-						   NULL))
+Notification::Notification() :
+	event_(::CreateEvent(NULL, // Default security attributes.
+		TRUE, // Do not reset automatically.
+		FALSE, // Initially unset.
+		NULL))
 { // Anonymous event.
 	GTEST_CHECK_(event_.Get() != NULL);
 }
@@ -268,11 +268,11 @@ void Notification::WaitForNotification()
 		::WaitForSingleObject(event_.Get(), INFINITE) == WAIT_OBJECT_0);
 }
 
-Mutex::Mutex()
-	: owner_thread_id_(0),
-	  type_(kDynamic),
-	  critical_section_init_phase_(0),
-	  critical_section_(new CRITICAL_SECTION)
+Mutex::Mutex() :
+	owner_thread_id_(0),
+	type_(kDynamic),
+	critical_section_init_phase_(0),
+	critical_section_(new CRITICAL_SECTION)
 {
 	::InitializeCriticalSection(critical_section_);
 }
@@ -337,14 +337,14 @@ void Mutex::ThreadSafeLazyInit()
 			// initialization complete.
 			GTEST_CHECK_(::InterlockedCompareExchange(
 							 &critical_section_init_phase_, 2L, 1L) ==
-						 1L);
+				1L);
 			break;
 		case 1:
 			// Somebody else is already initializing the mutex; spin until they
 			// are done.
 			while(::InterlockedCompareExchange(&critical_section_init_phase_,
-											   2L,
-											   2L) != 2L)
+					  2L,
+					  2L) != 2L)
 			{
 				// Possibly yields the rest of the thread's time slice to other
 				// threads.
@@ -370,17 +370,17 @@ class ThreadWithParamSupport : public ThreadWithParamBase
 {
   public:
 	static HANDLE CreateThread(Runnable *runnable,
-							   Notification *thread_can_start)
+		Notification *thread_can_start)
 	{
 		ThreadMainParam *param = new ThreadMainParam(runnable, thread_can_start);
 		DWORD thread_id;
 		// TODO(yukawa): Consider to use _beginthreadex instead.
 		HANDLE thread_handle = ::CreateThread(
 			NULL, // Default security.
-			0,	// Default stack size.
+			0, // Default stack size.
 			&ThreadWithParamSupport::ThreadMain,
-			param,		 // Parameter to ThreadMainStatic
-			0x0,		 // Default creation flags.
+			param, // Parameter to ThreadMainStatic
+			0x0, // Default creation flags.
 			&thread_id); // Need a valid pointer for the call to work under Win98.
 		GTEST_CHECK_(thread_handle != NULL) << "CreateThread failed with error "
 											<< ::GetLastError() << ".";
@@ -394,9 +394,9 @@ class ThreadWithParamSupport : public ThreadWithParamBase
   private:
 	struct ThreadMainParam
 	{
-		ThreadMainParam(Runnable *runnable, Notification *thread_can_start)
-			: runnable_(runnable),
-			  thread_can_start_(thread_can_start)
+		ThreadMainParam(Runnable *runnable, Notification *thread_can_start) :
+			runnable_(runnable),
+			thread_can_start_(thread_can_start)
 		{
 		}
 		scoped_ptr<Runnable> runnable_;
@@ -423,9 +423,9 @@ class ThreadWithParamSupport : public ThreadWithParamBase
 } // namespace
 
 ThreadWithParamBase::ThreadWithParamBase(Runnable *runnable,
-										 Notification *thread_can_start)
-	: thread_(ThreadWithParamSupport::CreateThread(runnable,
-												   thread_can_start))
+	Notification *thread_can_start) :
+	thread_(ThreadWithParamSupport::CreateThread(runnable,
+		thread_can_start))
 {
 }
 
@@ -544,7 +544,7 @@ class ThreadLocalRegistryImpl
   private:
 	// In a particular thread, maps a ThreadLocal object to its value.
 	typedef std::map<const ThreadLocalBase *,
-					 linked_ptr<ThreadLocalValueHolderBase>>
+		linked_ptr<ThreadLocalValueHolderBase>>
 		ThreadLocalValues;
 	// Stores all ThreadIdToThreadLocals having values in a thread, indexed by
 	// thread's ID.
@@ -559,15 +559,15 @@ class ThreadLocalRegistryImpl
 		// The returned handle will be kept in thread_map and closed by
 		// watcher_thread in WatcherThreadFunc.
 		HANDLE thread = ::OpenThread(SYNCHRONIZE | THREAD_QUERY_INFORMATION,
-									 FALSE,
-									 thread_id);
+			FALSE,
+			thread_id);
 		GTEST_CHECK_(thread != NULL);
 		// We need to to pass a valid thread ID pointer into CreateThread for it
 		// to work correctly under Win98.
 		DWORD watcher_thread_id;
 		HANDLE watcher_thread = ::CreateThread(
 			NULL, // Default security.
-			0,	// Default stack size
+			0, // Default stack size
 			&ThreadLocalRegistryImpl::WatcherThreadFunc,
 			reinterpret_cast<LPVOID>(new ThreadIdAndHandle(thread_id, thread)),
 			CREATE_SUSPENDED,
@@ -576,7 +576,7 @@ class ThreadLocalRegistryImpl
 		// Give the watcher thread the same priority as ours to avoid being
 		// blocked by it.
 		::SetThreadPriority(watcher_thread,
-							::GetThreadPriority(::GetCurrentThread()));
+			::GetThreadPriority(::GetCurrentThread()));
 		::ResumeThread(watcher_thread);
 		::CloseHandle(watcher_thread);
 	}
@@ -720,7 +720,7 @@ bool IsAsciiWhiteSpace(char ch) { return IsInSet(ch, " \f\n\r\t\v"); }
 bool IsAsciiWordChar(char ch)
 {
 	return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') ||
-		   ('0' <= ch && ch <= '9') || ch == '_';
+		('0' <= ch && ch <= '9') || ch == '_';
 }
 
 // Returns true iff "\\c" is a supported escape sequence.
@@ -911,7 +911,7 @@ bool MatchRegexAtHead(const char *regex, const char *str)
 		// repetition.  We match the first atom of regex with the first
 		// character of str and recurse.
 		return (*str != '\0') && AtomMatchesChar(escaped, *regex, *str) &&
-			   MatchRegexAtHead(regex + 1, str + 1);
+			MatchRegexAtHead(regex + 1, str + 1);
 	}
 }
 
@@ -1035,8 +1035,8 @@ GTEST_API_::std::string FormatCompilerIndependentFileLocation(
 		return file_name + ":" + StreamableToString(line);
 }
 
-GTestLog::GTestLog(GTestLogSeverity severity, const char *file, int line)
-	: severity_(severity)
+GTestLog::GTestLog(GTestLogSeverity severity, const char *file, int line) :
+	severity_(severity)
 {
 	const char *const marker =
 		severity == GTEST_INFO ? "[  INFO ]" : severity == GTEST_WARNING ? "[WARNING]" : severity == GTEST_ERROR ? "[ ERROR ]" : "[ FATAL ]";
@@ -1066,17 +1066,18 @@ class CapturedStream
 {
   public:
 	// The ctor redirects the stream to a temporary file.
-	explicit CapturedStream(int fd) : fd_(fd), uncaptured_fd_(dup(fd))
+	explicit CapturedStream(int fd) :
+		fd_(fd), uncaptured_fd_(dup(fd))
 	{
 #if GTEST_OS_WINDOWS
-		char temp_dir_path[MAX_PATH + 1] = {'\0'};  // NOLINT
+		char temp_dir_path[MAX_PATH + 1] = {'\0'}; // NOLINT
 		char temp_file_path[MAX_PATH + 1] = {'\0'}; // NOLINT
 
 		::GetTempPathA(sizeof(temp_dir_path), temp_dir_path);
 		const UINT success = ::GetTempFileNameA(temp_dir_path,
-												"gtest_redir",
-												0, // Generate unique file name.
-												temp_file_path);
+			"gtest_redir",
+			0, // Generate unique file name.
+			temp_file_path);
 		GTEST_CHECK_(success != 0)
 			<< "Unable to create a temporary file in " << temp_dir_path;
 		const int captured_fd = creat(temp_file_path, _S_IREAD | _S_IWRITE);
@@ -1230,7 +1231,7 @@ std::string ReadEntireFile(FILE *file)
 	char *const buffer = new char[file_size];
 
 	size_t bytes_last_read = 0; // # of bytes read in the last fread()
-	size_t bytes_read = 0;		// # of bytes read so far
+	size_t bytes_read = 0; // # of bytes read so far
 
 	fseek(file, 0, SEEK_SET);
 
@@ -1323,11 +1324,11 @@ bool ParseInt32(const Message &src_text, const char *str, Int32 *value)
 	// Is the parsed value in the range of an Int32?
 	const Int32 result = static_cast<Int32>(long_value);
 	if(long_value == LONG_MAX || long_value == LONG_MIN ||
-	   // The parsed value overflows as a long.  (strtol() returns
-	   // LONG_MAX or LONG_MIN when the input overflows.)
-	   result != long_value
-	   // The parsed value overflows as an Int32.
-	   )
+		// The parsed value overflows as a long.  (strtol() returns
+		// LONG_MAX or LONG_MIN when the input overflows.)
+		result != long_value
+		// The parsed value overflows as an Int32.
+	)
 	{
 		Message msg;
 		msg << "WARNING: " << src_text
@@ -1374,10 +1375,10 @@ Int32 Int32FromGTestEnv(const char *flag, Int32 default_value)
 
 	Int32 result = default_value;
 	if(!ParseInt32(Message() << "Environment variable " << env_var,
-				   string_value, &result))
+		   string_value, &result))
 	{
 		printf("The default value %s is used.\n",
-			   (Message() << default_value).GetString().c_str());
+			(Message() << default_value).GetString().c_str());
 		fflush(stdout);
 		return default_value;
 	}

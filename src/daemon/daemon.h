@@ -55,6 +55,7 @@ struct t_internals;
 class t_daemon final
 {
 	GULPS_CAT_MAJOR("daemon");
+
   public:
 	static void init_options(boost::program_options::options_description &option_spec);
 
@@ -76,4 +77,4 @@ class t_daemon final
 	bool run(bool interactive = false);
 	void stop();
 };
-}
+} // namespace daemonize

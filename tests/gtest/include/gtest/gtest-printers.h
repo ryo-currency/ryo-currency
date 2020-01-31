@@ -118,17 +118,17 @@ namespace internal2
 // Prints the given number of bytes in the given object to the given
 // ostream.
 GTEST_API_ void PrintBytesInObjectTo(const unsigned char *obj_bytes,
-									 size_t count,
-									 ::std::ostream *os);
+	size_t count,
+	::std::ostream *os);
 
 // For selecting which printer to use when a given type has neither <<
 // nor PrintTo().
 enum TypeKind
 {
-	kProtobuf,			   // a protobuf type
+	kProtobuf, // a protobuf type
 	kConvertibleToInteger, // a type implicitly convertible to BiggestInt
-						   // (e.g. a named or unnamed enum type)
-	kOtherType			   // anything else
+	// (e.g. a named or unnamed enum type)
+	kOtherType // anything else
 };
 
 // TypeWithoutFormatter<T, kTypeKind>::PrintValue(value, os) is called
@@ -143,7 +143,7 @@ class TypeWithoutFormatter
 	static void PrintValue(const T &value, ::std::ostream *os)
 	{
 		PrintBytesInObjectTo(reinterpret_cast<const unsigned char *>(&value),
-							 sizeof(value), os);
+			sizeof(value), os);
 	}
 };
 
@@ -212,7 +212,7 @@ template <typename Char, typename CharTraits, typename T>
 	::std::basic_ostream<Char, CharTraits> &os, const T &x)
 {
 	TypeWithoutFormatter<T,
-						 (internal::IsAProtocolMessage<T>::value ? kProtobuf : internal::ImplicitlyConvertible<const T &, internal::BiggestInt>::value ? kConvertibleToInteger : kOtherType)>::PrintValue(x, &os);
+		(internal::IsAProtocolMessage<T>::value ? kProtobuf : internal::ImplicitlyConvertible<const T &, internal::BiggestInt>::value ? kConvertibleToInteger : kOtherType)>::PrintValue(x, &os);
 	return os;
 }
 
@@ -304,15 +304,15 @@ class FormatForComparison<ToPrint[N], OtherOperand>
 // By default, print C string as pointers to be safe, as we don't know
 // whether they actually point to a NUL-terminated string.
 
-#define GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(CharType)                       \
-	template <typename OtherOperand>                                           \
-	class FormatForComparison<CharType *, OtherOperand>                        \
-	{                                                                          \
-	  public:                                                                  \
-		static ::std::string Format(CharType *value)                           \
-		{                                                                      \
+#define GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(CharType) \
+	template <typename OtherOperand> \
+	class FormatForComparison<CharType *, OtherOperand> \
+	{ \
+	  public: \
+		static ::std::string Format(CharType *value) \
+		{ \
 			return ::testing::PrintToString(static_cast<const void *>(value)); \
-		}                                                                      \
+		} \
 	}
 
 GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(char);
@@ -326,14 +326,14 @@ GTEST_IMPL_FORMAT_C_STRING_AS_POINTER_(const wchar_t);
 // to point to a NUL-terminated string, and thus can print it as a string.
 
 #define GTEST_IMPL_FORMAT_C_STRING_AS_STRING_(CharType, OtherStringType) \
-	template <>                                                          \
-	class FormatForComparison<CharType *, OtherStringType>               \
-	{                                                                    \
-	  public:                                                            \
-		static ::std::string Format(CharType *value)                     \
-		{                                                                \
-			return ::testing::PrintToString(value);                      \
-		}                                                                \
+	template <> \
+	class FormatForComparison<CharType *, OtherStringType> \
+	{ \
+	  public: \
+		static ::std::string Format(CharType *value) \
+		{ \
+			return ::testing::PrintToString(value); \
+		} \
 	}
 
 GTEST_IMPL_FORMAT_C_STRING_AS_STRING_(char, ::std::string);
@@ -388,8 +388,8 @@ void UniversalPrint(const T &value, ::std::ostream *os);
 // a PrintTo() for it.
 template <typename C>
 void DefaultPrintTo(IsContainer /* dummy */,
-					false_type /* is not a pointer */,
-					const C &container, ::std::ostream *os)
+	false_type /* is not a pointer */,
+	const C &container, ::std::ostream *os)
 {
 	const size_t kMaxCount = 32; // The maximum number of elements to print.
 	*os << '{';
@@ -427,8 +427,8 @@ void DefaultPrintTo(IsContainer /* dummy */,
 // bytes.)
 template <typename T>
 void DefaultPrintTo(IsNotContainer /* dummy */,
-					true_type /* is a pointer */,
-					T *p, ::std::ostream *os)
+	true_type /* is a pointer */,
+	T *p, ::std::ostream *os)
 {
 	if(p == NULL)
 	{
@@ -466,8 +466,8 @@ void DefaultPrintTo(IsNotContainer /* dummy */,
 // doesn't define PrintTo() for it.
 template <typename T>
 void DefaultPrintTo(IsNotContainer /* dummy */,
-					false_type /* is not a pointer */,
-					const T &value, ::std::ostream *os)
+	false_type /* is not a pointer */,
+	const T &value, ::std::ostream *os)
 {
 	::testing_internal::DefaultPrintNonContainerTo(value, os);
 }
@@ -676,45 +676,45 @@ void PrintTo(const ::std::tr1::tuple<T1, T2, T3, T4> &t, ::std::ostream *os)
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5>
 void PrintTo(const ::std::tr1::tuple<T1, T2, T3, T4, T5> &t,
-			 ::std::ostream *os)
+	::std::ostream *os)
 {
 	PrintTupleTo(t, os);
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
-		  typename T6>
+	typename T6>
 void PrintTo(const ::std::tr1::tuple<T1, T2, T3, T4, T5, T6> &t,
-			 ::std::ostream *os)
+	::std::ostream *os)
 {
 	PrintTupleTo(t, os);
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
-		  typename T6, typename T7>
+	typename T6, typename T7>
 void PrintTo(const ::std::tr1::tuple<T1, T2, T3, T4, T5, T6, T7> &t,
-			 ::std::ostream *os)
+	::std::ostream *os)
 {
 	PrintTupleTo(t, os);
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
-		  typename T6, typename T7, typename T8>
+	typename T6, typename T7, typename T8>
 void PrintTo(const ::std::tr1::tuple<T1, T2, T3, T4, T5, T6, T7, T8> &t,
-			 ::std::ostream *os)
+	::std::ostream *os)
 {
 	PrintTupleTo(t, os);
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
-		  typename T6, typename T7, typename T8, typename T9>
+	typename T6, typename T7, typename T8, typename T9>
 void PrintTo(const ::std::tr1::tuple<T1, T2, T3, T4, T5, T6, T7, T8, T9> &t,
-			 ::std::ostream *os)
+	::std::ostream *os)
 {
 	PrintTupleTo(t, os);
 }
 
 template <typename T1, typename T2, typename T3, typename T4, typename T5,
-		  typename T6, typename T7, typename T8, typename T9, typename T10>
+	typename T6, typename T7, typename T8, typename T9, typename T10>
 void PrintTo(
 	const ::std::tr1::tuple<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> &t,
 	::std::ostream *os)

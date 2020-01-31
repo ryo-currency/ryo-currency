@@ -42,14 +42,12 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include <algorithm>
 #include <cstdio>
 
 #include "blockchain_db/blockchain_db.h"
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "hardfork.h"
-
 
 #include "common/gulps.hpp"
 
@@ -73,13 +71,14 @@ static uint8_t get_block_version(const cryptonote::block &b)
 	return b.major_version;
 }
 
-HardFork::HardFork(cryptonote::BlockchainDB &db, uint8_t original_version, uint64_t original_version_till_height, time_t forked_time, time_t update_time, uint64_t window_size, uint8_t default_threshold_percent) : db(db),
-																																																					 original_version(original_version),
-																																																					 original_version_till_height(original_version_till_height),
-																																																					 forked_time(forked_time),
-																																																					 update_time(update_time),
-																																																					 window_size(window_size),
-																																																					 default_threshold_percent(default_threshold_percent)
+HardFork::HardFork(cryptonote::BlockchainDB &db, uint8_t original_version, uint64_t original_version_till_height, time_t forked_time, time_t update_time, uint64_t window_size, uint8_t default_threshold_percent) :
+	db(db),
+	original_version(original_version),
+	original_version_till_height(original_version_till_height),
+	forked_time(forked_time),
+	update_time(update_time),
+	window_size(window_size),
+	default_threshold_percent(default_threshold_percent)
 {
 	if(window_size == 0)
 		throw "window_size needs to be strictly positive";
@@ -418,7 +417,7 @@ uint8_t HardFork::get_ideal_version(uint64_t height) const
 
 uint64_t HardFork::get_height_for_version(uint8_t version) const
 {
-	for(const Params& fork : heights)
+	for(const Params &fork : heights)
 	{
 		if(fork.version == version)
 			return fork.height;

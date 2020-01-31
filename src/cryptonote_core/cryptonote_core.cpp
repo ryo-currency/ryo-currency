@@ -53,7 +53,6 @@ using namespace epee;
 #include "blockchain_db/blockchain_db.h"
 #include "checkpoints/checkpoints.h"
 #include "common/command_line.h"
-#include "common/command_line.h"
 #include "common/download.h"
 #include "common/threadpool.h"
 #include "common/updates.h"
@@ -72,7 +71,6 @@ using namespace epee;
 #include <unordered_set>
 
 #include "common/gulps.hpp"
-
 
 GULPS_CAT_MAJOR("crtnte_core");
 
@@ -124,19 +122,20 @@ static const command_line::arg_descriptor<size_t> arg_max_txpool_size = {
 	"max-txpool-size", "Set maximum txpool size in bytes.", DEFAULT_TXPOOL_MAX_SIZE};
 
 //-----------------------------------------------------------------------------------------------
-core::core(i_cryptonote_protocol *pprotocol) : m_mempool(m_blockchain_storage),
-											   m_blockchain_storage(m_mempool),
-											   m_miner(this),
-											   m_miner_address(boost::value_initialized<account_public_address>()),
-											   m_starter_message_showed(false),
-											   m_target_blockchain_height(0),
-											   m_checkpoints_path(""),
-											   m_last_dns_checkpoints_update(0),
-											   m_last_json_checkpoints_update(0),
-											   m_disable_dns_checkpoints(false),
-											   m_threadpool(tools::threadpool::getInstance()),
-											   m_update_download(0),
-											   m_nettype(UNDEFINED)
+core::core(i_cryptonote_protocol *pprotocol) :
+	m_mempool(m_blockchain_storage),
+	m_blockchain_storage(m_mempool),
+	m_miner(this),
+	m_miner_address(boost::value_initialized<account_public_address>()),
+	m_starter_message_showed(false),
+	m_target_blockchain_height(0),
+	m_checkpoints_path(""),
+	m_last_dns_checkpoints_update(0),
+	m_last_json_checkpoints_update(0),
+	m_disable_dns_checkpoints(false),
+	m_threadpool(tools::threadpool::getInstance()),
+	m_update_download(0),
+	m_nettype(UNDEFINED)
 {
 	m_checkpoints_updating.clear();
 	set_cryptonote_protocol(pprotocol);
@@ -363,7 +362,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 
 	// make sure the data directory exists, and try to lock it
 	GULPS_CHECK_AND_ASSERT_MES(boost::filesystem::exists(folder) || boost::filesystem::create_directories(folder), false,
-						 std::string("Failed to create directory ").append(folder.string()).c_str());
+		std::string("Failed to create directory ").append(folder.string()).c_str());
 
 	std::unique_ptr<BlockchainDB> db(new_db(db_type));
 	if(db == NULL)
@@ -455,7 +454,7 @@ bool core::init(const boost::program_options::variables_map &vm, const char *con
 	}
 
 	m_blockchain_storage.set_user_options(blocks_threads,
-										  blocks_per_sync, sync_mode, fast_sync);
+		blocks_per_sync, sync_mode, fast_sync);
 
 	r = m_blockchain_storage.init(db.release(), m_nettype, m_offline, test_options);
 
@@ -550,7 +549,7 @@ bool core::handle_incoming_tx_pre(const blobdata &tx_blob, tx_verification_conte
 
 	if(tx_blob.size() > get_max_tx_size())
 	{
-		GULPSF_LOG_L1("WRONG TRANSACTION BLOB, too big size {}, rejected", tx_blob.size() );
+		GULPSF_LOG_L1("WRONG TRANSACTION BLOB, too big size {}, rejected", tx_blob.size());
 		tvc.m_verifivation_failed = true;
 		tvc.m_too_big = true;
 		return false;
@@ -602,7 +601,7 @@ bool core::handle_incoming_tx_post(const blobdata &tx_blob, tx_verification_cont
 {
 	if(!check_tx_syntax(tx))
 	{
-		GULPSF_LOG_L1("WRONG TRANSACTION BLOB, Failed to check tx {} syntax, rejected", tx_hash );
+		GULPSF_LOG_L1("WRONG TRANSACTION BLOB, Failed to check tx {} syntax, rejected", tx_hash);
 		tvc.m_verifivation_failed = true;
 		return false;
 	}
@@ -613,7 +612,7 @@ bool core::handle_incoming_tx_post(const blobdata &tx_blob, tx_verification_cont
 	}
 	else if(!check_tx_semantic(tx, keeped_by_block))
 	{
-		GULPSF_LOG_L1("WRONG TRANSACTION BLOB, Failed to check tx {} semantic, rejected", tx_hash );
+		GULPSF_LOG_L1("WRONG TRANSACTION BLOB, Failed to check tx {} semantic, rejected", tx_hash);
 		tvc.m_verifivation_failed = true;
 		bad_semantics_txes_lock.lock();
 		bad_semantics_txes[0].insert(tx_hash);
@@ -669,11 +668,11 @@ bool core::handle_incoming_txs(const std::list<blobdata> &tx_blobs, std::vector<
 			continue;
 		if(m_mempool.have_tx(results[i].hash))
 		{
-			GULPSF_LOG_L2("tx {}already have transaction in tx_pool", results[i].hash );
+			GULPSF_LOG_L2("tx {}already have transaction in tx_pool", results[i].hash);
 		}
 		else if(m_blockchain_storage.have_tx(results[i].hash))
 		{
-			GULPSF_LOG_L2("tx {} already have transaction in blockchain", results[i].hash );
+			GULPSF_LOG_L2("tx {} already have transaction in blockchain", results[i].hash);
 		}
 		else
 		{
@@ -777,7 +776,7 @@ bool core::check_tx_semantic(const transaction &tx, bool keeped_by_block) const
 
 	if(!keeped_by_block && get_object_blobsize(tx) >= m_blockchain_storage.get_current_cumulative_blocksize_limit() - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE)
 	{
-		GULPSF_VERIFY_ERR_TX("tx is too large {}, expected not bigger than {}", get_object_blobsize(tx) , m_blockchain_storage.get_current_cumulative_blocksize_limit() - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE);
+		GULPSF_VERIFY_ERR_TX("tx is too large {}, expected not bigger than {}", get_object_blobsize(tx), m_blockchain_storage.get_current_cumulative_blocksize_limit() - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE);
 		return false;
 	}
 
@@ -872,21 +871,21 @@ std::pair<uint64_t, uint64_t> core::get_coinbase_tx_sum(const uint64_t start_off
 	{
 		const uint64_t end = start_offset + count - 1;
 		m_blockchain_storage.for_blocks_range(start_offset, end,
-											  [this, &emission_amount, &total_fee_amount](uint64_t, const crypto::hash &hash, const block &b) {
-												  std::list<transaction> txs;
-												  std::list<crypto::hash> missed_txs;
-												  uint64_t coinbase_amount = get_outs_money_amount(b.miner_tx);
-												  this->get_transactions(b.tx_hashes, txs, missed_txs);
-												  uint64_t tx_fee_amount = 0;
-												  for(const auto &tx : txs)
-												  {
-													  tx_fee_amount += get_tx_fee(tx);
-												  }
+			[this, &emission_amount, &total_fee_amount](uint64_t, const crypto::hash &hash, const block &b) {
+				std::list<transaction> txs;
+				std::list<crypto::hash> missed_txs;
+				uint64_t coinbase_amount = get_outs_money_amount(b.miner_tx);
+				this->get_transactions(b.tx_hashes, txs, missed_txs);
+				uint64_t tx_fee_amount = 0;
+				for(const auto &tx : txs)
+				{
+					tx_fee_amount += get_tx_fee(tx);
+				}
 
-												  emission_amount += coinbase_amount - tx_fee_amount;
-												  total_fee_amount += tx_fee_amount;
-												  return true;
-											  });
+				emission_amount += coinbase_amount - tx_fee_amount;
+				total_fee_amount += tx_fee_amount;
+				return true;
+			});
 	}
 
 	/* Remove burned premine from emission
@@ -956,13 +955,13 @@ bool core::add_new_tx(transaction &tx, const crypto::hash &tx_hash, const crypto
 
 	if(m_mempool.have_tx(tx_hash))
 	{
-		GULPSF_LOG_L2("tx {} already have transaction in tx_pool", tx_hash );
+		GULPSF_LOG_L2("tx {} already have transaction in tx_pool", tx_hash);
 		return true;
 	}
 
 	if(m_blockchain_storage.have_tx(tx_hash))
 	{
-		GULPSF_LOG_L2("tx {} already have transaction in blockchain", tx_hash );
+		GULPSF_LOG_L2("tx {} already have transaction in blockchain", tx_hash);
 		return true;
 	}
 
@@ -1100,8 +1099,7 @@ bool core::handle_block_found(block &b)
 			GULPS_LOG_L1("Block found but, seems that reorganize just happened after that, do not relay this block");
 			return true;
 		}
-		GULPS_CHECK_AND_ASSERT_MES(txs.size() == b.tx_hashes.size() && !missed_txs.size(), false, "can't find some transactions in found block:" , get_block_hash(b) , " txs.size()=" , txs.size()
-																																		   , ", b.tx_hashes.size()=" , b.tx_hashes.size() , ", missed_txs.size()" , missed_txs.size());
+		GULPS_CHECK_AND_ASSERT_MES(txs.size() == b.tx_hashes.size() && !missed_txs.size(), false, "can't find some transactions in found block:", get_block_hash(b), " txs.size()=", txs.size(), ", b.tx_hashes.size()=", b.tx_hashes.size(), ", missed_txs.size()", missed_txs.size());
 
 		block_to_blob(b, arg.b.block);
 		//pack transactions
@@ -1163,7 +1161,7 @@ bool core::handle_incoming_block(const blobdata &block_blob, block_verification_
 	bvc = boost::value_initialized<block_verification_context>();
 	if(block_blob.size() > common_config::BLOCK_SIZE_LIMIT_ABSOLUTE)
 	{
-		GULPSF_LOG_L1("WRONG BLOCK BLOB, too big size {}, rejected", block_blob.size() );
+		GULPSF_LOG_L1("WRONG BLOCK BLOB, too big size {}, rejected", block_blob.size());
 		bvc.m_verifivation_failed = true;
 		return false;
 	}
@@ -1189,7 +1187,7 @@ bool core::check_incoming_block_size(const blobdata &block_blob) const
 {
 	if(block_blob.size() > common_config::BLOCK_SIZE_LIMIT_ABSOLUTE)
 	{
-		GULPSF_LOG_L1("WRONG BLOCK BLOB, too big size {}, rejected", block_blob.size() );
+		GULPSF_LOG_L1("WRONG BLOCK BLOB, too big size {}, rejected", block_blob.size());
 		return false;
 	}
 	return true;
@@ -1303,13 +1301,13 @@ bool core::on_idle()
 			main_message = "The daemon is running offline and will not attempt to sync to the Ryo network.";
 		else
 			main_message = "The daemon will start synchronizing with the network. This may take a long time to complete.";
-			GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_YELLOW, "\n**********************************************************************\n",
-						   main_message,
-						   "\n\nYou can set the level of process detailization through \"set_log <level|categories>\" command,\n",
-						   "where <level> is between 0 (no details) and 4 (very verbose), or custom category based levels (eg, *:WARNING).\n\n",
-						   "Use the \"help\" command to see the list of available commands.\n",
-						   "Use \"help <command>\" to see a command's documentation.\n",
-						   "**********************************************************************\n");
+		GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_YELLOW, "\n**********************************************************************\n",
+			main_message,
+			"\n\nYou can set the level of process detailization through \"set_log <level|categories>\" command,\n",
+			"where <level> is between 0 (no details) and 4 (very verbose), or custom category based levels (eg, *:WARNING).\n\n",
+			"Use the \"help\" command to see the list of available commands.\n",
+			"Use \"help <command>\" to see a command's documentation.\n",
+			"**********************************************************************\n");
 		m_starter_message_showed = true;
 	}
 
@@ -1528,4 +1526,4 @@ void core::graceful_exit()
 {
 	raise(SIGTERM);
 }
-}
+} // namespace cryptonote

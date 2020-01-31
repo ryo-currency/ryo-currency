@@ -46,10 +46,10 @@ class block_reward_and_already_generated_coins : public ::testing::Test
 	uint64_t m_block_reward;
 };
 
-#define TEST_ALREADY_GENERATED_COINS(already_generated_coins, expected_reward, height)                                 \
+#define TEST_ALREADY_GENERATED_COINS(already_generated_coins, expected_reward, height) \
 	m_block_not_too_big = get_block_reward(MAINNET, 0, current_block_size, already_generated_coins, m_block_reward, height); \
-    ASSERT_TRUE(m_block_not_too_big); \
-    ASSERT_EQ(m_block_reward, expected_reward)
+	ASSERT_TRUE(m_block_not_too_big); \
+	ASSERT_EQ(m_block_reward, expected_reward)
 
 TEST_F(block_reward_and_already_generated_coins, handles_first_values)
 {
@@ -240,4 +240,4 @@ TEST_F(block_reward_and_last_block_sizes, calculates_correctly)
 	ASSERT_TRUE(m_block_not_too_big);
 	ASSERT_EQ(m_block_reward, m_standard_block_reward * 15 / 64);
 }
-}
+} // namespace

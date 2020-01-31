@@ -78,17 +78,17 @@ using namespace epee;
 #include <boost/filesystem.hpp>
 #include <openssl/sha.h>
 
-
 namespace tools
 {
 GULPS_CAT_MAJOR("cmn_util");
 std::function<void(int)> signal_handler::m_handler;
 
-private_file::private_file() noexcept : m_handle(), m_filename() {}
+private_file::private_file() noexcept :
+	m_handle(), m_filename() {}
 
-private_file::private_file(std::FILE *handle, std::string &&filename) noexcept
-	: m_handle(handle),
-	  m_filename(std::move(filename)) {}
+private_file::private_file(std::FILE *handle, std::string &&filename) noexcept :
+	m_handle(handle),
+	m_filename(std::move(filename)) {}
 
 private_file private_file::create(std::string name)
 {
@@ -178,8 +178,8 @@ private_file private_file::create(std::string name)
 		{
 			struct stat wstats = {};
 			if(fstat(fdw, std::addressof(wstats)) == 0 &&
-			   rstats.st_dev == wstats.st_dev && rstats.st_ino == wstats.st_ino &&
-			   flock(fdw, (LOCK_EX | LOCK_NB)) == 0 && ftruncate(fdw, 0) == 0)
+				rstats.st_dev == wstats.st_dev && rstats.st_ino == wstats.st_ino &&
+				flock(fdw, (LOCK_EX | LOCK_NB)) == 0 && ftruncate(fdw, 0) == 0)
 			{
 				std::FILE *file = fdopen(fdw, "w");
 				if(file)
@@ -239,7 +239,7 @@ std::string get_windows_version_display_string()
 		GetSystemInfo(&si);
 
 	if(VER_PLATFORM_WIN32_NT == osvi.dwPlatformId &&
-	   osvi.dwMajorVersion > 4)
+		osvi.dwMajorVersion > 4)
 	{
 		StringCchCopy(pszOS, BUFSIZE, TEXT("Microsoft "));
 
@@ -337,7 +337,7 @@ std::string get_windows_version_display_string()
 			else if(osvi.wSuiteMask & VER_SUITE_WH_SERVER)
 				StringCchCat(pszOS, BUFSIZE, TEXT("Windows Home Server"));
 			else if(osvi.wProductType == VER_NT_WORKSTATION &&
-					si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
+				si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
 			{
 				StringCchCat(pszOS, BUFSIZE, TEXT("Windows XP Professional x64 Edition"));
 			}
@@ -561,7 +561,7 @@ static bool unbound_built_with_threads()
 	// if no threads, bails out early with UB_NOERROR, otherwise fails with UB_AFTERFINAL id already finalized
 	bool with_threads = ub_ctx_async(ctx, 1) != 0; // UB_AFTERFINAL is not defined in public headers, check any error
 	ub_ctx_delete(ctx);
-	GULPSF_LOG_L0("libunbound was built {} threads",  (with_threads ? "with" : "without") );
+	GULPSF_LOG_L0("libunbound was built {} threads", (with_threads ? "with" : "without"));
 	return with_threads;
 }
 
@@ -661,7 +661,7 @@ namespace
 {
 boost::mutex max_concurrency_lock;
 unsigned max_concurrency = boost::thread::hardware_concurrency();
-}
+} // namespace
 
 void set_max_concurrency(unsigned n)
 {
@@ -686,12 +686,12 @@ bool is_local_address(const std::string &address)
 	epee::net_utils::http::url_content u_c;
 	if(!epee::net_utils::parse_url(address, u_c))
 	{
-		GULPSF_WARN("Failed to determine whether address '{}' is local, assuming not",  address );
+		GULPSF_WARN("Failed to determine whether address '{}' is local, assuming not", address);
 		return false;
 	}
 	if(u_c.host.empty())
 	{
-		GULPSF_WARN("Failed to determine whether address '{}' is local, assuming not",  address );
+		GULPSF_WARN("Failed to determine whether address '{}' is local, assuming not", address);
 		return false;
 	}
 
@@ -705,13 +705,13 @@ bool is_local_address(const std::string &address)
 		const boost::asio::ip::tcp::endpoint &ep = *i;
 		if(ep.address().is_loopback())
 		{
-			GULPSF_LOG_L0("Address '{}' is local",  address );
+			GULPSF_LOG_L0("Address '{}' is local", address);
 			return true;
 		}
 		++i;
 	}
 
-	GULPSF_LOG_L0("Address '{}' is not local",  address );
+	GULPSF_LOG_L0("Address '{}' is not local", address);
 	return false;
 }
 int vercmp(const char *v0, const char *v1)
@@ -776,4 +776,4 @@ bool sha256sum(const std::string &filename, crypto::hash &hash)
 		return false;
 	return true;
 }
-}
+} // namespace tools

@@ -72,21 +72,21 @@
 // GTEST_ASSERT_ is the basic statement to which all of the assertions
 // in this file reduce.  Don't use this in your code.
 
-#define GTEST_ASSERT_(expression, on_failure)                    \
-	GTEST_AMBIGUOUS_ELSE_BLOCKER_                                \
+#define GTEST_ASSERT_(expression, on_failure) \
+	GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
 	if(const ::testing::AssertionResult gtest_ar = (expression)) \
-		;                                                        \
-	else                                                         \
-	on_failure(gtest_ar.failure_message())
+		; \
+	else \
+		on_failure(gtest_ar.failure_message())
 
 // Helper function for implementing {EXPECT|ASSERT}_PRED1.  Don't use
 // this in your code.
 template <typename Pred,
-		  typename T1>
+	typename T1>
 AssertionResult AssertPred1Helper(const char *pred_text,
-								  const char *e1,
-								  Pred pred,
-								  const T1 &v1)
+	const char *e1,
+	Pred pred,
+	const T1 &v1)
 {
 	if(pred(v1))
 		return AssertionSuccess();
@@ -100,17 +100,17 @@ AssertionResult AssertPred1Helper(const char *pred_text,
 // Internal macro for implementing {EXPECT|ASSERT}_PRED_FORMAT1.
 // Don't use this in your code.
 #define GTEST_PRED_FORMAT1_(pred_format, v1, on_failure) \
-	GTEST_ASSERT_(pred_format(#v1, v1),                  \
-				  on_failure)
+	GTEST_ASSERT_(pred_format(#v1, v1), \
+		on_failure)
 
 // Internal macro for implementing {EXPECT|ASSERT}_PRED1.  Don't use
 // this in your code.
-#define GTEST_PRED1_(pred, v1, on_failure)            \
+#define GTEST_PRED1_(pred, v1, on_failure) \
 	GTEST_ASSERT_(::testing::AssertPred1Helper(#pred, \
-											   #v1,   \
-											   pred,  \
-											   v1),   \
-				  on_failure)
+					  #v1, \
+					  pred, \
+					  v1), \
+		on_failure)
 
 // Unary predicate assertion macros.
 #define EXPECT_PRED_FORMAT1(pred_format, v1) \
@@ -125,14 +125,14 @@ AssertionResult AssertPred1Helper(const char *pred_text,
 // Helper function for implementing {EXPECT|ASSERT}_PRED2.  Don't use
 // this in your code.
 template <typename Pred,
-		  typename T1,
-		  typename T2>
+	typename T1,
+	typename T2>
 AssertionResult AssertPred2Helper(const char *pred_text,
-								  const char *e1,
-								  const char *e2,
-								  Pred pred,
-								  const T1 &v1,
-								  const T2 &v2)
+	const char *e1,
+	const char *e2,
+	Pred pred,
+	const T1 &v1,
+	const T2 &v2)
 {
 	if(pred(v1, v2))
 		return AssertionSuccess();
@@ -149,19 +149,19 @@ AssertionResult AssertPred2Helper(const char *pred_text,
 // Internal macro for implementing {EXPECT|ASSERT}_PRED_FORMAT2.
 // Don't use this in your code.
 #define GTEST_PRED_FORMAT2_(pred_format, v1, v2, on_failure) \
-	GTEST_ASSERT_(pred_format(#v1, #v2, v1, v2),             \
-				  on_failure)
+	GTEST_ASSERT_(pred_format(#v1, #v2, v1, v2), \
+		on_failure)
 
 // Internal macro for implementing {EXPECT|ASSERT}_PRED2.  Don't use
 // this in your code.
-#define GTEST_PRED2_(pred, v1, v2, on_failure)        \
+#define GTEST_PRED2_(pred, v1, v2, on_failure) \
 	GTEST_ASSERT_(::testing::AssertPred2Helper(#pred, \
-											   #v1,   \
-											   #v2,   \
-											   pred,  \
-											   v1,    \
-											   v2),   \
-				  on_failure)
+					  #v1, \
+					  #v2, \
+					  pred, \
+					  v1, \
+					  v2), \
+		on_failure)
 
 // Binary predicate assertion macros.
 #define EXPECT_PRED_FORMAT2(pred_format, v1, v2) \
@@ -176,17 +176,17 @@ AssertionResult AssertPred2Helper(const char *pred_text,
 // Helper function for implementing {EXPECT|ASSERT}_PRED3.  Don't use
 // this in your code.
 template <typename Pred,
-		  typename T1,
-		  typename T2,
-		  typename T3>
+	typename T1,
+	typename T2,
+	typename T3>
 AssertionResult AssertPred3Helper(const char *pred_text,
-								  const char *e1,
-								  const char *e2,
-								  const char *e3,
-								  Pred pred,
-								  const T1 &v1,
-								  const T2 &v2,
-								  const T3 &v3)
+	const char *e1,
+	const char *e2,
+	const char *e3,
+	Pred pred,
+	const T1 &v1,
+	const T2 &v2,
+	const T3 &v3)
 {
 	if(pred(v1, v2, v3))
 		return AssertionSuccess();
@@ -206,21 +206,21 @@ AssertionResult AssertPred3Helper(const char *pred_text,
 // Internal macro for implementing {EXPECT|ASSERT}_PRED_FORMAT3.
 // Don't use this in your code.
 #define GTEST_PRED_FORMAT3_(pred_format, v1, v2, v3, on_failure) \
-	GTEST_ASSERT_(pred_format(#v1, #v2, #v3, v1, v2, v3),        \
-				  on_failure)
+	GTEST_ASSERT_(pred_format(#v1, #v2, #v3, v1, v2, v3), \
+		on_failure)
 
 // Internal macro for implementing {EXPECT|ASSERT}_PRED3.  Don't use
 // this in your code.
-#define GTEST_PRED3_(pred, v1, v2, v3, on_failure)    \
+#define GTEST_PRED3_(pred, v1, v2, v3, on_failure) \
 	GTEST_ASSERT_(::testing::AssertPred3Helper(#pred, \
-											   #v1,   \
-											   #v2,   \
-											   #v3,   \
-											   pred,  \
-											   v1,    \
-											   v2,    \
-											   v3),   \
-				  on_failure)
+					  #v1, \
+					  #v2, \
+					  #v3, \
+					  pred, \
+					  v1, \
+					  v2, \
+					  v3), \
+		on_failure)
 
 // Ternary predicate assertion macros.
 #define EXPECT_PRED_FORMAT3(pred_format, v1, v2, v3) \
@@ -235,20 +235,20 @@ AssertionResult AssertPred3Helper(const char *pred_text,
 // Helper function for implementing {EXPECT|ASSERT}_PRED4.  Don't use
 // this in your code.
 template <typename Pred,
-		  typename T1,
-		  typename T2,
-		  typename T3,
-		  typename T4>
+	typename T1,
+	typename T2,
+	typename T3,
+	typename T4>
 AssertionResult AssertPred4Helper(const char *pred_text,
-								  const char *e1,
-								  const char *e2,
-								  const char *e3,
-								  const char *e4,
-								  Pred pred,
-								  const T1 &v1,
-								  const T2 &v2,
-								  const T3 &v3,
-								  const T4 &v4)
+	const char *e1,
+	const char *e2,
+	const char *e3,
+	const char *e4,
+	Pred pred,
+	const T1 &v1,
+	const T2 &v2,
+	const T3 &v3,
+	const T4 &v4)
 {
 	if(pred(v1, v2, v3, v4))
 		return AssertionSuccess();
@@ -271,23 +271,23 @@ AssertionResult AssertPred4Helper(const char *pred_text,
 // Internal macro for implementing {EXPECT|ASSERT}_PRED_FORMAT4.
 // Don't use this in your code.
 #define GTEST_PRED_FORMAT4_(pred_format, v1, v2, v3, v4, on_failure) \
-	GTEST_ASSERT_(pred_format(#v1, #v2, #v3, #v4, v1, v2, v3, v4),   \
-				  on_failure)
+	GTEST_ASSERT_(pred_format(#v1, #v2, #v3, #v4, v1, v2, v3, v4), \
+		on_failure)
 
 // Internal macro for implementing {EXPECT|ASSERT}_PRED4.  Don't use
 // this in your code.
 #define GTEST_PRED4_(pred, v1, v2, v3, v4, on_failure) \
-	GTEST_ASSERT_(::testing::AssertPred4Helper(#pred,  \
-											   #v1,    \
-											   #v2,    \
-											   #v3,    \
-											   #v4,    \
-											   pred,   \
-											   v1,     \
-											   v2,     \
-											   v3,     \
-											   v4),    \
-				  on_failure)
+	GTEST_ASSERT_(::testing::AssertPred4Helper(#pred, \
+					  #v1, \
+					  #v2, \
+					  #v3, \
+					  #v4, \
+					  pred, \
+					  v1, \
+					  v2, \
+					  v3, \
+					  v4), \
+		on_failure)
 
 // 4-ary predicate assertion macros.
 #define EXPECT_PRED_FORMAT4(pred_format, v1, v2, v3, v4) \
@@ -302,23 +302,23 @@ AssertionResult AssertPred4Helper(const char *pred_text,
 // Helper function for implementing {EXPECT|ASSERT}_PRED5.  Don't use
 // this in your code.
 template <typename Pred,
-		  typename T1,
-		  typename T2,
-		  typename T3,
-		  typename T4,
-		  typename T5>
+	typename T1,
+	typename T2,
+	typename T3,
+	typename T4,
+	typename T5>
 AssertionResult AssertPred5Helper(const char *pred_text,
-								  const char *e1,
-								  const char *e2,
-								  const char *e3,
-								  const char *e4,
-								  const char *e5,
-								  Pred pred,
-								  const T1 &v1,
-								  const T2 &v2,
-								  const T3 &v3,
-								  const T4 &v4,
-								  const T5 &v5)
+	const char *e1,
+	const char *e2,
+	const char *e3,
+	const char *e4,
+	const char *e5,
+	Pred pred,
+	const T1 &v1,
+	const T2 &v2,
+	const T3 &v3,
+	const T4 &v4,
+	const T5 &v5)
 {
 	if(pred(v1, v2, v3, v4, v5))
 		return AssertionSuccess();
@@ -343,26 +343,26 @@ AssertionResult AssertPred5Helper(const char *pred_text,
 
 // Internal macro for implementing {EXPECT|ASSERT}_PRED_FORMAT5.
 // Don't use this in your code.
-#define GTEST_PRED_FORMAT5_(pred_format, v1, v2, v3, v4, v5, on_failure)    \
+#define GTEST_PRED_FORMAT5_(pred_format, v1, v2, v3, v4, v5, on_failure) \
 	GTEST_ASSERT_(pred_format(#v1, #v2, #v3, #v4, #v5, v1, v2, v3, v4, v5), \
-				  on_failure)
+		on_failure)
 
 // Internal macro for implementing {EXPECT|ASSERT}_PRED5.  Don't use
 // this in your code.
 #define GTEST_PRED5_(pred, v1, v2, v3, v4, v5, on_failure) \
-	GTEST_ASSERT_(::testing::AssertPred5Helper(#pred,      \
-											   #v1,        \
-											   #v2,        \
-											   #v3,        \
-											   #v4,        \
-											   #v5,        \
-											   pred,       \
-											   v1,         \
-											   v2,         \
-											   v3,         \
-											   v4,         \
-											   v5),        \
-				  on_failure)
+	GTEST_ASSERT_(::testing::AssertPred5Helper(#pred, \
+					  #v1, \
+					  #v2, \
+					  #v3, \
+					  #v4, \
+					  #v5, \
+					  pred, \
+					  v1, \
+					  v2, \
+					  v3, \
+					  v4, \
+					  v5), \
+		on_failure)
 
 // 5-ary predicate assertion macros.
 #define EXPECT_PRED_FORMAT5(pred_format, v1, v2, v3, v4, v5) \

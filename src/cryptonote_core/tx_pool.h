@@ -405,9 +405,9 @@ class tx_memory_pool : boost::noncopyable
      */
 	struct tx_details
 	{
-		transaction tx;					//!< the transaction
-		size_t blob_size;				//!< the transaction's size
-		uint64_t fee;					//!< the transaction's fee amount
+		transaction tx; //!< the transaction
+		size_t blob_size; //!< the transaction's size
+		uint64_t fee; //!< the transaction's fee amount
 		crypto::hash max_used_block_id; //!< the hash of the highest block referenced by an input
 		uint64_t max_used_block_height; //!< the height of the highest block referenced by an input
 
@@ -434,8 +434,8 @@ class tx_memory_pool : boost::noncopyable
 		time_t receive_time; //!< the time when the transaction entered the pool
 
 		time_t last_relayed_time; //!< the last time the transaction was relayed to the network
-		bool relayed;			  //!< whether or not the transaction has been relayed to the network
-		bool do_not_relay;		  //!< to avoid relay this transaction to the network
+		bool relayed; //!< whether or not the transaction has been relayed to the network
+		bool do_not_relay; //!< to avoid relay this transaction to the network
 
 		bool double_spend_seen; //!< true iff another tx was seen double spending this one
 	};
@@ -586,7 +586,7 @@ class tx_memory_pool : boost::noncopyable
 	size_t m_txpool_max_size;
 	size_t m_txpool_size;
 };
-}
+} // namespace cryptonote
 
 namespace boost
 {
@@ -612,7 +612,7 @@ void serialize(archive_t &ar, cryptonote::tx_memory_pool::tx_details &td, const 
 		return;
 	ar &td.do_not_relay;
 }
-}
-}
+} // namespace serialization
+} // namespace boost
 BOOST_CLASS_VERSION(cryptonote::tx_memory_pool, CURRENT_MEMPOOL_ARCHIVE_VER)
 BOOST_CLASS_VERSION(cryptonote::tx_memory_pool::tx_details, CURRENT_MEMPOOL_TX_DETAILS_ARCHIVE_VER)

@@ -62,6 +62,6 @@ class RpcHandler
 	virtual ~RpcHandler() {}
 };
 
-} // rpc
+} // namespace rpc
 
-} // cryptonote
+} // namespace cryptonote

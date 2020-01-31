@@ -28,8 +28,8 @@
 
 #include "gtest/gtest.h"
 
-#include "memwipe.h"
 #include "common/gulps.hpp"
+#include "memwipe.h"
 #include <stdint.h>
 
 GULPS_CAT_MAJOR("test");

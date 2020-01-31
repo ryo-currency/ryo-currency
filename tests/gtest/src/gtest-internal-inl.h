@@ -60,12 +60,12 @@
 
 #if GTEST_CAN_STREAM_RESULTS_
 #include <arpa/inet.h> // NOLINT
-#include <netdb.h>	 // NOLINT
+#include <netdb.h> // NOLINT
 #endif
 
 #if GTEST_OS_WINDOWS
 #include <windows.h> // NOLINT
-#endif				 // GTEST_OS_WINDOWS
+#endif // GTEST_OS_WINDOWS
 
 #include "gtest/gtest-spi.h"
 #include "gtest/gtest.h" // NOLINT
@@ -143,7 +143,7 @@ inline int GetRandomSeedFromFlag(Int32 random_seed_flag)
 	// it's easy to type.
 	const int normalized_seed =
 		static_cast<int>((raw_seed - 1U) %
-						 static_cast<unsigned int>(kMaxRandomSeed)) +
+			static_cast<unsigned int>(kMaxRandomSeed)) +
 		1;
 	return normalized_seed;
 }
@@ -266,8 +266,8 @@ void WriteToShardStatusFileIfNeeded();
 // disabled because it must only be applied to the original test
 // process. Otherwise, we could filter out death tests we intended to execute.
 GTEST_API_ bool ShouldShard(const char *total_shards_str,
-							const char *shard_index_str,
-							bool in_subprocess_for_death_test);
+	const char *shard_index_str,
+	bool in_subprocess_for_death_test);
 
 // Parses the environment variable var as an Int32. If it is unset,
 // returns default_val. If it is not an Int32, prints an error and
@@ -320,7 +320,7 @@ inline E GetElementOr(const std::vector<E> &v, int i, E default_value)
 // shuffle to the end of the vector.
 template <typename E>
 void ShuffleRange(internal::Random *random, int begin, int end,
-				  std::vector<E> *v)
+	std::vector<E> *v)
 {
 	const int size = static_cast<int>(v->size());
 	GTEST_CHECK_(0 <= begin && begin <= size)
@@ -364,7 +364,8 @@ class TestPropertyKeyIs
 	// Constructor.
 	//
 	// TestPropertyKeyIs has NO default constructor.
-	explicit TestPropertyKeyIs(const std::string &key) : key_(key) {}
+	explicit TestPropertyKeyIs(const std::string &key) :
+		key_(key) {}
 
 	// Returns true iff the test name of test property matches on key_.
 	bool operator()(const TestProperty &test_property) const
@@ -411,7 +412,7 @@ class GTEST_API_ UnitTestOptions
 	// Returns true iff the user-specified filter matches the test case
 	// name and the test name.
 	static bool FilterMatchesTest(const std::string &test_case_name,
-								  const std::string &test_name);
+		const std::string &test_name);
 
 #if GTEST_OS_WINDOWS
 	// Function for supporting the gtest_catch_exception flag.
@@ -657,9 +658,9 @@ class GTEST_API_ UnitTestImpl
 	//   set_up_tc:      pointer to the function that sets up the test case
 	//   tear_down_tc:   pointer to the function that tears down the test case
 	TestCase *GetTestCase(const char *test_case_name,
-						  const char *type_param,
-						  Test::SetUpTestCaseFunc set_up_tc,
-						  Test::TearDownTestCaseFunc tear_down_tc);
+		const char *type_param,
+		Test::SetUpTestCaseFunc set_up_tc,
+		Test::TearDownTestCaseFunc tear_down_tc);
 
 	// Adds a TestInfo to the unit test.
 	//
@@ -669,8 +670,8 @@ class GTEST_API_ UnitTestImpl
 	//   tear_down_tc: pointer to the function that tears down the test case
 	//   test_info:    the TestInfo object
 	void AddTestInfo(Test::SetUpTestCaseFunc set_up_tc,
-					 Test::TearDownTestCaseFunc tear_down_tc,
-					 TestInfo *test_info)
+		Test::TearDownTestCaseFunc tear_down_tc,
+		TestInfo *test_info)
 	{
 		// In order to support thread-safe death tests, we need to
 		// remember the original working directory when the test program
@@ -687,9 +688,9 @@ class GTEST_API_ UnitTestImpl
 		}
 
 		GetTestCase(test_info->test_case_name(),
-					test_info->type_param(),
-					set_up_tc,
-					tear_down_tc)
+			test_info->type_param(),
+			set_up_tc,
+			tear_down_tc)
 			->AddTestInfo(test_info);
 	}
 
@@ -1017,8 +1018,8 @@ bool ParseNaturalNumber(const ::std::string &str, Integer *number)
 	errno = 0;
 
 	char *end;
-// BiggestConvertible is the largest integer type that system-provided
-// string-to-number conversion routines can return.
+	// BiggestConvertible is the largest integer type that system-provided
+	// string-to-number conversion routines can return.
 
 #if GTEST_OS_WINDOWS && !defined(__GNUC__)
 
@@ -1059,8 +1060,8 @@ class TestResultAccessor
 {
   public:
 	static void RecordProperty(TestResult *test_result,
-							   const std::string &xml_element,
-							   const TestProperty &property)
+		const std::string &xml_element,
+		const TestProperty &property)
 	{
 		test_result->RecordProperty(xml_element, property);
 	}
@@ -1106,8 +1107,8 @@ class GTEST_API_ StreamingListener : public EmptyTestEventListener
 	class SocketWriter : public AbstractSocketWriter
 	{
 	  public:
-		SocketWriter(const string &host, const string &port)
-			: sockfd_(-1), host_name_(host), port_num_(port)
+		SocketWriter(const string &host, const string &port) :
+			sockfd_(-1), host_name_(host), port_num_(port)
 		{
 			MakeConnection();
 		}
@@ -1157,11 +1158,11 @@ class GTEST_API_ StreamingListener : public EmptyTestEventListener
 	// Escapes '=', '&', '%', and '\n' characters in str as "%xx".
 	static string UrlEncode(const char *str);
 
-	StreamingListener(const string &host, const string &port)
-		: socket_writer_(new SocketWriter(host, port)) { Start(); }
+	StreamingListener(const string &host, const string &port) :
+		socket_writer_(new SocketWriter(host, port)) { Start(); }
 
-	explicit StreamingListener(AbstractSocketWriter *socket_writer)
-		: socket_writer_(socket_writer) { Start(); }
+	explicit StreamingListener(AbstractSocketWriter *socket_writer) :
+		socket_writer_(socket_writer) { Start(); }
 
 	void OnTestProgramStart(const UnitTest & /* unit_test */)
 	{
@@ -1181,14 +1182,14 @@ class GTEST_API_ StreamingListener : public EmptyTestEventListener
 	void OnTestIterationStart(const UnitTest & /* unit_test */, int iteration)
 	{
 		SendLn("event=TestIterationStart&iteration=" +
-			   StreamableToString(iteration));
+			StreamableToString(iteration));
 	}
 
 	void OnTestIterationEnd(const UnitTest &unit_test, int /* iteration */)
 	{
 		SendLn("event=TestIterationEnd&passed=" +
-			   FormatBool(unit_test.Passed()) + "&elapsed_time=" +
-			   StreamableToString(unit_test.elapsed_time()) + "ms");
+			FormatBool(unit_test.Passed()) + "&elapsed_time=" +
+			StreamableToString(unit_test.elapsed_time()) + "ms");
 	}
 
 	void OnTestCaseStart(const TestCase &test_case)
@@ -1209,9 +1210,9 @@ class GTEST_API_ StreamingListener : public EmptyTestEventListener
 	void OnTestEnd(const TestInfo &test_info)
 	{
 		SendLn("event=TestEnd&passed=" +
-			   FormatBool((test_info.result())->Passed()) +
-			   "&elapsed_time=" +
-			   StreamableToString((test_info.result())->elapsed_time()) + "ms");
+			FormatBool((test_info.result())->Passed()) +
+			"&elapsed_time=" +
+			StreamableToString((test_info.result())->elapsed_time()) + "ms");
 	}
 
 	void OnTestPartResult(const TestPartResult &test_part_result)
@@ -1220,8 +1221,8 @@ class GTEST_API_ StreamingListener : public EmptyTestEventListener
 		if(file_name == NULL)
 			file_name = "";
 		SendLn("event=TestPartResult&file=" + UrlEncode(file_name) +
-			   "&line=" + StreamableToString(test_part_result.line_number()) +
-			   "&message=" + UrlEncode(test_part_result.message()));
+			"&line=" + StreamableToString(test_part_result.line_number()) +
+			"&message=" + UrlEncode(test_part_result.message()));
 	}
 
   private:

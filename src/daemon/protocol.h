@@ -48,14 +48,13 @@
 
 #include "common/gulps.hpp"
 
-
-
 namespace daemonize
 {
 
 class t_protocol final
 {
-	 GULPS_CAT_MAJOR("daemon_proto");
+	GULPS_CAT_MAJOR("daemon_proto");
+
   private:
 	typedef cryptonote::t_cryptonote_protocol_handler<cryptonote::core> t_protocol_raw;
 	typedef nodetool::node_server<t_protocol_raw> t_node_server;
@@ -64,8 +63,8 @@ class t_protocol final
 
   public:
 	t_protocol(
-		boost::program_options::variables_map const &vm, t_core &core, bool offline = false)
-		: m_protocol{core.get(), nullptr, offline}
+		boost::program_options::variables_map const &vm, t_core &core, bool offline = false) :
+		m_protocol{core.get(), nullptr, offline}
 	{
 		GULPS_GLOBAL_PRINT("Initializing cryptonote protocol...");
 		if(!m_protocol.init(vm))
@@ -101,4 +100,4 @@ class t_protocol final
 		}
 	}
 };
-}
+} // namespace daemonize

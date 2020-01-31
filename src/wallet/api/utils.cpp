@@ -71,6 +71,6 @@ void onStartup()
 {
 	tools::on_startup();
 }
-}
+} // namespace Utils
 
-} // namespace
+} // namespace Ryo

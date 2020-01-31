@@ -53,13 +53,14 @@
 
 #include "generic-ops.h"
 #include "hex.h"
-#include "string_tools.h"
 #include "span.h"
+#include "string_tools.h"
 
 namespace crypto
 {
 
-extern "C" {
+extern "C"
+{
 #include "hash-ops.h"
 }
 
@@ -111,19 +112,19 @@ inline std::ostream &operator<<(std::ostream &o, const crypto::hash8 &v)
 
 const static crypto::hash null_hash = boost::value_initialized<crypto::hash>();
 const static crypto::hash8 null_hash8 = boost::value_initialized<crypto::hash8>();
-}
+} // namespace crypto
 
-namespace fmt 
+namespace fmt
 {
 template <>
 struct formatter<crypto::hash> : formatter<string_view>
 {
 	template <typename FormatContext>
-	auto format(const crypto::hash &hash, FormatContext &ctx)  -> decltype(ctx.out())  
+	auto format(const crypto::hash &hash, FormatContext &ctx) -> decltype(ctx.out())
 	{
 		return formatter<string_view>::format(epee::string_tools::pod_to_hex(hash), ctx);
 	}
 };
-}
+} // namespace fmt
 CRYPTO_MAKE_HASHABLE(hash)
 CRYPTO_MAKE_COMPARABLE(hash8)

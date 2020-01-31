@@ -30,13 +30,13 @@
 #include "gtest/gtest.h"
 #include <boost/filesystem.hpp>
 
+#include "common/gulps.hpp"
 #include "crypto/crypto.h"
 #include "cryptonote_basic/account.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
 #include "include_base_utils.h"
 #include "wallet/api/subaddress.h"
 #include "wallet/wallet2.h"
-#include "common/gulps.hpp"
 
 class WalletSubaddress : public ::testing::Test
 {

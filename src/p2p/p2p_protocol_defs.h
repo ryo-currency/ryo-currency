@@ -59,7 +59,6 @@
 
 #include "common/gulps.hpp"
 
-
 namespace nodetool
 {
 GULPS_CAT_MAJOR("p2p_proto_defs");
@@ -77,7 +76,8 @@ static inline std::string peerid_to_string(peerid_type peer_id)
 
 struct network_address_old
 {
-	network_address_old(uint32_t ip, uint32_t port) : ip(ip), port(port)  {}
+	network_address_old(uint32_t ip, uint32_t port) :
+		ip(ip), port(port) {}
 
 	uint32_t ip;
 	uint32_t port;
@@ -91,7 +91,8 @@ struct network_address_old
 template <typename AddressType>
 struct peerlist_entry_base
 {
-	peerlist_entry_base(AddressType adr, const peerid_type id, const int64_t last_seen) : adr(adr), id(id), last_seen(last_seen) {}
+	peerlist_entry_base(AddressType adr, const peerid_type id, const int64_t last_seen) :
+		adr(adr), id(id), last_seen(last_seen) {}
 
 	AddressType adr;
 	peerid_type id;
@@ -476,4 +477,4 @@ inline crypto::hash get_proof_of_trust_hash(const nodetool::proof_of_trust &pot)
 	s.append(reinterpret_cast<const char *>(&pot.time), sizeof(pot.time));
 	return crypto::cn_fast_hash(s.data(), s.size());
 }
-}
+} // namespace nodetool

@@ -217,7 +217,7 @@ class device_ledger : public hw::device
 	bool ecdhDecode(rct::ecdhTuple &masked, const rct::key &sharedSec) override;
 
 	bool add_output_key_mapping(const crypto::public_key &Aout, const crypto::public_key &Bout, const bool is_subaddress, const size_t real_output_index,
-								const rct::key &amount_key, const crypto::public_key &out_eph_public_key) override;
+		const rct::key &amount_key, const crypto::public_key &out_eph_public_key) override;
 
 	bool mlsag_prehash(const std::string &blob, size_t inputs_size, size_t outputs_size, const rct::keyV &hashes, const rct::ctkeyV &outPk, rct::key &prehash) override;
 	bool mlsag_prepare(const rct::key &H, const rct::key &xx, rct::key &a, rct::key &aG, rct::key &aHP, rct::key &rvII) override;
@@ -234,5 +234,5 @@ extern crypto::secret_key dbg_spendkey;
 #endif
 
 #endif //WITH_DEVICE_LEDGER
-}
-}
+} // namespace ledger
+} // namespace hw

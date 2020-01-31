@@ -105,8 +105,8 @@ void test_generator::add_block(const cryptonote::block &blk, size_t tsx_size, st
 }
 
 bool test_generator::construct_block(cryptonote::block &blk, uint64_t height, const crypto::hash &prev_id,
-									 const cryptonote::account_base &miner_acc, uint64_t timestamp, uint64_t already_generated_coins,
-									 std::vector<size_t> &block_sizes, const std::list<cryptonote::transaction> &tx_list)
+	const cryptonote::account_base &miner_acc, uint64_t timestamp, uint64_t already_generated_coins,
+	std::vector<size_t> &block_sizes, const std::list<cryptonote::transaction> &tx_list)
 {
 	blk.major_version = 1;
 	blk.minor_version = 1;
@@ -197,8 +197,8 @@ bool test_generator::construct_block(cryptonote::block &blk, const cryptonote::a
 }
 
 bool test_generator::construct_block(cryptonote::block &blk, const cryptonote::block &blk_prev,
-									 const cryptonote::account_base &miner_acc,
-									 const std::list<cryptonote::transaction> &tx_list /* = std::list<cryptonote::transaction>()*/)
+	const cryptonote::account_base &miner_acc,
+	const std::list<cryptonote::transaction> &tx_list /* = std::list<cryptonote::transaction>()*/)
 {
 	uint64_t height = boost::get<txin_gen>(blk_prev.miner_tx.vin.front()).height + 1;
 	crypto::hash prev_id = get_block_hash(blk_prev);
@@ -212,12 +212,12 @@ bool test_generator::construct_block(cryptonote::block &blk, const cryptonote::b
 }
 
 bool test_generator::construct_block_manually(block &blk, const block &prev_block, const account_base &miner_acc,
-											  int actual_params /* = bf_none*/, uint8_t major_ver /* = 0*/,
-											  uint8_t minor_ver /* = 0*/, uint64_t timestamp /* = 0*/,
-											  const crypto::hash &prev_id /* = crypto::hash()*/, const difficulty_type &diffic /* = 1*/,
-											  const transaction &miner_tx /* = transaction()*/,
-											  const std::vector<crypto::hash> &tx_hashes /* = std::vector<crypto::hash>()*/,
-											  size_t txs_sizes /* = 0*/, size_t max_outs /* = 0*/, uint8_t hf_version /* = 1*/)
+	int actual_params /* = bf_none*/, uint8_t major_ver /* = 0*/,
+	uint8_t minor_ver /* = 0*/, uint64_t timestamp /* = 0*/,
+	const crypto::hash &prev_id /* = crypto::hash()*/, const difficulty_type &diffic /* = 1*/,
+	const transaction &miner_tx /* = transaction()*/,
+	const std::vector<crypto::hash> &tx_hashes /* = std::vector<crypto::hash>()*/,
+	size_t txs_sizes /* = 0*/, size_t max_outs /* = 0*/, uint8_t hf_version /* = 1*/)
 {
 	blk.major_version = actual_params & bf_major_ver ? major_ver : 1;
 	blk.minor_version = actual_params & bf_minor_ver ? minor_ver : 1;
@@ -254,8 +254,8 @@ bool test_generator::construct_block_manually(block &blk, const block &prev_bloc
 }
 
 bool test_generator::construct_block_manually_tx(cryptonote::block &blk, const cryptonote::block &prev_block,
-												 const cryptonote::account_base &miner_acc,
-												 const std::vector<crypto::hash> &tx_hashes, size_t txs_size)
+	const cryptonote::account_base &miner_acc,
+	const std::vector<crypto::hash> &tx_hashes, size_t txs_size)
 {
 	return construct_block_manually(blk, prev_block, miner_acc, bf_tx_hashes, 0, 0, 0, crypto::hash(), 0, transaction(), tx_hashes, txs_size);
 }
@@ -265,18 +265,18 @@ struct output_index
 	const cryptonote::txout_target_v out;
 	uint64_t amount;
 	size_t blk_height; // block height
-	size_t tx_no;	  // index of transaction in block
-	size_t out_no;	 // index of out in transaction
+	size_t tx_no; // index of transaction in block
+	size_t out_no; // index of out in transaction
 	size_t idx;
 	bool spent;
 	const cryptonote::block *p_blk;
 	const cryptonote::transaction *p_tx;
 
-	output_index(const cryptonote::txout_target_v &_out, uint64_t _a, size_t _h, size_t tno, size_t ono, const cryptonote::block *_pb, const cryptonote::transaction *_pt)
-		: out(_out), amount(_a), blk_height(_h), tx_no(tno), out_no(ono), idx(0), spent(false), p_blk(_pb), p_tx(_pt) {}
+	output_index(const cryptonote::txout_target_v &_out, uint64_t _a, size_t _h, size_t tno, size_t ono, const cryptonote::block *_pb, const cryptonote::transaction *_pt) :
+		out(_out), amount(_a), blk_height(_h), tx_no(tno), out_no(ono), idx(0), spent(false), p_blk(_pb), p_tx(_pt) {}
 
-	output_index(const output_index &other)
-		: out(other.out), amount(other.amount), blk_height(other.blk_height), tx_no(other.tx_no), out_no(other.out_no), idx(other.idx), spent(other.spent), p_blk(other.p_blk), p_tx(other.p_tx) {}
+	output_index(const output_index &other) :
+		out(other.out), amount(other.amount), blk_height(other.blk_height), tx_no(other.tx_no), out_no(other.out_no), idx(other.idx), spent(other.spent), p_blk(other.p_blk), p_tx(other.p_tx) {}
 
 	const std::string toString() const
 	{
@@ -316,7 +316,7 @@ uint64_t get_inputs_amount(const vector<tx_source_entry> &s)
 
 	return r;
 }
-}
+} // namespace
 
 bool init_output_indices(map_output_idx_t &outs, std::map<uint64_t, std::vector<size_t>> &outs_mine, const std::vector<cryptonote::block> &blockchain, const map_hash2tx_t &mtx, const cryptonote::account_base &from)
 {
@@ -441,7 +441,7 @@ bool fill_output_entries(std::vector<output_index> &out_indices, size_t sender_o
 }
 
 bool fill_tx_sources(std::vector<tx_source_entry> &sources, const std::vector<test_event_entry> &events,
-					 const block &blk_head, const cryptonote::account_base &from, uint64_t amount, size_t nmix)
+	const block &blk_head, const cryptonote::account_base &from, uint64_t amount, size_t nmix)
 {
 	map_output_idx_t outs;
 	map_output_t outs_mine;
@@ -501,9 +501,9 @@ bool fill_tx_destination(tx_destination_entry &de, const cryptonote::account_bas
 }
 
 void fill_tx_sources_and_destinations(const std::vector<test_event_entry> &events, const block &blk_head,
-									  const cryptonote::account_base &from, const cryptonote::account_base &to,
-									  uint64_t amount, uint64_t fee, size_t nmix, std::vector<tx_source_entry> &sources,
-									  std::vector<tx_destination_entry> &destinations)
+	const cryptonote::account_base &from, const cryptonote::account_base &to,
+	uint64_t amount, uint64_t fee, size_t nmix, std::vector<tx_source_entry> &sources,
+	std::vector<tx_destination_entry> &destinations)
 {
 	sources.clear();
 	destinations.clear();
@@ -534,8 +534,8 @@ void fill_nonce(cryptonote::block &blk, const difficulty_type &diffic, uint64_t 
 }
 
 bool construct_miner_tx_manually(size_t height, uint64_t already_generated_coins,
-								 const account_public_address &miner_address, transaction &tx, uint64_t fee,
-								 keypair *p_txkey /* = 0*/)
+	const account_public_address &miner_address, transaction &tx, uint64_t fee,
+	keypair *p_txkey /* = 0*/)
 {
 	keypair txkey;
 	txkey = keypair::generate(hw::get_device("default"));
@@ -574,8 +574,8 @@ bool construct_miner_tx_manually(size_t height, uint64_t already_generated_coins
 }
 
 bool construct_tx_to_key(const std::vector<test_event_entry> &events, cryptonote::transaction &tx, const block &blk_head,
-						 const cryptonote::account_base &from, const cryptonote::account_base &to, uint64_t amount,
-						 uint64_t fee, size_t nmix)
+	const cryptonote::account_base &from, const cryptonote::account_base &to, uint64_t amount,
+	uint64_t fee, size_t nmix)
 {
 	vector<tx_source_entry> sources;
 	vector<tx_destination_entry> destinations;
@@ -585,7 +585,7 @@ bool construct_tx_to_key(const std::vector<test_event_entry> &events, cryptonote
 }
 
 transaction construct_tx_with_fee(std::vector<test_event_entry> &events, const block &blk_head,
-								  const account_base &acc_from, const account_base &acc_to, uint64_t amount, uint64_t fee)
+	const account_base &acc_from, const account_base &acc_to, uint64_t amount, uint64_t fee)
 {
 	transaction tx;
 	construct_tx_to_key(events, tx, blk_head, acc_from, acc_to, amount, fee, 0);

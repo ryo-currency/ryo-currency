@@ -42,7 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include "common/command_line.h"
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "cryptonote_basic/tx_extra.h"
@@ -51,9 +50,6 @@
 #include <boost/filesystem.hpp>
 
 #include "common/gulps.hpp"
-
-
-
 
 namespace po = boost::program_options;
 using namespace epee;
@@ -64,10 +60,10 @@ GULPS_CAT_MAJOR("cn_deser");
 
 static void print_extra_fields(const std::vector<cryptonote::tx_extra_field> &fields)
 {
-	GULPSF_PRINT("tx_extra has {} field(s)", fields.size() );
+	GULPSF_PRINT("tx_extra has {} field(s)", fields.size());
 	for(size_t n = 0; n < fields.size(); ++n)
 	{
-		GULPSF_PRINT("field {}: ", n );
+		GULPSF_PRINT("field {}: ", n);
 		if(typeid(cryptonote::tx_extra_padding) == fields[n].type())
 			GULPSF_PRINT("extra padding: {} bytes", boost::get<cryptonote::tx_extra_padding>(fields[n]).size);
 		else if(typeid(cryptonote::tx_extra_pub_key) == fields[n].type())
@@ -75,7 +71,7 @@ static void print_extra_fields(const std::vector<cryptonote::tx_extra_field> &fi
 		else if(typeid(cryptonote::tx_extra_nonce) == fields[n].type())
 			GULPSF_PRINT("extra nonce: {}", epee::string_tools::buff_to_hex_nodelimer(boost::get<cryptonote::tx_extra_nonce>(fields[n]).nonce));
 		else if(typeid(cryptonote::tx_extra_merge_mining_tag) == fields[n].type())
-			GULPSF_PRINT("extra merge mining tag: depth {}, merkle root {}", boost::get<cryptonote::tx_extra_merge_mining_tag>(fields[n]).depth ,  boost::get<cryptonote::tx_extra_merge_mining_tag>(fields[n]).merkle_root);
+			GULPSF_PRINT("extra merge mining tag: depth {}, merkle root {}", boost::get<cryptonote::tx_extra_merge_mining_tag>(fields[n]).depth, boost::get<cryptonote::tx_extra_merge_mining_tag>(fields[n]).merkle_root);
 		else if(typeid(cryptonote::tx_extra_mysterious_minergate) == fields[n].type())
 			GULPSF_PRINT("extra minergate custom: {}", epee::string_tools::buff_to_hex_nodelimer(boost::get<cryptonote::tx_extra_mysterious_minergate>(fields[n]).data));
 		else
@@ -117,15 +113,15 @@ int main(int argc, char *argv[])
 		return 1;
 
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
-			return msg.lvl >= gulps::LEVEL_PRINT;
-			});
+	out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool {
+		return msg.lvl >= gulps::LEVEL_PRINT;
+	});
 	gulps::inst().add_output(std::move(out));
 
 	if(command_line::get_arg(vm, command_line::arg_help))
 	{
 		GULPSF_PRINT("Ryo '{} ({})", RYO_RELEASE_NAME, RYO_VERSION_FULL);
-		GULPS_PRINT( desc_options );
+		GULPS_PRINT(desc_options);
 		return 0;
 	}
 
@@ -192,12 +188,12 @@ int main(int argc, char *argv[])
 	if(cryptonote::parse_and_validate_block_from_blob(blob, block))
 	{
 		GULPS_PRINT("Parsed block:");
-		GULPS_PRINT( cryptonote::obj_to_json_str(block) );
+		GULPS_PRINT(cryptonote::obj_to_json_str(block));
 	}
 	else if(cryptonote::parse_and_validate_tx_from_blob(blob, tx))
 	{
 		GULPS_PRINT("Parsed transaction:");
-		GULPS_PRINT( cryptonote::obj_to_json_str(tx) );
+		GULPS_PRINT(cryptonote::obj_to_json_str(tx));
 
 		bool parsed = cryptonote::parse_tx_extra(tx.extra, fields);
 		if(!parsed)

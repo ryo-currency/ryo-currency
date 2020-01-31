@@ -81,46 +81,46 @@ bool gen_simple_chain_split_1::generate(std::vector<test_event_entry> &events) c
 	GENERATE_ACCOUNT(first_miner_account);
 	//                                                                                          events index
 	MAKE_GENESIS_BLOCK(events, blk_0, first_miner_account, ts_start); //  0
-	MAKE_NEXT_BLOCK(events, blk_1, blk_0, first_miner_account);		  //  1
-	MAKE_NEXT_BLOCK(events, blk_2, blk_1, first_miner_account);		  //  2
-	MAKE_NEXT_BLOCK(events, blk_3, blk_2, first_miner_account);		  //  3
-	MAKE_NEXT_BLOCK(events, blk_4, blk_3, first_miner_account);		  //  4
-	MAKE_NEXT_BLOCK(events, blk_5, blk_4, first_miner_account);		  //  5
-	MAKE_NEXT_BLOCK(events, blk_6, blk_5, first_miner_account);		  //  6
-	MAKE_NEXT_BLOCK(events, blk_7, blk_6, first_miner_account);		  //  7
-	MAKE_NEXT_BLOCK(events, blk_8, blk_7, first_miner_account);		  //  8
+	MAKE_NEXT_BLOCK(events, blk_1, blk_0, first_miner_account); //  1
+	MAKE_NEXT_BLOCK(events, blk_2, blk_1, first_miner_account); //  2
+	MAKE_NEXT_BLOCK(events, blk_3, blk_2, first_miner_account); //  3
+	MAKE_NEXT_BLOCK(events, blk_4, blk_3, first_miner_account); //  4
+	MAKE_NEXT_BLOCK(events, blk_5, blk_4, first_miner_account); //  5
+	MAKE_NEXT_BLOCK(events, blk_6, blk_5, first_miner_account); //  6
+	MAKE_NEXT_BLOCK(events, blk_7, blk_6, first_miner_account); //  7
+	MAKE_NEXT_BLOCK(events, blk_8, blk_7, first_miner_account); //  8
 	//split
-	MAKE_NEXT_BLOCK(events, blk_9, blk_5, first_miner_account);   //  9
-	MAKE_NEXT_BLOCK(events, blk_10, blk_9, first_miner_account);  //  10
-	DO_CALLBACK(events, "check_split_not_switched");			  //  11
+	MAKE_NEXT_BLOCK(events, blk_9, blk_5, first_miner_account); //  9
+	MAKE_NEXT_BLOCK(events, blk_10, blk_9, first_miner_account); //  10
+	DO_CALLBACK(events, "check_split_not_switched"); //  11
 	MAKE_NEXT_BLOCK(events, blk_11, blk_10, first_miner_account); //  12
-	DO_CALLBACK(events, "check_split_not_switched2");			  //  13
+	DO_CALLBACK(events, "check_split_not_switched2"); //  13
 	MAKE_NEXT_BLOCK(events, blk_12, blk_11, first_miner_account); //  14
-	DO_CALLBACK(events, "check_split_switched");				  //  15
+	DO_CALLBACK(events, "check_split_switched"); //  15
 	MAKE_NEXT_BLOCK(events, blk_13, blk_12, first_miner_account); //  16
 	MAKE_NEXT_BLOCK(events, blk_14, blk_13, first_miner_account); //  17
 	MAKE_NEXT_BLOCK(events, blk_15, blk_14, first_miner_account); //  18
 	MAKE_NEXT_BLOCK(events, blk_16, blk_15, first_miner_account); //  19
 	//split again and check back switching
-	MAKE_NEXT_BLOCK(events, blk_17, blk_8, first_miner_account);  //  20
+	MAKE_NEXT_BLOCK(events, blk_17, blk_8, first_miner_account); //  20
 	MAKE_NEXT_BLOCK(events, blk_18, blk_17, first_miner_account); //  21
 	MAKE_NEXT_BLOCK(events, blk_19, blk_18, first_miner_account); //  22
 	MAKE_NEXT_BLOCK(events, blk_20, blk_19, first_miner_account); //  23
 	MAKE_NEXT_BLOCK(events, blk_21, blk_20, first_miner_account); //  24
-	DO_CALLBACK(events, "check_split_not_switched_back");		  //  25
+	DO_CALLBACK(events, "check_split_not_switched_back"); //  25
 	MAKE_NEXT_BLOCK(events, blk_22, blk_21, first_miner_account); //  26
-	DO_CALLBACK(events, "check_split_switched_back_1");			  //  27
+	DO_CALLBACK(events, "check_split_switched_back_1"); //  27
 	MAKE_NEXT_BLOCK(events, blk_23, blk_22, first_miner_account); //  28
-	DO_CALLBACK(events, "check_split_switched_back_2");			  //  29
+	DO_CALLBACK(events, "check_split_switched_back_2"); //  29
 
 	REWIND_BLOCKS(events, blk_23r, blk_23, first_miner_account); //  30...N1
 	GENERATE_ACCOUNT(alice);
 	MAKE_TX(events, tx_0, first_miner_account, alice, MK_COINS(10), blk_23); //  N1+1
 	MAKE_TX(events, tx_1, first_miner_account, alice, MK_COINS(20), blk_23); //  N1+2
 	MAKE_TX(events, tx_2, first_miner_account, alice, MK_COINS(30), blk_23); //  N1+3
-	DO_CALLBACK(events, "check_mempool_1");									 //  N1+4
+	DO_CALLBACK(events, "check_mempool_1"); //  N1+4
 	MAKE_NEXT_BLOCK_TX1(events, blk_24, blk_23r, first_miner_account, tx_0); //  N1+5
-	DO_CALLBACK(events, "check_mempool_2");									 //  N1+6
+	DO_CALLBACK(events, "check_mempool_2"); //  N1+6
 	/*
   //check orphaned blocks
   MAKE_NEXT_BLOCK_NO_ADD(events, blk_orph_27, blk_16, get_test_target(), first_miner_account);

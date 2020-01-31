@@ -67,7 +67,7 @@ bool BlocksdatFile::open_writer(const boost::filesystem::path &file_path, uint64
 		{
 			if(!boost::filesystem::is_directory(dir_path))
 			{
-				GULPS_ERROR("export directory path is a file: " , dir_path);
+				GULPS_ERROR("export directory path is a file: ", dir_path);
 				return false;
 			}
 		}
@@ -75,7 +75,7 @@ bool BlocksdatFile::open_writer(const boost::filesystem::path &file_path, uint64
 		{
 			if(!boost::filesystem::create_directory(dir_path))
 			{
-				GULPS_ERROR("Failed to create directory " , dir_path);
+				GULPS_ERROR("Failed to create directory ", dir_path);
 				return false;
 			}
 		}
@@ -146,16 +146,16 @@ bool BlocksdatFile::store_blockchain_raw(Blockchain *_blockchain_storage, tx_mem
 
 	uint64_t block_start = 0;
 	uint64_t block_stop = 0;
-	GULPSF_INFO("source blockchain height: {}",  m_blockchain_storage->get_current_blockchain_height() - 1);
+	GULPSF_INFO("source blockchain height: {}", m_blockchain_storage->get_current_blockchain_height() - 1);
 	if((requested_block_stop > 0) && (requested_block_stop < m_blockchain_storage->get_current_blockchain_height()))
 	{
-		GULPSF_INFO("Using requested block height: {}" , requested_block_stop);
+		GULPSF_INFO("Using requested block height: {}", requested_block_stop);
 		block_stop = requested_block_stop;
 	}
 	else
 	{
 		block_stop = m_blockchain_storage->get_current_blockchain_height() - 1;
-		GULPSF_INFO("Using block height of source blockchain: {}" , block_stop);
+		GULPSF_INFO("Using block height of source blockchain: {}", block_stop);
 	}
 	GULPS_INFO("Storing blocks raw data...");
 	if(!BlocksdatFile::open_writer(output_file, block_stop))
@@ -174,15 +174,15 @@ bool BlocksdatFile::store_blockchain_raw(Blockchain *_blockchain_storage, tx_mem
 		}
 		if(m_cur_height % progress_interval == 0)
 		{
-			GULPS_PRINT( refresh_string);
+			GULPS_PRINT(refresh_string);
 			GULPSF_PRINT("block {}/{}", m_cur_height, block_stop);
 		}
 	}
 	// print message for last block, which may not have been printed yet due to progress_interval
-	GULPS_PRINT( refresh_string);
+	GULPS_PRINT(refresh_string);
 	GULPSF_PRINT("block {}/{}", m_cur_height - 1, block_stop);
 
-	GULPSF_INFO("Number of blocks exported: {}" , num_blocks_written);
+	GULPSF_INFO("Number of blocks exported: {}", num_blocks_written);
 
 	return BlocksdatFile::close();
 }

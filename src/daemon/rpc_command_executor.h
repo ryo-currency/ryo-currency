@@ -61,8 +61,6 @@
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "rpc/core_rpc_server.h"
 
-
-
 namespace daemonize
 {
 

@@ -39,7 +39,8 @@ namespace
 class call_counter
 {
   public:
-	call_counter() : m_counter(0) {}
+	call_counter() :
+		m_counter(0) {}
 
 	// memory_order_relaxed is enough for call counter
 	void inc() volatile { m_counter.fetch_add(1, std::memory_order_relaxed); }
@@ -59,8 +60,8 @@ typedef epee::levin::async_protocol_handler<test_levin_connection_context> test_
 
 struct test_levin_commands_handler : public epee::levin::levin_commands_handler<test_levin_connection_context>
 {
-	test_levin_commands_handler()
-		: m_return_code(LEVIN_OK), m_last_command(-1)
+	test_levin_commands_handler() :
+		m_return_code(LEVIN_OK), m_last_command(-1)
 	{
 	}
 
@@ -135,8 +136,8 @@ struct test_levin_commands_handler : public epee::levin::levin_commands_handler<
 class test_connection : public epee::net_utils::i_service_endpoint
 {
   public:
-	test_connection(boost::asio::io_service &io_service, test_levin_protocol_handler_config &protocol_config)
-		: m_io_service(io_service), m_protocol_handler(this, protocol_config, m_context), m_send_return(true)
+	test_connection(boost::asio::io_service &io_service, test_levin_protocol_handler_config &protocol_config) :
+		m_io_service(io_service), m_protocol_handler(this, protocol_config, m_context), m_send_return(true)
 	{
 	}
 
@@ -277,7 +278,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
     std::string m_expected_invoke_out_buf;
   };
 #endif
-}
+} // namespace
 
 class LevinFuzzer : public Fuzzer
 {

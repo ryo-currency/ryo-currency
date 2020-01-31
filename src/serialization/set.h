@@ -62,8 +62,8 @@ void do_add(std::set<T> &c, T &&e)
 {
 	c.insert(std::move(e));
 }
-}
-}
+} // namespace detail
+} // namespace serialization
 
 #include "serialization.h"
 

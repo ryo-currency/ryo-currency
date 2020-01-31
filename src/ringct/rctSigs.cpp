@@ -46,25 +46,24 @@
 
 #include "rctSigs.h"
 #include "bulletproofs.h"
+#include "common/gulps.hpp"
 #include "common/perf_timer.h"
 #include "common/threadpool.h"
 #include "common/util.h"
 #include "cryptonote_basic/cryptonote_format_utils.h"
-#include "common/gulps.hpp"
 
 using namespace crypto;
 using namespace std;
 
 GULPS_CAT_MAJOR("rctSigs");
 
-
 #define CHECK_AND_ASSERT_MES_L1(expr, ret, ...) \
-	{                                               \
-		if(!(expr))                                 \
-		{                                           \
-			GULPS_CAT_ERROR("verify", __VA_ARGS__);             \
-			return ret;                             \
-		}                                           \
+	{ \
+		if(!(expr)) \
+		{ \
+			GULPS_CAT_ERROR("verify", __VA_ARGS__); \
+			return ret; \
+		} \
 	}
 
 namespace rct
@@ -459,7 +458,7 @@ key get_pre_mlsag_hash(const rctSig &rv, hw::device &hwdev)
 	const size_t outputs = rv.ecdhInfo.size();
 	key prehash;
 	GULPS_CHECK_AND_ASSERT_THROW_MES(const_cast<rctSig &>(rv).serialize_rctsig_base(ba, inputs, outputs),
-							   "Failed to serialize rctSigBase");
+		"Failed to serialize rctSigBase");
 	cryptonote::get_blob_hash(ss.str(), h);
 	hashes.push_back(hash2rct(h));
 
@@ -1266,7 +1265,7 @@ ryo_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, hw::
 bool signMultisig(rctSig &rv, const std::vector<unsigned int> &indices, const keyV &k, const multisig_out &msout, const key &secret_key)
 {
 	GULPS_CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull || rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof,
-						 false, "unsupported rct type");
+		false, "unsupported rct type");
 	GULPS_CHECK_AND_ASSERT_MES(indices.size() == k.size(), false, "Mismatched k/indices sizes");
 	GULPS_CHECK_AND_ASSERT_MES(k.size() == rv.p.MGs.size(), false, "Mismatched k/MGs size");
 	GULPS_CHECK_AND_ASSERT_MES(k.size() == msout.c.size(), false, "Mismatched k/msout.c size");
@@ -1288,4 +1287,4 @@ bool signMultisig(rctSig &rv, const std::vector<unsigned int> &indices, const ke
 	}
 	return true;
 }
-}
+} // namespace rct

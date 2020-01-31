@@ -135,8 +135,8 @@ struct test_levin_commands_handler : public epee::levin::levin_commands_handler<
 class open_close_test_helper
 {
   public:
-	open_close_test_helper(test_tcp_server &tcp_server, size_t open_request_target, size_t max_opened_connection_count)
-		: m_tcp_server(tcp_server), m_open_request_target(open_request_target), m_max_opened_connection_count(max_opened_connection_count), m_opened_connection_count(0), m_next_opened_conn_idx(0), m_next_closed_conn_idx(0), m_connections(open_request_target)
+	open_close_test_helper(test_tcp_server &tcp_server, size_t open_request_target, size_t max_opened_connection_count) :
+		m_tcp_server(tcp_server), m_open_request_target(open_request_target), m_max_opened_connection_count(max_opened_connection_count), m_opened_connection_count(0), m_next_opened_conn_idx(0), m_next_closed_conn_idx(0), m_connections(open_request_target)
 	{
 		for(auto &conn_id : m_connections)
 			conn_id = boost::uuids::nil_uuid();
@@ -350,4 +350,4 @@ struct CMD_DATA_REQUEST
 		END_KV_SERIALIZE_MAP()
 	};
 };
-}
+} // namespace net_load_tests

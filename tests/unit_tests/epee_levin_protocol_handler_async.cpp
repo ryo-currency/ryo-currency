@@ -50,8 +50,8 @@ typedef epee::levin::async_protocol_handler<test_levin_connection_context> test_
 
 struct test_levin_commands_handler : public epee::levin::levin_commands_handler<test_levin_connection_context>
 {
-	test_levin_commands_handler()
-		: m_return_code(LEVIN_OK), m_last_command(-1)
+	test_levin_commands_handler() :
+		m_return_code(LEVIN_OK), m_last_command(-1)
 	{
 	}
 
@@ -126,8 +126,8 @@ struct test_levin_commands_handler : public epee::levin::levin_commands_handler<
 class test_connection : public epee::net_utils::i_service_endpoint
 {
   public:
-	test_connection(boost::asio::io_service &io_service, test_levin_protocol_handler_config &protocol_config)
-		: m_io_service(io_service), m_send_return(true), m_protocol_handler(this, protocol_config, m_context)
+	test_connection(boost::asio::io_service &io_service, test_levin_protocol_handler_config &protocol_config) :
+		m_io_service(io_service), m_send_return(true), m_protocol_handler(this, protocol_config, m_context)
 	{
 	}
 
@@ -146,8 +146,14 @@ class test_connection : public epee::net_utils::i_service_endpoint
 		return m_send_return;
 	}
 
-	virtual bool close() { /*std::cout << "test_connection::close()" << std::endl; */ return true; }
-	virtual bool send_done() { /*std::cout << "test_connection::send_done()" << std::endl; */ return true; }
+	virtual bool close()
+	{ /*std::cout << "test_connection::close()" << std::endl; */
+		return true;
+	}
+	virtual bool send_done()
+	{ /*std::cout << "test_connection::send_done()" << std::endl; */
+		return true;
+	}
 	virtual bool call_run_once_service_io()
 	{
 		std::cout << "test_connection::call_run_once_service_io()" << std::endl;
@@ -186,7 +192,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
 	bool send_return() const { return m_send_return; }
 	void send_return(bool v) { m_send_return = v; }
 
-private:
+  private:
 	boost::asio::io_service &m_io_service;
 	test_levin_connection_context m_context;
 
@@ -197,7 +203,7 @@ private:
 
 	bool m_send_return;
 
-public:
+  public:
 	test_levin_protocol_handler m_protocol_handler;
 };
 
@@ -209,8 +215,9 @@ class async_protocol_handler_test : public ::testing::Test
 
 	typedef std::unique_ptr<test_connection> test_connection_ptr;
 
-	async_protocol_handler_test() : m_pcommands_handler(new test_levin_commands_handler()),
-									m_commands_handler(*m_pcommands_handler)
+	async_protocol_handler_test() :
+		m_pcommands_handler(new test_levin_commands_handler()),
+		m_commands_handler(*m_pcommands_handler)
 	{
 		m_handler_config.set_handler(m_pcommands_handler, [](epee::levin::levin_commands_handler<test_levin_connection_context> *handler) { delete handler; });
 		m_handler_config.m_invoke_timeout = invoke_timeout;
@@ -248,8 +255,8 @@ class test_levin_protocol_handler__hanle_recv_with_invalid_data : public async_p
 	static const int expected_command = 5615871;
 	static const int expected_return_code = 782546;
 
-	test_levin_protocol_handler__hanle_recv_with_invalid_data()
-		: m_expected_invoke_out_buf(512, 'y')
+	test_levin_protocol_handler__hanle_recv_with_invalid_data() :
+		m_expected_invoke_out_buf(512, 'y')
 	{
 	}
 
@@ -287,7 +294,7 @@ class test_levin_protocol_handler__hanle_recv_with_invalid_data : public async_p
 	std::string m_buf;
 	std::string m_expected_invoke_out_buf;
 };
-}
+} // namespace
 
 TEST_F(positive_test_connection_to_levin_protocol_handler_calls, new_handler_is_not_initialized)
 {

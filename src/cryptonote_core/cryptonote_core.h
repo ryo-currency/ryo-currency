@@ -534,8 +534,8 @@ class core : public i_miner_handler
       */
 	bool find_blockchain_supplement(const uint64_t req_start_block, const std::list<crypto::hash> &qblock_ids, std::list<std::pair<cryptonote::blobdata, std::list<cryptonote::blobdata>>> &blocks, uint64_t &total_height, uint64_t &start_height, size_t max_count) const;
 
-	inline bool find_blockchain_supplement_indexed(const uint64_t req_start_block, const std::list<crypto::hash> &qblock_ids, std::vector<block_complete_entry_v>& blocks,
-			std::vector<COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices>& out_idx, uint64_t &total_height, uint64_t &start_height, size_t max_count) const
+	inline bool find_blockchain_supplement_indexed(const uint64_t req_start_block, const std::list<crypto::hash> &qblock_ids, std::vector<block_complete_entry_v> &blocks,
+		std::vector<COMMAND_RPC_GET_BLOCKS_FAST::block_output_indices> &out_idx, uint64_t &total_height, uint64_t &start_height, size_t max_count) const
 	{
 		return m_blockchain_storage.find_blockchain_supplement_indexed(req_start_block, qblock_ids, blocks, out_idx, total_height, start_height, max_count);
 	}
@@ -962,7 +962,7 @@ class core : public i_miner_handler
 
 	uint64_t m_test_drop_download_height = 0; //!< height under which to drop incoming blocks, if doing so
 
-	tx_memory_pool m_mempool;		 //!< transaction pool instance
+	tx_memory_pool m_mempool; //!< transaction pool instance
 	Blockchain m_blockchain_storage; //!< Blockchain instance
 
 	i_cryptonote_protocol *m_pprotocol; //!< cryptonote protocol instance
@@ -970,7 +970,7 @@ class core : public i_miner_handler
 	epee::critical_section m_incoming_tx_lock; //!< incoming transaction lock
 
 	//m_miner and m_miner_addres are probably temporary here
-	miner m_miner;							//!< miner instance
+	miner m_miner; //!< miner instance
 	account_public_address m_miner_address; //!< address to mine to (for miner instance)
 
 	std::string m_config_folder; //!< folder to look in for configs and other files
@@ -978,10 +978,10 @@ class core : public i_miner_handler
 	cryptonote_protocol_stub m_protocol_stub; //!< cryptonote protocol stub instance
 
 	epee::math_helper::once_a_time_seconds<60 * 60 * 12, false> m_store_blockchain_interval; //!< interval for manual storing of Blockchain, if enabled
-	epee::math_helper::once_a_time_seconds<60 * 60 * 2, true> m_fork_moaner;				 //!< interval for checking HardFork status
-	epee::math_helper::once_a_time_seconds<60 * 2, false> m_txpool_auto_relayer;			 //!< interval for checking re-relaying txpool transactions
-	epee::math_helper::once_a_time_seconds<60 * 60 * 12, true> m_check_updates_interval;	 //!< interval for checking for new versions
-	epee::math_helper::once_a_time_seconds<60 * 10, true> m_check_disk_space_interval;		 //!< interval for checking for disk space
+	epee::math_helper::once_a_time_seconds<60 * 60 * 2, true> m_fork_moaner; //!< interval for checking HardFork status
+	epee::math_helper::once_a_time_seconds<60 * 2, false> m_txpool_auto_relayer; //!< interval for checking re-relaying txpool transactions
+	epee::math_helper::once_a_time_seconds<60 * 60 * 12, true> m_check_updates_interval; //!< interval for checking for new versions
+	epee::math_helper::once_a_time_seconds<60 * 10, true> m_check_disk_space_interval; //!< interval for checking for disk space
 
 	std::atomic<bool> m_starter_message_showed; //!< has the "daemon will sync now" message been shown?
 
@@ -989,8 +989,8 @@ class core : public i_miner_handler
 
 	network_type m_nettype; //!< which network are we on?
 
-	std::string m_checkpoints_path;		   //!< path to json checkpoints file
-	time_t m_last_dns_checkpoints_update;  //!< time when dns checkpoints were last updated
+	std::string m_checkpoints_path; //!< path to json checkpoints file
+	time_t m_last_dns_checkpoints_update; //!< time when dns checkpoints were last updated
 	time_t m_last_json_checkpoints_update; //!< time when json checkpoints were last updated
 
 	std::atomic_flag m_checkpoints_updating; //!< set if checkpoints are currently updating to avoid multiple threads attempting to update at once
@@ -1023,6 +1023,6 @@ class core : public i_miner_handler
 	bool m_fluffy_blocks_enabled;
 	bool m_offline;
 };
-}
+} // namespace cryptonote
 
 POP_WARNINGS

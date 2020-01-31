@@ -47,9 +47,9 @@
 #pragma once
 
 #include "cryptonote_basic.h"
+#include "cryptonote_basic/blobdatatype.h"
 #include "difficulty.h"
 #include "math_helper.h"
-#include "cryptonote_basic/blobdatatype.h"
 #include <atomic>
 #include <boost/logic/tribool_fwd.hpp>
 #include <boost/program_options.hpp>
@@ -82,6 +82,7 @@ struct i_miner_handler
 class miner
 {
 	GULPS_CAT_MAJOR("crybas_miner");
+
   public:
 	miner(i_miner_handler *phandler);
 	~miner();
@@ -191,4 +192,4 @@ class miner
 	static uint8_t get_percent_of_total(uint64_t some_time, uint64_t total_time);
 	static boost::logic::tribool on_battery_power();
 };
-}
+} // namespace cryptonote

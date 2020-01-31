@@ -50,11 +50,11 @@
 #include <string>
 #include <vector>
 
-#include "string_tools.h"
 #include "../io.h"
 #include "crypto-tests.h"
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
+#include "string_tools.h"
 #include "warnings.h"
 
 using namespace std;
@@ -76,61 +76,61 @@ bool operator!=(const key_derivation &a, const key_derivation &b)
 	return 0 != memcmp(&a, &b, sizeof(key_derivation));
 }
 
-template<typename T>
-inline std::string get_strval(const T& val)
+template <typename T>
+inline std::string get_strval(const T &val)
 {
 	return epee::string_tools::pod_to_hex(val);
 }
 
-template<>
-inline std::string get_strval<long unsigned int>(const long unsigned int& val)
+template <>
+inline std::string get_strval<long unsigned int>(const long unsigned int &val)
 {
 	return std::to_string(val);
 }
 
-template<>
-inline std::string get_strval<unsigned int>(const unsigned int& val)
+template <>
+inline std::string get_strval<unsigned int>(const unsigned int &val)
 {
 	return std::to_string(val);
 }
 
-template<>
-inline std::string get_strval<bool>(const bool& val)
+template <>
+inline std::string get_strval<bool>(const bool &val)
 {
 	return val ? "true" : "false";
 }
 
-template<>
-inline std::string get_strval<string>(const string& val)
+template <>
+inline std::string get_strval<string>(const string &val)
 {
 	return val;
 }
 
-template<>
-inline std::string get_strval<secret_key>(const secret_key& val)
+template <>
+inline std::string get_strval<secret_key>(const secret_key &val)
 {
 	return epee::string_tools::pod_to_hex(val.data);
 }
 
-template<>
-inline std::string get_strval<public_key>(const public_key& val)
+template <>
+inline std::string get_strval<public_key>(const public_key &val)
 {
 	return epee::string_tools::pod_to_hex(val.data);
 }
 
-template<>
-inline std::string get_strval<vector<char>>(const vector<char>& val)
+template <>
+inline std::string get_strval<vector<char>>(const vector<char> &val)
 {
 	return epee::to_hex::string(epee::to_byte_span(epee::to_span(val)));
 }
 
-template<>
-inline std::string get_strval<vector<public_key>>(const vector<public_key>& val)
+template <>
+inline std::string get_strval<vector<public_key>>(const vector<public_key> &val)
 {
 	std::string ret;
-	ret.reserve(val.size()*33);
+	ret.reserve(val.size() * 33);
 
-	for(const public_key& s : val)
+	for(const public_key &s : val)
 	{
 		ret += epee::string_tools::pod_to_hex(s.data);
 		ret += " ";
@@ -140,21 +140,21 @@ inline std::string get_strval<vector<public_key>>(const vector<public_key>& val)
 	return ret;
 }
 
-template<>
-inline std::string get_strval<vector<signature>>(const vector<signature>& val)
+template <>
+inline std::string get_strval<vector<signature>>(const vector<signature> &val)
 {
 	std::string ret;
-	ret.reserve(val.size()*64);
+	ret.reserve(val.size() * 64);
 
-	for(const signature& s : val)
+	for(const signature &s : val)
 		ret += epee::string_tools::pod_to_hex(s);
 
 	return ret;
 }
 
 bool error = false;
-template<typename T>
-inline bool report_result(const std::string& cmd, size_t test_id, const T& actual, const T& expected, size_t sub_test = 0)
+template <typename T>
+inline bool report_result(const std::string &cmd, size_t test_id, const T &actual, const T &expected, size_t sub_test = 0)
 {
 	if(actual != expected)
 	{
@@ -173,18 +173,18 @@ inline bool report_result(const std::string& cmd, size_t test_id, const T& actua
 template <typename T>
 struct has_iterator
 {
-    template <typename U>
-    static char test(typename U::iterator* x);
- 
-    template <typename U>
-    static long test(U* x);
- 
-    static const bool value = sizeof(test<T>(0)) == 1;
+	template <typename U>
+	static char test(typename U::iterator *x);
+
+	template <typename U>
+	static long test(U *x);
+
+	static const bool value = sizeof(test<T>(0)) == 1;
 };
 
 inline void print_result() {}
 
-template <typename T, typename... TT> 
+template <typename T, typename... TT>
 inline void print_result(T &res, TT &... resres)
 {
 	cout << get_strval(res);
@@ -195,7 +195,7 @@ inline void print_result(T &res, TT &... resres)
 	print_result(resres...);
 }
 
-DISABLE_GCC_WARNING(maybe-uninitialized)
+DISABLE_GCC_WARNING(maybe - uninitialized)
 
 int main(int argc, char *argv[])
 {
@@ -426,7 +426,7 @@ int main(int argc, char *argv[])
 		}
 		else if(cmd == "generate_ring_signature")
 		{
-			// this test uses a deterministic random number generator in the backend  
+			// this test uses a deterministic random number generator in the backend
 			chash prefix_hash;
 			key_image image;
 			vector<public_key> vpubs;

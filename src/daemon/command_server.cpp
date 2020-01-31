@@ -48,16 +48,15 @@
 #include "version.h"
 #include <boost/algorithm/string.hpp>
 
-
-
 namespace daemonize
 {
 
 namespace p = std::placeholders;
 
 t_command_server::t_command_server(
-	uint32_t ip, uint16_t port, const boost::optional<tools::login> &login, bool is_rpc, cryptonote::core_rpc_server *rpc_server)
-	: m_parser(ip, port, login, is_rpc, rpc_server), m_command_lookup(), m_is_rpc(is_rpc)
+	uint32_t ip, uint16_t port, const boost::optional<tools::login> &login, bool is_rpc, cryptonote::core_rpc_server *rpc_server) :
+	m_parser(ip, port, login, is_rpc, rpc_server),
+	m_command_lookup(), m_is_rpc(is_rpc)
 {
 	m_command_lookup.set_handler(
 		"help", std::bind(&t_command_server::help, this, p::_1), "help [<command>]", "Show the help section or the documentation about a <command>.");

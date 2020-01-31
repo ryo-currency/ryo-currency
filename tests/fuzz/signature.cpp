@@ -37,7 +37,8 @@
 class SignatureFuzzer : public Fuzzer
 {
   public:
-	SignatureFuzzer() : Fuzzer(), wallet(cryptonote::TESTNET) {}
+	SignatureFuzzer() :
+		Fuzzer(), wallet(cryptonote::TESTNET) {}
 	virtual int init();
 	virtual int run(const std::string &filename);
 

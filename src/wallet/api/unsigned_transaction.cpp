@@ -63,8 +63,8 @@ namespace Ryo
 
 UnsignedTransaction::~UnsignedTransaction() {}
 
-UnsignedTransactionImpl::UnsignedTransactionImpl(WalletImpl &wallet)
-	: m_wallet(wallet)
+UnsignedTransactionImpl::UnsignedTransactionImpl(WalletImpl &wallet) :
+	m_wallet(wallet)
 {
 	m_status = Status_Ok;
 }
@@ -343,4 +343,4 @@ uint64_t UnsignedTransactionImpl::minMixinCount() const
 	return min_mixin;
 }
 
-} // namespace
+} // namespace Ryo

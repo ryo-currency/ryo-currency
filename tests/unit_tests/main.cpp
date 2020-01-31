@@ -35,6 +35,7 @@
 #include <boost/program_options.hpp>
 
 #include "common/command_line.h"
+#include "common/gulps.hpp"
 #include "common/util.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.inl"
@@ -43,7 +44,6 @@
 #include "p2p/net_node.inl"
 #include "string_tools.h"
 #include "unit_tests_utils.h"
-#include "common/gulps.hpp"
 
 namespace po = boost::program_options;
 

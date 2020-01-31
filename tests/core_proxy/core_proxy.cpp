@@ -43,11 +43,11 @@
 #include "p2p/net_node.h"
 #include "p2p/net_node.inl"
 //#include "cryptonote_core/cryptonote_core.h"
+#include "common/gulps.hpp"
 #include "core_proxy.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.inl"
 #include "version.h"
-#include "common/gulps.hpp"
 
 #if defined(WIN32)
 #include <crtdbg.h>
@@ -77,8 +77,6 @@ int main(int argc, char *argv[])
 
 	//set up logging options
 
-
-
 	po::options_description desc("Allowed options");
 	command_line::add_arg(desc, cryptonote::arg_data_dir);
 	nodetool::node_server<cryptonote::t_cryptonote_protocol_handler<tests::proxy_core>>::init_options(desc);
@@ -92,7 +90,7 @@ int main(int argc, char *argv[])
 	if(!r)
 		return 1;
 
-	std::cout << "Module folder: " <<  argv[0] << std::endl;
+	std::cout << "Module folder: " << argv[0] << std::endl;
 	std::cout << "Node starting ..." << std::endl;
 
 	//create objects and link them

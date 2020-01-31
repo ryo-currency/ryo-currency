@@ -51,23 +51,23 @@
 #include "rpc/message_data_structs.h"
 #include "string_tools.h"
 
-#define OBJECT_HAS_MEMBER_OR_THROW(val, key)          \
-	do                                                \
-	{                                                 \
-		if(!val.HasMember(key))                       \
-		{                                             \
+#define OBJECT_HAS_MEMBER_OR_THROW(val, key) \
+	do \
+	{ \
+		if(!val.HasMember(key)) \
+		{ \
 			throw cryptonote::json::MISSING_KEY(key); \
-		}                                             \
+		} \
 	} while(0);
 
 #define INSERT_INTO_JSON_OBJECT(jsonVal, doc, key, source) \
-	rapidjson::Value key##Val;                             \
-	cryptonote::json::toJsonValue(doc, source, key##Val);  \
+	rapidjson::Value key##Val; \
+	cryptonote::json::toJsonValue(doc, source, key##Val); \
 	jsonVal.AddMember(#key, key##Val, doc.GetAllocator());
 
-#define GET_FROM_JSON_OBJECT(source, dst, key)                  \
-	OBJECT_HAS_MEMBER_OR_THROW(source, #key)                    \
-	decltype(dst) dstVal##key;                                  \
+#define GET_FROM_JSON_OBJECT(source, dst, key) \
+	OBJECT_HAS_MEMBER_OR_THROW(source, #key) \
+	decltype(dst) dstVal##key; \
 	cryptonote::json::fromJsonValue(source[#key], dstVal##key); \
 	dst = dstVal##key;
 

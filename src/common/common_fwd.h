@@ -53,4 +53,4 @@ struct login;
 class password_container;
 class t_http_connection;
 class threadpool;
-}
+} // namespace tools

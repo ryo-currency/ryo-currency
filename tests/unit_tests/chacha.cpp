@@ -47,10 +47,10 @@ struct test_data
 
 #define ARR(...) __VA_ARGS__
 
-#define MAKE_TEST_DATA(index, key, iv, plain_text, cipher_text)    \
-	static const uint8_t test_key_##index[] = key;                 \
-	static const uint8_t test_iv_##index[] = iv;                   \
-	static const uint8_t test_plain_text_##index[] = plain_text;   \
+#define MAKE_TEST_DATA(index, key, iv, plain_text, cipher_text) \
+	static const uint8_t test_key_##index[] = key; \
+	static const uint8_t test_iv_##index[] = iv; \
+	static const uint8_t test_plain_text_##index[] = plain_text; \
 	static const uint8_t test_cipher_text_##index[] = cipher_text; \
 	static const test_data test_##index = {test_key_##index, test_iv_##index, sizeof(test_plain_text_##index), test_plain_text_##index, test_cipher_text_##index};
 
@@ -93,12 +93,12 @@ void run_test(const test_data *test)
 	crypto::chacha8(test->cipher_text, test->text_length, test->key, test->iv, &buf[0]);
 	ASSERT_EQ(buf, std::string(reinterpret_cast<const char *>(test->plain_text), test->text_length));
 }
-}
+} // namespace
 
-#define TEST_CHACHA8(test_no)           \
+#define TEST_CHACHA8(test_no) \
 	TEST(chacha8, is_correct_##test_no) \
-	{                                   \
-		run_test(&test_##test_no);      \
+	{ \
+		run_test(&test_##test_no); \
 	}
 
 TEST_CHACHA8(0)

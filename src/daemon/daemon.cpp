@@ -55,7 +55,6 @@
 #include "common/util.h"
 #include "daemon/command_line_args.h"
 #include "daemon/command_server.h"
-#include "daemon/command_server.h"
 #include "daemon/core.h"
 #include "daemon/p2p.h"
 #include "daemon/protocol.h"
@@ -82,8 +81,9 @@ struct t_internals
 	std::vector<std::unique_ptr<t_rpc>> rpcs;
 
 	t_internals(
-		boost::program_options::variables_map const &vm)
-		: core{vm}, protocol{vm, core, command_line::get_arg(vm, cryptonote::arg_offline)}, p2p{vm, protocol}
+		boost::program_options::variables_map const &vm) :
+		core{vm},
+		protocol{vm, core, command_line::get_arg(vm, cryptonote::arg_offline)}, p2p{vm, protocol}
 	{
 		// Handle circular dependencies
 		protocol.set_p2p_endpoint(p2p.get());
@@ -112,8 +112,8 @@ void t_daemon::init_options(boost::program_options::options_description &option_
 }
 
 t_daemon::t_daemon(
-	boost::program_options::variables_map const &vm)
-	: mp_internals{new t_internals{vm}}
+	boost::program_options::variables_map const &vm) :
+	mp_internals{new t_internals{vm}}
 {
 	zmq_rpc_bind_port = command_line::get_arg(vm, daemon_args::arg_zmq_rpc_bind_port);
 	zmq_rpc_bind_address = command_line::get_arg(vm, daemon_args::arg_zmq_rpc_bind_ip);

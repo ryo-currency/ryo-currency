@@ -49,14 +49,13 @@
 
 #include "common/gulps.hpp"
 
-
-
 namespace daemonize
 {
 
 class t_core final
 {
 	GULPS_CAT_MAJOR("daemon_core");
+
   public:
 	static void init_options(boost::program_options::options_description &option_spec)
 	{
@@ -72,8 +71,9 @@ class t_core final
 
   public:
 	t_core(
-		boost::program_options::variables_map const &vm)
-		: m_core{nullptr}, m_vm_HACK{vm}
+		boost::program_options::variables_map const &vm) :
+		m_core{nullptr},
+		m_vm_HACK{vm}
 	{
 	}
 
@@ -128,4 +128,4 @@ class t_core final
 		}
 	}
 };
-}
+} // namespace daemonize

@@ -61,8 +61,8 @@ namespace Ryo
 
 TransactionHistory::~TransactionHistory() {}
 
-TransactionHistoryImpl::TransactionHistoryImpl(WalletImpl *wallet)
-	: m_wallet(wallet)
+TransactionHistoryImpl::TransactionHistoryImpl(WalletImpl *wallet) :
+	m_wallet(wallet)
 {
 }
 
@@ -93,9 +93,9 @@ TransactionInfo *TransactionHistoryImpl::transaction(const std::string &id) cons
 {
 	boost::shared_lock<boost::shared_mutex> lock(m_historyMutex);
 	auto itr = std::find_if(m_history.begin(), m_history.end(),
-							[&](const TransactionInfo *ti) {
-								return ti->hash() == id;
-							});
+		[&](const TransactionInfo *ti) {
+			return ti->hash() == id;
+		});
 	return itr != m_history.end() ? *itr : nullptr;
 }
 
@@ -256,4 +256,4 @@ void TransactionHistoryImpl::refresh()
 	}
 }
 
-} // namespace
+} // namespace Ryo

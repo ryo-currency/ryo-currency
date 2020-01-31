@@ -104,5 +104,5 @@ inline void serialize(Archive &a, nodetool::anchor_peerlist_entry &pl, const ver
 	a &pl.id;
 	a &pl.first_seen;
 }
-}
-}
+} // namespace serialization
+} // namespace boost

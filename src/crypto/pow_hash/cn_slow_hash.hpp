@@ -47,14 +47,13 @@
 
 #pragma once
 
-#include <boost/align/aligned_alloc.hpp>
 #include "hw_detect.hpp"
 #include <assert.h>
+#include <boost/align/aligned_alloc.hpp>
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 // Macros are for template instantiations
 // Cryptonight
@@ -122,48 +121,51 @@ inline bool hw_check_aes()
 class cn_sptr
 {
   public:
-	cn_sptr() : base_ptr(nullptr) {}
-	cn_sptr(uint64_t* ptr) { base_ptr = ptr; }
-	cn_sptr(uint32_t* ptr) { base_ptr = ptr; }
-	cn_sptr(uint8_t* ptr) { base_ptr = ptr; }
+	cn_sptr() :
+		base_ptr(nullptr) {}
+	cn_sptr(uint64_t *ptr) { base_ptr = ptr; }
+	cn_sptr(uint32_t *ptr) { base_ptr = ptr; }
+	cn_sptr(uint8_t *ptr) { base_ptr = ptr; }
 
-	inline void set(void* ptr)
+	inline void set(void *ptr)
 	{
 		base_ptr = ptr;
 	}
-	inline cn_sptr offset(size_t i) { return reinterpret_cast<uint8_t*>(base_ptr) + i; }
-	inline const cn_sptr offset(size_t i) const { return reinterpret_cast<uint8_t*>(base_ptr) + i; }
+	inline cn_sptr offset(size_t i) { return reinterpret_cast<uint8_t *>(base_ptr) + i; }
+	inline const cn_sptr offset(size_t i) const { return reinterpret_cast<uint8_t *>(base_ptr) + i; }
 
-	inline void* as_void() { return base_ptr; }
-	inline uint8_t& as_byte(size_t i) { return *(reinterpret_cast<uint8_t*>(base_ptr) + i); }
-	inline uint8_t* as_byte() { return reinterpret_cast<uint8_t*>(base_ptr); }
-	inline uint64_t& as_uqword(size_t i) { return *(reinterpret_cast<uint64_t*>(base_ptr) + i); }
-	inline const uint64_t& as_uqword(size_t i) const { return *(reinterpret_cast<uint64_t*>(base_ptr) + i); }
-	inline uint64_t* as_uqword() { return reinterpret_cast<uint64_t*>(base_ptr); }
-	inline const uint64_t* as_uqword() const { return reinterpret_cast<uint64_t*>(base_ptr); }
-	inline int64_t& as_qword(size_t i) { return *(reinterpret_cast<int64_t*>(base_ptr) + i); }
-	inline int32_t& as_dword(size_t i) { return *(reinterpret_cast<int32_t*>(base_ptr) + i); }
-	inline uint32_t& as_udword(size_t i) { return *(reinterpret_cast<uint32_t*>(base_ptr) + i); }
-	inline const uint32_t& as_udword(size_t i) const { return *(reinterpret_cast<uint32_t*>(base_ptr) + i); }
+	inline void *as_void() { return base_ptr; }
+	inline uint8_t &as_byte(size_t i) { return *(reinterpret_cast<uint8_t *>(base_ptr) + i); }
+	inline uint8_t *as_byte() { return reinterpret_cast<uint8_t *>(base_ptr); }
+	inline uint64_t &as_uqword(size_t i) { return *(reinterpret_cast<uint64_t *>(base_ptr) + i); }
+	inline const uint64_t &as_uqword(size_t i) const { return *(reinterpret_cast<uint64_t *>(base_ptr) + i); }
+	inline uint64_t *as_uqword() { return reinterpret_cast<uint64_t *>(base_ptr); }
+	inline const uint64_t *as_uqword() const { return reinterpret_cast<uint64_t *>(base_ptr); }
+	inline int64_t &as_qword(size_t i) { return *(reinterpret_cast<int64_t *>(base_ptr) + i); }
+	inline int32_t &as_dword(size_t i) { return *(reinterpret_cast<int32_t *>(base_ptr) + i); }
+	inline uint32_t &as_udword(size_t i) { return *(reinterpret_cast<uint32_t *>(base_ptr) + i); }
+	inline const uint32_t &as_udword(size_t i) const { return *(reinterpret_cast<uint32_t *>(base_ptr) + i); }
 
 	template <typename cast_t>
-	inline cast_t* as_ptr() { return reinterpret_cast<cast_t*>(base_ptr); }
+	inline cast_t *as_ptr() { return reinterpret_cast<cast_t *>(base_ptr); }
 
   private:
-	void* base_ptr;
+	void *base_ptr;
 };
 
 template <size_t MEMORY, size_t ITER, size_t VERSION>
 class cn_slow_hash
 {
   public:
-	cn_slow_hash() : borrowed_pad(false)
+	cn_slow_hash() :
+		borrowed_pad(false)
 	{
 		lpad.set(boost::alignment::aligned_alloc(4096, MEMORY));
 		spad.set(boost::alignment::aligned_alloc(4096, 4096));
 	}
 
-	cn_slow_hash(cn_slow_hash&& other) noexcept : lpad(other.lpad.as_byte()), spad(other.spad.as_byte()), borrowed_pad(other.borrowed_pad)
+	cn_slow_hash(cn_slow_hash &&other) noexcept :
+		lpad(other.lpad.as_byte()), spad(other.spad.as_byte()), borrowed_pad(other.borrowed_pad)
 	{
 		other.lpad.set(nullptr);
 		other.spad.set(nullptr);
@@ -171,17 +173,17 @@ class cn_slow_hash
 
 	// Factory function enabling to temporaliy turn v2 object into v1
 	// It is caller's responsibility to ensure that v2 object is not hashing at the same time!!
-	static cn_pow_hash_v1 make_borrowed(cn_pow_hash_v2& t)
+	static cn_pow_hash_v1 make_borrowed(cn_pow_hash_v2 &t)
 	{
 		return cn_pow_hash_v1(t.lpad.as_void(), t.spad.as_void());
 	}
 
-	static cn_pow_hash_v3 make_borrowed_v3(cn_pow_hash_v2& t)
+	static cn_pow_hash_v3 make_borrowed_v3(cn_pow_hash_v2 &t)
 	{
 		return cn_pow_hash_v3(t.lpad.as_void(), t.spad.as_void());
 	}
 
-	cn_slow_hash& operator=(cn_slow_hash&& other) noexcept
+	cn_slow_hash &operator=(cn_slow_hash &&other) noexcept
 	{
 		if(this == &other)
 			return *this;
@@ -194,15 +196,15 @@ class cn_slow_hash
 	}
 
 	// Copying is going to be really inefficient
-	cn_slow_hash(const cn_slow_hash& other) = delete;
-	cn_slow_hash& operator=(const cn_slow_hash& other) = delete;
+	cn_slow_hash(const cn_slow_hash &other) = delete;
+	cn_slow_hash &operator=(const cn_slow_hash &other) = delete;
 
 	~cn_slow_hash()
 	{
 		free_mem();
 	}
 
-	void hash(const void* in, size_t len, void* out)
+	void hash(const void *in, size_t len, void *out)
 	{
 		if(VERSION <= 1)
 		{
@@ -220,18 +222,18 @@ class cn_slow_hash
 		}
 	}
 
-	void software_hash(const void* in, size_t len, void* out);
-	void software_hash_3(const void* in, size_t len, void* pout);
+	void software_hash(const void *in, size_t len, void *out);
+	void software_hash_3(const void *in, size_t len, void *pout);
 
 #if !defined(HAS_INTEL_HW) && !defined(HAS_ARM_HW)
-	inline void hardware_hash(const void* in, size_t len, void* out)
+	inline void hardware_hash(const void *in, size_t len, void *out)
 	{
 		assert(false);
 	}
-	inline void hardware_hash_3(const void* in, size_t len, void* out) { assert(false); }
+	inline void hardware_hash_3(const void *in, size_t len, void *out) { assert(false); }
 #else
-	void hardware_hash(const void* in, size_t len, void* out);
-	void hardware_hash_3(const void* in, size_t len, void* pout);
+	void hardware_hash(const void *in, size_t len, void *out);
+	void hardware_hash_3(const void *in, size_t len, void *pout);
 #endif
 
   private:
@@ -242,7 +244,7 @@ class cn_slow_hash
 	friend cn_pow_hash_v3;
 
 	// Constructor enabling v1 hash to borrow v2's buffer
-	cn_slow_hash(void* lptr, void* sptr)
+	cn_slow_hash(void *lptr, void *sptr)
 	{
 		lpad.set(lptr);
 		spad.set(sptr);
@@ -251,7 +253,7 @@ class cn_slow_hash
 
 	inline bool check_override()
 	{
-		const char* env = getenv("RYO_USE_SOFTWARE_AES");
+		const char *env = getenv("RYO_USE_SOFTWARE_AES");
 		if(!env)
 		{
 			return false;

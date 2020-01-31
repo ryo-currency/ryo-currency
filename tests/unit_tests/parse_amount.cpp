@@ -54,24 +54,24 @@ void do_neg_test(const std::string &str)
 	number_str.erase(std::remove(number_str.begin(), number_str.end(), '~'), number_str.end());
 	ASSERT_FALSE(parse_amount(val, number_str));
 }
-}
+} // namespace
 
-#define TEST_pos(expected, str)                \
-	TEST(parse_amount, handles_pos_##str)      \
-	{                                          \
+#define TEST_pos(expected, str) \
+	TEST(parse_amount, handles_pos_##str) \
+	{ \
 		do_pos_test(UINT64_C(expected), #str); \
 	}
 
-#define TEST_neg(str)                     \
+#define TEST_neg(str) \
 	TEST(parse_amount, handles_neg_##str) \
-	{                                     \
-		do_neg_test(#str);                \
+	{ \
+		do_neg_test(#str); \
 	}
 
-#define TEST_neg_n(str, name)              \
+#define TEST_neg_n(str, name) \
 	TEST(parse_amount, handles_neg_##name) \
-	{                                      \
-		do_neg_test(#str);                 \
+	{ \
+		do_neg_test(#str); \
 	}
 
 TEST_pos(0, 0);

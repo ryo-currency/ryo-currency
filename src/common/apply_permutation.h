@@ -81,4 +81,4 @@ void apply_permutation(const std::vector<size_t> &permutation, std::vector<T> &v
 	GULPS_CHECK_AND_ASSERT_THROW_MES(permutation.size() == v.size(), "Mismatched vector sizes");
 	apply_permutation(permutation, [&v](size_t i0, size_t i1) { std::swap(v[i0], v[i1]); });
 }
-}
+} // namespace tools

@@ -37,9 +37,9 @@
 
 #include "gtest/gtest.h"
 
+#include "common/gulps.hpp"
 #include "include_base_utils.h"
 #include "misc_language.h"
-#include "common/gulps.hpp"
 #include "storages/levin_abstract_invoke2.h"
 
 #include "net_load_tests.h"
@@ -69,8 +69,8 @@ bool busy_wait_for(size_t timeout_ms, const t_predicate &predicate, size_t sleep
 class t_connection_opener_1
 {
   public:
-	t_connection_opener_1(test_tcp_server &tcp_server, size_t open_request_target)
-		: m_tcp_server(tcp_server), m_open_request_target(open_request_target), m_next_id(0), m_error_count(0), m_connections(open_request_target)
+	t_connection_opener_1(test_tcp_server &tcp_server, size_t open_request_target) :
+		m_tcp_server(tcp_server), m_open_request_target(open_request_target), m_next_id(0), m_error_count(0), m_connections(open_request_target)
 	{
 		for(auto &conn_id : m_connections)
 			conn_id = boost::uuids::nil_uuid();
@@ -127,8 +127,8 @@ class t_connection_opener_1
 class t_connection_opener_2
 {
   public:
-	t_connection_opener_2(test_tcp_server &tcp_server, size_t open_request_target, size_t max_opened_connection_count)
-		: m_tcp_server(tcp_server), m_open_request_target(open_request_target), m_open_request_count(0), m_error_count(0), m_open_close_test_helper(tcp_server, open_request_target, max_opened_connection_count)
+	t_connection_opener_2(test_tcp_server &tcp_server, size_t open_request_target, size_t max_opened_connection_count) :
+		m_tcp_server(tcp_server), m_open_request_target(open_request_target), m_open_request_count(0), m_error_count(0), m_open_close_test_helper(tcp_server, open_request_target, max_opened_connection_count)
 	{
 	}
 
@@ -176,8 +176,8 @@ class t_connection_opener_2
 class net_load_test_clt : public ::testing::Test
 {
   public:
-	net_load_test_clt()
-		: m_tcp_server(epee::net_utils::e_connection_type_RPC) // RPC disables network limit for unit tests
+	net_load_test_clt() :
+		m_tcp_server(epee::net_utils::e_connection_type_RPC) // RPC disables network limit for unit tests
 	{
 	}
 
@@ -214,9 +214,9 @@ class net_load_test_clt : public ::testing::Test
 		conn_status.store(0, std::memory_order_seq_cst);
 		CMD_RESET_STATISTICS::request req;
 		ASSERT_TRUE(epee::net_utils::async_invoke_remote_command2<CMD_RESET_STATISTICS::response>(m_cmd_conn_id, CMD_RESET_STATISTICS::ID, req,
-																								  m_tcp_server.get_config_object(), [&](int code, const CMD_RESET_STATISTICS::response &rsp, const test_connection_context &) {
-																									  conn_status.store(code, std::memory_order_seq_cst);
-																								  }));
+			m_tcp_server.get_config_object(), [&](int code, const CMD_RESET_STATISTICS::response &rsp, const test_connection_context &) {
+				conn_status.store(code, std::memory_order_seq_cst);
+			}));
 
 		EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&] { return 0 != conn_status.load(std::memory_order_seq_cst); })) << "reset statistics timed out";
 		ASSERT_LT(0, conn_status.load(std::memory_order_seq_cst));
@@ -296,17 +296,17 @@ class net_load_test_clt : public ::testing::Test
 		std::atomic<int> req_status(0);
 		CMD_GET_STATISTICS::request req;
 		ASSERT_TRUE(epee::net_utils::async_invoke_remote_command2<CMD_GET_STATISTICS::response>(m_cmd_conn_id, CMD_GET_STATISTICS::ID, req,
-																								m_tcp_server.get_config_object(), [&](int code, const CMD_GET_STATISTICS::response &rsp, const test_connection_context &) {
-																									if(0 < code)
-																									{
-																										statistics = rsp;
-																									}
-																									else
-																									{
-																										std::cout << "Get server statistics error: " << code << std::endl;
-																									}
-																									req_status.store(0 < code ? 1 : -1, std::memory_order_seq_cst);
-																								}));
+			m_tcp_server.get_config_object(), [&](int code, const CMD_GET_STATISTICS::response &rsp, const test_connection_context &) {
+				if(0 < code)
+				{
+					statistics = rsp;
+				}
+				else
+				{
+					std::cout << "Get server statistics error: " << code << std::endl;
+				}
+				req_status.store(0 < code ? 1 : -1, std::memory_order_seq_cst);
+			}));
 
 		EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&] { return 0 != req_status.load(std::memory_order_seq_cst); })) << "get_server_statistics timed out";
 		ASSERT_EQ(1, req_status.load(std::memory_order_seq_cst));
@@ -343,7 +343,7 @@ class net_load_test_clt : public ::testing::Test
 	size_t m_thread_count;
 	boost::uuids::uuid m_cmd_conn_id;
 };
-}
+} // namespace
 
 TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_client)
 {
@@ -458,12 +458,12 @@ TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_
 		{
 			CMD_DATA_REQUEST::request req;
 			bool r = epee::net_utils::async_invoke_remote_command2<CMD_DATA_REQUEST::response>(ctx.m_connection_id, CMD_DATA_REQUEST::ID, req,
-																							   m_tcp_server.get_config_object(), [=](int code, const CMD_DATA_REQUEST::response &rsp, const test_connection_context &) {
-																								   if(code <= 0)
-																								   {
-																									   std::cout << "Failed to invoke CMD_DATA_REQUEST. code = " << code << std::endl;
-																								   }
-																							   });
+				m_tcp_server.get_config_object(), [=](int code, const CMD_DATA_REQUEST::response &rsp, const test_connection_context &) {
+					if(code <= 0)
+					{
+						std::cout << "Failed to invoke CMD_DATA_REQUEST. code = " << code << std::endl;
+					}
+				});
 			if(!r)
 				std::cout << "Failed to invoke CMD_DATA_REQUEST" << std::endl;
 		}
@@ -547,9 +547,9 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_ser
 	req_start.open_request_target = CONNECTION_COUNT;
 	req_start.max_opened_conn_count = MAX_OPENED_CONN_COUNT;
 	ASSERT_TRUE(epee::net_utils::async_invoke_remote_command2<CMD_START_OPEN_CLOSE_TEST::response>(m_cmd_conn_id, CMD_START_OPEN_CLOSE_TEST::ID, req_start,
-																								   m_tcp_server.get_config_object(), [&](int code, const CMD_START_OPEN_CLOSE_TEST::response &, const test_connection_context &) {
-																									   test_state.store(0 < code ? 1 : -1, std::memory_order_seq_cst);
-																								   }));
+		m_tcp_server.get_config_object(), [&](int code, const CMD_START_OPEN_CLOSE_TEST::response &, const test_connection_context &) {
+			test_state.store(0 < code ? 1 : -1, std::memory_order_seq_cst);
+		}));
 
 	// Wait for server response
 	EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&] { return 1 == test_state.load(std::memory_order_seq_cst); }));
@@ -608,12 +608,12 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_ser
 		{
 			CMD_DATA_REQUEST::request req;
 			bool r = epee::net_utils::async_invoke_remote_command2<CMD_DATA_REQUEST::response>(ctx.m_connection_id, CMD_DATA_REQUEST::ID, req,
-																							   m_tcp_server.get_config_object(), [=](int code, const CMD_DATA_REQUEST::response &rsp, const test_connection_context &) {
-																								   if(code <= 0)
-																								   {
-																									   std::cout << "Failed to invoke CMD_DATA_REQUEST. code = " << code << std::endl;
-																								   }
-																							   });
+				m_tcp_server.get_config_object(), [=](int code, const CMD_DATA_REQUEST::response &rsp, const test_connection_context &) {
+					if(code <= 0)
+					{
+						std::cout << "Failed to invoke CMD_DATA_REQUEST. code = " << code << std::endl;
+					}
+				});
 			if(!r)
 				std::cout << "Failed to invoke CMD_DATA_REQUEST" << std::endl;
 		}
@@ -634,7 +634,6 @@ int main(int argc, char **argv)
 	tools::on_startup();
 	debug::get_set_enable_assert(true, false);
 	//set up logging options
-	
 
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();

@@ -58,11 +58,11 @@
 #include "common/varint.h"
 #include "crypto.h"
 #include "hash.h"
-#include "warnings.h"
 #include "random.hpp"
+#include "warnings.h"
 
 #ifdef HAVE_EC_64
-#	include "ecops64/ecops64.h"
+#include "ecops64/ecops64.h"
 #endif
 
 namespace
@@ -76,7 +76,7 @@ static void local_abort(const char *msg)
 	abort();
 #endif
 }
-}
+} // namespace
 
 namespace crypto
 {
@@ -88,7 +88,8 @@ using std::size_t;
 using std::uint32_t;
 using std::uint64_t;
 
-extern "C" {
+extern "C"
+{
 #include "crypto-ops.h"
 }
 
@@ -126,7 +127,7 @@ static inline bool scalar_ok(const unsigned char *k)
 	constexpr uint64_t lw1 = 0x3910a40b8c82308full;
 	constexpr uint64_t lw0 = 0x2913ce8b72676ae3ull;
 
-	const uint64_t* k64 = reinterpret_cast<const uint64_t*>(k);
+	const uint64_t *k64 = reinterpret_cast<const uint64_t *>(k);
 	if(k64[0] == 0 && k64[1] == 0 && k64[2] == 0 && k64[3] == 0)
 		return false;
 
@@ -147,20 +148,19 @@ static inline bool scalar_ok(const unsigned char *k)
 	return false;
 }
 
-void random_scalar(unsigned char* v32)
+void random_scalar(unsigned char *v32)
 {
 	do
 	{
 		prng::inst().generate_random(v32, 32);
-	}
-	while(!scalar_ok(v32));
+	} while(!scalar_ok(v32));
 	sc_reduce32(v32);
 }
 
 /* generate a random 32-byte (256-bit) integer and copy it to res */
 static inline void random_scalar(ec_scalar &res)
 {
-	random_scalar(reinterpret_cast<unsigned char*>(res.data));
+	random_scalar(reinterpret_cast<unsigned char *>(res.data));
 }
 
 static inline void random_scalar(scalar_16 &res)
@@ -278,7 +278,7 @@ void crypto_ops::derivation_to_scalar(const key_derivation &derivation, size_t o
 }
 
 bool crypto_ops::derive_public_key(const key_derivation &derivation, size_t output_index,
-								   const public_key &base, public_key &derived_key)
+	const public_key &base, public_key &derived_key)
 {
 	ec_scalar scalar;
 	ge_p3 point1;
@@ -300,7 +300,7 @@ bool crypto_ops::derive_public_key(const key_derivation &derivation, size_t outp
 }
 
 void crypto_ops::derive_secret_key(const key_derivation &derivation, size_t output_index,
-								   const secret_key &base, secret_key &derived_key)
+	const secret_key &base, secret_key &derived_key)
 {
 	ec_scalar scalar;
 	assert(sc_check(&base) == 0);
@@ -348,7 +348,7 @@ bool crypto_ops::generate_key_derivation_64(const public_key &key1, const secret
 	return true;
 }
 
-bool crypto_ops::derive_subaddress_public_key_64(const public_key& out_key, const key_derivation& derivation, const std::size_t output_index, public_key &derived_key)
+bool crypto_ops::derive_subaddress_public_key_64(const public_key &out_key, const key_derivation &derivation, const std::size_t output_index, public_key &derived_key)
 {
 	ec_scalar scalar;
 	ge64_p3 point1;
@@ -645,9 +645,9 @@ static inline size_t rs_comm_size(size_t pubs_count)
 }
 
 void crypto_ops::generate_ring_signature(const hash &prefix_hash, const key_image &image,
-										 const public_key *const *pubs, size_t pubs_count,
-										 const secret_key &sec, size_t sec_index,
-										 signature *sig)
+	const public_key *const *pubs, size_t pubs_count,
+	const secret_key &sec, size_t sec_index,
+	signature *sig)
 {
 	size_t i;
 	ge_p3 image_unp;
@@ -716,8 +716,8 @@ void crypto_ops::generate_ring_signature(const hash &prefix_hash, const key_imag
 }
 
 bool crypto_ops::check_ring_signature(const hash &prefix_hash, const key_image &image,
-									  const public_key *const *pubs, size_t pubs_count,
-									  const signature *sig)
+	const public_key *const *pubs, size_t pubs_count,
+	const signature *sig)
 {
 	size_t i;
 	ge_p3 image_unp;
@@ -762,4 +762,4 @@ bool crypto_ops::check_ring_signature(const hash &prefix_hash, const key_image &
 	sc_sub(&h, &h, &sum);
 	return sc_isnonzero(&h) == 0;
 }
-}
+} // namespace crypto

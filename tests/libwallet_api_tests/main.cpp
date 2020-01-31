@@ -87,7 +87,7 @@ const std::string PAYMENT_ID_EMPTY = "";
 
 std::string TESTNET_DAEMON_ADDRESS = "localhost:38081";
 std::string MAINNET_DAEMON_ADDRESS = "localhost:18081";
-}
+} // namespace Consts
 
 using namespace Consts;
 
@@ -218,8 +218,7 @@ TEST_F(WalletManagerTest, WalletManagerOpensWallet)
 
 TEST_F(WalletManagerTest, WalletMaxAmountAsString)
 {
-	std::cout << "max amount: " << Ryo::Wallet::displayAmount(
-					 Ryo::Wallet::maximumAllowedAmount()) << std::endl;
+	std::cout << "max amount: " << Ryo::Wallet::displayAmount(Ryo::Wallet::maximumAllowedAmount()) << std::endl;
 }
 
 TEST_F(WalletManagerTest, WalletAmountFromString)
@@ -531,12 +530,12 @@ TEST_F(WalletTest1, WalletTransaction)
 	const int MIXIN_COUNT = 4;
 
 	Ryo::PendingTransaction *transaction = wallet1->createTransaction(recepient_address,
-																		 PAYMENT_ID_EMPTY,
-																		 AMOUNT_10XMR,
-																		 MIXIN_COUNT,
-																		 Ryo::PendingTransaction::Priority_Medium,
-																		 0,
-																		 std::set<uint32_t>{});
+		PAYMENT_ID_EMPTY,
+		AMOUNT_10XMR,
+		MIXIN_COUNT,
+		Ryo::PendingTransaction::Priority_Medium,
+		0,
+		std::set<uint32_t>{});
 	ASSERT_TRUE(transaction->status() == Ryo::PendingTransaction::Status_Ok);
 	wallet1->refresh();
 
@@ -676,8 +675,8 @@ TEST_F(WalletTest1, WalletTransactionAndHistory)
 	std::string wallet4_addr = Utils::get_wallet_address(CURRENT_DST_WALLET, TESTNET_WALLET_PASS);
 
 	Ryo::PendingTransaction *tx = wallet_src->createTransaction(wallet4_addr,
-																   PAYMENT_ID_EMPTY,
-																   AMOUNT_10XMR * 5, 1, Ryo::PendingTransaction::Priority_Medium, 0, std::set<uint32_t>{});
+		PAYMENT_ID_EMPTY,
+		AMOUNT_10XMR * 5, 1, Ryo::PendingTransaction::Priority_Medium, 0, std::set<uint32_t>{});
 
 	ASSERT_TRUE(tx->status() == Ryo::PendingTransaction::Status_Ok);
 	ASSERT_TRUE(tx->commit());
@@ -718,8 +717,8 @@ TEST_F(WalletTest1, WalletTransactionWithPaymentId)
 	ASSERT_TRUE(payment_id.length() == 16);
 
 	Ryo::PendingTransaction *tx = wallet_src->createTransaction(wallet4_addr,
-																   payment_id,
-																   AMOUNT_1XMR, 1, Ryo::PendingTransaction::Priority_Medium, 0, std::set<uint32_t>{});
+		payment_id,
+		AMOUNT_1XMR, 1, Ryo::PendingTransaction::Priority_Medium, 0, std::set<uint32_t>{});
 
 	ASSERT_TRUE(tx->status() == Ryo::PendingTransaction::Status_Ok);
 	ASSERT_TRUE(tx->commit());
@@ -761,8 +760,8 @@ struct MyWalletListener : public Ryo::WalletListener
 	bool update_triggered;
 	bool refresh_triggered;
 
-	MyWalletListener(Ryo::Wallet *wallet)
-		: total_tx(0), total_rx(0)
+	MyWalletListener(Ryo::Wallet *wallet) :
+		total_tx(0), total_rx(0)
 	{
 		reset();
 
@@ -879,8 +878,8 @@ TEST_F(WalletTest2, WalletCallbackSent)
 	std::cout << "** Sending " << Ryo::Wallet::displayAmount(amount) << " to " << wallet_dst->mainAddress();
 
 	Ryo::PendingTransaction *tx = wallet_src->createTransaction(wallet_dst->mainAddress(),
-																   PAYMENT_ID_EMPTY,
-																   amount, 1, Ryo::PendingTransaction::Priority_Medium, 0, std::set<uint32_t>{});
+		PAYMENT_ID_EMPTY,
+		amount, 1, Ryo::PendingTransaction::Priority_Medium, 0, std::set<uint32_t>{});
 	std::cout << "** Committing transaction: " << Ryo::Wallet::displayAmount(tx->amount())
 			  << " with fee: " << Ryo::Wallet::displayAmount(tx->fee());
 
@@ -919,8 +918,8 @@ TEST_F(WalletTest2, WalletCallbackReceived)
 	uint64_t amount = AMOUNT_1XMR * 5;
 	std::cout << "** Sending " << Ryo::Wallet::displayAmount(amount) << " to " << wallet_dst->mainAddress();
 	Ryo::PendingTransaction *tx = wallet_src->createTransaction(wallet_dst->mainAddress(),
-																   PAYMENT_ID_EMPTY,
-																   amount, 1, Ryo::PendingTransaction::Priority_Medium, 0, std::set<uint32_t>{});
+		PAYMENT_ID_EMPTY,
+		amount, 1, Ryo::PendingTransaction::Priority_Medium, 0, std::set<uint32_t>{});
 
 	std::cout << "** Committing transaction: " << Ryo::Wallet::displayAmount(tx->amount())
 			  << " with fee: " << Ryo::Wallet::displayAmount(tx->fee());

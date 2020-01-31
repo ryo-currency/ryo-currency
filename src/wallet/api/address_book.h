@@ -80,4 +80,4 @@ class AddressBookImpl : public AddressBook
 	std::string m_errorString;
 	int m_errorCode;
 };
-}
+} // namespace Ryo

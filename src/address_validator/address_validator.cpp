@@ -44,10 +44,10 @@
 
 #include "common/gulps.hpp"
 
-#include "common/command_line.h"
 #include "address_validator/address_validator.h"
-#include "string_tools.h"
+#include "common/command_line.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
+#include "string_tools.h"
 
 #include <boost/program_options.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -128,11 +128,7 @@ void address_validator::init_options(
 {
 	namespace po = boost::program_options;
 
-	desc.add_options()
-		("network,n", po::value<std::string>(&m_network)->default_value("auto"), "network type (auto, mainnet, testnet, stagenet)")
-		("filename,f", po::value<std::string>(&m_filename), "json file name, if not set result is printed to terminal")
-		("human", po::value<bool>(&m_human)->zero_tokens()->default_value(false)->default_value(false), "human readable output")
-		("address", po::value<std::vector<std::string>>(&m_address_strs), "ryo-currency address");
+	desc.add_options()("network,n", po::value<std::string>(&m_network)->default_value("auto"), "network type (auto, mainnet, testnet, stagenet)")("filename,f", po::value<std::string>(&m_filename), "json file name, if not set result is printed to terminal")("human", po::value<bool>(&m_human)->zero_tokens()->default_value(false)->default_value(false), "human readable output")("address", po::value<std::vector<std::string>>(&m_address_strs), "ryo-currency address");
 
 	pos_option.add("address", -1);
 }
@@ -195,7 +191,7 @@ void address_validator::print(writer &out, const std::string &addr_str, const ad
 int main(int argc, char *argv[])
 {
 #ifdef WIN32
-	std::vector<char*> argptrs;
+	std::vector<char *> argptrs;
 	command_line::set_console_utf8();
 	if(command_line::get_windows_args(argptrs))
 	{
@@ -218,7 +214,7 @@ int main(int argc, char *argv[])
 
 	// We won't replace the custom output writer here, so just direct **our** errors to console
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.cat_major == "addr_val" && msg.lvl == gulps::LEVEL_ERROR; });
+	out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool { return msg.cat_major == "addr_val" && msg.lvl == gulps::LEVEL_ERROR; });
 	gulps::inst().add_output(std::move(out));
 
 	using namespace cryptonote;

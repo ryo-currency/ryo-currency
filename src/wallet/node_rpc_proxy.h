@@ -57,6 +57,7 @@ namespace tools
 class NodeRPCProxy
 {
 	GULPS_CAT_MAJOR("wallet_rpc_proxy");
+
   public:
 	NodeRPCProxy(epee::net_utils::http::http_simple_client &http_client, boost::mutex &mutex);
 
@@ -82,4 +83,4 @@ class NodeRPCProxy
 	mutable uint64_t m_target_height;
 	mutable time_t m_target_height_time;
 };
-}
+} // namespace tools

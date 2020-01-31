@@ -80,7 +80,7 @@ make_transaction(
 
 	return tx;
 }
-} // anonymous
+} // namespace
 
 TEST(JsonSerialization, MinerTransaction)
 {

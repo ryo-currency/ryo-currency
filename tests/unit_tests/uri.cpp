@@ -33,13 +33,14 @@
 // included payment id: <6f1aa052630b29fb>
 #define TEST_INTEGRATED_ADDRESS "RYoEu4oNLAYJFQ4bTWto4MhM3qT4YA8gV3smuJyxucJgBDdCWehV4btgcyNb11MAUC7t9yPDUCwAoREVdyVNankWERkEdaGY9UmHZr8a149Kqi"
 
-#define PARSE_URI(uri, expected)                                                                                      \
-	std::string address, payment_id, recipient_name, description, error;                                              \
-	uint64_t amount;                                                                                                  \
-	std::vector<std::string> unknown_parameters;                                                                      \
-	tools::wallet2 w(cryptonote::TESTNET);                                                                            \
+#define PARSE_URI(uri, expected) \
+	std::string address, payment_id, recipient_name, description, error; \
+	uint64_t amount; \
+	std::vector<std::string> unknown_parameters; \
+	tools::wallet2 w(cryptonote::TESTNET); \
 	bool ret = w.parse_uri(uri, address, payment_id, amount, description, recipient_name, unknown_parameters, error); \
-	if(!ret) std::cout << "parse_uri error: " << error << std::endl;                                                                    \
+	if(!ret) \
+		std::cout << "parse_uri error: " << error << std::endl; \
 	ASSERT_EQ(ret, expected);
 
 TEST(uri, empty_string)

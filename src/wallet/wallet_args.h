@@ -69,4 +69,4 @@ boost::optional<boost::program_options::variables_map> main(
 	boost::program_options::options_description desc_params,
 	const boost::program_options::positional_options_description &positional_options,
 	const char *default_log_name, int &error_code, bool log_to_console = false);
-}
+} // namespace wallet_args

@@ -44,9 +44,9 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "cryptonote_config.h"
-#include "common/gulps.hpp"
 #include "rctTypes.h"
+#include "common/gulps.hpp"
+#include "cryptonote_config.h"
 using namespace crypto;
 using namespace std;
 
@@ -266,8 +266,8 @@ size_t n_bulletproof_amounts(const Bulletproof &proof)
 	static const size_t extra_bits = 4;
 	static_assert((1 << extra_bits) == cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS, "log2(BULLETPROOF_MAX_OUTPUTS) is out of date");
 	GULPS_CHECK_AND_ASSERT_MES(proof.L.size() <= 6 + extra_bits, 0, "Invalid bulletproof L size");
-	GULPS_CHECK_AND_ASSERT_MES(proof.V.size() <= (1u<<(proof.L.size()-6)), 0, "Invalid bulletproof V/L");
-	GULPS_CHECK_AND_ASSERT_MES(proof.V.size() * 2 > (1u<<(proof.L.size()-6)), 0, "Invalid bulletproof V/L");
+	GULPS_CHECK_AND_ASSERT_MES(proof.V.size() <= (1u << (proof.L.size() - 6)), 0, "Invalid bulletproof V/L");
+	GULPS_CHECK_AND_ASSERT_MES(proof.V.size() * 2 > (1u << (proof.L.size() - 6)), 0, "Invalid bulletproof V/L");
 	GULPS_CHECK_AND_ASSERT_MES(proof.V.size() > 0, 0, "Empty bulletproof");
 	return proof.V.size();
 }
@@ -275,7 +275,7 @@ size_t n_bulletproof_amounts(const Bulletproof &proof)
 size_t n_bulletproof_amounts(const std::vector<Bulletproof> &proofs)
 {
 	size_t n = 0;
-	for(const Bulletproof &proof: proofs)
+	for(const Bulletproof &proof : proofs)
 	{
 		size_t n2 = n_bulletproof_amounts(proof);
 		GULPS_CHECK_AND_ASSERT_MES(n2 < std::numeric_limits<uint32_t>::max() - n, 0, "Invalid number of bulletproofs");
@@ -299,15 +299,15 @@ size_t n_bulletproof_max_amounts(const Bulletproof &proof)
 size_t n_bulletproof_max_amounts(const std::vector<Bulletproof> &proofs)
 {
 	size_t n = 0;
-	for (const Bulletproof &proof: proofs)
+	for(const Bulletproof &proof : proofs)
 	{
 		size_t n2 = n_bulletproof_max_amounts(proof);
 		GULPS_CHECK_AND_ASSERT_MES(n2 < std::numeric_limits<uint32_t>::max() - n, 0, "Invalid number of bulletproofs");
-		if (n2 == 0)
+		if(n2 == 0)
 			return 0;
 		n += n2;
 	}
 	return n;
 }
 
-}
+} // namespace rct

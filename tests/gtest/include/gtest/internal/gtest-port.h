@@ -256,7 +256,7 @@
 //   Int32FromGTestEnv()  - parses an Int32 environment variable.
 //   StringFromGTestEnv() - parses a string environment variable.
 
-#include <ctype.h>  // for isspace, etc
+#include <ctype.h> // for isspace, etc
 #include <stddef.h> // for ptrdiff_t
 #include <stdio.h>
 #include <stdlib.h>
@@ -272,9 +272,9 @@
 #endif
 
 #include <algorithm> // NOLINT
-#include <iostream>  // NOLINT
-#include <sstream>   // NOLINT
-#include <string>	// NOLINT
+#include <iostream> // NOLINT
+#include <sstream> // NOLINT
+#include <string> // NOLINT
 #include <utility>
 #include <vector> // NOLINT
 
@@ -308,8 +308,8 @@
 //   GTEST_DISABLE_MSC_WARNINGS_POP_()
 #if _MSC_VER >= 1500
 #define GTEST_DISABLE_MSC_WARNINGS_PUSH_(warnings) \
-	__pragma(warning(push))                        \
-		__pragma(warning(disable                   \
+	__pragma(warning(push)) \
+		__pragma(warning(disable \
 						 : warnings))
 #define GTEST_DISABLE_MSC_WARNINGS_POP_() \
 	__pragma(warning(pop))
@@ -341,12 +341,12 @@
 // 20110325, but maintenance releases in the 4.4 and 4.5 series followed
 // this date, so check for those versions by their date stamps.
 // https://gcc.gnu.org/onlinedocs/libstdc++/manual/abi.html#abi.versioning
-#if GTEST_LANG_CXX11 &&                                                                                                                           \
-	(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20110325ul && /* GCC >= 4.6.0 */				 /* Blacklist of patch releases of older branches: */ \
-																__GLIBCXX__ != 20110416ul && /* GCC 4.4.6 */                                      \
-							   __GLIBCXX__ != 20120313ul &&									 /* GCC 4.4.7 */                                      \
-							   __GLIBCXX__ != 20110428ul &&									 /* GCC 4.5.3 */                                      \
-							   __GLIBCXX__ != 20120702ul))									 /* GCC 4.5.4 */
+#if GTEST_LANG_CXX11 && \
+	(!defined(__GLIBCXX__) || (__GLIBCXX__ >= 20110325ul && /* GCC >= 4.6.0 */ /* Blacklist of patch releases of older branches: */ \
+									  __GLIBCXX__ != 20110416ul && /* GCC 4.4.6 */ \
+								  __GLIBCXX__ != 20120313ul && /* GCC 4.4.7 */ \
+								  __GLIBCXX__ != 20110428ul && /* GCC 4.5.3 */ \
+								  __GLIBCXX__ != 20120702ul)) /* GCC 4.5.4 */
 #define GTEST_STDLIB_CXX11 1
 #endif
 
@@ -617,8 +617,8 @@ struct _RTL_CRITICAL_SECTION;
 #if _MSC_VER
 #define GTEST_HAS_HASH_MAP_ 1 // Indicates that hash_map is available.
 #define GTEST_HAS_HASH_SET_ 1 // Indicates that hash_set is available.
-#endif						  // _MSC_VER
-#endif						  // !defined(GTEST_HAS_HASH_MAP_)
+#endif // _MSC_VER
+#endif // !defined(GTEST_HAS_HASH_MAP_)
 
 // Determines whether Google Test can use tr1/tuple.  You can define
 // this macro to 0 to prevent Google Test from using tuple (any
@@ -699,8 +699,8 @@ using ::std::make_tuple;
 using ::std::tuple;
 using ::std::tuple_element;
 using ::std::tuple_size;
-}
-}
+} // namespace tr1
+} // namespace std
 
 #elif GTEST_OS_SYMBIAN
 
@@ -734,13 +734,13 @@ using ::std::tuple_size;
 // <tr1/functional> if he chooses to.
 #else
 #include <tr1/tuple> // NOLINT
-#endif				 // !GTEST_HAS_RTTI && GTEST_GCC_VER_ < 40302
+#endif // !GTEST_HAS_RTTI && GTEST_GCC_VER_ < 40302
 
 #else
 // If the compiler is not GCC 4.0+, we assume the user is using a
 // spec-conforming TR1 implementation.
 #include <tuple> // IWYU pragma: export  // NOLINT
-#endif			 // GTEST_USE_OWN_TR1_TUPLE
+#endif // GTEST_USE_OWN_TR1_TUPLE
 
 #endif // GTEST_HAS_TR1_TUPLE
 
@@ -785,9 +785,9 @@ using ::std::tuple_size;
 // Google Test does not support death tests for VC 7.1 and earlier as
 // abort() in a VC 7.1 application compiled as GUI in debug config
 // pops up a dialog window that cannot be suppressed programmatically.
-#if(GTEST_OS_LINUX || GTEST_OS_CYGWIN || GTEST_OS_SOLARIS ||   \
-	(GTEST_OS_MAC && !GTEST_OS_IOS) ||                         \
-	(GTEST_OS_WINDOWS_DESKTOP && _MSC_VER >= 1400) ||          \
+#if(GTEST_OS_LINUX || GTEST_OS_CYGWIN || GTEST_OS_SOLARIS || \
+	(GTEST_OS_MAC && !GTEST_OS_IOS) || \
+	(GTEST_OS_WINDOWS_DESKTOP && _MSC_VER >= 1400) || \
 	GTEST_OS_WINDOWS_MINGW || GTEST_OS_AIX || GTEST_OS_HPUX || \
 	GTEST_OS_OPENBSD || GTEST_OS_QNX || GTEST_OS_FREEBSD)
 #define GTEST_HAS_DEATH_TEST 1
@@ -839,8 +839,8 @@ using ::std::tuple_size;
 #define GTEST_AMBIGUOUS_ELSE_BLOCKER_
 #else
 #define GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
-	switch(0)                         \
-	case 0:                           \
+	switch(0) \
+	case 0: \
 	default: // NOLINT
 #endif
 
@@ -874,7 +874,7 @@ using ::std::tuple_size;
 // A macro to disallow copy constructor and operator=
 // This should be used in the private: declarations for a class.
 #define GTEST_DISALLOW_COPY_AND_ASSIGN_(type) \
-	type(type const &);                       \
+	type(type const &); \
 	GTEST_DISALLOW_ASSIGN_(type)
 
 // Tell the compiler to warn about unused return values for functions declared
@@ -997,8 +997,8 @@ class Message;
 using GTEST_TUPLE_NAMESPACE_::get;
 using GTEST_TUPLE_NAMESPACE_::make_tuple;
 using GTEST_TUPLE_NAMESPACE_::tuple;
-using GTEST_TUPLE_NAMESPACE_::tuple_size;
 using GTEST_TUPLE_NAMESPACE_::tuple_element;
+using GTEST_TUPLE_NAMESPACE_::tuple_size;
 #endif // defined(GTEST_TUPLE_NAMESPACE_)
 
 namespace internal
@@ -1032,7 +1032,7 @@ struct CompileAssert
 {
 };
 
-#define GTEST_COMPILE_ASSERT_(expr, msg)                                  \
+#define GTEST_COMPILE_ASSERT_(expr, msg) \
 	typedef ::testing::internal::CompileAssert<(static_cast<bool>(expr))> \
 		msg[static_cast<bool>(expr) ? 1 : -1] GTEST_ATTRIBUTE_UNUSED_
 #endif // !GTEST_LANG_CXX11
@@ -1124,7 +1124,8 @@ class scoped_ptr
   public:
 	typedef T element_type;
 
-	explicit scoped_ptr(T *p = NULL) : ptr_(p) {}
+	explicit scoped_ptr(T *p = NULL) :
+		ptr_(p) {}
 	~scoped_ptr() { reset(); }
 
 	T &operator*() const { return *ptr_; }
@@ -1237,7 +1238,7 @@ class GTEST_API_ RE
 
 #if GTEST_USES_POSIX_RE
 
-	regex_t full_regex_;	// For FullMatch().
+	regex_t full_regex_; // For FullMatch().
 	regex_t partial_regex_; // For PartialMatch().
 
 #else // GTEST_USES_SIMPLE_RE
@@ -1257,7 +1258,7 @@ GTEST_API_::std::string FormatFileLocation(const char *file, int line);
 // Although this function is not platform dependent, we put it next to
 // FormatFileLocation in order to contrast the two functions.
 GTEST_API_::std::string FormatCompilerIndependentFileLocation(const char *file,
-															  int line);
+	int line);
 
 // Defines logging utilities:
 //   GTEST_LOG_(severity) - logs messages at the specified severity level. The
@@ -1294,9 +1295,9 @@ class GTEST_API_ GTestLog
 
 #if !defined(GTEST_LOG_)
 
-#define GTEST_LOG_(severity)                                             \
+#define GTEST_LOG_(severity) \
 	::testing::internal::GTestLog(::testing::internal::GTEST_##severity, \
-								  __FILE__, __LINE__)                    \
+		__FILE__, __LINE__) \
 		.GetStream()
 
 inline void LogToStderr()
@@ -1321,12 +1322,12 @@ inline void FlushInfoLog() { fflush(NULL); }
 //    condition itself, plus additional message streamed into it, if any,
 //    and then it aborts the program. It aborts the program irrespective of
 //    whether it is built in the debug mode or not.
-#define GTEST_CHECK_(condition)                \
-	GTEST_AMBIGUOUS_ELSE_BLOCKER_              \
+#define GTEST_CHECK_(condition) \
+	GTEST_AMBIGUOUS_ELSE_BLOCKER_ \
 	if(::testing::internal::IsTrue(condition)) \
-		;                                      \
-	else                                       \
-	GTEST_LOG_(FATAL) << "Condition " #condition " failed. "
+		; \
+	else \
+		GTEST_LOG_(FATAL) << "Condition " #condition " failed. "
 #endif // !defined(GTEST_CHECK_)
 
 // An all-mode assert to verify that the given POSIX-style function
@@ -1334,14 +1335,14 @@ inline void FlushInfoLog() { fflush(NULL); }
 // doesn't expand to a balanced 'if' statement, so enclose the macro
 // in {} if you need to use it as the only statement in an 'if'
 // branch.
-#define GTEST_CHECK_POSIX_SUCCESS_(posix_call)               \
-	if(const int gtest_error = (posix_call))                 \
+#define GTEST_CHECK_POSIX_SUCCESS_(posix_call) \
+	if(const int gtest_error = (posix_call)) \
 	GTEST_LOG_(FATAL) << #posix_call << "failed with error " \
 					  << gtest_error
 
 #if GTEST_HAS_STD_MOVE_
 using std::move;
-#else  // GTEST_HAS_STD_MOVE_
+#else // GTEST_HAS_STD_MOVE_
 template <typename T>
 const T &move(const T &t)
 {
@@ -1467,7 +1468,7 @@ GTEST_API_ const ::std::vector<testing::internal::string> &GetArgvs();
 
 const ::std::vector<testing::internal::string> &GetInjectableArgvs();
 void SetInjectableArgvs(const ::std::vector<testing::internal::string> *
-							new_argvs);
+		new_argvs);
 
 #endif // GTEST_HAS_DEATH_TEST
 
@@ -1480,7 +1481,7 @@ void SetInjectableArgvs(const ::std::vector<testing::internal::string> *
 inline void SleepMilliseconds(int n)
 {
 	const timespec time = {
-		0,				   // 0 seconds.
+		0, // 0 seconds.
 		n * 1000L * 1000L, // And n ms.
 	};
 	nanosleep(&time, NULL);
@@ -1501,7 +1502,8 @@ inline void SleepMilliseconds(int n)
 class Notification
 {
   public:
-	Notification() : notified_(false)
+	Notification() :
+		notified_(false)
 	{
 		GTEST_CHECK_POSIX_SUCCESS_(pthread_mutex_init(&mutex_, NULL));
 	}
@@ -1594,7 +1596,7 @@ class GTEST_API_ Notification
 };
 #endif // GTEST_HAS_NOTIFICATION_
 
-# if GTEST_HAS_PTHREAD
+#if GTEST_HAS_PTHREAD
 
 // As a C-function, ThreadFuncWithCLinkage cannot be templated itself.
 // Consequently, it cannot select a correct instantiation of ThreadWithParam
@@ -1638,11 +1640,11 @@ class ThreadWithParam : public ThreadWithParamBase
   public:
 	typedef void UserThreadFunc(T);
 
-	ThreadWithParam(UserThreadFunc *func, T param, Notification *thread_can_start)
-		: func_(func),
-		  param_(param),
-		  thread_can_start_(thread_can_start),
-		  finished_(false)
+	ThreadWithParam(UserThreadFunc *func, T param, Notification *thread_can_start) :
+		func_(func),
+		param_(param),
+		thread_can_start_(thread_can_start),
+		finished_(false)
 	{
 		ThreadWithParamBase *const base = this;
 		// The thread can be created only after all fields except thread_
@@ -1670,11 +1672,11 @@ class ThreadWithParam : public ThreadWithParamBase
 
   private:
 	UserThreadFunc *const func_; // User-supplied thread function.
-	const T param_;				 // User-supplied parameter to the thread function.
+	const T param_; // User-supplied parameter to the thread function.
 	// When non-NULL, used to block execution until the controller thread
 	// notifies.
 	Notification *const thread_can_start_;
-	bool finished_;	// true iff we know that the thread function has finished.
+	bool finished_; // true iff we know that the thread function has finished.
 	pthread_t thread_; // The native thread object.
 
 	GTEST_DISALLOW_COPY_AND_ASSIGN_(ThreadWithParam);
@@ -1765,8 +1767,8 @@ class GTEST_API_ Mutex
 class GTestMutexLock
 {
   public:
-	explicit GTestMutexLock(Mutex *mutex)
-		: mutex_(mutex) { mutex_->Lock(); }
+	explicit GTestMutexLock(Mutex *mutex) :
+		mutex_(mutex) { mutex_->Lock(); }
 
 	~GTestMutexLock() { mutex_->Unlock(); }
 
@@ -1848,8 +1850,8 @@ class ThreadWithParam : public ThreadWithParamBase
   public:
 	typedef void UserThreadFunc(T);
 
-	ThreadWithParam(UserThreadFunc *func, T param, Notification *thread_can_start)
-		: ThreadWithParamBase(new RunnableImpl(func, param), thread_can_start)
+	ThreadWithParam(UserThreadFunc *func, T param, Notification *thread_can_start) :
+		ThreadWithParamBase(new RunnableImpl(func, param), thread_can_start)
 	{
 	}
 	virtual ~ThreadWithParam() {}
@@ -1858,9 +1860,9 @@ class ThreadWithParam : public ThreadWithParamBase
 	class RunnableImpl : public Runnable
 	{
 	  public:
-		RunnableImpl(UserThreadFunc *func, T param)
-			: func_(func),
-			  param_(param)
+		RunnableImpl(UserThreadFunc *func, T param) :
+			func_(func),
+			param_(param)
 		{
 		}
 		virtual ~RunnableImpl() {}
@@ -1910,9 +1912,10 @@ template <typename T>
 class ThreadLocal : public ThreadLocalBase
 {
   public:
-	ThreadLocal() : default_factory_(new DefaultValueHolderFactory()) {}
-	explicit ThreadLocal(const T &value)
-		: default_factory_(new InstanceValueHolderFactory(value)) {}
+	ThreadLocal() :
+		default_factory_(new DefaultValueHolderFactory()) {}
+	explicit ThreadLocal(const T &value) :
+		default_factory_(new InstanceValueHolderFactory(value)) {}
 
 	~ThreadLocal() { ThreadLocalRegistry::OnThreadLocalDestroyed(this); }
 
@@ -1927,8 +1930,10 @@ class ThreadLocal : public ThreadLocalBase
 	class ValueHolder : public ThreadLocalValueHolderBase
 	{
 	  public:
-		ValueHolder() : value_() {}
-		explicit ValueHolder(const T &value) : value_(value) {}
+		ValueHolder() :
+			value_() {}
+		explicit ValueHolder(const T &value) :
+			value_(value) {}
 
 		T *pointer() { return &value_; }
 
@@ -1940,7 +1945,7 @@ class ThreadLocal : public ThreadLocalBase
 	T *GetOrCreateValue() const
 	{
 		return static_cast<ValueHolder *>(
-				   ThreadLocalRegistry::GetValueOnCurrentThread(this))
+			ThreadLocalRegistry::GetValueOnCurrentThread(this))
 			->pointer();
 	}
 
@@ -1973,7 +1978,8 @@ class ThreadLocal : public ThreadLocalBase
 	class InstanceValueHolderFactory : public ValueHolderFactory
 	{
 	  public:
-		explicit InstanceValueHolderFactory(const T &value) : value_(value) {}
+		explicit InstanceValueHolderFactory(const T &value) :
+			value_(value) {}
 		virtual ValueHolder *MakeNewHolder() const
 		{
 			return new ValueHolder(value_);
@@ -2075,8 +2081,8 @@ class Mutex : public MutexBase
 class GTestMutexLock
 {
   public:
-	explicit GTestMutexLock(MutexBase *mutex)
-		: mutex_(mutex) { mutex_->Lock(); }
+	explicit GTestMutexLock(MutexBase *mutex) :
+		mutex_(mutex) { mutex_->Lock(); }
 
 	~GTestMutexLock() { mutex_->Unlock(); }
 
@@ -2112,11 +2118,11 @@ template <typename T>
 class ThreadLocal
 {
   public:
-	ThreadLocal()
-		: key_(CreateKey()), default_factory_(new DefaultValueHolderFactory()) {}
-	explicit ThreadLocal(const T &value)
-		: key_(CreateKey()),
-		  default_factory_(new InstanceValueHolderFactory(value)) {}
+	ThreadLocal() :
+		key_(CreateKey()), default_factory_(new DefaultValueHolderFactory()) {}
+	explicit ThreadLocal(const T &value) :
+		key_(CreateKey()),
+		default_factory_(new InstanceValueHolderFactory(value)) {}
 
 	~ThreadLocal()
 	{
@@ -2138,8 +2144,10 @@ class ThreadLocal
 	class ValueHolder : public ThreadLocalValueHolderBase
 	{
 	  public:
-		ValueHolder() : value_() {}
-		explicit ValueHolder(const T &value) : value_(value) {}
+		ValueHolder() :
+			value_() {}
+		explicit ValueHolder(const T &value) :
+			value_(value) {}
 
 		T *pointer() { return &value_; }
 
@@ -2197,7 +2205,8 @@ class ThreadLocal
 	class InstanceValueHolderFactory : public ValueHolderFactory
 	{
 	  public:
-		explicit InstanceValueHolderFactory(const T &value) : value_(value) {}
+		explicit InstanceValueHolderFactory(const T &value) :
+			value_(value) {}
 		virtual ValueHolder *MakeNewHolder() const
 		{
 			return new ValueHolder(value_);
@@ -2256,12 +2265,15 @@ template <typename T>
 class ThreadLocal
 {
   public:
-	ThreadLocal() : value_() {}
-	explicit ThreadLocal(const T &value) : value_(value) {}
+	ThreadLocal() :
+		value_() {}
+	explicit ThreadLocal(const T &value) :
+		value_(value) {}
 	T *pointer() { return &value_; }
 	const T *pointer() const { return &value_; }
 	const T &get() const { return value_; }
 	void set(const T &value) { value_ = value; }
+
   private:
 	T value_;
 };

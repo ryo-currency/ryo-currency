@@ -129,4 +129,4 @@ struct p2p_endpoint_stub : public i_p2p_endpoint<t_connection_context>
 		return true;
 	}
 };
-}
+} // namespace nodetool

@@ -42,7 +42,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include "blockchain_db/blockchain_db.h"
 #include "blockchain_db/db_types.h"
 #include "blocksdat_file.h"
@@ -64,7 +63,7 @@ gulps_log_level log_scr;
 int main(int argc, char *argv[])
 {
 #ifdef WIN32
-	std::vector<char*> argptrs;
+	std::vector<char *> argptrs;
 	command_line::set_console_utf8();
 	if(command_line::get_windows_args(argptrs))
 	{
@@ -126,7 +125,7 @@ int main(int argc, char *argv[])
 
 	//Temp error output
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
+	out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
 	auto temp_handle = gulps::inst().add_output(std::move(out));
 
 	if(!command_line::is_arg_defaulted(vm, arg_log_level))
@@ -153,13 +152,13 @@ int main(int argc, char *argv[])
 	if(log_scr.is_active())
 	{
 		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
-		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
-				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
-					return false;
-				if(printed)
-					return false;
-				return log_scr.match_msg(msg);
-				});
+		out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool {
+			if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
+				return false;
+			if(printed)
+				return false;
+			return log_scr.match_msg(msg);
+		});
 		gulps::inst().add_output(std::move(out));
 	}
 
@@ -196,7 +195,7 @@ int main(int argc, char *argv[])
 		output_file_path = boost::filesystem::path(command_line::get_arg(vm, arg_output_file));
 	else
 		output_file_path = boost::filesystem::path(m_config_folder) / "export" / BLOCKCHAIN_RAW;
-	GULPS_PRINT("Export output file: " , output_file_path.string());
+	GULPS_PRINT("Export output file: ", output_file_path.string());
 
 	// If we wanted to use the memory pool, we would set up a fake_core.
 
@@ -220,7 +219,7 @@ int main(int argc, char *argv[])
 		GULPS_ERROR("Attempted to use non-existent database type: ", db_type);
 		throw std::runtime_error("Attempting to use non-existent database type");
 	}
-	GULPS_PRINT("database: " , db_type);
+	GULPS_PRINT("database: ", db_type);
 
 	boost::filesystem::path folder(m_config_folder);
 	folder /= db->get_db_name();
@@ -233,7 +232,7 @@ int main(int argc, char *argv[])
 	}
 	catch(const std::exception &e)
 	{
-		GULPS_ERROR("Error opening database: " , e.what());
+		GULPS_ERROR("Error opening database: ", e.what());
 		return 1;
 	}
 	r = core_storage->init(db, opt_testnet ? cryptonote::TESTNET : opt_stagenet ? cryptonote::STAGENET : cryptonote::MAINNET);

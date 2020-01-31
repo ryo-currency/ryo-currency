@@ -61,8 +61,6 @@
 
 #include "common/gulps.hpp"
 
-
-
 class size_logger
 {
   public:
@@ -70,9 +68,10 @@ class size_logger
 	{
 		GULPS_CAT_MAJOR("obj_sizes");
 		for(const auto &i : types)
-			GULPSF_PRINT("{}\t{}",i.first, i.second);
+			GULPSF_PRINT("{}\t{}", i.first, i.second);
 	}
 	void add(const char *type, size_t size) { types.insert(std::make_pair(size, type)); }
+
   private:
 	std::multimap<size_t, const std::string> types;
 };
@@ -85,7 +84,7 @@ int main(int argc, char *argv[])
 	tools::on_startup();
 
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
+	out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool {
 		return true;
 	});
 

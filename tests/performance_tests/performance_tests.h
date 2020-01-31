@@ -76,8 +76,8 @@ template <typename T>
 class test_runner
 {
   public:
-	test_runner(const Params &params)
-		: m_elapsed(0), m_params(params), m_per_call_timers(T::loop_count * params.loop_multiplier, {true})
+	test_runner(const Params &params) :
+		m_elapsed(0), m_params(params), m_per_call_timers(T::loop_count * params.loop_multiplier, {true})
 	{
 	}
 

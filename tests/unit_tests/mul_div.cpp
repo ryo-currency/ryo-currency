@@ -203,4 +203,4 @@ TEST(div128_32, works_correctly)
 	ASSERT_EQ(hi, 0x00000000f812c1f8);
 	ASSERT_EQ(lo, 0xddf2fdb09bc2e2e9);
 }
-}
+} // namespace

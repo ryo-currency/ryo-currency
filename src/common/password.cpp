@@ -236,9 +236,10 @@ bool read_from_file(epee::wipeable_string &pass)
 namespace tools
 {
 // deleted via private member
-password_container::password_container() noexcept : m_password() {}
-password_container::password_container(std::string &&password) noexcept
-	: m_password(std::move(password))
+password_container::password_container() noexcept :
+	m_password() {}
+password_container::password_container(std::string &&password) noexcept :
+	m_password(std::move(password))
 {
 }
 
@@ -286,4 +287,4 @@ boost::optional<login> login::parse(std::string &&userpass, bool verify, const s
 	password_container wipe{std::move(userpass)};
 	return {std::move(out)};
 }
-}
+} // namespace tools

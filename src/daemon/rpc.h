@@ -50,14 +50,13 @@
 
 #include "common/gulps.hpp"
 
-
-
 namespace daemonize
 {
 
 class t_rpc final
 {
-	 GULPS_CAT_MAJOR("daemon_rpc");
+	GULPS_CAT_MAJOR("daemon_rpc");
+
   public:
 	static void init_options(boost::program_options::options_description &option_spec)
 	{
@@ -70,8 +69,9 @@ class t_rpc final
 
   public:
 	t_rpc(
-		boost::program_options::variables_map const &vm, t_core &core, t_p2p &p2p, const bool restricted, const cryptonote::network_type nettype, const std::string &port, const std::string &description)
-		: m_server{core.get(), p2p.get()}, m_description{description}
+		boost::program_options::variables_map const &vm, t_core &core, t_p2p &p2p, const bool restricted, const cryptonote::network_type nettype, const std::string &port, const std::string &description) :
+		m_server{core.get(), p2p.get()},
+		m_description{description}
 	{
 		GULPSF_GLOBAL_PRINT("Initializing {} RPC server...", m_description);
 
@@ -84,7 +84,7 @@ class t_rpc final
 
 	void run()
 	{
-		GULPSF_GLOBAL_PRINT("Starting {} RPC server...",m_description);
+		GULPSF_GLOBAL_PRINT("Starting {} RPC server...", m_description);
 		if(!m_server.run(2, false))
 		{
 			throw std::runtime_error("Failed to start " + m_description + " RPC server.");
@@ -117,4 +117,4 @@ class t_rpc final
 		}
 	}
 };
-}
+} // namespace daemonize

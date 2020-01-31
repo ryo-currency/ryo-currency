@@ -42,12 +42,11 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
-#include "cryptonote_core/blockchain.h"
 #include "blockchain_db/blockchain_db.h"
 #include "blockchain_db/db_types.h"
 #include "common/command_line.h"
 #include "common/varint.h"
+#include "cryptonote_core/blockchain.h"
 #include "cryptonote_core/cryptonote_core.h"
 #include "cryptonote_core/tx_pool.h"
 #include "version.h"
@@ -67,7 +66,8 @@ struct output_data
 {
 	uint64_t amount;
 	uint64_t index;
-	output_data(uint64_t a, uint64_t i) : amount(a), index(i) {}
+	output_data(uint64_t a, uint64_t i) :
+		amount(a), index(i) {}
 	bool operator==(const output_data &other) const { return other.amount == amount && other.index == index; }
 };
 namespace std
@@ -83,7 +83,7 @@ struct hash<output_data>
 		return reinterpret_cast<const std::size_t &>(h);
 	}
 };
-}
+} // namespace std
 
 static std::string get_default_db_path()
 {
@@ -172,7 +172,7 @@ gulps_log_level log_scr;
 int main(int argc, char *argv[])
 {
 #ifdef WIN32
-	std::vector<char*> argptrs;
+	std::vector<char *> argptrs;
 	command_line::set_console_utf8();
 	if(command_line::get_windows_args(argptrs))
 	{
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
 
 	//Temp error output
 	std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TIMESTAMP_ONLY));
-	out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
+	out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool { return msg.lvl >= gulps::LEVEL_ERROR; });
 	auto temp_handle = gulps::inst().add_output(std::move(out));
 
 	if(!command_line::is_arg_defaulted(vm, arg_log_level))
@@ -265,13 +265,13 @@ int main(int argc, char *argv[])
 	if(log_scr.is_active())
 	{
 		std::unique_ptr<gulps::gulps_output> out(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
-		out->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
-				if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
-					return false;
-				if(printed)
-					return false;
-				return log_scr.match_msg(msg);
-				});
+		out->add_filter([](const gulps::message &msg, bool printed, bool logged) -> bool {
+			if(msg.out != gulps::OUT_LOG_0 && msg.out != gulps::OUT_USER_0)
+				return false;
+			if(printed)
+				return false;
+			return log_scr.match_msg(msg);
+		});
 		gulps::inst().add_output(std::move(out));
 	}
 
@@ -328,12 +328,12 @@ int main(int argc, char *argv[])
 			GULPS_ERROR("Attempted to use non-existent database type: ", db_type);
 			throw std::runtime_error("Attempting to use non-existent database type");
 		}
-		GULPS_PRINT("database: " , db_type);
+		GULPS_PRINT("database: ", db_type);
 
 		std::string filename = inputs[n];
 		while(boost::ends_with(filename, "/") || boost::ends_with(filename, "\\"))
 			filename.pop_back();
-		GULPSF_PRINT("Loading blockchain from folder {} ..." , filename);
+		GULPSF_PRINT("Loading blockchain from folder {} ...", filename);
 
 		try
 		{
@@ -341,7 +341,7 @@ int main(int argc, char *argv[])
 		}
 		catch(const std::exception &e)
 		{
-			GULPS_PRINT("Error opening database: " , e.what());
+			GULPS_PRINT("Error opening database: ", e.what());
 			return 1;
 		}
 		r = core_storage[n]->init(db, net_type);
@@ -355,7 +355,7 @@ int main(int argc, char *argv[])
 	{
 		if(!boost::filesystem::is_directory(direc))
 		{
-			GULPS_ERROR("LMDB needs a directory path, but a file was passed: " , output_file_path.string());
+			GULPS_ERROR("LMDB needs a directory path, but a file was passed: ", output_file_path.string());
 			return 1;
 		}
 	}
@@ -363,7 +363,7 @@ int main(int argc, char *argv[])
 	{
 		if(!boost::filesystem::create_directories(direc))
 		{
-			GULPS_ERROR("Failed to create directory: " , output_file_path.string());
+			GULPS_ERROR("Failed to create directory: ", output_file_path.string());
 			return 1;
 		}
 	}
@@ -380,7 +380,7 @@ int main(int argc, char *argv[])
 
 	for(size_t n = 0; n < inputs.size(); ++n)
 	{
-		GULPS_PRINT("Reading blockchain from " , inputs[n]);
+		GULPS_PRINT("Reading blockchain from ", inputs[n]);
 		for_all_transactions(inputs[n], [&](const cryptonote::transaction_prefix &tx) -> bool {
 			for(const auto &in : tx.vin)
 			{
@@ -427,7 +427,7 @@ int main(int argc, char *argv[])
 						else if(common.size() == 1)
 						{
 							const crypto::public_key pkey = core_storage[n]->get_output_key(txin.amount, common[0]);
-							GULPSF_INFO("Blackballing output {}, due to being used in rings with a single common element" , pkey);
+							GULPSF_INFO("Blackballing output {}, due to being used in rings with a single common element", pkey);
 							ringdb.blackball(pkey);
 							newly_spent.insert(output_data(txin.amount, common[0]));
 							spent.insert(output_data(txin.amount, common[0]));
@@ -450,7 +450,7 @@ int main(int argc, char *argv[])
 
 	while(!newly_spent.empty())
 	{
-		GULPSF_PRINT("Secondary pass due to {} newly found spent outputs" , newly_spent.size());
+		GULPSF_PRINT("Secondary pass due to {} newly found spent outputs", newly_spent.size());
 		std::unordered_set<output_data> work_spent = std::move(newly_spent);
 		newly_spent.clear();
 

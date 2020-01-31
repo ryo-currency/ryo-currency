@@ -41,9 +41,9 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include <string>
 
-std::string operator ""_s(const char * str, size_t len) {
-    return std::string(str, len);
+std::string operator""_s(const char *str, size_t len)
+{
+	return std::string(str, len);
 }

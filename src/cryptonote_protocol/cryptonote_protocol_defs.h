@@ -123,7 +123,8 @@ struct connection_info
 /************************************************************************/
 struct block_complete_entry
 {
-	block_complete_entry(blobdata block, std::list<blobdata> txs) : block(block), txs(txs)  {}
+	block_complete_entry(blobdata block, std::list<blobdata> txs) :
+		block(block), txs(txs) {}
 
 	blobdata block;
 	std::list<blobdata> txs;
@@ -136,7 +137,8 @@ struct block_complete_entry
 // As far as epee is concerned, those two are interchangeable
 struct block_complete_entry_v
 {
-	block_complete_entry_v(blobdata block, std::vector<blobdata> txs) : block(block), txs(txs)  {}
+	block_complete_entry_v(blobdata block, std::vector<blobdata> txs) :
+		block(block), txs(txs) {}
 
 	blobdata block;
 	std::vector<blobdata> txs;
@@ -308,4 +310,4 @@ struct NOTIFY_REQUEST_FLUFFY_MISSING_TX
 		END_KV_SERIALIZE_MAP()
 	};
 };
-}
+} // namespace cryptonote

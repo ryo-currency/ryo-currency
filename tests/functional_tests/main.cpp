@@ -30,9 +30,9 @@
 
 #include <boost/program_options.hpp>
 
+#include "common/gulps.hpp"
 #include "include_base_utils.h"
 #include "string_tools.h"
-#include "common/gulps.hpp"
 using namespace epee;
 
 #include "common/command_line.h"
@@ -58,7 +58,7 @@ const command_line::arg_descriptor<size_t> arg_mix_in_factor = {"mix-in-factor",
 const command_line::arg_descriptor<size_t> arg_tx_count = {"tx-count", "", 100};
 const command_line::arg_descriptor<size_t> arg_tx_per_second = {"tx-per-second", "", 20};
 const command_line::arg_descriptor<size_t> arg_test_repeat_count = {"test_repeat_count", "", 1};
-}
+} // namespace
 
 int main(int argc, char *argv[])
 {
@@ -67,8 +67,6 @@ int main(int argc, char *argv[])
 	string_tools::set_module_name_and_folder(argv[0]);
 
 	//set up logging options
-
-
 
 	po::options_description desc_options("Allowed options");
 	command_line::add_arg(desc_options, command_line::arg_help);

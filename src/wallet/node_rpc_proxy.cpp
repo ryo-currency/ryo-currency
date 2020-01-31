@@ -54,8 +54,8 @@ namespace tools
 
 static const std::chrono::seconds rpc_timeout = std::chrono::minutes(3) + std::chrono::seconds(30);
 
-NodeRPCProxy::NodeRPCProxy(epee::net_utils::http::http_simple_client &http_client, boost::mutex &mutex)
-	: m_http_client(http_client), m_daemon_rpc_mutex(mutex), m_height(0), m_height_time(0), m_earliest_height(), m_dynamic_per_kb_fee_estimate(0), m_dynamic_per_kb_fee_estimate_cached_height(0), m_dynamic_per_kb_fee_estimate_grace_blocks(0), m_rpc_version(0), m_target_height(0), m_target_height_time(0)
+NodeRPCProxy::NodeRPCProxy(epee::net_utils::http::http_simple_client &http_client, boost::mutex &mutex) :
+	m_http_client(http_client), m_daemon_rpc_mutex(mutex), m_height(0), m_height_time(0), m_earliest_height(), m_dynamic_per_kb_fee_estimate(0), m_dynamic_per_kb_fee_estimate_cached_height(0), m_dynamic_per_kb_fee_estimate_grace_blocks(0), m_rpc_version(0), m_target_height(0), m_target_height_time(0)
 {
 }
 
@@ -159,4 +159,4 @@ boost::optional<std::string> NodeRPCProxy::get_earliest_height(uint8_t version, 
 	earliest_height = m_earliest_height[version];
 	return boost::optional<std::string>();
 }
-}
+} // namespace tools

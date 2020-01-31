@@ -52,8 +52,6 @@
 #include "cryptonote_protocol/cryptonote_protocol_defs.h"
 #include "wallet_rpc_server_error_codes.h"
 
-
-
 namespace tools
 {
 namespace wallet_rpc
@@ -1166,7 +1164,7 @@ struct COMMAND_RPC_GET_RESERVE_PROOF
 	{
 		bool all;
 		uint32_t account_index; // ignored when `all` is true
-		uint64_t amount;		// ignored when `all` is true
+		uint64_t amount; // ignored when `all` is true
 		std::string message;
 
 		BEGIN_KV_SERIALIZE_MAP(request)
@@ -1470,7 +1468,8 @@ struct COMMAND_RPC_GET_ADDRESS_BOOK_ENTRY
 
 	struct entry
 	{
-		entry(uint64_t index, std::string address, std::string payment_id, std::string description) : index(index), address(address), payment_id(payment_id), description(description)  {}
+		entry(uint64_t index, std::string address, std::string payment_id, std::string description) :
+			index(index), address(address), payment_id(payment_id), description(description) {}
 
 		uint64_t index;
 		std::string address;
@@ -1879,5 +1878,5 @@ struct COMMAND_RPC_SUBMIT_MULTISIG
 		END_KV_SERIALIZE_MAP()
 	};
 };
-}
-}
+} // namespace wallet_rpc
+} // namespace tools

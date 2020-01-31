@@ -44,12 +44,12 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-#include "include_base_utils.h"
-#include "crypto/pow_hash/cn_slow_hash.hpp"
+#include "cryptonote_format_utils.h"
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
+#include "crypto/pow_hash/cn_slow_hash.hpp"
 #include "cryptonote_config.h"
-#include "cryptonote_format_utils.h"
+#include "include_base_utils.h"
 #include "ringct/rctSigs.h"
 #include "serialization/string.h"
 #include "string_tools.h"
@@ -58,7 +58,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include "common/gulps.hpp"
-
 
 #define ENCRYPTED_PAYMENT_ID_TAIL 0x8d
 
@@ -97,14 +96,14 @@ static std::atomic<uint64_t> block_hashes_calculated_count(0);
 static std::atomic<uint64_t> block_hashes_cached_count(0);
 
 #define CHECK_AND_ASSERT_THROW_MES_L1(expr, ...) \
-	{                                                \
-		if(!(expr))                                  \
-		{                                            \
-			std::stringstream ss ;	\
-			ss << stream_writer::write(__VA_ARGS__);	\
-			GULPS_WARN(__VA_ARGS__);                       \
-			throw std::runtime_error(ss.str());       \
-		}                                            \
+	{ \
+		if(!(expr)) \
+		{ \
+			std::stringstream ss; \
+			ss << stream_writer::write(__VA_ARGS__); \
+			GULPS_WARN(__VA_ARGS__); \
+			throw std::runtime_error(ss.str()); \
+		} \
 	}
 
 namespace cryptonote
@@ -132,7 +131,7 @@ static void add_public_key(crypto::public_key &AB, const crypto::public_key &A, 
 	ge_p1p1_to_p3(&A2, &tmp3);
 	ge_p3_tobytes(&AB, &A2);
 }
-}
+} // namespace cryptonote
 
 namespace cryptonote
 {
@@ -173,20 +172,20 @@ bool expand_transaction_1(transaction &tx, bool base_only)
 
 	if(!base_only && rv.type == rct::RCTTypeBulletproof)
 	{
-		if (rv.p.bulletproofs.size() != 1)
+		if(rv.p.bulletproofs.size() != 1)
 		{
 			GULPS_LOG_L1("Failed to parse transaction from blob, bad bulletproofs size in tx ", get_transaction_hash(tx));
 			return false;
 		}
 
-		if (rv.p.bulletproofs[0].L.size() < 6)
+		if(rv.p.bulletproofs[0].L.size() < 6)
 		{
 			GULPS_LOG_L1("Failed to parse transaction from blob, bad bulletproofs L size in tx ", get_transaction_hash(tx));
 			return false;
 		}
 
 		const size_t max_outputs = 1 << (rv.p.bulletproofs[0].L.size() - 6);
-		if (max_outputs < tx.vout.size())
+		if(max_outputs < tx.vout.size())
 		{
 			GULPS_LOG_L1("Failed to parse transaction from blob, bad bulletproofs max outputs in tx ", get_transaction_hash(tx));
 			return false;
@@ -196,7 +195,7 @@ bool expand_transaction_1(transaction &tx, bool base_only)
 		GULPS_CHECK_AND_ASSERT_MES(n_amounts == rv.outPk.size(), false, "Internal error filling out V");
 		rv.p.bulletproofs[0].V.resize(n_amounts);
 
-		for (size_t i = 0; i < n_amounts; ++i)
+		for(size_t i = 0; i < n_amounts; ++i)
 			rv.p.bulletproofs[0].V[i] = rct::scalarmultKey(rv.outPk[i].mask, rct::INV_EIGHT);
 	}
 	return true;
@@ -245,14 +244,14 @@ bool generate_key_image_helper(const account_keys &ack, const std::unordered_map
 {
 	crypto::key_derivation recv_derivation = AUTO_VAL_INIT(recv_derivation);
 	bool r = hwdev.generate_key_derivation(tx_public_key, ack.m_view_secret_key, recv_derivation);
-	GULPS_CHECK_AND_ASSERT_MES(r, false, "key image helper: failed to generate_key_derivation(" , tx_public_key , ", " , ack.m_view_secret_key , ")");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "key image helper: failed to generate_key_derivation(", tx_public_key, ", ", ack.m_view_secret_key, ")");
 
 	std::vector<crypto::key_derivation> additional_recv_derivations;
 	for(size_t i = 0; i < additional_tx_public_keys.size(); ++i)
 	{
 		crypto::key_derivation additional_recv_derivation = AUTO_VAL_INIT(additional_recv_derivation);
 		r = hwdev.generate_key_derivation(additional_tx_public_keys[i], ack.m_view_secret_key, additional_recv_derivation);
-		GULPS_CHECK_AND_ASSERT_MES(r, false, "key image helper: failed to generate_key_derivation(" , additional_tx_public_keys[i] , ", " , ack.m_view_secret_key , ")");
+		GULPS_CHECK_AND_ASSERT_MES(r, false, "key image helper: failed to generate_key_derivation(", additional_tx_public_keys[i], ", ", ack.m_view_secret_key, ")");
 		additional_recv_derivations.push_back(additional_recv_derivation);
 	}
 
@@ -310,7 +309,7 @@ bool generate_key_image_helper_precomp(const account_keys &ack, const crypto::pu
 		}
 
 		GULPS_CHECK_AND_ASSERT_MES(in_ephemeral.pub == out_key,
-							 false, "key image helper precomp: given output pubkey doesn't match the derived one");
+			false, "key image helper precomp: given output pubkey doesn't match the derived one");
 	}
 
 	hwdev.generate_key_image(in_ephemeral.pub, in_ephemeral.sec, ki);
@@ -402,7 +401,7 @@ bool parse_tx_extra(const std::vector<uint8_t> &tx_extra, std::vector<tx_extra_f
 		eof = (EOF == iss.peek());
 		iss.clear(state);
 	}
-	GULPS_CHECK_AND_NO_ASSERT_MES_L1(::serialization::check_stream_state(ar), false, "failed to deserialize extra field. extra = " , string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+	GULPS_CHECK_AND_NO_ASSERT_MES_L1(::serialization::check_stream_state(ar), false, "failed to deserialize extra field. extra = ", string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
 
 	return true;
 }
@@ -512,7 +511,7 @@ bool remove_field_from_tx_extra(std::vector<uint8_t> &tx_extra, const std::type_
 	{
 		tx_extra_field field;
 		bool r = ::do_serialize(ar, field);
-		GULPS_CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field. extra = " , string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+		GULPS_CHECK_AND_NO_ASSERT_MES_L1(r, false, "failed to deserialize extra field. extra = ", string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
 		if(field.type() != type)
 			::do_serialize(newar, field);
 
@@ -520,7 +519,7 @@ bool remove_field_from_tx_extra(std::vector<uint8_t> &tx_extra, const std::type_
 		eof = (EOF == iss.peek());
 		iss.clear(state);
 	}
-	GULPS_CHECK_AND_NO_ASSERT_MES_L1(::serialization::check_stream_state(ar), false, "failed to deserialize extra field. extra = " , string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
+	GULPS_CHECK_AND_NO_ASSERT_MES_L1(::serialization::check_stream_state(ar), false, "failed to deserialize extra field. extra = ", string_tools::buff_to_hex_nodelimer(std::string(reinterpret_cast<const char *>(tx_extra.data()), tx_extra.size())));
 	tx_extra.clear();
 	std::string s = oss.str();
 	tx_extra.reserve(s.size());
@@ -536,19 +535,19 @@ bool add_payment_id_to_tx_extra(std::vector<uint8_t> &tx_extra, const tx_extra_u
 
 	if(pid.pid.zero == 0) //failsafe, don't add unencrypted data
 		return false;
-	memcpy(&tx_extra[pos+1], &pid.pid, sizeof(crypto::uniform_payment_id));
+	memcpy(&tx_extra[pos + 1], &pid.pid, sizeof(crypto::uniform_payment_id));
 
 	return true;
 }
 //---------------------------------------------------------------
-bool get_payment_id_from_tx_extra(const std::vector<uint8_t> &tx_extra, tx_extra_uniform_payment_id& pid)
+bool get_payment_id_from_tx_extra(const std::vector<uint8_t> &tx_extra, tx_extra_uniform_payment_id &pid)
 {
 	std::vector<tx_extra_field> tx_extra_fields;
 	parse_tx_extra(tx_extra, tx_extra_fields);
 	return get_payment_id_from_tx_extra(tx_extra_fields, pid);
 }
 //---------------------------------------------------------------
-bool get_payment_id_from_tx_extra(const std::vector<tx_extra_field> &tx_extra_fields, tx_extra_uniform_payment_id& pid)
+bool get_payment_id_from_tx_extra(const std::vector<tx_extra_field> &tx_extra_fields, tx_extra_uniform_payment_id &pid)
 {
 	return find_tx_extra_field_by_type(tx_extra_fields, pid);
 }
@@ -602,7 +601,7 @@ bool get_inputs_money_amount(const transaction &tx, uint64_t &money)
 //---------------------------------------------------------------
 uint64_t get_block_height(const block &b)
 {
-	GULPS_CHECK_AND_ASSERT_MES(b.miner_tx.vin.size() == 1, 0, "wrong miner tx in block: " , get_block_hash(b) , ", b.miner_tx.vin.size() != 1");
+	GULPS_CHECK_AND_ASSERT_MES(b.miner_tx.vin.size() == 1, 0, "wrong miner tx in block: ", get_block_hash(b), ", b.miner_tx.vin.size() != 1");
 	CHECKED_GET_SPECIFIC_VARIANT(b.miner_tx.vin[0], const txin_gen, coinbase_in, 0);
 	return coinbase_in.height;
 }
@@ -611,9 +610,7 @@ bool check_inputs_types_supported(const transaction &tx)
 {
 	for(const auto &in : tx.vin)
 	{
-		GULPS_CHECK_AND_ASSERT_MES(in.type() == typeid(txin_to_key), false, "wrong variant type: "
-																		  , in.type().name() , ", expected " , typeid(txin_to_key).name()
-																		  , ", in transaction id=" , get_transaction_hash(tx));
+		GULPS_CHECK_AND_ASSERT_MES(in.type() == typeid(txin_to_key), false, "wrong variant type: ", in.type().name(), ", expected ", typeid(txin_to_key).name(), ", in transaction id=", get_transaction_hash(tx));
 	}
 	return true;
 }
@@ -622,9 +619,7 @@ bool check_outs_valid(const transaction &tx)
 {
 	for(const tx_out &out : tx.vout)
 	{
-		GULPS_CHECK_AND_ASSERT_MES(out.target.type() == typeid(txout_to_key), false, "wrong variant type: "
-																				   , out.target.type().name() , ", expected " , typeid(txout_to_key).name()
-																				   , ", in transaction id=" , get_transaction_hash(tx));
+		GULPS_CHECK_AND_ASSERT_MES(out.target.type() == typeid(txout_to_key), false, "wrong variant type: ", out.target.type().name(), ", expected ", typeid(txout_to_key).name(), ", in transaction id=", get_transaction_hash(tx));
 
 		if(!check_key(boost::get<txout_to_key>(out.target).key))
 			return false;
@@ -1126,4 +1121,4 @@ void get_hash_stats(uint64_t &tx_hashes_calculated, uint64_t &tx_hashes_cached, 
     return key;
   }
 #endif
-}
+} // namespace cryptonote

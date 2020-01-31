@@ -188,7 +188,7 @@ std::vector<crypto::public_key> device_default::get_subaddress_spend_public_keys
 	ge_p3 p3;
 	ge_cached cached;
 	GULPS_CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&p3, (const unsigned char *)keys.m_account_address.m_spend_public_key.data) == 0,
-							   "ge_frombytes_vartime failed to convert spend public key");
+		"ge_frombytes_vartime failed to convert spend public key");
 	ge_p3_to_cached(&cached, &p3);
 
 	for(uint32_t idx = begin; idx < end; ++idx)
@@ -338,7 +338,7 @@ bool device_default::open_tx(crypto::secret_key &tx_key)
 }
 
 bool device_default::add_output_key_mapping(const crypto::public_key &Aout, const crypto::public_key &Bout, const bool is_subaddress, const size_t real_output_index,
-											const rct::key &amount_key, const crypto::public_key &out_eph_public_key)
+	const rct::key &amount_key, const crypto::public_key &out_eph_public_key)
 {
 	return true;
 }
@@ -368,15 +368,15 @@ bool device_default::encrypt_payment_id(crypto::uniform_payment_id &payment_id, 
 	uint8_t data[33]; /* A hash, and an extra byte */
 
 	// Generate key deriviation directly in data;
-	crypto::key_derivation* derivation = reinterpret_cast<crypto::key_derivation*>(data);
+	crypto::key_derivation *derivation = reinterpret_cast<crypto::key_derivation *>(data);
 	if(!generate_key_derivation(public_key, secret_key, *derivation))
 		return false;
 
 	data[32] = UNI_PAYMENT_ID_TAIL;
 	keccak(data, 33, hash, 200);
 
-	uint8_t* id = reinterpret_cast<uint8_t*>(&payment_id);
-	for(size_t i=0; i < sizeof(crypto::uniform_payment_id); i++)
+	uint8_t *id = reinterpret_cast<uint8_t *>(&payment_id);
+	for(size_t i = 0; i < sizeof(crypto::uniform_payment_id); i++)
 		id[i] ^= hash[i];
 
 	return true;
@@ -395,7 +395,7 @@ bool device_default::ecdhDecode(rct::ecdhTuple &masked, const rct::key &sharedSe
 }
 
 bool device_default::mlsag_prepare(const rct::key &H, const rct::key &xx,
-								   rct::key &a, rct::key &aG, rct::key &aHP, rct::key &II)
+	rct::key &a, rct::key &aG, rct::key &aHP, rct::key &II)
 {
 	rct::skpkGen(a, aG);
 	rct::scalarmultKey(aHP, H, a);
@@ -448,5 +448,5 @@ void register_all(std::map<std::string, std::unique_ptr<device>> &registry)
 	}
 	registry.insert(std::make_pair("default", std::unique_ptr<device>(default_core_device)));
 }
-}
-}
+} // namespace core
+} // namespace hw

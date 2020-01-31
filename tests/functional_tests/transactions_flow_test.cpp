@@ -32,8 +32,8 @@
 #include <boost/uuid/uuid.hpp>
 #include <unordered_map>
 
-#include "include_base_utils.h"
 #include "common/gulps.hpp"
+#include "include_base_utils.h"
 #include "wallet/wallet2.h"
 using namespace epee;
 using namespace cryptonote;
@@ -42,9 +42,9 @@ GULPS_CAT_MAJOR("test");
 
 namespace
 {
-uint64_t const TEST_FEE = 5000000000;			 // 5 * 10^9
+uint64_t const TEST_FEE = 5000000000; // 5 * 10^9
 uint64_t const TEST_DUST_THRESHOLD = 5000000000; // 5 * 10^9
-}
+} // namespace
 
 std::string generate_random_wallet_name()
 {
@@ -56,10 +56,10 @@ std::string generate_random_wallet_name()
 inline uint64_t random(const uint64_t max_value)
 {
 	return (uint64_t(rand()) ^
-			(uint64_t(rand()) << 16) ^
-			(uint64_t(rand()) << 32) ^
-			(uint64_t(rand()) << 48)) %
-		   max_value;
+			   (uint64_t(rand()) << 16) ^
+			   (uint64_t(rand()) << 32) ^
+			   (uint64_t(rand()) << 48)) %
+		max_value;
 }
 
 bool do_send_money(tools::wallet2 &w1, tools::wallet2 &w2, size_t mix_in_factor, uint64_t amount_to_transfer, transaction &tx, size_t parts = 1)
@@ -118,11 +118,11 @@ uint64_t get_money_in_first_transfers(const tools::wallet2::transfer_container &
 #define FIRST_N_TRANSFERS 10 * 10
 
 bool transactions_flow_test(std::string &working_folder,
-							std::string path_source_wallet,
-							std::string path_target_wallet,
-							std::string &daemon_addr_a,
-							std::string &daemon_addr_b,
-							uint64_t amount_to_transfer, size_t mix_in_factor, size_t transactions_count, size_t transactions_per_second)
+	std::string path_source_wallet,
+	std::string path_target_wallet,
+	std::string &daemon_addr_a,
+	std::string &daemon_addr_b,
+	uint64_t amount_to_transfer, size_t mix_in_factor, size_t transactions_count, size_t transactions_per_second)
 {
 	std::cout << "-----------------------STARTING TRANSACTIONS FLOW TEST-----------------------" << std::endl;
 	tools::wallet2 w1, w2;
@@ -157,8 +157,8 @@ bool transactions_flow_test(std::string &working_folder,
 	w2.init(daemon_addr_b);
 
 	std::cout << "Using wallets: \n"
-								   << "Source:  " << w1.get_account().get_public_address_str(MAINNET) << "\nPath: " << working_folder + "/" + path_source_wallet
-								   << "\nTarget:  " << w2.get_account().get_public_address_str(MAINNET) << "\nPath: " << working_folder + "/" + path_target_wallet << std::endl;
+			  << "Source:  " << w1.get_account().get_public_address_str(MAINNET) << "\nPath: " << working_folder + "/" + path_source_wallet
+			  << "\nTarget:  " << w2.get_account().get_public_address_str(MAINNET) << "\nPath: " << working_folder + "/" + path_target_wallet << std::endl;
 
 	//lets do some money
 	epee::net_utils::http::http_simple_client http_client;
@@ -276,7 +276,7 @@ bool transactions_flow_test(std::string &working_folder,
 	uint64_t money_2 = w2.balance(0);
 	if(money_2 == transfered_money)
 	{
-		std::cout  <<"-----------------------FINISHING TRANSACTIONS FLOW TEST OK-----------------------" << std::endl;
+		std::cout << "-----------------------FINISHING TRANSACTIONS FLOW TEST OK-----------------------" << std::endl;
 		std::cout << "transferred " << print_money(transfered_money) << " via " << i << " transactions" << std::endl;
 		return true;
 	}

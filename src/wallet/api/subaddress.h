@@ -69,4 +69,4 @@ class SubaddressImpl : public Subaddress
 	WalletImpl *m_wallet;
 	std::vector<SubaddressRow *> m_rows;
 };
-}
+} // namespace Ryo

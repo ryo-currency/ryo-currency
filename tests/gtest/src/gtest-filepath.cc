@@ -146,7 +146,7 @@ const char *FilePath::FindLastPathSeparator() const
 	const char *const last_alt_sep = strrchr(c_str(), kAlternatePathSeparator);
 	// Comparing two pointers of which only one is NULL is undefined.
 	if(last_alt_sep != NULL &&
-	   (last_sep == NULL || last_alt_sep > last_sep))
+		(last_sep == NULL || last_alt_sep > last_sep))
 	{
 		return last_alt_sep;
 	}
@@ -194,9 +194,9 @@ FilePath FilePath::RemoveFileName() const
 // than zero (e.g., 12), returns "dir/test_12.xml".
 // On Windows platform, uses \ as the separator rather than /.
 FilePath FilePath::MakeFileName(const FilePath &directory,
-								const FilePath &base_name,
-								int number,
-								const char *extension)
+	const FilePath &base_name,
+	int number,
+	const char *extension)
 {
 	std::string file;
 	if(number == 0)
@@ -213,7 +213,7 @@ FilePath FilePath::MakeFileName(const FilePath &directory,
 // Given directory = "dir", relative_path = "test.xml", returns "dir/test.xml".
 // On Windows, uses \ as the separator rather than /.
 FilePath FilePath::ConcatPaths(const FilePath &directory,
-							   const FilePath &relative_path)
+	const FilePath &relative_path)
 {
 	if(directory.IsEmpty())
 		return relative_path;
@@ -254,14 +254,14 @@ bool FilePath::DirectoryExists() const
 	const DWORD attributes = GetFileAttributes(unicode);
 	delete[] unicode;
 	if((attributes != kInvalidFileAttributes) &&
-	   (attributes & FILE_ATTRIBUTE_DIRECTORY))
+		(attributes & FILE_ATTRIBUTE_DIRECTORY))
 	{
 		result = true;
 	}
 #else
 	posix::StatStruct file_stat;
 	result = posix::Stat(path.c_str(), &file_stat) == 0 &&
-			 posix::IsDir(file_stat);
+		posix::IsDir(file_stat);
 #endif // GTEST_OS_WINDOWS_MOBILE
 
 	return result;
@@ -287,10 +287,10 @@ bool FilePath::IsAbsolutePath() const
 	const char *const name = pathname_.c_str();
 #if GTEST_OS_WINDOWS
 	return pathname_.length() >= 3 &&
-		   ((name[0] >= 'a' && name[0] <= 'z') ||
+		((name[0] >= 'a' && name[0] <= 'z') ||
 			(name[0] >= 'A' && name[0] <= 'Z')) &&
-		   name[1] == ':' &&
-		   IsPathSeparator(name[2]);
+		name[1] == ':' &&
+		IsPathSeparator(name[2]);
 #else
 	return IsPathSeparator(name[0]);
 #endif
@@ -305,8 +305,8 @@ bool FilePath::IsAbsolutePath() const
 // There could be a race condition if two or more processes are calling this
 // function at the same time -- they could both pick the same filename.
 FilePath FilePath::GenerateUniqueFileName(const FilePath &directory,
-										  const FilePath &base_name,
-										  const char *extension)
+	const FilePath &base_name,
+	const char *extension)
 {
 	FilePath full_pathname;
 	int number = 0;
@@ -323,7 +323,7 @@ FilePath FilePath::GenerateUniqueFileName(const FilePath &directory,
 bool FilePath::IsDirectory() const
 {
 	return !pathname_.empty() &&
-		   IsPathSeparator(pathname_.c_str()[pathname_.length() - 1]);
+		IsPathSeparator(pathname_.c_str()[pathname_.length() - 1]);
 }
 
 // Create directories so that path exists. Returns true if successful or if
@@ -375,8 +375,8 @@ bool FilePath::CreateFolder() const
 FilePath FilePath::RemoveTrailingPathSeparator() const
 {
 	return IsDirectory()
-			   ? FilePath(pathname_.substr(0, pathname_.length() - 1))
-			   : *this;
+		? FilePath(pathname_.substr(0, pathname_.length() - 1))
+		: *this;
 }
 
 // Removes any redundant separators that might be in the pathname.

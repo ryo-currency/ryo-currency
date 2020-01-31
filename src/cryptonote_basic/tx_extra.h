@@ -135,7 +135,8 @@ struct tx_extra_merge_mining_tag
 	{
 		tx_extra_merge_mining_tag &mm_tag;
 
-		serialize_helper(tx_extra_merge_mining_tag &mm_tag_) : mm_tag(mm_tag_)
+		serialize_helper(tx_extra_merge_mining_tag &mm_tag_) :
+			mm_tag(mm_tag_)
 		{
 		}
 
@@ -209,9 +210,10 @@ struct tx_extra_mysterious_minergate
 //   varint tag;
 //   varint size;
 //   varint data[];
-typedef boost::variant<tx_extra_padding, tx_extra_pub_key, tx_extra_nonce, tx_extra_merge_mining_tag, 
-	tx_extra_additional_pub_keys, tx_extra_uniform_payment_id, tx_extra_mysterious_minergate> tx_extra_field;
-}
+typedef boost::variant<tx_extra_padding, tx_extra_pub_key, tx_extra_nonce, tx_extra_merge_mining_tag,
+	tx_extra_additional_pub_keys, tx_extra_uniform_payment_id, tx_extra_mysterious_minergate>
+	tx_extra_field;
+} // namespace cryptonote
 
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_padding, TX_EXTRA_TAG_PADDING);
 VARIANT_TAG(binary_archive, cryptonote::tx_extra_pub_key, TX_EXTRA_TAG_PUBKEY);

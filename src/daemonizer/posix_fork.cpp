@@ -8,11 +8,11 @@
 
 #include <cstdlib>
 #include <fcntl.h>
+#include <signal.h>
 #include <stdexcept>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <signal.h>
 
 #ifndef TMPDIR
 #define TMPDIR "/tmp"
@@ -20,10 +20,9 @@
 
 #include "common/gulps.hpp"
 
-
 namespace posix
 {
-	GULPS_CAT_MAJOR("posix_fork");
+GULPS_CAT_MAJOR("posix_fork");
 namespace
 {
 void quit(const std::string &message)
@@ -31,7 +30,7 @@ void quit(const std::string &message)
 	GULPS_ERROR(message);
 	throw std::runtime_error(message);
 }
-}
+} // namespace
 
 void fork(const std::string &pidfile)
 {

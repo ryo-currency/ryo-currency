@@ -43,27 +43,27 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
-#define GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, name, type, jtype, mandatory, def)  \
-	type field_##name = def;                                                          \
-	bool field_##name##_found = false;                                                \
-	(void)field_##name##_found;                                                       \
-	do                                                                                \
-		if(json.HasMember(#name))                                                     \
-		{                                                                             \
-			if(json[#name].Is##jtype())                                               \
-			{                                                                         \
-				field_##name = json[#name].Get##jtype();                              \
-				field_##name##_found = true;                                          \
-			}                                                                         \
-			else                                                                      \
-			{                                                                         \
+#define GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, name, type, jtype, mandatory, def) \
+	type field_##name = def; \
+	bool field_##name##_found = false; \
+	(void)field_##name##_found; \
+	do \
+		if(json.HasMember(#name)) \
+		{ \
+			if(json[#name].Is##jtype()) \
+			{ \
+				field_##name = json[#name].Get##jtype(); \
+				field_##name##_found = true; \
+			} \
+			else \
+			{ \
 				GULPSF_LOG_ERROR("Field {} found in JSON, but not {}", #name, #jtype); \
-				return false;                                                         \
-			}                                                                         \
-		}                                                                             \
-		else if(mandatory)                                                            \
-		{                                                                             \
-			GULPSF_LOG_ERROR("Field {} not found in JSON", #name);                     \
-			return false;                                                             \
-		}                                                                             \
+				return false; \
+			} \
+		} \
+		else if(mandatory) \
+		{ \
+			GULPSF_LOG_ERROR("Field {} not found in JSON", #name); \
+			return false; \
+		} \
 	while(0)

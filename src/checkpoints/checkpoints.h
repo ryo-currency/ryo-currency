@@ -45,9 +45,9 @@
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
 #pragma once
+#include "common/gulps.hpp"
 #include "crypto/hash.h"
 #include "cryptonote_config.h"
-#include "common/gulps.hpp"
 #include <map>
 #include <vector>
 
@@ -203,4 +203,4 @@ class checkpoints
   private:
 	std::map<uint64_t, crypto::hash> m_points; //!< the checkpoints container
 };
-}
+} // namespace cryptonote

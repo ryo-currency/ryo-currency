@@ -35,11 +35,11 @@
 #include "p2p/net_node.inl"
 #include "gtest/gtest.h"
 
-#define MAKE_IPV4_ADDRESS(a, b, c, d)     \
+#define MAKE_IPV4_ADDRESS(a, b, c, d) \
 	epee::net_utils::ipv4_network_address \
-	{                                     \
-		MAKE_IP(a, b, c, d)               \
-		, 0                               \
+	{ \
+		MAKE_IP(a, b, c, d) \
+		, 0 \
 	}
 
 namespace cryptonote

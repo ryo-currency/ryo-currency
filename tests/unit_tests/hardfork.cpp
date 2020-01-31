@@ -64,7 +64,7 @@ class TestDB : public BlockchainDB
 	virtual blobdata get_block_blob_from_height(const uint64_t &height) const { return cryptonote::t_serializable_object_to_blob(get_block_from_height(height)); }
 	virtual blobdata get_block_blob(const crypto::hash &h) const { return blobdata(); }
 	virtual bool get_tx_blob(const crypto::hash &h, cryptonote::blobdata &tx) const { return false; }
-	virtual bool get_tx_blob_indexed(const crypto::hash& h, cryptonote::blobdata& bd, std::vector<uint64_t>& o_idx) const { return false; }
+	virtual bool get_tx_blob_indexed(const crypto::hash &h, cryptonote::blobdata &bd, std::vector<uint64_t> &o_idx) const { return false; }
 	virtual uint64_t get_block_height(const crypto::hash &h) const { return 0; }
 	virtual block_header get_block_header(const crypto::hash &h) const { return block_header(); }
 	virtual uint64_t get_block_timestamp(const uint64_t &height) const { return 0; }
@@ -436,9 +436,9 @@ TEST(voting, different_thresholds)
 
 		//                 v  h  t
 		ASSERT_TRUE(hf.add_fork(1, 0, 0));
-		ASSERT_TRUE(hf.add_fork(2, 5, 0, 1));	// asap
+		ASSERT_TRUE(hf.add_fork(2, 5, 0, 1)); // asap
 		ASSERT_TRUE(hf.add_fork(3, 10, 100, 2)); // all votes
-		ASSERT_TRUE(hf.add_fork(4, 15, 3));		 // default 50% votes
+		ASSERT_TRUE(hf.add_fork(4, 15, 3)); // default 50% votes
 		hf.init();
 
 		//                                           0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5  6  7  8  9
@@ -476,7 +476,7 @@ TEST(new_blocks, denied)
 	ASSERT_TRUE(hf.add(mkblock(1, 1), 5));
 	ASSERT_TRUE(hf.add(mkblock(1, 1), 6));
 	ASSERT_TRUE(hf.add(mkblock(1, 2), 7));
-	ASSERT_TRUE(hf.add(mkblock(1, 2), 8));  // we reach 50% of the last 4
+	ASSERT_TRUE(hf.add(mkblock(1, 2), 8)); // we reach 50% of the last 4
 	ASSERT_FALSE(hf.add(mkblock(2, 1), 9)); // so this one can't get added
 	ASSERT_TRUE(hf.add(mkblock(2, 2), 9));
 }
@@ -498,7 +498,7 @@ TEST(new_version, early)
 	ASSERT_TRUE(hf.add(mkblock(2, 2), 4)); // but have to wait for the declared height anyway
 	ASSERT_TRUE(hf.add(mkblock(2, 2), 5));
 	ASSERT_FALSE(hf.add(mkblock(2, 1), 6)); // we don't accept 1 anymore
-	ASSERT_TRUE(hf.add(mkblock(2, 2), 7));  // but we do accept 2
+	ASSERT_TRUE(hf.add(mkblock(2, 2), 7)); // but we do accept 2
 }
 
 TEST(reorganize, changed)
@@ -513,12 +513,12 @@ TEST(reorganize, changed)
 	ASSERT_TRUE(hf.add_fork(4, 555, 222));
 	hf.init();
 
-#define ADD(v, h, a)                              \
-	do                                            \
-	{                                             \
-		cryptonote::block b = mkblock(hf, h, v);  \
+#define ADD(v, h, a) \
+	do \
+	{ \
+		cryptonote::block b = mkblock(hf, h, v); \
 		db.add_block(b, 0, 0, 0, crypto::hash()); \
-		ASSERT_##a(hf.add(b, h));                 \
+		ASSERT_##a(hf.add(b, h)); \
 	} while(0)
 #define ADD_TRUE(v, h) ADD(v, h, TRUE)
 #define ADD_FALSE(v, h) ADD(v, h, FALSE)

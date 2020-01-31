@@ -43,26 +43,26 @@
 
 #pragma once
 
+#include "../cryptonote_config.h"
 #include "inttypes.h"
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <thread>
-#include <unordered_map>
-#include <map>
-#include <sstream>
-#include <vector>
-#include <atomic>
-#include "thdq.hpp"
 #include "string.hpp"
+#include "thdq.hpp"
+#include <atomic>
+#include <boost/algorithm/string.hpp>
+#include <ctime>
 #include <fmt/format.h>
 #include <fmt/time.h>
-#include <boost/algorithm/string.hpp>
-#include "../cryptonote_config.h"
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <thread>
+#include <unordered_map>
+#include <vector>
 
 #if defined(WIN32)
-#include <windows.h>
 #include <io.h>
+#include <windows.h>
 #else
 #include <unistd.h>
 #endif
@@ -72,9 +72,9 @@
 // strigstream ss; ss << a << b << c; return ss.str();
 class stream_writer
 {
-public:
-	template<typename T, typename... Args>
-	static inline std::string write(const T& v, Args... args)
+  public:
+	template <typename T, typename... Args>
+	static inline std::string write(const T &v, Args... args)
 	{
 		std::stringstream ss;
 		ss << v;
@@ -83,16 +83,16 @@ public:
 	}
 
 	//Optimise trivial strings
-	static inline std::string write(const char* arg)
+	static inline std::string write(const char *arg)
 	{
 		return arg;
 	}
 
-private:
-	static inline void do_op(std::stringstream& ss) { }
+  private:
+	static inline void do_op(std::stringstream &ss) {}
 
-	template<typename T, typename... Args>
-	static inline void do_op(std::stringstream& ss, const T& v, Args... args)
+	template <typename T, typename... Args>
+	static inline void do_op(std::stringstream &ss, const T &v, Args... args)
 	{
 		ss << v;
 		do_op(ss, args...);
@@ -101,7 +101,7 @@ private:
 
 class gulps
 {
-public:
+  public:
 	enum output_mode : uint32_t
 	{
 		TEXT_ONLY,
@@ -120,18 +120,26 @@ public:
 		LEVEL_TRACE2
 	};
 
-	static inline const char* level_to_str(level lvl)
+	static inline const char *level_to_str(level lvl)
 	{
 		switch(lvl)
 		{
-		case LEVEL_PRINT: return "PRINT";
-		case LEVEL_ERROR: return "ERROR";
-		case LEVEL_WARN: return "WARN";
-		case LEVEL_INFO: return "INFO";
-		case LEVEL_DEBUG: return "DEBUG";
-		case LEVEL_TRACE: return "TRACE";
-		case LEVEL_TRACE2: return "TRACE2";
-		default: return "UNKNOWN";
+		case LEVEL_PRINT:
+			return "PRINT";
+		case LEVEL_ERROR:
+			return "ERROR";
+		case LEVEL_WARN:
+			return "WARN";
+		case LEVEL_INFO:
+			return "INFO";
+		case LEVEL_DEBUG:
+			return "DEBUG";
+		case LEVEL_TRACE:
+			return "TRACE";
+		case LEVEL_TRACE2:
+			return "TRACE2";
+		default:
+			return "UNKNOWN";
 		}
 	}
 
@@ -149,34 +157,41 @@ public:
 		OUT_LOG_2
 	};
 
-	static inline const char* out_to_str(output out)
+	static inline const char *out_to_str(output out)
 	{
 		switch(out)
 		{
-		case OUT_USER_0: return "OUTPUT0";
-		case OUT_USER_1: return "OUTPUT1";
-		case OUT_USER_2: return "OUTPUT2";
-		case OUT_LOG_0: return "LOG0";
-		case OUT_LOG_1: return "LOG1";
-		case OUT_LOG_2: return "LOG2";
-		default: return "UNKNOWN";
+		case OUT_USER_0:
+			return "OUTPUT0";
+		case OUT_USER_1:
+			return "OUTPUT1";
+		case OUT_USER_2:
+			return "OUTPUT2";
+		case OUT_LOG_0:
+			return "LOG0";
+		case OUT_LOG_1:
+			return "LOG1";
+		case OUT_LOG_2:
+			return "LOG2";
+		default:
+			return "UNKNOWN";
 		}
 	}
 
 	enum color : uint32_t
 	{
 		COLOR_WHITE = 1,
-		COLOR_RED   = 2,
+		COLOR_RED = 2,
 		COLOR_GREEN = 3,
-		COLOR_BLUE  = 4,
-		COLOR_CYAN  = 5,
+		COLOR_BLUE = 4,
+		COLOR_CYAN = 5,
 		COLOR_MAGENTA = 6,
 		COLOR_YELLOW = 7,
 		COLOR_BOLD_WHITE = 9,
-		COLOR_BOLD_RED   = 10,
+		COLOR_BOLD_RED = 10,
 		COLOR_BOLD_GREEN = 11,
-		COLOR_BOLD_BLUE  = 12,
-		COLOR_BOLD_CYAN  = 13,
+		COLOR_BOLD_BLUE = 12,
+		COLOR_BOLD_CYAN = 13,
 		COLOR_BOLD_MAGENTA = 14,
 		COLOR_BOLD_YELLOW = 15,
 		COLOR_MASK = 7, // Masks color from brightness
@@ -186,7 +201,7 @@ public:
 	//Object handling a single long message
 	class message
 	{
-	public:
+	  public:
 		std::time_t time;
 		level lvl;
 		output out;
@@ -200,11 +215,11 @@ public:
 		bool printed = false;
 		bool logged = false;
 
-		message(output out, level lvl, const char* major, const char* minor, const char* path, int64_t line, std::string&& txt, color clr = COLOR_WHITE, bool add_newline = true) :
+		message(output out, level lvl, const char *major, const char *minor, const char *path, int64_t line, std::string &&txt, color clr = COLOR_WHITE, bool add_newline = true) :
 			time(std::time(nullptr)), lvl(lvl), out(out), cat_major(major), cat_minor(minor), src_path(path), src_line(line),
 			thread_id(gulps::inst().get_thread_tag()), text(std::move(txt)), clr(clr)
 		{
-			const std::string& pre = gulps::inst().get_path_prefix();
+			const std::string &pre = gulps::inst().get_path_prefix();
 
 			if(src_path.find(pre) == 0)
 				src_path.erase(0, pre.size());
@@ -213,7 +228,7 @@ public:
 				text += '\n';
 		}
 
-		const std::string& print_message(std::string& header, output_mode mode = TIMESTAMP_ONLY) const
+		const std::string &print_message(std::string &header, output_mode mode = TIMESTAMP_ONLY) const
 		{
 			switch(mode)
 			{
@@ -234,19 +249,19 @@ public:
 			return text;
 		}
 
-		message(message&& ) = default;
-		message& operator=(message&& ) = default;
-		message(const message& ) = default;
-		message& operator=(const message& ) = default;
+		message(message &&) = default;
+		message &operator=(message &&) = default;
+		message(const message &) = default;
+		message &operator=(const message &) = default;
 	};
 
 	// Function pointers are mariginally more efficient than functors here
 	// NB Lambdas must not capture to be convertible to a function ptr
-	typedef bool (*filter_fun)(const message&, bool printed, bool logged);
+	typedef bool (*filter_fun)(const message &, bool printed, bool logged);
 
 	class gulps_output
 	{
-	protected:
+	  protected:
 		enum output_stream
 		{
 			STREAM_PRINT,
@@ -254,14 +269,14 @@ public:
 			STREAM_NONE
 		};
 
-	public:
+	  public:
 		gulps_output() = default;
 		virtual ~gulps_output() = default;
-		virtual void log_message(const message& msg) = 0;
+		virtual void log_message(const message &msg) = 0;
 		virtual output_stream get_stream() = 0;
 
 		// This is filtered call
-		bool log(const message& msg, bool& printed, bool& logged)
+		bool log(const message &msg, bool &printed, bool &logged)
 		{
 			bool result = false;
 			for(filter_fun filter : filters)
@@ -295,35 +310,36 @@ public:
 
 		void add_filter(filter_fun filter) { filters.push_back(filter); };
 
-	private:
-		gulps_output(gulps_output&& ) = delete;
-		gulps_output& operator=(gulps_output&& ) = delete;
-		gulps_output(gulps_output& ) = delete;
-		gulps_output& operator=(gulps_output& ) = delete;
+	  private:
+		gulps_output(gulps_output &&) = delete;
+		gulps_output &operator=(gulps_output &&) = delete;
+		gulps_output(gulps_output &) = delete;
+		gulps_output &operator=(gulps_output &) = delete;
 
 		std::vector<filter_fun> filters;
 	};
 
 	class gulps_print_output : public gulps_output
 	{
-	public:
-		gulps_print_output(color hdr_color, output_mode mode = TIMESTAMP_ONLY) : hdr_color(hdr_color), mode(mode) {}
+	  public:
+		gulps_print_output(color hdr_color, output_mode mode = TIMESTAMP_ONLY) :
+			hdr_color(hdr_color), mode(mode) {}
 
 		output_stream get_stream() override { return STREAM_PRINT; }
 
-		void log_message(const message& msg) override
+		void log_message(const message &msg) override
 		{
 			std::string header;
-			const std::string& text = msg.print_message(header, mode);
+			const std::string &text = msg.print_message(header, mode);
 			if(mode != TEXT_ONLY)
 				print(header, hdr_color);
 			print(text, msg.clr);
 		}
 
-	private:
+	  private:
 		output_mode mode;
 
-		static void print(const std::string& txt, color clr)
+		static void print(const std::string &txt, color clr)
 		{
 			set_console_color(clr);
 			std::fputs(txt.c_str(), stdout);
@@ -429,37 +445,38 @@ public:
 #endif
 		}
 
-	protected:
+	  protected:
 		color hdr_color;
 	};
 
 	//Store messages to, for example, send them over the network
 	class gulps_mem_output : public gulps_output
 	{
-	public:
+	  public:
 		gulps_mem_output() {}
 
 		output_stream get_stream() override { return STREAM_NONE; }
 
-		void log_message(const message& msg) override
+		void log_message(const message &msg) override
 		{
 			log.push_back(msg);
 		}
 
-		const std::vector<message>& get_log()
+		const std::vector<message> &get_log()
 		{
 			return log;
 		}
 
-	protected:
+	  protected:
 		std::vector<message> log;
 	};
 
 	//Class handling synchronous file logging.
 	class gulps_file_output : public gulps_output
 	{
-	public:
-		gulps_file_output(const std::string& name) : fname(name)
+	  public:
+		gulps_file_output(const std::string &name) :
+			fname(name)
 		{
 			output_file.exceptions(std::ofstream::failbit | std::ofstream::badbit);
 			output_file.open(fname, std::ios::out | std::ios::app | std::ios::binary); // may throw
@@ -467,7 +484,7 @@ public:
 
 		output_stream get_stream() override { return STREAM_FILE; }
 
-		void log_message(const message& msg) override
+		void log_message(const message &msg) override
 		{
 			write_output(msg);
 		}
@@ -478,8 +495,8 @@ public:
 			output_file.close();
 		}
 
-	protected:
-		inline void write_output(const message& msg)
+	  protected:
+		inline void write_output(const message &msg)
 		{
 			try
 			{
@@ -488,7 +505,7 @@ public:
 				output_file << header << text;
 				output_file.flush();
 			}
-			catch(const std::exception& ex)
+			catch(const std::exception &ex)
 			{
 				std::cout << "!!! PANIC, error writing to a log file! Your disk is probably full! " << ex.what() << std::endl;
 			}
@@ -501,13 +518,13 @@ public:
 	//Class handling async logging. Async logging is thread-safe and preserves temporal order
 	class gulps_async_file_output : public gulps_file_output
 	{
-	public:
-		gulps_async_file_output(const std::string& name) :
+	  public:
+		gulps_async_file_output(const std::string &name) :
 			gulps_file_output(name), thd(&gulps_async_file_output::output_main, this)
 		{
 		}
 
-		void log_message(const message& msg) override
+		void log_message(const message &msg) override
 		{
 			msg_q.push(msg);
 		}
@@ -532,8 +549,8 @@ public:
 			}
 		}
 
-	private:
-		inline void write_output(const message& msg)
+	  private:
+		inline void write_output(const message &msg)
 		{
 			try
 			{
@@ -542,7 +559,7 @@ public:
 				output_file << header << text;
 				output_file.flush();
 			}
-			catch(const std::exception& ex)
+			catch(const std::exception &ex)
 			{
 				std::cerr << "!!! PANIC, error writing to a log file! Your disk is probably full! " << ex.what() << std::endl;
 			}
@@ -551,18 +568,18 @@ public:
 		thdq<message> msg_q;
 		std::thread thd;
 	};
-	inline const std::string& get_thread_tag() { return thread_tag(); }
-	inline void set_thread_tag(const std::string& tag) { thread_tag() = tag; }
+	inline const std::string &get_thread_tag() { return thread_tag(); }
+	inline void set_thread_tag(const std::string &tag) { thread_tag() = tag; }
 
-	inline static gulps& inst()
+	inline static gulps &inst()
 	{
 		static gulps inst;
 		return inst;
 	}
 
-	inline static const gulps& cinst()
+	inline static const gulps &cinst()
 	{
-		static const gulps& inst = gulps::inst();
+		static const gulps &inst = gulps::inst();
 		return inst;
 	}
 
@@ -580,22 +597,22 @@ public:
 		outputs.erase(handle);
 	}
 
-	void log(message&& in_msg)
+	void log(message &&in_msg)
 	{
 		std::unique_lock<std::mutex> lck(gulps_global);
 		message msg = std::move(in_msg);
 		bool printed = false, logged = false;
 
-		for(const auto& it : outputs)
+		for(const auto &it : outputs)
 			it.second->log(msg, printed, logged);
 	}
 
-	inline const std::string& get_path_prefix()
+	inline const std::string &get_path_prefix()
 	{
 		return path_prefix;
 	}
 
-private:
+  private:
 	gulps()
 	{
 		path_prefix = __FILE__;
@@ -608,7 +625,7 @@ private:
 			assert(false);
 	}
 
-	inline std::string& thread_tag()
+	inline std::string &thread_tag()
 	{
 		static thread_local std::string thread_tag;
 		return thread_tag;
@@ -622,15 +639,16 @@ private:
 
 class gulps_log_level
 {
-private:
+  private:
 	struct cat_pair
 	{
-		cat_pair(std::string&& cat, gulps::level lvl) : cat(std::move(cat)), level(lvl) {}
+		cat_pair(std::string &&cat, gulps::level lvl) :
+			cat(std::move(cat)), level(lvl) {}
 
-		cat_pair(cat_pair&& ) = default;
-		cat_pair& operator=(cat_pair&& ) = default;
-		cat_pair(const cat_pair& ) = default;
-		cat_pair& operator=(const cat_pair& ) = default;
+		cat_pair(cat_pair &&) = default;
+		cat_pair &operator=(cat_pair &&) = default;
+		cat_pair(const cat_pair &) = default;
+		cat_pair &operator=(const cat_pair &) = default;
 
 		std::string cat;
 		gulps::level level;
@@ -642,20 +660,20 @@ private:
 	std::string current_cat_str;
 	bool active = false;
 
-public:
+  public:
 	gulps_log_level() {}
 
-	static const char* get_default_log_level()
+	static const char *get_default_log_level()
 	{
 		return "*:WARN";
 	}
 
-	const std::string& get_current_cat_str() const
+	const std::string &get_current_cat_str() const
 	{
 		return current_cat_str;
 	}
 
-	bool parse_cat_string(const char* str)
+	bool parse_cat_string(const char *str)
 	{
 		std::unique_lock<std::mutex> lck(cat_mutex);
 
@@ -670,23 +688,21 @@ public:
 			{"INFO", gulps::LEVEL_INFO},
 			{"DEBUG", gulps::LEVEL_DEBUG},
 			{"TRACE", gulps::LEVEL_TRACE},
-			{"TRACE2", gulps::LEVEL_TRACE2}
-		};
+			{"TRACE2", gulps::LEVEL_TRACE2}};
 
 		static const std::unordered_map<std::string, std::string> aliased_levels = {
 			{"0", "*:PRINT"},
 			{"1", "*:WARN"},
 			{"2", "*:INFO"},
 			{"3", "*:DEBUG"},
-			{"4", "*:TRACE2"}
-		};
+			{"4", "*:TRACE2"}};
 
 		std::vector<std::string> vcats, vcat;
 		boost::split(vcats, str, boost::is_any_of(","), boost::token_compress_on);
 
 		std::vector<cat_pair> log_cats_tmp;
 
-		for(const std::string& scat : vcats)
+		for(const std::string &scat : vcats)
 		{
 			vcat.clear();
 
@@ -718,11 +734,11 @@ public:
 
 	bool is_active() const { return active; }
 
-	bool match_msg(const gulps::message& msg)
+	bool match_msg(const gulps::message &msg)
 	{
 		std::unique_lock<std::mutex> lck(cat_mutex);
 
-		for(const cat_pair& p : log_cats)
+		for(const cat_pair &p : log_cats)
 		{
 			if(msg.cat_minor == p.cat || msg.cat_major == p.cat)
 				return msg.lvl <= p.level;
@@ -734,20 +750,21 @@ public:
 
 namespace debug
 {
-	inline bool get_set_enable_assert(bool set = false, bool v = false)
-	{
-		static bool e = true;
-		if(set)
-			e = v;
-		return e;
-	};
+inline bool get_set_enable_assert(bool set = false, bool v = false)
+{
+	static bool e = true;
+	if(set)
+		e = v;
+	return e;
 };
-
+}; // namespace debug
 
 #define GULPS_CSTR_TYPE(...) \
-  union { static constexpr auto c_str() -> decltype(__VA_ARGS__) { return __VA_ARGS__; } }
+	union { \
+		static constexpr auto c_str() -> decltype(__VA_ARGS__) { return __VA_ARGS__; } \
+	}
 #define GULPS_CSTR(...) \
-  [] { using Cat = GULPS_CSTR_TYPE(__VA_ARGS__); return Cat{}.c_str(); }()
+	[] { using Cat = GULPS_CSTR_TYPE(__VA_ARGS__); return Cat{}.c_str(); }()
 
 #define GULPS_CAT_MAJOR(...) using gulps_major_cat = GULPS_CSTR_TYPE(__VA_ARGS__)
 #define GULPS_CAT_MINOR(...) using gulps_minor_cat = GULPS_CSTR_TYPE(__VA_ARGS__)
@@ -757,16 +774,15 @@ GULPS_CAT_MINOR("");
 #define GULPS_OUTPUT(out, lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, maj, min, __FILE__, __LINE__, stream_writer::write(__VA_ARGS__), clr))
 #define GULPS_OUTPUTF(out, lvl, maj, min, clr, ...) gulps::inst().log(gulps::message(out, lvl, maj, min, __FILE__, __LINE__, fmt::format(__VA_ARGS__), clr))
 
-#define GULPS_PRINT_NOLF(...) gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), "input_line",  \
-		__FILE__, __LINE__, stream_writer::write(__VA_ARGS__), gulps::COLOR_WHITE, false));
+#define GULPS_PRINT_NOLF(...) gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), "input_line", \
+	__FILE__, __LINE__, stream_writer::write(__VA_ARGS__), gulps::COLOR_WHITE, false));
 
 #define GULPS_PRINT(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_PRINT_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
+#define GULPS_PRINT_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
 #define GULPS_ERROR(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_RED, __VA_ARGS__)
 #define GULPS_WARN(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
 #define GULPS_INFO(...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_INFO_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
-
+#define GULPS_INFO_CLR(clr, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
 
 #define GULPS_DEBUG_PRINT(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPS_LOG_ERROR(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
@@ -777,12 +793,11 @@ GULPS_CAT_MINOR("");
 #define GULPS_LOG_L3(...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
 
 #define GULPSF_PRINT(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPSF_PRINT_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
-#define GULPSF_ERROR(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_RED, __VA_ARGS__)
+#define GULPSF_PRINT_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
+#define GULPSF_ERROR(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_RED, __VA_ARGS__)
 #define GULPSF_WARN(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
 #define GULPSF_INFO(...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPSF_INFO_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO,  gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
-
+#define GULPSF_INFO_CLR(clr, ...) GULPS_OUTPUTF(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), clr, __VA_ARGS__)
 
 #define GULPSF_DEBUG_PRINT(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
 #define GULPSF_LOG_ERROR(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
@@ -793,7 +808,7 @@ GULPS_CAT_MINOR("");
 #define GULPSF_LOG_L3(...) GULPS_OUTPUTF(gulps::OUT_LOG_0, gulps::LEVEL_TRACE2, gulps_major_cat::c_str(), gulps_minor_cat::c_str(), gulps::COLOR_WHITE, __VA_ARGS__)
 
 #define GULPS_CAT_PRINT(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT_PRINT_CLR(clr, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  gulps_major_cat::c_str(), min, clr, __VA_ARGS__)
+#define GULPS_CAT_PRINT_CLR(clr, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), min, clr, __VA_ARGS__)
 #define GULPS_CAT_ERROR(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, gulps_major_cat::c_str(), min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
 #define GULPS_CAT_WARN(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, gulps_major_cat::c_str(), min, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
 #define GULPS_CAT_INFO(min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
@@ -816,9 +831,8 @@ GULPS_CAT_MINOR("");
 
 #define GULPSF_CAT_LOG_L1(min, ...) GULPS_OUTPUT(gulps::OUT_LOG_0, gulps::LEVEL_DEBUG, gulps_major_cat::c_str(), min, gulps::COLOR_WHITE, __VA_ARGS__)
 
-
 #define GULPS_CAT2_PRINT(maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
-#define GULPS_CAT2_PRINT_CLR(clr, maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT,  maj, min, clr, __VA_ARGS__)
+#define GULPS_CAT2_PRINT_CLR(clr, maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_PRINT, maj, min, clr, __VA_ARGS__)
 #define GULPS_CAT2_ERROR(maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_ERROR, maj, min, gulps::COLOR_BOLD_RED, __VA_ARGS__)
 #define GULPS_CAT2_WARN(maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, maj, min, gulps::COLOR_BOLD_YELLOW, __VA_ARGS__)
 #define GULPS_CAT2_INFO(maj, min, ...) GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_INFO, maj, min, gulps::COLOR_WHITE, __VA_ARGS__)
@@ -859,12 +873,12 @@ GULPS_CAT_MINOR("");
 #ifndef GULPS_LOCAL_ASSERT
 #include <assert.h>
 #if(defined _MSC_VER)
-#define GULPS_LOCAL_ASSERT(expr)                       \
-	{                                            \
+#define GULPS_LOCAL_ASSERT(expr) \
+	{ \
 		if(debug::get_set_enable_assert()) \
-		{                                        \
-			_ASSERTE(expr);                      \
-		}                                        \
+		{ \
+			_ASSERTE(expr); \
+		} \
 	}
 #else
 #define GULPS_LOCAL_ASSERT(expr)
@@ -872,20 +886,20 @@ GULPS_CAT_MINOR("");
 #endif
 
 #define GULPS_TRY_ENTRY() \
-	try             \
+	try \
 	{
-#define GULPS_CATCH_ENTRY(location, return_val)                                          \
-	}                                                                              \
-	catch(const std::exception &ex)                                                \
-	{                                                                              \
-		(void)(ex);                                                                \
-		GULPS_LOG_ERROR("Exception at [", location, "], what=", ex.what());        \
-		return return_val;                                                         \
-	}                                                                              \
-	catch(...)                                                                     \
-	{                                                                              \
+#define GULPS_CATCH_ENTRY(location, return_val) \
+	} \
+	catch(const std::exception &ex) \
+	{ \
+		(void)(ex); \
+		GULPS_LOG_ERROR("Exception at [", location, "], what=", ex.what()); \
+		return return_val; \
+	} \
+	catch(...) \
+	{ \
 		GULPS_LOG_ERROR("Exception at [", location, "], generic exception \"...\""); \
-		return return_val;                                                         \
+		return return_val; \
 	}
 
 #define GULPS_CATCH_ENTRY_L0(lacation, return_val) GULPS_CATCH_ENTRY(lacation, return_val)
@@ -894,72 +908,73 @@ GULPS_CAT_MINOR("");
 #define GULPS_CATCH_ENTRY_L3(lacation, return_val) GULPS_CATCH_ENTRY(lacation, return_val)
 #define GULPS_CATCH_ENTRY_L4(lacation, return_val) GULPS_CATCH_ENTRY(lacation, return_val)
 
-#define GULPS_ASSERT_MES_AND_THROW(...)       \
-{                                       \
-	std::string str;	\
-	str = stream_writer::write(__VA_ARGS__);	\
-	GULPS_LOG_ERROR(__VA_ARGS__);                 \
-	throw std::runtime_error(str); \
-}
+#define GULPS_ASSERT_MES_AND_THROW(...) \
+	{ \
+		std::string str; \
+		str = stream_writer::write(__VA_ARGS__); \
+		GULPS_LOG_ERROR(__VA_ARGS__); \
+		throw std::runtime_error(str); \
+	}
 
 #define GULPS_CHECK_AND_ASSERT_THROW_MES(expr, ...) \
-do                                            \
-{                                             \
-	if(!(expr))                               \
-		GULPS_ASSERT_MES_AND_THROW(__VA_ARGS__);        \
-} while(0)
+	do \
+	{ \
+		if(!(expr)) \
+			GULPS_ASSERT_MES_AND_THROW(__VA_ARGS__); \
+	} while(0)
 
 #define GULPS_CHECK_AND_ASSERT(expr, fail_ret_val) \
-do                                       \
-{                                        \
-	if(!(expr))                          \
-	{                                    \
-		GULPS_LOCAL_ASSERT(expr);              \
-		return fail_ret_val;             \
-	};                                   \
-} while(0)
+	do \
+	{ \
+		if(!(expr)) \
+		{ \
+			GULPS_LOCAL_ASSERT(expr); \
+			return fail_ret_val; \
+		}; \
+	} while(0)
 
 #define GULPS_CHECK_AND_ASSERT_MES(expr, fail_ret_val, ...) \
-do                                                    \
-{                                                     \
-	if(!(expr))                                       \
-	{                                                 \
-		GULPS_LOG_ERROR(__VA_ARGS__);                           \
-		return fail_ret_val;                          \
-	};                                                \
-} while(0)
+	do \
+	{ \
+		if(!(expr)) \
+		{ \
+			GULPS_LOG_ERROR(__VA_ARGS__); \
+			return fail_ret_val; \
+		}; \
+	} while(0)
 
 #define GULPS_CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, l, ...) \
-do                                                            \
-{                                                             \
-	if(!(expr))                                               \
-	{                                                         \
-		GULPS_LOG_L##l(__VA_ARGS__); /*LOCAL_ASSERT(expr);*/      \
-		return fail_ret_val;                                  \
-	};                                                        \
-} while(0)
+	do \
+	{ \
+		if(!(expr)) \
+		{ \
+			GULPS_LOG_L##l(__VA_ARGS__); /*LOCAL_ASSERT(expr);*/ \
+			return fail_ret_val; \
+		}; \
+	} while(0)
 
 #define GULPS_CHECK_AND_NO_ASSERT_MES(expr, fail_ret_val, ...) GULPS_CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, 0, __VA_ARGS__)
 
-#define GULPS_CHECK_AND_NO_ASSERT_MES_L1(expr, fail_ret_val, ... ) GULPS_CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, 1, __VA_ARGS__)
+#define GULPS_CHECK_AND_NO_ASSERT_MES_L1(expr, fail_ret_val, ...) GULPS_CHECK_AND_NO_ASSERT_MES_L(expr, fail_ret_val, 1, __VA_ARGS__)
 
 #define GULPS_CHECK_AND_ASSERT_MES_NO_RET(expr, ...) \
-do                                             \
-{                                              \
-	if(!(expr))                                \
-	{                                          \
-		GULPS_LOG_ERROR(__VA_ARGS__);                    \
-		return;                                \
-	};                                         \
-} while(0)
+	do \
+	{ \
+		if(!(expr)) \
+		{ \
+			GULPS_LOG_ERROR(__VA_ARGS__); \
+			return; \
+		}; \
+	} while(0)
 
 #define GULPS_CHECK_AND_ASSERT_MES2(expr, ...)) \
-	do                                       \
-	{                                        \
-		if(!(expr))                          \
-		{                                    \
-			GULPS_LOG_ERROR(__VA_ARGS__);              \
-		};                                   \
-	} while(0)
+	do \
+	{ \
+		if(!(expr)) \
+		{ \
+			GULPS_LOG_ERROR(__VA_ARGS__); \
+		}; \
+	} \
+	while(0)
 
 #define GULPS_CHECK_AND_ASSERT_MES_CONTEXT(condition, return_val, ...) GULPS_CHECK_AND_ASSERT_MES(condition, return_val, "[", epee::net_utils::print_connection_context_short(context), "] ", __VA_ARGS__)

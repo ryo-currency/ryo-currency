@@ -153,7 +153,8 @@ bool InDeathTestChild()
 } // namespace internal
 
 // ExitedWithCode constructor.
-ExitedWithCode::ExitedWithCode(int exit_code) : exit_code_(exit_code)
+ExitedWithCode::ExitedWithCode(int exit_code) :
+	exit_code_(exit_code)
 {
 }
 
@@ -173,7 +174,8 @@ bool ExitedWithCode::operator()(int exit_status) const
 
 #if !GTEST_OS_WINDOWS
 // KilledBySignal constructor.
-KilledBySignal::KilledBySignal(int signum) : signum_(signum)
+KilledBySignal::KilledBySignal(int signum) :
+	signum_(signum)
 {
 }
 
@@ -308,14 +310,14 @@ void DeathTestAbort(const std::string &message)
 
 // A replacement for CHECK that calls DeathTestAbort if the assertion
 // fails.
-#define GTEST_DEATH_TEST_CHECK_(expression)                                                                                                            \
-	do                                                                                                                                                 \
-	{                                                                                                                                                  \
-		if(!::testing::internal::IsTrue(expression))                                                                                                   \
-		{                                                                                                                                              \
-			DeathTestAbort(                                                                                                                            \
+#define GTEST_DEATH_TEST_CHECK_(expression) \
+	do \
+	{ \
+		if(!::testing::internal::IsTrue(expression)) \
+		{ \
+			DeathTestAbort( \
 				::std::string("CHECK failed: File ") + __FILE__ + ", line " + ::testing::internal::StreamableToString(__LINE__) + ": " + #expression); \
-		}                                                                                                                                              \
+		} \
 	} while(::testing::internal::AlwaysFalse())
 
 // This macro is similar to GTEST_DEATH_TEST_CHECK_, but it is meant for
@@ -325,19 +327,19 @@ void DeathTestAbort(const std::string &message)
 // evaluates the expression as long as it evaluates to -1 and sets
 // errno to EINTR.  If the expression evaluates to -1 but errno is
 // something other than EINTR, DeathTestAbort is called.
-#define GTEST_DEATH_TEST_CHECK_SYSCALL_(expression)                                                                                                               \
-	do                                                                                                                                                            \
-	{                                                                                                                                                             \
-		int gtest_retval;                                                                                                                                         \
-		do                                                                                                                                                        \
-		{                                                                                                                                                         \
-			gtest_retval = (expression);                                                                                                                          \
-		} while(gtest_retval == -1 && errno == EINTR);                                                                                                            \
-		if(gtest_retval == -1)                                                                                                                                    \
-		{                                                                                                                                                         \
-			DeathTestAbort(                                                                                                                                       \
+#define GTEST_DEATH_TEST_CHECK_SYSCALL_(expression) \
+	do \
+	{ \
+		int gtest_retval; \
+		do \
+		{ \
+			gtest_retval = (expression); \
+		} while(gtest_retval == -1 && errno == EINTR); \
+		if(gtest_retval == -1) \
+		{ \
+			DeathTestAbort( \
 				::std::string("CHECK failed: File ") + __FILE__ + ", line " + ::testing::internal::StreamableToString(__LINE__) + ": " + #expression + " != -1"); \
-		}                                                                                                                                                         \
+		} \
 	} while(::testing::internal::AlwaysFalse())
 
 // Returns the message describing the last system error in errno.
@@ -392,7 +394,7 @@ DeathTest::DeathTest()
 // Creates and returns a death test by dispatching to the current
 // death test factory.
 bool DeathTest::Create(const char *statement, const RE *regex,
-					   const char *file, int line, DeathTest **test)
+	const char *file, int line, DeathTest **test)
 {
 	return GetUnitTestImpl()->death_test_factory()->Create(
 		statement, regex, file, line, test);
@@ -414,14 +416,14 @@ std::string DeathTest::last_death_test_message_;
 class DeathTestImpl : public DeathTest
 {
   protected:
-	DeathTestImpl(const char *a_statement, const RE *a_regex)
-		: statement_(a_statement),
-		  regex_(a_regex),
-		  spawned_(false),
-		  status_(-1),
-		  outcome_(IN_PROGRESS),
-		  read_fd_(-1),
-		  write_fd_(-1) {}
+	DeathTestImpl(const char *a_statement, const RE *a_regex) :
+		statement_(a_statement),
+		regex_(a_regex),
+		spawned_(false),
+		status_(-1),
+		outcome_(IN_PROGRESS),
+		read_fd_(-1),
+		write_fd_(-1) {}
 
 	// read_fd_ is expected to be closed and cleared by a derived class.
 	~DeathTestImpl() { GTEST_DEATH_TEST_CHECK_(read_fd_ == -1); }
@@ -686,10 +688,11 @@ class WindowsDeathTest : public DeathTestImpl
 {
   public:
 	WindowsDeathTest(const char *a_statement,
-					 const RE *a_regex,
-					 const char *file,
-					 int line)
-		: DeathTestImpl(a_statement, a_regex), file_(file), line_(line) {}
+		const RE *a_regex,
+		const char *file,
+		int line) :
+		DeathTestImpl(a_statement, a_regex),
+		file_(file), line_(line) {}
 
 	// All of these virtual functions are inherited from DeathTest.
 	virtual int Wait();
@@ -723,9 +726,9 @@ int WindowsDeathTest::Wait()
 	// of the pipe or it dies.
 	const HANDLE wait_handles[2] = {child_handle_.Get(), event_handle_.Get()};
 	switch(::WaitForMultipleObjects(2,
-									wait_handles,
-									FALSE, // Waits for any of the handles.
-									INFINITE))
+		wait_handles,
+		FALSE, // Waits for any of the handles.
+		INFINITE))
 	{
 	case WAIT_OBJECT_0:
 	case WAIT_OBJECT_0 + 1:
@@ -746,8 +749,7 @@ int WindowsDeathTest::Wait()
 	// whether previous calls to WaitForMultipleObjects synchronized on this
 	// handle or not.
 	GTEST_DEATH_TEST_CHECK_(
-		WAIT_OBJECT_0 == ::WaitForSingleObject(child_handle_.Get(),
-											   INFINITE));
+		WAIT_OBJECT_0 == ::WaitForSingleObject(child_handle_.Get(), INFINITE));
 	DWORD status_code;
 	GTEST_DEATH_TEST_CHECK_(
 		::GetExitCodeProcess(child_handle_.Get(), &status_code) != FALSE);
@@ -784,15 +786,15 @@ DeathTest::TestRole WindowsDeathTest::AssumeRole()
 	HANDLE read_handle, write_handle;
 	GTEST_DEATH_TEST_CHECK_(
 		::CreatePipe(&read_handle, &write_handle, &handles_are_inheritable,
-					 0) // Default buffer size.
+			0) // Default buffer size.
 		!= FALSE);
 	set_read_fd(::_open_osfhandle(reinterpret_cast<intptr_t>(read_handle),
-								  O_RDONLY));
+		O_RDONLY));
 	write_handle_.Reset(write_handle);
 	event_handle_.Reset(::CreateEvent(
 		&handles_are_inheritable,
-		TRUE,   // The event will automatically reset to non-signaled state.
-		FALSE,  // The initial state is non-signalled.
+		TRUE, // The event will automatically reset to non-signaled state.
+		FALSE, // The initial state is non-signalled.
 		NULL)); // The even is unnamed.
 	GTEST_DEATH_TEST_CHECK_(event_handle_.Get() != NULL);
 	const std::string filter_flag =
@@ -811,9 +813,7 @@ DeathTest::TestRole WindowsDeathTest::AssumeRole()
 
 	char executable_path[_MAX_PATH + 1]; // NOLINT
 	GTEST_DEATH_TEST_CHECK_(
-		_MAX_PATH + 1 != ::GetModuleFileNameA(NULL,
-											  executable_path,
-											  _MAX_PATH));
+		_MAX_PATH + 1 != ::GetModuleFileNameA(NULL, executable_path, _MAX_PATH));
 
 	std::string command_line =
 		std::string(::GetCommandLineA()) + " " + filter_flag + " \"" +
@@ -840,7 +840,7 @@ DeathTest::TestRole WindowsDeathTest::AssumeRole()
 								NULL, // Retuned process handle is not inheritable.
 								NULL, // Retuned thread handle is not inheritable.
 								TRUE, // Child inherits all inheritable handles (for write_handle_).
-								0x0,  // Default creation flags.
+								0x0, // Default creation flags.
 								NULL, // Inherit the parent's environment.
 								UnitTest::GetInstance()->original_working_dir(),
 								&startup_info,
@@ -872,9 +872,9 @@ class ForkingDeathTest : public DeathTestImpl
 };
 
 // Constructs a ForkingDeathTest.
-ForkingDeathTest::ForkingDeathTest(const char *a_statement, const RE *a_regex)
-	: DeathTestImpl(a_statement, a_regex),
-	  child_pid_(-1) {}
+ForkingDeathTest::ForkingDeathTest(const char *a_statement, const RE *a_regex) :
+	DeathTestImpl(a_statement, a_regex),
+	child_pid_(-1) {}
 
 // Waits for the child in a death test to exit, returning its exit
 // status, or 0 if no child process exists.  As a side effect, sets the
@@ -897,7 +897,8 @@ int ForkingDeathTest::Wait()
 class NoExecDeathTest : public ForkingDeathTest
 {
   public:
-	NoExecDeathTest(const char *a_statement, const RE *a_regex) : ForkingDeathTest(a_statement, a_regex) {}
+	NoExecDeathTest(const char *a_statement, const RE *a_regex) :
+		ForkingDeathTest(a_statement, a_regex) {}
 	virtual TestRole AssumeRole();
 };
 
@@ -958,7 +959,9 @@ class ExecDeathTest : public ForkingDeathTest
 {
   public:
 	ExecDeathTest(const char *a_statement, const RE *a_regex,
-				  const char *file, int line) : ForkingDeathTest(a_statement, a_regex), file_(file), line_(line) {}
+		const char *file, int line) :
+		ForkingDeathTest(a_statement, a_regex),
+		file_(file), line_(line) {}
 	virtual TestRole AssumeRole();
 
   private:
@@ -1025,7 +1028,7 @@ class Arguments
 struct ExecDeathTestArgs
 {
 	char *const *argv; // Command-line arguments for the child's call to exec
-	int close_fd;	  // File descriptor to close; the read end of a pipe
+	int close_fd; // File descriptor to close; the read end of a pipe
 };
 
 #if GTEST_OS_MAC
@@ -1061,7 +1064,7 @@ static int ExecDeathTestChildMain(void *child_arg)
 	if(chdir(original_dir) != 0)
 	{
 		DeathTestAbort(std::string("chdir(\"") + original_dir + "\") failed: " +
-					   GetLastErrnoDescription());
+			GetLastErrnoDescription());
 		return EXIT_FAILURE;
 	}
 
@@ -1072,8 +1075,8 @@ static int ExecDeathTestChildMain(void *child_arg)
 	// one path separator.
 	execve(args->argv[0], args->argv, GetEnviron());
 	DeathTestAbort(std::string("execve(") + args->argv[0] + ", ...) in " +
-				   original_dir + " failed: " +
-				   GetLastErrnoDescription());
+		original_dir + " failed: " +
+		GetLastErrnoDescription());
 	return EXIT_FAILURE;
 }
 #endif // !GTEST_OS_QNX
@@ -1131,7 +1134,7 @@ static pid_t ExecDeathTestSpawnChild(char *const *argv, int close_fd)
 	if(chdir(original_dir) != 0)
 	{
 		DeathTestAbort(std::string("chdir(\"") + original_dir + "\") failed: " +
-					   GetLastErrnoDescription());
+			GetLastErrnoDescription());
 		return EXIT_FAILURE;
 	}
 
@@ -1139,7 +1142,7 @@ static pid_t ExecDeathTestSpawnChild(char *const *argv, int close_fd)
 	// Set close_fd to be closed after spawn.
 	GTEST_DEATH_TEST_CHECK_SYSCALL_(fd_flags = fcntl(close_fd, F_GETFD));
 	GTEST_DEATH_TEST_CHECK_SYSCALL_(fcntl(close_fd, F_SETFD,
-										  fd_flags | FD_CLOEXEC));
+		fd_flags | FD_CLOEXEC));
 	struct inheritance inherit = {0};
 	// spawn is a system call.
 	child_pid = spawn(args.argv[0], 0, NULL, &inherit, args.argv, GetEnviron());
@@ -1170,7 +1173,7 @@ static pid_t ExecDeathTestSpawnChild(char *const *argv, int close_fd)
 		const size_t stack_size = getpagesize();
 		// MMAP_ANONYMOUS is not defined on Mac, so we use MAP_ANON instead.
 		void *const stack = mmap(NULL, stack_size, PROT_READ | PROT_WRITE,
-								 MAP_ANON | MAP_PRIVATE, -1, 0);
+			MAP_ANON | MAP_PRIVATE, -1, 0);
 		GTEST_DEATH_TEST_CHECK_(stack != MAP_FAILED);
 
 		// Maximum stack alignment in bytes:  For a downward-growing stack, this
@@ -1184,7 +1187,7 @@ static pid_t ExecDeathTestSpawnChild(char *const *argv, int close_fd)
 			static_cast<char *>(stack) +
 			(stack_grows_down ? stack_size - kMaxStackAlignment : 0);
 		GTEST_DEATH_TEST_CHECK_(stack_size > kMaxStackAlignment &&
-								reinterpret_cast<intptr_t>(stack_top) % kMaxStackAlignment == 0);
+			reinterpret_cast<intptr_t>(stack_top) % kMaxStackAlignment == 0);
 
 		child_pid = clone(&ExecDeathTestChildMain, stack_top, SIGCHLD, &args);
 
@@ -1265,8 +1268,8 @@ DeathTest::TestRole ExecDeathTest::AssumeRole()
 // skipped, sets that pointer to NULL.  Returns true, unless the
 // flag is set to an invalid value.
 bool DefaultDeathTestFactory::Create(const char *statement, const RE *regex,
-									 const char *file, int line,
-									 DeathTest **test)
+	const char *file, int line,
+	DeathTest **test)
 {
 	UnitTestImpl *const impl = GetUnitTestImpl();
 	const InternalRunDeathTestFlag *const flag =
@@ -1284,7 +1287,7 @@ bool DefaultDeathTestFactory::Create(const char *statement, const RE *regex,
 		}
 
 		if(!(flag->file() == file && flag->line() == line &&
-			 flag->index() == death_test_index))
+			   flag->index() == death_test_index))
 		{
 			*test = NULL;
 			return true;
@@ -1294,7 +1297,7 @@ bool DefaultDeathTestFactory::Create(const char *statement, const RE *regex,
 #if GTEST_OS_WINDOWS
 
 	if(GTEST_FLAG(death_test_style) == "threadsafe" ||
-	   GTEST_FLAG(death_test_style) == "fast")
+		GTEST_FLAG(death_test_style) == "fast")
 	{
 		*test = new WindowsDeathTest(statement, regex, file, line);
 	}
@@ -1327,16 +1330,16 @@ bool DefaultDeathTestFactory::Create(const char *statement, const RE *regex,
 // signals the event, and returns a file descriptor wrapped around the pipe
 // handle. This function is called in the child process only.
 int GetStatusFileDescriptor(unsigned int parent_process_id,
-							size_t write_handle_as_size_t,
-							size_t event_handle_as_size_t)
+	size_t write_handle_as_size_t,
+	size_t event_handle_as_size_t)
 {
 	AutoHandle parent_process_handle(::OpenProcess(PROCESS_DUP_HANDLE,
-												   FALSE, // Non-inheritable.
-												   parent_process_id));
+		FALSE, // Non-inheritable.
+		parent_process_id));
 	if(parent_process_handle.Get() == INVALID_HANDLE_VALUE)
 	{
 		DeathTestAbort("Unable to open parent process " +
-					   StreamableToString(parent_process_id));
+			StreamableToString(parent_process_id));
 	}
 
 	// TODO(vladl@google.com): Replace the following check with a
@@ -1351,31 +1354,31 @@ int GetStatusFileDescriptor(unsigned int parent_process_id,
 	// process. To obtain one accessible within the child, we need to use
 	// DuplicateHandle.
 	if(!::DuplicateHandle(parent_process_handle.Get(), write_handle,
-						  ::GetCurrentProcess(), &dup_write_handle,
-						  0x0,   // Requested privileges ignored since
-								 // DUPLICATE_SAME_ACCESS is used.
-						  FALSE, // Request non-inheritable handler.
-						  DUPLICATE_SAME_ACCESS))
+		   ::GetCurrentProcess(), &dup_write_handle,
+		   0x0, // Requested privileges ignored since
+		   // DUPLICATE_SAME_ACCESS is used.
+		   FALSE, // Request non-inheritable handler.
+		   DUPLICATE_SAME_ACCESS))
 	{
 		DeathTestAbort("Unable to duplicate the pipe handle " +
-					   StreamableToString(write_handle_as_size_t) +
-					   " from the parent process " +
-					   StreamableToString(parent_process_id));
+			StreamableToString(write_handle_as_size_t) +
+			" from the parent process " +
+			StreamableToString(parent_process_id));
 	}
 
 	const HANDLE event_handle = reinterpret_cast<HANDLE>(event_handle_as_size_t);
 	HANDLE dup_event_handle;
 
 	if(!::DuplicateHandle(parent_process_handle.Get(), event_handle,
-						  ::GetCurrentProcess(), &dup_event_handle,
-						  0x0,
-						  FALSE,
-						  DUPLICATE_SAME_ACCESS))
+		   ::GetCurrentProcess(), &dup_event_handle,
+		   0x0,
+		   FALSE,
+		   DUPLICATE_SAME_ACCESS))
 	{
 		DeathTestAbort("Unable to duplicate the event handle " +
-					   StreamableToString(event_handle_as_size_t) +
-					   " from the parent process " +
-					   StreamableToString(parent_process_id));
+			StreamableToString(event_handle_as_size_t) +
+			" from the parent process " +
+			StreamableToString(parent_process_id));
 	}
 
 	const int write_fd =
@@ -1383,8 +1386,8 @@ int GetStatusFileDescriptor(unsigned int parent_process_id,
 	if(write_fd == -1)
 	{
 		DeathTestAbort("Unable to convert pipe handle " +
-					   StreamableToString(write_handle_as_size_t) +
-					   " to a file descriptor");
+			StreamableToString(write_handle_as_size_t) +
+			" to a file descriptor");
 	}
 
 	// Signals the parent that the write end of the pipe has been acquired
@@ -1420,11 +1423,11 @@ InternalRunDeathTestFlag *ParseInternalRunDeathTestFlag()
 	if(fields.size() != 6 || !ParseNaturalNumber(fields[1], &line) || !ParseNaturalNumber(fields[2], &index) || !ParseNaturalNumber(fields[3], &parent_process_id) || !ParseNaturalNumber(fields[4], &write_handle_as_size_t) || !ParseNaturalNumber(fields[5], &event_handle_as_size_t))
 	{
 		DeathTestAbort("Bad --gtest_internal_run_death_test flag: " +
-					   GTEST_FLAG(internal_run_death_test));
+			GTEST_FLAG(internal_run_death_test));
 	}
 	write_fd = GetStatusFileDescriptor(parent_process_id,
-									   write_handle_as_size_t,
-									   event_handle_as_size_t);
+		write_handle_as_size_t,
+		event_handle_as_size_t);
 #else
 
 	if(fields.size() != 4 || !ParseNaturalNumber(fields[1], &line) || !ParseNaturalNumber(fields[2], &index) || !ParseNaturalNumber(fields[3], &write_fd))

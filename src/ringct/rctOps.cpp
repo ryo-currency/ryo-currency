@@ -54,14 +54,17 @@ using namespace std;
 //#define RYO_DEFAULT_LOG_CATEGORY
 
 #define CHECK_AND_ASSERT_THROW_MES_L1(expr, ...) \
-	{                                                \
-		if(!(expr))                                  \
-		{                                            \
-			std::string str;	\
-			str = stream_writer::write(__VA_ARGS__);	\
-			{GULPS_CAT_MAJOR("rctOps"); GULPS_WARN(str);}                       \
-			throw std::runtime_error(str);       \
-		}                                            \
+	{ \
+		if(!(expr)) \
+		{ \
+			std::string str; \
+			str = stream_writer::write(__VA_ARGS__); \
+			{ \
+				GULPS_CAT_MAJOR("rctOps"); \
+				GULPS_WARN(str); \
+			} \
+			throw std::runtime_error(str); \
+		} \
 	}
 
 namespace rct
@@ -230,10 +233,10 @@ key scalarmultKey(const key &P, const key &a)
 }
 
 //Computes 8P
-key scalarmult8(const key & P)
+key scalarmult8(const key &P)
 {
 	ge_p3 p3;
-	CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&p3, P.bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
+	CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&p3, P.bytes) == 0, "ge_frombytes_vartime failed at " + boost::lexical_cast<std::string>(__LINE__));
 	ge_p2 p2;
 	ge_p3_to_p2(&p2, &p3);
 	ge_p1p1 p1;
@@ -281,14 +284,14 @@ rct::key addKeys(const key &A, const key &B)
 
 rct::key addKeys(const keyV &A)
 {
-	if (A.empty())
+	if(A.empty())
 		return rct::identity();
 
 	ge_p3 p3, tmp;
-	CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&p3, A[0].bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
-	for (size_t i = 1; i < A.size(); ++i)
+	CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&p3, A[0].bytes) == 0, "ge_frombytes_vartime failed at " + boost::lexical_cast<std::string>(__LINE__));
+	for(size_t i = 1; i < A.size(); ++i)
 	{
-		CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&tmp, A[i].bytes) == 0, "ge_frombytes_vartime failed at "+boost::lexical_cast<std::string>(__LINE__));
+		CHECK_AND_ASSERT_THROW_MES_L1(ge_frombytes_vartime(&tmp, A[i].bytes) == 0, "ge_frombytes_vartime failed at " + boost::lexical_cast<std::string>(__LINE__));
 		ge_cached p2;
 		ge_p3_to_cached(&p2, &tmp);
 		ge_p1p1 p1;
@@ -562,4 +565,4 @@ void ecdhDecode(ecdhTuple &masked, const key &sharedSec)
 	sc_sub(masked.mask.bytes, masked.mask.bytes, sharedSec1.bytes);
 	sc_sub(masked.amount.bytes, masked.amount.bytes, sharedSec2.bytes);
 }
-}
+} // namespace rct

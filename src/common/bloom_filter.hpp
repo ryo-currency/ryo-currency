@@ -41,24 +41,24 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <vector>
 #include <random>
+#include <vector>
 
 #include "crypto/hash.h"
 
 class bloom_filter
 {
-public:
+  public:
 	bloom_filter() {}
-	
+
 	inline void init(size_t num_of_elements)
 	{
 		bits_number = num_of_elements * 16;
 		hash_number = 11;
-		bytes.resize(bits_number/8, 0);
+		bytes.resize(bits_number / 8, 0);
 	}
 
-	inline void add_element(const void* data, size_t data_len)
+	inline void add_element(const void *data, size_t data_len)
 	{
 		crypto::hash h = crypto::cn_fast_hash(data, data_len);
 
@@ -66,13 +66,13 @@ public:
 		memcpy(&seed, h.data, sizeof(seed));
 
 		std::mt19937_64 mtgen(seed);
-		std::uniform_int_distribution<uint16_t> dist(0, bits_number-1);
+		std::uniform_int_distribution<uint16_t> dist(0, bits_number - 1);
 
-		for(size_t i=0; i < hash_number; i++)
+		for(size_t i = 0; i < hash_number; i++)
 			set_bit(dist(mtgen));
 	}
 
-	inline bool not_present(const void* data, size_t data_len)
+	inline bool not_present(const void *data, size_t data_len)
 	{
 		crypto::hash h = crypto::cn_fast_hash(data, data_len);
 
@@ -80,9 +80,9 @@ public:
 		memcpy(&seed, h.data, sizeof(seed));
 
 		std::mt19937_64 mtgen(seed);
-		std::uniform_int_distribution<uint16_t> dist(0, bits_number-1);
+		std::uniform_int_distribution<uint16_t> dist(0, bits_number - 1);
 
-		for(size_t i=0; i < hash_number; i++)
+		for(size_t i = 0; i < hash_number; i++)
 		{
 			if(!read_bit(dist(mtgen)))
 				return true;
@@ -90,7 +90,7 @@ public:
 		return false;
 	}
 
-private:
+  private:
 	size_t hash_number;
 	size_t bits_number;
 	std::vector<uint8_t> bytes;
@@ -101,9 +101,9 @@ private:
 		size_t bit = pos % 8;
 
 		if(byte >= bytes.size())
-		    return false;
+			return false;
 
-		return bytes[byte] & (1<<bit);
+		return bytes[byte] & (1 << bit);
 	}
 
 	inline void set_bit(size_t pos)
@@ -112,6 +112,6 @@ private:
 		size_t bit = pos % 8;
 
 		if(byte < bytes.size())
-			bytes[byte] |= (1<<bit);
+			bytes[byte] |= (1 << bit);
 	}
 };

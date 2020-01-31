@@ -68,8 +68,6 @@
 using namespace std;
 using namespace cryptonote;
 
-
-
 namespace Ryo
 {
 
@@ -92,13 +90,13 @@ std::string get_default_ringdb_path()
 	dir /= ".shared-ringdb";
 	return dir.string();
 }
-}
+} // namespace
 
 struct Wallet2CallbackImpl : public tools::i_wallet2_callback
 {
 
-	Wallet2CallbackImpl(WalletImpl *wallet)
-		: m_listener(nullptr), m_wallet(wallet)
+	Wallet2CallbackImpl(WalletImpl *wallet) :
+		m_listener(nullptr), m_wallet(wallet)
 	{
 	}
 
@@ -166,7 +164,7 @@ struct Wallet2CallbackImpl : public tools::i_wallet2_callback
 	}
 
 	virtual void on_money_spent(uint64_t height, const crypto::hash &txid, const cryptonote::transaction &in_tx,
-								uint64_t amount, const cryptonote::transaction &spend_tx, const cryptonote::subaddress_index &subaddr_index)
+		uint64_t amount, const cryptonote::transaction &spend_tx, const cryptonote::subaddress_index &subaddr_index)
 	{
 		// TODO;
 		std::string tx_hash = epee::string_tools::pod_to_hex(txid);
@@ -359,8 +357,8 @@ void Wallet::error(const std::string &category, const std::string &str)
 }
 
 ///////////////////////// WalletImpl implementation ////////////////////////
-WalletImpl::WalletImpl(NetworkType nettype)
-	: m_wallet(nullptr), m_status(Wallet::Status_Ok), m_trustedDaemon(false), m_wallet2Callback(nullptr), m_recoveringFromSeed(false), m_synchronized(false), m_rebuildWalletCache(false), m_is_connected(false)
+WalletImpl::WalletImpl(NetworkType nettype) :
+	m_wallet(nullptr), m_status(Wallet::Status_Ok), m_trustedDaemon(false), m_wallet2Callback(nullptr), m_recoveringFromSeed(false), m_synchronized(false), m_rebuildWalletCache(false), m_is_connected(false)
 {
 	m_wallet = new tools::wallet2(static_cast<cryptonote::network_type>(nettype));
 	m_history = new TransactionHistoryImpl(this);
@@ -510,20 +508,20 @@ bool WalletImpl::createWatchOnly(const std::string &path, const std::string &pas
 }
 
 bool WalletImpl::recoverFromKeys(const std::string &path,
-								 const std::string &language,
-								 const std::string &address_string,
-								 const std::string &viewkey_string,
-								 const std::string &spendkey_string)
+	const std::string &language,
+	const std::string &address_string,
+	const std::string &viewkey_string,
+	const std::string &spendkey_string)
 {
 	return recoverFromKeysWithPassword(path, "", language, address_string, viewkey_string, spendkey_string);
 }
 
 bool WalletImpl::recoverFromKeysWithPassword(const std::string &path,
-											 const std::string &password,
-											 const std::string &language,
-											 const std::string &address_string,
-											 const std::string &viewkey_string,
-											 const std::string &spendkey_string)
+	const std::string &password,
+	const std::string &language,
+	const std::string &address_string,
+	const std::string &viewkey_string,
+	const std::string &spendkey_string)
 {
 	cryptonote::address_parse_info info;
 	if(!get_account_address_from_str(info, m_wallet->nettype(), address_string))
@@ -1167,7 +1165,7 @@ void WalletImpl::setSubaddressLabel(uint32_t accountIndex, uint32_t addressIndex
 //    - confirmed_transfer_details)
 
 PendingTransaction *WalletImpl::createTransaction(const string &dst_addr, const string &payment_id, optional<uint64_t> amount, uint32_t mixin_count,
-												  PendingTransaction::Priority priority, uint32_t subaddr_account, std::set<uint32_t> subaddr_indices)
+	PendingTransaction::Priority priority, uint32_t subaddr_account, std::set<uint32_t> subaddr_indices)
 
 {
 	clearStatus();
@@ -1253,8 +1251,8 @@ PendingTransaction *WalletImpl::createTransaction(const string &dst_addr, const 
 				de.is_subaddress = info.is_subaddress;
 				dsts.push_back(de);
 				transaction->m_pending_tx = m_wallet->create_transactions_2(dsts, fake_outs_count, 0 /* unlock_time */,
-																			adjusted_priority,
-																			extra, subaddr_account, subaddr_indices, m_trustedDaemon);
+					adjusted_priority,
+					extra, subaddr_account, subaddr_indices, m_trustedDaemon);
 			}
 			else
 			{
@@ -1265,8 +1263,8 @@ PendingTransaction *WalletImpl::createTransaction(const string &dst_addr, const 
 						subaddr_indices.insert(index);
 				}
 				transaction->m_pending_tx = m_wallet->create_transactions_all(0, info.address, info.is_subaddress, fake_outs_count, 0 /* unlock_time */,
-																			  adjusted_priority,
-																			  extra, subaddr_account, subaddr_indices, m_trustedDaemon);
+					adjusted_priority,
+					extra, subaddr_account, subaddr_indices, m_trustedDaemon);
 			}
 		}
 		catch(const tools::error::daemon_busy &)
@@ -1296,8 +1294,8 @@ PendingTransaction *WalletImpl::createTransaction(const string &dst_addr, const 
 			std::ostringstream writer;
 
 			writer << boost::format(tr("not enough money to transfer, available only %s, sent amount %s")) %
-						  print_money(e.available()) %
-						  print_money(e.tx_amount());
+					print_money(e.available()) %
+					print_money(e.tx_amount());
 			m_errorString = writer.str();
 		}
 		catch(const tools::error::not_enough_money &e)
@@ -1306,8 +1304,8 @@ PendingTransaction *WalletImpl::createTransaction(const string &dst_addr, const 
 			std::ostringstream writer;
 
 			writer << boost::format(tr("not enough money to transfer, overall balance only %s, sent amount %s")) %
-						  print_money(e.available()) %
-						  print_money(e.tx_amount());
+					print_money(e.available()) %
+					print_money(e.tx_amount());
 			m_errorString = writer.str();
 		}
 		catch(const tools::error::tx_not_possible &e)
@@ -1316,10 +1314,10 @@ PendingTransaction *WalletImpl::createTransaction(const string &dst_addr, const 
 			std::ostringstream writer;
 
 			writer << boost::format(tr("not enough money to transfer, available only %s, transaction amount %s = %s + %s (fee)")) %
-						  print_money(e.available()) %
-						  print_money(e.tx_amount() + e.fee()) %
-						  print_money(e.tx_amount()) %
-						  print_money(e.fee());
+					print_money(e.available()) %
+					print_money(e.tx_amount() + e.fee()) %
+					print_money(e.tx_amount()) %
+					print_money(e.fee());
 			m_errorString = writer.str();
 		}
 		catch(const tools::error::not_enough_outs_to_mix &e)
@@ -2067,4 +2065,4 @@ void WalletImpl::keyReuseMitigation2(bool mitigation)
 	m_wallet->key_reuse_mitigation2(mitigation);
 }
 
-} // namespace
+} // namespace Ryo

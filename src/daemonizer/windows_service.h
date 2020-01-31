@@ -70,5 +70,5 @@ bool start_service(
 
 bool stop_service(
 	std::string const &service_name);
-}
+} // namespace windows
 #endif

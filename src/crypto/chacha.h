@@ -55,16 +55,17 @@
 #if defined(__cplusplus)
 #include <memory.h>
 
-#include "pow_hash/cn_slow_hash.hpp"
 #include "hash.h"
 #include "memwipe.h"
+#include "pow_hash/cn_slow_hash.hpp"
 
 namespace crypto
 {
-extern "C" {
+extern "C"
+{
 #endif
-void chacha8(const void *data, size_t length, const uint8_t *key, const uint8_t *iv, char *cipher);
-void chacha20(const void *data, size_t length, const uint8_t *key, const uint8_t *iv, char *cipher);
+	void chacha8(const void *data, size_t length, const uint8_t *key, const uint8_t *iv, char *cipher);
+	void chacha20(const void *data, size_t length, const uint8_t *key, const uint8_t *iv, char *cipher);
 #if defined(__cplusplus)
 }
 

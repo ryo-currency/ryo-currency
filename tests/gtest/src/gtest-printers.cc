@@ -63,7 +63,7 @@ GTEST_ATTRIBUTE_NO_SANITIZE_MEMORY_
 GTEST_ATTRIBUTE_NO_SANITIZE_ADDRESS_
 GTEST_ATTRIBUTE_NO_SANITIZE_THREAD_
 void PrintByteSegmentInObjectTo(const unsigned char *obj_bytes, size_t start,
-								size_t count, ostream *os)
+	size_t count, ostream *os)
 {
 	char text[5] = "";
 	for(size_t i = 0; i != count; i++)
@@ -85,7 +85,7 @@ void PrintByteSegmentInObjectTo(const unsigned char *obj_bytes, size_t start,
 
 // Prints the bytes in the given value to the given ostream.
 void PrintBytesInObjectToImpl(const unsigned char *obj_bytes, size_t count,
-							  ostream *os)
+	ostream *os)
 {
 	// Tells the user how big the object is.
 	*os << count << "-byte object <";
@@ -122,7 +122,7 @@ namespace internal2
 // ::testing::internal namespace, which contains a << operator that
 // sometimes conflicts with the one in STL.
 void PrintBytesInObjectTo(const unsigned char *obj_bytes, size_t count,
-						  ostream *os)
+	ostream *os)
 {
 	PrintBytesInObjectToImpl(obj_bytes, count, os);
 }

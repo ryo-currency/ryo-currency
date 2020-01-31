@@ -64,8 +64,8 @@ bool serialize_pair_element(Archive &ar, uint64_t &e)
 	ar.serialize_varint(e);
 	return true;
 }
-}
-}
+} // namespace detail
+} // namespace serialization
 
 template <template <bool> class Archive, class F, class S>
 inline bool do_serialize(Archive<false> &ar, std::pair<F, S> &p)

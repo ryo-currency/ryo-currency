@@ -132,8 +132,8 @@ struct serializer<Archive<false>, boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>>
 		ar.begin_variant();
 		ar.read_variant_tag(t);
 		if(!variant_reader<Archive<false>, variant_type,
-						   typename boost::mpl::begin<types>::type,
-						   typename boost::mpl::end<types>::type>::read(ar, v, t))
+			   typename boost::mpl::begin<types>::type,
+			   typename boost::mpl::end<types>::type>::read(ar, v, t))
 		{
 			ar.stream().setstate(std::ios::failbit);
 			return false;
@@ -153,7 +153,8 @@ struct serializer<Archive<true>, boost::variant<BOOST_VARIANT_ENUM_PARAMS(T)>>
 	{
 		Archive<true> &ar;
 
-		visitor(Archive<true> &a) : ar(a) {}
+		visitor(Archive<true> &a) :
+			ar(a) {}
 
 		template <class T>
 		bool operator()(T &rv) const

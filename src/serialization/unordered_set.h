@@ -62,8 +62,8 @@ void do_add(std::unordered_set<T> &c, T &&e)
 {
 	c.insert(std::move(e));
 }
-}
-}
+} // namespace detail
+} // namespace serialization
 
 #include "serialization.h"
 

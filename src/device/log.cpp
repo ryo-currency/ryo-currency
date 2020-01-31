@@ -198,6 +198,6 @@ void check8(std::string msg, std::string info, const char *h, const char *d, boo
 	check(msg, info, h, d, 8, crypted);
 }
 #endif
-}
+} // namespace ledger
 #endif //WITH_DEVICE_LEDGER
-}
+} // namespace hw

@@ -195,7 +195,7 @@ difficulty_type next_difficulty_v1(std::vector<std::uint64_t> timestamps, std::v
 
 difficulty_type next_difficulty_v2(std::vector<std::uint64_t> timestamps, std::vector<difficulty_type> cumulative_difficulties, size_t target_seconds)
 {
-	constexpr uint64_t MAX_AVERAGE_TIMESPAN = common_config::DIFFICULTY_TARGET * 6;  // 24 minutes
+	constexpr uint64_t MAX_AVERAGE_TIMESPAN = common_config::DIFFICULTY_TARGET * 6; // 24 minutes
 	constexpr uint64_t MIN_AVERAGE_TIMESPAN = common_config::DIFFICULTY_TARGET / 24; // 10s
 
 	if(timestamps.size() > common_config::DIFFICULTY_BLOCKS_COUNT_V2)
@@ -244,8 +244,7 @@ difficulty_type next_difficulty_v2(std::vector<std::uint64_t> timestamps, std::v
 			}
 			time_spans.push_back(time_span);
 
-			GULPSF_LOG_L3("Timespan {}: {}:{}:{} ({})", i, (time_span / 60) / 60, (time_span > 3600 ? (time_span % 3600) / 60 : time_span / 60), time_span % 60, time_span );
-
+			GULPSF_LOG_L3("Timespan {}: {}:{}:{} ({})", i, (time_span / 60) / 60, (time_span > 3600 ? (time_span % 3600) / 60 : time_span / 60), time_span % 60, time_span);
 		}
 		timespan_median = epee::misc_utils::median(time_spans);
 	}
@@ -320,12 +319,12 @@ difficulty_type next_difficulty_v3(const std::vector<std::uint64_t> &timestamps,
 	// 99/100 adds a small bias towards decreasing diff, unlike zawy we do it in a separate step to avoid an overflow at 6GH/s
 	next_D = (next_D * 99ull) / 100ull;
 
-	GULPSF_LOG_L2("diff sum: {} L {} sizes {} {} next_D {}",(cumulative_difficulties[N] - cumulative_difficulties[0]), L, timestamps.size(), cumulative_difficulties.size(), next_D);
+	GULPSF_LOG_L2("diff sum: {} L {} sizes {} {} next_D {}", (cumulative_difficulties[N] - cumulative_difficulties[0]), L, timestamps.size(), cumulative_difficulties.size(), next_D);
 	return next_D;
 }
 
 //Find non-zero timestamp with index smaller than i
-inline uint64_t findLastValid(const std::vector<uint64_t>& timestamps, size_t i)
+inline uint64_t findLastValid(const std::vector<uint64_t> &timestamps, size_t i)
 {
 	while(--i >= 1)
 	{
@@ -336,8 +335,8 @@ inline uint64_t findLastValid(const std::vector<uint64_t>& timestamps, size_t i)
 	return timestamps[0];
 }
 
-template<size_t N>
-void interpolate_timestamps(std::vector<uint64_t>& timestamps)
+template <size_t N>
+void interpolate_timestamps(std::vector<uint64_t> &timestamps)
 {
 	uint64_t maxValid = timestamps[N];
 	for(size_t i = 1; i < N; i++)
@@ -349,7 +348,7 @@ void interpolate_timestamps(std::vector<uint64_t>& timestamps)
 		if(timestamps[i] <= findLastValid(timestamps, i) || timestamps[i] >= maxValid)
 		{
 			if(i != 1)
-				timestamps[i-1] = 0;
+				timestamps[i - 1] = 0;
 			timestamps[i] = 0;
 		}
 	}
@@ -365,7 +364,7 @@ void interpolate_timestamps(std::vector<uint64_t>& timestamps)
 	}
 
 	// interpolate timestamps of masked times
-	for(uint64_t i = N-1; i > 0; i--)
+	for(uint64_t i = N - 1; i > 0; i--)
 	{
 		if(timestamps[i] <= N)
 		{
@@ -373,18 +372,18 @@ void interpolate_timestamps(std::vector<uint64_t>& timestamps)
 			uint64_t den = timestamps[i] + 1;
 			// numerator
 			uint64_t num = timestamps[i];
-			uint64_t delta = timestamps[i+1] - timestamps[i-num];
+			uint64_t delta = timestamps[i + 1] - timestamps[i - num];
 
-			timestamps[i] = timestamps[i-num] + (delta * num) / den;
+			timestamps[i] = timestamps[i - num] + (delta * num) / den;
 		}
 	}
 }
 
-template void interpolate_timestamps<4>(std::vector<uint64_t>& timestamps);
-template void interpolate_timestamps<5>(std::vector<uint64_t>& timestamps);
-template void interpolate_timestamps<7>(std::vector<uint64_t>& timestamps);
+template void interpolate_timestamps<4>(std::vector<uint64_t> &timestamps);
+template void interpolate_timestamps<5>(std::vector<uint64_t> &timestamps);
+template void interpolate_timestamps<7>(std::vector<uint64_t> &timestamps);
 
-difficulty_type next_difficulty_v4(std::vector<uint64_t> timestamps, const std::vector<difficulty_type>& cumulative_difficulties)
+difficulty_type next_difficulty_v4(std::vector<uint64_t> timestamps, const std::vector<difficulty_type> &cumulative_difficulties)
 {
 	constexpr uint64_t T = common_config::DIFFICULTY_TARGET;
 	constexpr uint64_t N = common_config::DIFFICULTY_WINDOW_V4;
@@ -428,4 +427,4 @@ difficulty_type next_difficulty_v4(std::vector<uint64_t> timestamps, const std::
 
 	return next_D;
 }
-}
+} // namespace cryptonote

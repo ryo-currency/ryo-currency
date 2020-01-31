@@ -153,11 +153,11 @@ get(std::istream &input, T &res, TT &... resres)
 #include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
 #define NESTED_GET(z, n, data) get(input, BOOST_PP_CAT(res, n));
-#define GET(z, n, data)                                                    \
-	template <BOOST_PP_ENUM_PARAMS(n, typename T)>                         \
+#define GET(z, n, data) \
+	template <BOOST_PP_ENUM_PARAMS(n, typename T)> \
 	void get(std::istream &input, BOOST_PP_ENUM_BINARY_PARAMS(n, T, &res)) \
-	{                                                                      \
-		BOOST_PP_REPEAT(n, NESTED_GET, ~)                                  \
+	{ \
+		BOOST_PP_REPEAT(n, NESTED_GET, ~) \
 	}
 BOOST_PP_REPEAT_FROM_TO(2, 5, GET, ~)
 

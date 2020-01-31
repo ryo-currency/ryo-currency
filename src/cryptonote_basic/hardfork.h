@@ -54,14 +54,15 @@ class BlockchainDB;
 class HardFork
 {
   public:
-	typedef enum {
+	typedef enum
+	{
 		LikelyForked,
 		UpdateNeeded,
 		Ready,
 	} State;
 
 	static const uint64_t DEFAULT_ORIGINAL_VERSION_TILL_HEIGHT = 0; // <= actual height
-	static const time_t DEFAULT_FORKED_TIME = 31557600;				// a year in seconds
+	static const time_t DEFAULT_FORKED_TIME = 31557600; // a year in seconds
 	static const time_t DEFAULT_UPDATE_TIME = 31557600 / 2;
 	static const uint64_t DEFAULT_WINDOW_SIZE = 10080; // supermajority window check length - a week
 	static const uint8_t DEFAULT_THRESHOLD_PERCENT = 80;
@@ -265,11 +266,12 @@ class HardFork
 		uint8_t threshold;
 		uint64_t height;
 		time_t time;
-		Params(uint8_t version, uint64_t height, uint8_t threshold, time_t time) : version(version), threshold(threshold), height(height), time(time) {}
+		Params(uint8_t version, uint64_t height, uint8_t threshold, time_t time) :
+			version(version), threshold(threshold), height(height), time(time) {}
 	};
 	std::vector<Params> heights;
 
-	std::deque<uint8_t> versions;	/* rolling window of the last N blocks' versions */
+	std::deque<uint8_t> versions; /* rolling window of the last N blocks' versions */
 	unsigned int last_versions[256]; /* count of the block versions in the last N blocks */
 	uint32_t current_fork_index;
 

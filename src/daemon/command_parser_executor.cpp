@@ -42,21 +42,18 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include "daemon/command_parser_executor.h"
 #include "common/dns_utils.h"
 #include "version.h"
 
 #include "common/gulps.hpp"
 
-
-
 namespace daemonize
 {
 
 t_command_parser_executor::t_command_parser_executor(
-	uint32_t ip, uint16_t port, const boost::optional<tools::login> &login, bool is_rpc, cryptonote::core_rpc_server *rpc_server)
-	: m_executor(ip, port, login, is_rpc, rpc_server)
+	uint32_t ip, uint16_t port, const boost::optional<tools::login> &login, bool is_rpc, cryptonote::core_rpc_server *rpc_server) :
+	m_executor(ip, port, login, is_rpc, rpc_server)
 {
 }
 
@@ -340,7 +337,7 @@ bool t_command_parser_executor::start_mining(const std::vector<std::string> &arg
 
 	if(nettype != cryptonote::MAINNET)
 
-	GULPSF_PRINT("Mining to a {} address, make sure this is intentional!", (nettype == cryptonote::TESTNET ? "testnet" : "stagenet"));
+		GULPSF_PRINT("Mining to a {} address, make sure this is intentional!", (nettype == cryptonote::TESTNET ? "testnet" : "stagenet"));
 	uint64_t threads_count = 1;
 	bool do_background_mining = false;
 	bool ignore_battery = false;

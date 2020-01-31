@@ -82,6 +82,6 @@ void check8(std::string msg, std::string info, const char *h, const char *d, boo
 
 void set_check_verbose(bool verbose);
 #endif
-}
+} // namespace ledger
 #endif
-}
+} // namespace hw

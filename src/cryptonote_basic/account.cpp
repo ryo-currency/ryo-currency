@@ -50,14 +50,14 @@
 #include "crypto/crypto.h"
 #include "include_base_utils.h"
 #include "warnings.h"
-extern "C" {
+extern "C"
+{
 #include "crypto/keccak.h"
 }
 #include "cryptonote_basic_impl.h"
 #include "cryptonote_format_utils.h"
 
 #include "common/gulps.hpp"
-
 
 GULPS_CAT_MAJOR("crybas_account");
 
@@ -228,4 +228,4 @@ std::string account_base::get_public_integrated_address_str(const crypto::hash8 
 	}
 }
 //-----------------------------------------------------------------
-}
+} // namespace cryptonote

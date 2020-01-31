@@ -66,19 +66,19 @@ bool gen_chain_switch_1::generate(std::vector<test_event_entry> &events) const
 	GENERATE_ACCOUNT(miner_account);
 
 	//                                                                                              events
-	MAKE_GENESIS_BLOCK(events, blk_0, miner_account, ts_start);						//  0
-	MAKE_ACCOUNT(events, recipient_account_1);										//  1
-	MAKE_ACCOUNT(events, recipient_account_2);										//  2
-	MAKE_ACCOUNT(events, recipient_account_3);										//  3
-	MAKE_ACCOUNT(events, recipient_account_4);										//  4
-	REWIND_BLOCKS(events, blk_0r, blk_0, miner_account)								// <N blocks>
+	MAKE_GENESIS_BLOCK(events, blk_0, miner_account, ts_start); //  0
+	MAKE_ACCOUNT(events, recipient_account_1); //  1
+	MAKE_ACCOUNT(events, recipient_account_2); //  2
+	MAKE_ACCOUNT(events, recipient_account_3); //  3
+	MAKE_ACCOUNT(events, recipient_account_4); //  4
+	REWIND_BLOCKS(events, blk_0r, blk_0, miner_account) // <N blocks>
 	MAKE_TX(events, tx_00, miner_account, recipient_account_1, MK_COINS(5), blk_0); //  5 + N
-	MAKE_NEXT_BLOCK_TX1(events, blk_1, blk_0r, miner_account, tx_00);				//  6 + N
-	MAKE_NEXT_BLOCK(events, blk_2, blk_1, miner_account);							//  7 + N
-	REWIND_BLOCKS(events, blk_2r, blk_2, miner_account)								// <N blocks>
+	MAKE_NEXT_BLOCK_TX1(events, blk_1, blk_0r, miner_account, tx_00); //  6 + N
+	MAKE_NEXT_BLOCK(events, blk_2, blk_1, miner_account); //  7 + N
+	REWIND_BLOCKS(events, blk_2r, blk_2, miner_account) // <N blocks>
 
 	// Transactions to test account balances after switch
-	MAKE_TX_LIST_START(events, txs_blk_3, miner_account, recipient_account_2, MK_COINS(7), blk_2);  //  8 + 2N
+	MAKE_TX_LIST_START(events, txs_blk_3, miner_account, recipient_account_2, MK_COINS(7), blk_2); //  8 + 2N
 	MAKE_TX_LIST_START(events, txs_blk_4, miner_account, recipient_account_3, MK_COINS(11), blk_2); //  9 + 2N
 	MAKE_TX_LIST_START(events, txs_blk_5, miner_account, recipient_account_4, MK_COINS(13), blk_2); // 10 + 2N
 	std::list<transaction> txs_blk_6;
@@ -106,13 +106,13 @@ bool gen_chain_switch_1::generate(std::vector<test_event_entry> &events) const
 	txs_blk_6.push_back(txs_blk_3.back());
 
 	MAKE_NEXT_BLOCK_TX_LIST(events, blk_3, blk_2r, miner_account, txs_blk_3); // 19 + 2N
-	MAKE_NEXT_BLOCK_TX_LIST(events, blk_4, blk_3, miner_account, txs_blk_4);  // 20 + 2N
+	MAKE_NEXT_BLOCK_TX_LIST(events, blk_4, blk_3, miner_account, txs_blk_4); // 20 + 2N
 	//split
 	MAKE_NEXT_BLOCK_TX_LIST(events, blk_5, blk_2r, miner_account, txs_blk_5); // 22 + 2N
-	MAKE_NEXT_BLOCK_TX_LIST(events, blk_6, blk_5, miner_account, txs_blk_6);  // 23 + 2N
-	DO_CALLBACK(events, "check_split_not_switched");						  // 21 + 2N
-	MAKE_NEXT_BLOCK(events, blk_7, blk_6, miner_account);					  // 24 + 2N
-	DO_CALLBACK(events, "check_split_switched");							  // 25 + 2N
+	MAKE_NEXT_BLOCK_TX_LIST(events, blk_6, blk_5, miner_account, txs_blk_6); // 23 + 2N
+	DO_CALLBACK(events, "check_split_not_switched"); // 21 + 2N
+	MAKE_NEXT_BLOCK(events, blk_7, blk_6, miner_account); // 24 + 2N
+	DO_CALLBACK(events, "check_split_switched"); // 25 + 2N
 
 	return true;
 }

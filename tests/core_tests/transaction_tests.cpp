@@ -28,12 +28,12 @@
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
+#include "common/gulps.hpp"
 #include "cryptonote_basic/account.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
 #include "cryptonote_core/cryptonote_tx_utils.h"
 #include "include_base_utils.h"
 #include "misc_language.h"
-#include "common/gulps.hpp"
 
 using namespace cryptonote;
 

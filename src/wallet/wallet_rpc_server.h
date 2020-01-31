@@ -49,10 +49,10 @@
 #include "common/gulps.hpp"
 
 #include "common/util.h"
+#include "cryptonote_config.h"
 #include "net/http_server_impl_base.h"
 #include "wallet2.h"
 #include "wallet_rpc_server_commands_defs.h"
-#include "cryptonote_config.h"
 #include <boost/program_options/options_description.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <string>
@@ -65,6 +65,7 @@ namespace tools
 class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 {
 	GULPS_CAT_MAJOR("wallet_rpc");
+
   public:
 	typedef epee::net_utils::connection_context_base connection_context;
 
@@ -78,13 +79,14 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 
 	inline void stop_wallet_backend()
 	{
-		if(m_wallet == nullptr) return;
+		if(m_wallet == nullptr)
+			return;
 		m_wallet->store();
 		delete m_wallet;
 		m_wallet = nullptr;
 	}
 
-	inline void start_wallet_backend(std::unique_ptr<wallet2>&& cr)
+	inline void start_wallet_backend(std::unique_ptr<wallet2> &&cr)
 	{
 		stop_wallet_backend();
 		m_wallet = cr.release();
@@ -181,7 +183,7 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 	bool on_untag_accounts(const wallet_rpc::COMMAND_RPC_UNTAG_ACCOUNTS::request &req, wallet_rpc::COMMAND_RPC_UNTAG_ACCOUNTS::response &res, epee::json_rpc::error &er);
 	bool on_set_account_tag_description(const wallet_rpc::COMMAND_RPC_SET_ACCOUNT_TAG_DESCRIPTION::request &req, wallet_rpc::COMMAND_RPC_SET_ACCOUNT_TAG_DESCRIPTION::response &res, epee::json_rpc::error &er);
 	bool on_getheight(const wallet_rpc::COMMAND_RPC_GET_HEIGHT::request &req, wallet_rpc::COMMAND_RPC_GET_HEIGHT::response &res, epee::json_rpc::error &er);
-	bool validate_transfer(const std::list<wallet_rpc::transfer_destination> &destinations, const std::string &s_payment_id, std::vector<cryptonote::tx_destination_entry> &dsts, crypto::uniform_payment_id& payment_id, bool at_least_one_destination, epee::json_rpc::error &er);
+	bool validate_transfer(const std::list<wallet_rpc::transfer_destination> &destinations, const std::string &s_payment_id, std::vector<cryptonote::tx_destination_entry> &dsts, crypto::uniform_payment_id &payment_id, bool at_least_one_destination, epee::json_rpc::error &er);
 	bool on_transfer(const wallet_rpc::COMMAND_RPC_TRANSFER::request &req, wallet_rpc::COMMAND_RPC_TRANSFER::response &res, epee::json_rpc::error &er);
 	bool on_transfer_split(const wallet_rpc::COMMAND_RPC_TRANSFER_SPLIT::request &req, wallet_rpc::COMMAND_RPC_TRANSFER_SPLIT::response &res, epee::json_rpc::error &er);
 	bool on_sweep_all(const wallet_rpc::COMMAND_RPC_SWEEP_ALL::request &req, wallet_rpc::COMMAND_RPC_SWEEP_ALL::response &res, epee::json_rpc::error &er);
@@ -226,7 +228,7 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 	bool on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_WALLET::response &res, epee::json_rpc::error &er);
 	bool on_restore_view_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_VIEW_WALLET::request &req, wallet_rpc::COMMAND_RPC_RESTORE_VIEW_WALLET::response &res, epee::json_rpc::error &er);
 	bool on_open_wallet(const wallet_rpc::COMMAND_RPC_OPEN_WALLET::request &req, wallet_rpc::COMMAND_RPC_OPEN_WALLET::response &res, epee::json_rpc::error &er);
-	bool on_change_wallet_password(const wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::request& req, wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::response& res, epee::json_rpc::error& er);
+	bool on_change_wallet_password(const wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::request &req, wallet_rpc::COMMAND_RPC_CHANGE_WALLET_PASSWORD::response &res, epee::json_rpc::error &er);
 	bool on_close_wallet(const wallet_rpc::COMMAND_RPC_CLOSE_WALLET::request &req, wallet_rpc::COMMAND_RPC_CLOSE_WALLET::response &res, epee::json_rpc::error &er);
 	bool on_is_multisig(const wallet_rpc::COMMAND_RPC_IS_MULTISIG::request &req, wallet_rpc::COMMAND_RPC_IS_MULTISIG::response &res, epee::json_rpc::error &er);
 	bool on_prepare_multisig(const wallet_rpc::COMMAND_RPC_PREPARE_MULTISIG::request &req, wallet_rpc::COMMAND_RPC_PREPARE_MULTISIG::response &res, epee::json_rpc::error &er);
@@ -250,11 +252,11 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 
 	template <typename Ts, typename Tu>
 	bool fill_response(std::vector<tools::wallet2::pending_tx> &ptx_vector,
-					   bool get_tx_key, Ts &tx_key, Tu &amount, Tu &fee, std::string &multisig_txset, bool do_not_relay,
-					   Ts &tx_hash, bool get_tx_hex, Ts &tx_blob, bool get_tx_metadata, Ts &tx_metadata, epee::json_rpc::error &er);
+		bool get_tx_key, Ts &tx_key, Tu &amount, Tu &fee, std::string &multisig_txset, bool do_not_relay,
+		Ts &tx_hash, bool get_tx_hex, Ts &tx_blob, bool get_tx_metadata, Ts &tx_metadata, epee::json_rpc::error &er);
 
-	boost::program_options::variables_map wallet_password_helper(const char* rpc_pwd);
-	bool wallet_path_helper(const std::string& filename, epee::json_rpc::error &er);
+	boost::program_options::variables_map wallet_password_helper(const char *rpc_pwd);
+	bool wallet_path_helper(const std::string &filename, epee::json_rpc::error &er);
 
 	wallet2 *m_wallet;
 	std::string m_wallet_dir;
@@ -264,4 +266,4 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 	const boost::program_options::variables_map *m_vm;
 	cryptonote::network_type m_nettype;
 };
-}
+} // namespace tools

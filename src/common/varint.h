@@ -152,4 +152,4 @@ int read_varint(InputIt &&first, InputIt &&last, T &i)
 {
 	return read_varint<std::numeric_limits<T>::digits, InputIt, T>(std::move(first), std::move(last), i);
 }
-}
+} // namespace tools

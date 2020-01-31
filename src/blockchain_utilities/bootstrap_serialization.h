@@ -97,5 +97,5 @@ struct block_package
 	VARINT_FIELD(coins_generated)
 	END_SERIALIZE()
 };
-}
-}
+} // namespace bootstrap
+} // namespace cryptonote

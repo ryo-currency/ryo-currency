@@ -69,8 +69,8 @@ void do_add(std::vector<T> &c, T &&e)
 {
 	c.emplace_back(std::move(e));
 }
-}
-}
+} // namespace detail
+} // namespace serialization
 
 #include "container.h"
 

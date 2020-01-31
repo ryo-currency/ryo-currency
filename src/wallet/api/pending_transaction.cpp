@@ -63,8 +63,8 @@ namespace Ryo
 
 PendingTransaction::~PendingTransaction() {}
 
-PendingTransactionImpl::PendingTransactionImpl(WalletImpl &wallet)
-	: m_wallet(wallet)
+PendingTransactionImpl::PendingTransactionImpl(WalletImpl &wallet) :
+	m_wallet(wallet)
 {
 	m_status = Status_Ok;
 }
@@ -224,4 +224,4 @@ std::vector<std::set<uint32_t>> PendingTransactionImpl::subaddrIndices() const
 		result.push_back(ptx.construction_data.subaddr_indices);
 	return result;
 }
-}
+} // namespace Ryo

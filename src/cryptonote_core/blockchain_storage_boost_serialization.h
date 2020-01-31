@@ -69,5 +69,5 @@ void serialize(archive_t &ar, cryptonote::blockchain_storage::block_extended_inf
 	ar &ei.block_cumulative_size;
 	ar &ei.already_generated_coins;
 }
-}
-}
+} // namespace serialization
+} // namespace boost

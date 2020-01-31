@@ -46,7 +46,6 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #include <atomic>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
@@ -109,7 +108,7 @@ class cryptonote_protocol_handler_base_pimpl
   public:
 };
 
-} // namespace
+} // namespace cryptonote
 
 // ################################################################################################
 // ################################################################################################
@@ -120,7 +119,7 @@ namespace cryptonote
 {
 
 double cryptonote_protocol_handler_base::estimate_one_block_size() noexcept
-{								 // for estimating size of blocks to downloa
+{ // for estimating size of blocks to downloa
 	const double size_min = 500; // XXX 500
 	//const int history_len = 20; // how many blocks to average over
 
@@ -177,7 +176,7 @@ void cryptonote_protocol_handler_base::handler_response_blocks_now(size_t packet
 			//delay += rand2*0.1;
 			long int ms = (long int)(delay * 1000);
 			GULPSF_LOG_L1("Sleeping for {} ms before packet_size=", ms, packet_size); // XXX debug sleep
-			boost::this_thread::sleep(boost::posix_time::milliseconds(ms));			   // TODO randomize sleeps
+			boost::this_thread::sleep(boost::posix_time::milliseconds(ms)); // TODO randomize sleeps
 		}
 	} while(delay > 0);
 
@@ -185,9 +184,9 @@ void cryptonote_protocol_handler_base::handler_response_blocks_now(size_t packet
 	{
 		CRITICAL_REGION_LOCAL(network_throttle_manager::m_lock_get_global_throttle_out);
 		network_throttle_manager::get_global_throttle_out().handle_trafic_tcp(packet_size); // increase counter - global
-																							//epee::critical_region_t<decltype(m_throttle_global_lock)> guard(m_throttle_global_lock); // *** critical ***
-																							//m_throttle_global.m_out.handle_trafic_tcp( packet_size ); // increase counter - global
+			//epee::critical_region_t<decltype(m_throttle_global_lock)> guard(m_throttle_global_lock); // *** critical ***
+			//m_throttle_global.m_out.handle_trafic_tcp( packet_size ); // increase counter - global
 	}
 }
 
-} // namespace
+} // namespace cryptonote
