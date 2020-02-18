@@ -203,7 +203,7 @@ script:
     if [ "$COMPILE" == "main" ] ; then
         mkdir linux-x64-build &&
         cd linux-x64-build &&
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/ryo-linux-x64-release -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Debug -DBUILD_TAG="linux-x64-release" $CMAKE_OPTIONS $TRAVIS_BUILD_DIR &&
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/ryo-linux-x64-release -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TAG="linux-x64-release" $CMAKE_OPTIONS $TRAVIS_BUILD_DIR &&
         make -j "$NUMBER_OF_CPUS" &&
         make install &&
         cd bin
@@ -218,7 +218,7 @@ script:
         cd $HOME &&
         mkdir linux-x64-tests-build &&
         cd linux-x64-tests-build &&
-        cmake -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug $CMAKE_OPTIONS $TRAVIS_BUILD_DIR &&
+        cmake -DBUILD_TESTS=ON -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Debug $CMAKE_OPTIONS $TRAVIS_BUILD_DIR &&
         # build all tests
         make -j "$NUMBER_OF_CPUS" &&
         # run unit tests
