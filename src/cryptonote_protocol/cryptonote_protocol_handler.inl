@@ -1135,9 +1135,11 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 				if(m_core.get_current_blockchain_height() > previous_height)
 				{
 					const boost::posix_time::time_duration dt = boost::posix_time::microsec_clock::universal_time() - start;
-					GULPSF_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_YELLOW, "{} Synced {}/{}", context_str, m_core.get_current_blockchain_height(), m_core.get_target_blockchain_height());
-					GULPSF_CAT_INFO("global", "({}sec, {} blocks/sec), {} MB queued", std::to_string(dt.total_microseconds() / 1e6), std::to_string((m_core.get_current_blockchain_height() - previous_height) * 1e6 / dt.total_microseconds()),
-									     std::to_string(m_block_queue.get_data_size() / 1048576.f));
+					GULPSF_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_YELLOW, "{} Synced {}/{} ({} sec, {} blocks/sec), {} MB queued", 
+						context_str, m_core.get_current_blockchain_height(), m_core.get_target_blockchain_height(), 
+						std::to_string(dt.total_microseconds() / 1e6), 
+						std::to_string((m_core.get_current_blockchain_height() - previous_height) * 1e6 / dt.total_microseconds()),
+						std::to_string(m_block_queue.get_data_size() / 1048576.f));
 					GULPS_CAT_LOG_L1("global","", m_block_queue.get_overview());
 				}
 			}
