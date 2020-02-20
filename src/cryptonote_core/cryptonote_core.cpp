@@ -705,7 +705,7 @@ bool core::handle_incoming_txs(const std::list<blobdata> &tx_blobs, std::vector<
 		ok &= add_new_tx(results[i].tx, results[i].hash, results[i].prefix_hash, it->size(), tvc[i], keeped_by_block, relayed, do_not_relay);
 		if(tvc[i].m_verifivation_failed)
 		{
-			GULPSF_VERIFY_ERR_TX("Transaction verification failed: {}", results[i].hash);
+			GULPSF_LOG_L1("Transaction verification failed: {}", results[i].hash);
 		}
 		else if(tvc[i].m_verifivation_impossible)
 		{
