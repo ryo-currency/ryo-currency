@@ -104,7 +104,7 @@ This is the core implementation of Ryo. It is free to get and modify for your ow
 
 [Ryo-libre](https://github.com/ryo-currency/ryo-libre) is open source and completely free to use version of this repository without restrictions which is updated on yearly basis. There are no restrictions on anyone creating an alternative implementation of Ryo that uses the protocol and network in a compatible manner. [(Read more about Ryo-libre)](https://www.reddit.com/r/ryocurrency/comments/am4g0y/ann_ryolibre_open_source_repository_of_ryo)
 
-Copyright (c) 2019, Ryo Currency Project
+Copyright (c) 2020, Ryo Currency Project
 
 Copyright (c) 2014-2017, The Monero Project
 
