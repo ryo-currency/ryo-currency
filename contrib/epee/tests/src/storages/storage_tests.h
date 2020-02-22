@@ -97,7 +97,7 @@ bool test_storages(const std::string &tests_folder)
 	LOG_PRINT_L0("Loading test struct from storage...");
 	test_struct t2;
 	bool res = epee::StorageNamed::load_struct_from_storage_file(t2, (storage_folder / +"valid_storage.bin").string());
-	CHECK_AND_ASSERT_MES(res, false, "Failed to load valid_storage.bin");
+	GULPS_CHECK_AND_ASSERT_MES(res, false, "Failed to load valid_storage.bin");
 
 	LOG_PRINT_L0("Comparing generated and loaded test struct...");
 	if(!(t == t2))
@@ -106,19 +106,19 @@ bool test_storages(const std::string &tests_folder)
 	LOG_PRINT_L0("Loading broken archive 1...");
 	test_struct t3;
 	res = epee::StorageNamed::load_struct_from_storage_file(t3, (storage_folder / +"invalid_storage_1.bin").string());
-	CHECK_AND_ASSERT_MES(!res, false, "invalid_storage_1.bin loaded, but should not ");
+	GULPS_CHECK_AND_ASSERT_MES(!res, false, "invalid_storage_1.bin loaded, but should not ");
 
 	LOG_PRINT_L0("Loading broken archive 2...");
 	res = epee::StorageNamed::load_struct_from_storage_file(t3, (storage_folder / +"invalid_storage_2.bin").string());
-	CHECK_AND_ASSERT_MES(!res, false, "invalid_storage_2.bin loaded, but should not ");
+	GULPS_CHECK_AND_ASSERT_MES(!res, false, "invalid_storage_2.bin loaded, but should not ");
 
 	LOG_PRINT_L0("Loading broken archive 3...");
 	res = epee::StorageNamed::load_struct_from_storage_file(t3, (storage_folder / +"invalid_storage_3.bin").string());
-	CHECK_AND_ASSERT_MES(!res, false, "invalid_storage_3.bin loaded, but should not ");
+	GULPS_CHECK_AND_ASSERT_MES(!res, false, "invalid_storage_3.bin loaded, but should not ");
 
 	LOG_PRINT_L0("Loading broken archive 4...");
 	res = epee::StorageNamed::load_struct_from_storage_file(t3, (storage_folder / +"invalid_storage_4.bin").string());
-	CHECK_AND_ASSERT_MES(!res, false, "invalid_storage_3.bin loaded, but should not ");
+	GULPS_CHECK_AND_ASSERT_MES(!res, false, "invalid_storage_3.bin loaded, but should not ");
 
 	return true;
 }

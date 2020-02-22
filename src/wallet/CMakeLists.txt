@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Ryo Currency Project
+# Copyright (c) 2020, Ryo Currency Project
 # Portions copyright (c) 2014-2018, The Monero Project
 #
 # Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 # Authors and copyright holders agree that:
 #
 # 8. This licence expires and the work covered by it is released into the 
-#    public domain on 1st of February 2020
+#    public domain on 1st of February 2021
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -48,6 +48,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set(wallet_sources
   wallet2.cpp
+  wallet2_tx_scan.cpp
   wallet_args.cpp
   ringdb.cpp
   node_rpc_proxy.cpp)
@@ -80,6 +81,7 @@ target_link_libraries(wallet
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_REGEX_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})
 
@@ -115,7 +117,8 @@ target_link_libraries(wallet_rpc_server
     ${ICU_LIBRARIES}
     ${Boost_THREAD_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 set_property(TARGET wallet_rpc_server
   PROPERTY
     OUTPUT_NAME "ryo-wallet-rpc")

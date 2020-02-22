@@ -33,9 +33,12 @@
 #include <unordered_map>
 
 #include "include_base_utils.h"
-using namespace epee;
+#include "common/gulps.hpp"
 #include "wallet/wallet2.h"
+using namespace epee;
 using namespace cryptonote;
+
+GULPS_CAT_MAJOR("test");
 
 namespace
 {
@@ -61,7 +64,7 @@ inline uint64_t random(const uint64_t max_value)
 
 bool do_send_money(tools::wallet2 &w1, tools::wallet2 &w2, size_t mix_in_factor, uint64_t amount_to_transfer, transaction &tx, size_t parts = 1)
 {
-	CHECK_AND_ASSERT_MES(parts > 0, false, "parts must be > 0");
+	GULPS_CHECK_AND_ASSERT_MES(parts > 0, false, "parts must be > 0");
 
 	std::vector<cryptonote::tx_destination_entry> dsts;
 	dsts.reserve(parts);
@@ -121,7 +124,7 @@ bool transactions_flow_test(std::string &working_folder,
 							std::string &daemon_addr_b,
 							uint64_t amount_to_transfer, size_t mix_in_factor, size_t transactions_count, size_t transactions_per_second)
 {
-	LOG_PRINT_L0("-----------------------STARTING TRANSACTIONS FLOW TEST-----------------------");
+	std::cout << "-----------------------STARTING TRANSACTIONS FLOW TEST-----------------------" << std::endl;
 	tools::wallet2 w1, w2;
 	if(path_source_wallet.empty())
 		path_source_wallet = generate_random_wallet_name();
@@ -136,7 +139,7 @@ bool transactions_flow_test(std::string &working_folder,
 	}
 	catch(const std::exception &e)
 	{
-		LOG_ERROR("failed to generate wallet: " << e.what());
+		std::cout << "failed to generate wallet: " << e.what() << std::endl;
 		return false;
 	}
 
@@ -147,30 +150,30 @@ bool transactions_flow_test(std::string &working_folder,
 	bool ok;
 	if(!w1.refresh(blocks_fetched, received_money, ok))
 	{
-		LOG_ERROR("failed to refresh source wallet from " << daemon_addr_a);
+		std::cout << "failed to refresh source wallet from " << daemon_addr_a << std::endl;
 		return false;
 	}
 
 	w2.init(daemon_addr_b);
 
-	MGINFO_GREEN("Using wallets: " << ENDL
-								   << "Source:  " << w1.get_account().get_public_address_str(MAINNET) << ENDL << "Path: " << working_folder + "/" + path_source_wallet << ENDL
-								   << "Target:  " << w2.get_account().get_public_address_str(MAINNET) << ENDL << "Path: " << working_folder + "/" + path_target_wallet);
+	std::cout << "Using wallets: \n"
+								   << "Source:  " << w1.get_account().get_public_address_str(MAINNET) << "\nPath: " << working_folder + "/" + path_source_wallet
+								   << "\nTarget:  " << w2.get_account().get_public_address_str(MAINNET) << "\nPath: " << working_folder + "/" + path_target_wallet << std::endl;
 
 	//lets do some money
 	epee::net_utils::http::http_simple_client http_client;
 	COMMAND_RPC_STOP_MINING::request daemon1_req = AUTO_VAL_INIT(daemon1_req);
 	COMMAND_RPC_STOP_MINING::response daemon1_rsp = AUTO_VAL_INIT(daemon1_rsp);
 	bool r = http_client.set_server(daemon_addr_a, boost::none) && net_utils::invoke_http_json("/stop_mine", daemon1_req, daemon1_rsp, http_client, std::chrono::seconds(10));
-	CHECK_AND_ASSERT_MES(r, false, "failed to stop mining");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to stop mining");
 
 	COMMAND_RPC_START_MINING::request daemon_req = AUTO_VAL_INIT(daemon_req);
 	COMMAND_RPC_START_MINING::response daemon_rsp = AUTO_VAL_INIT(daemon_rsp);
 	daemon_req.miner_address = w1.get_account().get_public_address_str(MAINNET);
 	daemon_req.threads_count = 9;
 	r = net_utils::invoke_http_json("/start_mining", daemon_req, daemon_rsp, http_client, std::chrono::seconds(10));
-	CHECK_AND_ASSERT_MES(r, false, "failed to get getrandom_outs");
-	CHECK_AND_ASSERT_MES(daemon_rsp.status == CORE_RPC_STATUS_OK, false, "failed to getrandom_outs.bin");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to get getrandom_outs");
+	GULPS_CHECK_AND_ASSERT_MES(daemon_rsp.status == CORE_RPC_STATUS_OK, false, "failed to getrandom_outs.bin");
 
 	//wait for money, until balance will have enough money
 	w1.refresh(blocks_fetched, received_money, ok);
@@ -195,8 +198,8 @@ bool transactions_flow_test(std::string &working_folder,
 			{
 				cryptonote::transaction tx_s;
 				bool r = do_send_money(w1, w1, 0, td.m_tx.vout[td.m_internal_output_index].amount - TEST_FEE, tx_s, 50);
-				CHECK_AND_ASSERT_MES(r, false, "Failed to send starter tx " << get_transaction_hash(tx_s));
-				MGINFO_GREEN("Starter transaction sent " << get_transaction_hash(tx_s));
+				GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to send starter tx ", get_transaction_hash(tx_s));
+				std::cout << "Starter transaction sent " << get_transaction_hash(tx_s) << std::endl;
 				if(++count >= FIRST_N_TRANSFERS)
 					break;
 			}
@@ -226,7 +229,7 @@ bool transactions_flow_test(std::string &working_folder,
 		while(w1.unlocked_balance(0) < amount_to_tx + TEST_FEE)
 		{
 			misc_utils::sleep_no_w(1000);
-			LOG_PRINT_L0("not enough money, waiting for cashback or mining");
+			std::cout << "not enough money, waiting for cashback or mining" << std::endl;
 			w1.refresh(blocks_fetched, received_money, ok);
 		}
 
@@ -240,12 +243,12 @@ bool transactions_flow_test(std::string &working_folder,
 
 		if(!do_send_money(w1, w2, mix_in_factor, amount_to_tx, tx))
 		{
-			LOG_PRINT_L0("failed to transfer money, tx: " << get_transaction_hash(tx) << ", refresh and try again");
+			std::cout << "failed to transfer money, tx: " << get_transaction_hash(tx) << ", refresh and try again" << std::endl;
 			w1.refresh(blocks_fetched, received_money, ok);
 			if(!do_send_money(w1, w2, mix_in_factor, amount_to_tx, tx))
 			{
-				LOG_PRINT_L0("failed to transfer money, second chance. tx: " << get_transaction_hash(tx) << ", exit");
-				LOCAL_ASSERT(false);
+				std::cout << "failed to transfer money, second chance. tx: " << get_transaction_hash(tx) << ", exit" << std::endl;
+				GULPS_LOCAL_ASSERT(false);
 				return false;
 			}
 		}
@@ -253,7 +256,7 @@ bool transactions_flow_test(std::string &working_folder,
 
 		transfered_money += amount_to_tx;
 
-		LOG_PRINT_L0("transferred " << amount_to_tx << ", i=" << i);
+		std::cout << "transferred " << amount_to_tx << ", i=" << i << std::endl;
 		tx_test_entry &ent = txs[get_transaction_hash(tx)] = boost::value_initialized<tx_test_entry>();
 		ent.amount_transfered = amount_to_tx;
 		ent.tx = tx;
@@ -261,9 +264,9 @@ bool transactions_flow_test(std::string &working_folder,
 		//  misc_utils::sleep_no_w(1000);
 	}
 
-	LOG_PRINT_L0("waiting some new blocks...");
+	std::cout << "waiting some new blocks..." << std::endl;
 	misc_utils::sleep_no_w(DIFFICULTY_BLOCKS_ESTIMATE_TIMESPAN * 20 * 1000); //wait two blocks before sync on another wallet on another daemon
-	LOG_PRINT_L0("refreshing...");
+	std::cout << "refreshing..." << std::endl;
 	bool recvd_money = false;
 	while(w2.refresh(blocks_fetched, recvd_money, ok) && ((blocks_fetched && recvd_money) || !blocks_fetched))
 	{
@@ -273,8 +276,8 @@ bool transactions_flow_test(std::string &working_folder,
 	uint64_t money_2 = w2.balance(0);
 	if(money_2 == transfered_money)
 	{
-		MGINFO_GREEN("-----------------------FINISHING TRANSACTIONS FLOW TEST OK-----------------------");
-		MGINFO_GREEN("transferred " << print_money(transfered_money) << " via " << i << " transactions");
+		std::cout  <<"-----------------------FINISHING TRANSACTIONS FLOW TEST OK-----------------------" << std::endl;
+		std::cout << "transferred " << print_money(transfered_money) << " via " << i << " transactions" << std::endl;
 		return true;
 	}
 	else
@@ -284,7 +287,7 @@ bool transactions_flow_test(std::string &working_folder,
 		BOOST_FOREACH(tools::wallet2::transfer_details &td, tc)
 		{
 			auto it = txs.find(td.m_txid);
-			CHECK_AND_ASSERT_MES(it != txs.end(), false, "transaction not found in local cache");
+			GULPS_CHECK_AND_ASSERT_MES(it != txs.end(), false, "transaction not found in local cache");
 			it->second.m_received_count += 1;
 		}
 
@@ -292,13 +295,13 @@ bool transactions_flow_test(std::string &working_folder,
 		{
 			if(tx_pair.second.m_received_count != 1)
 			{
-				MERROR("Transaction lost: " << get_transaction_hash(tx_pair.second.tx));
+				std::cout << "Transaction lost: " << get_transaction_hash(tx_pair.second.tx) << std::endl;
 			}
 		}
 
-		MERROR("-----------------------FINISHING TRANSACTIONS FLOW TEST FAILED-----------------------");
-		MERROR("income " << print_money(money_2) << " via " << i << " transactions, expected money = " << print_money(transfered_money));
-		LOCAL_ASSERT(false);
+		std::cout << "-----------------------FINISHING TRANSACTIONS FLOW TEST FAILED-----------------------" << std::endl;
+		std::cout << "income " << print_money(money_2) << " via " << i << " transactions, expected money = " << print_money(transfered_money) << std::endl;
+		GULPS_LOCAL_ASSERT(false);
 		return false;
 	}
 

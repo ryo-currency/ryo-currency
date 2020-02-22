@@ -32,7 +32,7 @@
 #include <boost/thread/thread.hpp>
 
 #include "include_base_utils.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include "storages/levin_abstract_invoke2.h"
 
 #include "net_load_tests.h"
@@ -43,7 +43,7 @@ using namespace net_load_tests;
 	{                                         \
 		if(!(cond))                           \
 		{                                     \
-			LOG_PRINT_L0("ERROR: " << #cond); \
+			std::cout << "ERROR: " << #cond << std::endl; \
 			exit(1);                          \
 		}                                     \
 		else                                  \
@@ -81,7 +81,7 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
 		boost::unique_lock<boost::mutex> lock(m_open_close_test_mutex);
 		if(context.m_connection_id == m_open_close_test_conn_id)
 		{
-			LOG_PRINT_L0("Stop open/close test");
+			std::cout << "Stop open/close test" << std::endl;
 			m_open_close_test_conn_id = boost::uuids::nil_uuid();
 			m_open_close_test_helper.reset(0);
 		}
@@ -110,7 +110,7 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
 		rsp.opened_connections_count = m_tcp_server.get_config_object().get_connections_count();
 		rsp.new_connection_counter = new_connection_counter();
 		rsp.close_connection_counter = close_connection_counter();
-		LOG_PRINT_L0("Statistics: " << rsp.to_string());
+		std::cout << "Statistics: " << rsp.to_string() << std::endl;
 		return 1;
 	}
 
@@ -127,7 +127,7 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
 		boost::unique_lock<boost::mutex> lock(m_open_close_test_mutex);
 		if(0 == m_open_close_test_helper.get())
 		{
-			LOG_PRINT_L0("Start open/close test (" << req.open_request_target << ", " << req.max_opened_conn_count << ")");
+			std::cout << "Start open/close test (" << req.open_request_target << ", " << req.max_opened_conn_count << ")" << std::endl;
 
 			m_open_close_test_conn_id = context.m_connection_id;
 			m_open_close_test_helper.reset(new open_close_test_helper(m_tcp_server, req.open_request_target, req.max_opened_conn_count));
@@ -141,7 +141,7 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
 
 	int handle_shutdown(int command, const CMD_SHUTDOWN::request &req, test_connection_context & /*context*/)
 	{
-		LOG_PRINT_L0("Got shutdown request. Shutting down...");
+		std::cout << "Got shutdown request. Shutting down..." << std::endl;
 		m_tcp_server.send_stop_signal();
 		return 1;
 	}
@@ -159,11 +159,11 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
 																								   m_tcp_server.get_config_object(), [=](int code, const CMD_DATA_REQUEST::response &rsp, const test_connection_context &) {
 																									   if(code <= 0)
 																									   {
-																										   LOG_PRINT_L0("Failed to invoke CMD_DATA_REQUEST. code = " << code);
+																										   std::cout << "Failed to invoke CMD_DATA_REQUEST. code = " << code << std::endl;
 																									   }
 																								   });
 				if(!r)
-					LOG_PRINT_L0("Failed to invoke CMD_DATA_REQUEST");
+					std::cout << "Failed to invoke CMD_DATA_REQUEST" << std::endl;
 			}
 			return true;
 		});
@@ -174,7 +174,7 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
   private:
 	void close_connections(boost::uuids::uuid cmd_conn_id)
 	{
-		LOG_PRINT_L0("Closing connections. Number of opened connections: " << m_tcp_server.get_config_object().get_connections_count());
+		std::cout << "Closing connections. Number of opened connections: " << m_tcp_server.get_config_object().get_connections_count() << std::endl;
 
 		size_t count = 0;
 		bool r = m_tcp_server.get_config_object().foreach_connection([&](test_connection_context &ctx) {
@@ -188,7 +188,7 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
 				}
 				else
 				{
-					LOG_PRINT_L0(count << " connection already closed");
+					std::cout << count << " connection already closed" << std::endl;
 				}
 			}
 			return true;
@@ -206,7 +206,7 @@ struct srv_levin_commands_handler : public test_levin_commands_handler
 				}
 				else
 				{
-					LOG_PRINT_L0("ERROR: " << ec.message() << ':' << ec.value());
+					std::cout << "ERROR: " << ec.message() << ':' << ec.value() << std::endl;
 				}
 			});
 		}
@@ -225,7 +225,7 @@ int main(int argc, char **argv)
 {
 	tools::on_startup();
 	//set up logging options
-	mlog_configure(mlog_get_default_log_path("net_load_tests_srv.log"), true);
+	
 
 	size_t thread_count = (std::max)(min_thread_count, boost::thread::hardware_concurrency() / 2);
 

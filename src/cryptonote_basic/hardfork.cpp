@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -42,6 +42,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
 #include <algorithm>
 #include <cstdio>
 
@@ -49,8 +50,10 @@
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "hardfork.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "hardfork"
+
+#include "common/gulps.hpp"
+
+GULPS_CAT_MAJOR("crybas_hfork");
 
 using namespace cryptonote;
 
@@ -212,10 +215,10 @@ void HardFork::init()
 	}
 	if(populate)
 	{
-		MINFO("The DB has no hard fork info, reparsing from start");
+		GULPS_INFO("The DB has no hard fork info, reparsing from start");
 		height = 1;
 	}
-	MDEBUG("reorganizing from " << height);
+	GULPSF_LOG_L1("reorganizing from {}", height);
 	if(populate)
 	{
 		reorganize_from_chain_height(height);
@@ -226,7 +229,7 @@ void HardFork::init()
 	{
 		rescan_from_chain_height(height);
 	}
-	MDEBUG("reorganization done");
+	GULPS_LOG_L1("reorganization done");
 }
 
 uint8_t HardFork::get_block_version(uint64_t height) const

@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -46,8 +46,6 @@
 
 #include "include_base_utils.h"
 
-using namespace epee;
-
 #include "checkpoints.h"
 
 #include "common/dns_utils.h"
@@ -56,8 +54,9 @@ using namespace epee;
 #include "storages/portable_storage_template_helper.h" // epee json include
 #include "string_tools.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "checkpoints"
+#include "common/gulps.hpp"
+
+GULPS_CAT_MAJOR("checkpoints");
 
 namespace cryptonote
 {
@@ -68,7 +67,7 @@ struct t_hashline
 {
 	uint64_t height;  //!< the height of the checkpoint
 	std::string hash; //!< the hash for the checkpoint
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(t_hashline)
 	KV_SERIALIZE(height)
 	KV_SERIALIZE(hash)
 	END_KV_SERIALIZE_MAP()
@@ -80,7 +79,7 @@ struct t_hashline
 struct t_hash_json
 {
 	std::vector<t_hashline> hashlines; //!< the checkpoint lines from the file
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(t_hash_json)
 	KV_SERIALIZE(hashlines)
 	END_KV_SERIALIZE_MAP()
 };
@@ -94,12 +93,12 @@ bool checkpoints::add_checkpoint(uint64_t height, const std::string &hash_str)
 {
 	crypto::hash h = crypto::null_hash;
 	bool r = epee::string_tools::parse_tpod_from_hex_string(hash_str, h);
-	CHECK_AND_ASSERT_MES(r, false, "Failed to parse checkpoint hash string into binary representation!");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "Failed to parse checkpoint hash string into binary representation!");
 
 	// return false if adding at a height we already have AND the hash is different
 	if(m_points.count(height))
 	{
-		CHECK_AND_ASSERT_MES(h == m_points[height], false, "Checkpoint at given height already exists, and hash for new checkpoint was different!");
+		GULPS_CHECK_AND_ASSERT_MES(h == m_points[height], false, "Checkpoint at given height already exists, and hash for new checkpoint was different!");
 	}
 	m_points[height] = h;
 	return true;
@@ -119,12 +118,12 @@ bool checkpoints::check_block(uint64_t height, const crypto::hash &h, bool &is_a
 
 	if(it->second == h)
 	{
-		MINFO("CHECKPOINT PASSED FOR HEIGHT " << height << " " << h);
+		GULPSF_INFO("CHECKPOINT PASSED FOR HEIGHT {} {}", height, h);
 		return true;
 	}
 	else
 	{
-		MWARNING("CHECKPOINT FAILED FOR HEIGHT " << height << ". EXPECTED HASH: " << it->second << ", FETCHED HASH: " << h);
+		GULPSF_WARN("CHECKPOINT FAILED FOR HEIGHT {}. EXPECTED HASH: {}, FETCHED HASH: {}", height, it->second, h);
 		return false;
 	}
 }
@@ -171,7 +170,7 @@ bool checkpoints::check_for_conflicts(const checkpoints &other) const
 	{
 		if(m_points.count(pt.first))
 		{
-			CHECK_AND_ASSERT_MES(pt.second == m_points.at(pt.first), false, "Checkpoint at given height already exists, and hash for new checkpoint was different!");
+			GULPS_CHECK_AND_ASSERT_MES(pt.second == m_points.at(pt.first), false, "Checkpoint at given height already exists, and hash for new checkpoint was different!");
 		}
 	}
 	return true;
@@ -221,18 +220,18 @@ bool checkpoints::load_checkpoints_from_json(const std::string &json_hashfile_fu
 	boost::system::error_code errcode;
 	if(!(boost::filesystem::exists(json_hashfile_fullpath, errcode)))
 	{
-		LOG_PRINT_L1("Blockchain checkpoints file not found");
+		GULPS_LOG_L1("Blockchain checkpoints file not found");
 		return true;
 	}
 
-	LOG_PRINT_L1("Adding checkpoints from blockchain hashfile");
+	GULPS_LOG_L1("Adding checkpoints from blockchain hashfile");
 
 	uint64_t prev_max_height = get_max_height();
-	LOG_PRINT_L1("Hard-coded max checkpoint height is " << prev_max_height);
+	GULPSF_LOG_L1("Hard-coded max checkpoint height is {}",  prev_max_height);
 	t_hash_json hashes;
 	if(!epee::serialization::load_t_from_json_file(hashes, json_hashfile_fullpath))
 	{
-		MERROR("Error loading checkpoints from " << json_hashfile_fullpath);
+		GULPS_ERROR("Error loading checkpoints from ", json_hashfile_fullpath);
 		return false;
 	}
 	for(std::vector<t_hashline>::const_iterator it = hashes.hashlines.begin(); it != hashes.hashlines.end();)
@@ -241,12 +240,12 @@ bool checkpoints::load_checkpoints_from_json(const std::string &json_hashfile_fu
 		height = it->height;
 		if(height <= prev_max_height)
 		{
-			LOG_PRINT_L1("ignoring checkpoint height " << height);
+			GULPSF_LOG_L1("ignoring checkpoint height {}",  height);
 		}
 		else
 		{
 			std::string blockhash = it->hash;
-			LOG_PRINT_L1("Adding checkpoint height " << height << ", hash=" << blockhash);
+			GULPSF_LOG_L1("Adding checkpoint height {}, hash={}", height,  blockhash);
 			ADD_CHECKPOINT(height, blockhash);
 		}
 		++it;

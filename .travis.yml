@@ -5,6 +5,7 @@ cache:
   apt: true
 
 os: linux
+dist: trusty
 
 addons:
   apt:
@@ -85,6 +86,17 @@ matrix:
             - g++-7
       env:
         - COMPILERS="CC=gcc-7 CXX=g++-7"
+        - COMPILE=main
+    - name: g++-7 daemon DISABLE x86 64bit elliptic curve
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - COMPILERS="CC=gcc-7 CXX=g++-7"
+        - DEF_CMAKE_OPTIONS="CMAKE_OPTIONS=-DUSE_EC_64=OFF"
         - COMPILE=main
     - name: g++-7 test
       addons:
@@ -176,6 +188,7 @@ install:
       sudo apt-get install -y libldns-dev;
       sudo apt-get install -y libgtest-dev;
       sudo apt-get install -y libunwind8-dev;
+      sudo apt-get install -y nasm;
     fi
   # clang 5.0 ships libunwind in own  lib folder
   - if [ "$CC" == "clang-5.0" ] ; then
@@ -184,12 +197,13 @@ install:
 
 script:
   - eval "${COMPILERS}"
+  - eval "${DEF_CMAKE_OPTIONS}"
   - cd $HOME
   - |
     if [ "$COMPILE" == "main" ] ; then
         mkdir linux-x64-build &&
         cd linux-x64-build &&
-        cmake -DCMAKE_INSTALL_PREFIX=$HOME/ryo-linux-x64-release -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Debug -DBUILD_TAG="linux-x64-release" $TRAVIS_BUILD_DIR &&
+        cmake -DCMAKE_INSTALL_PREFIX=$HOME/ryo-linux-x64-release -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TAG="linux-x64-release" $CMAKE_OPTIONS $TRAVIS_BUILD_DIR &&
         make -j "$NUMBER_OF_CPUS" &&
         make install &&
         cd bin
@@ -204,7 +218,7 @@ script:
         cd $HOME &&
         mkdir linux-x64-tests-build &&
         cd linux-x64-tests-build &&
-        cmake -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug $TRAVIS_BUILD_DIR &&
+        cmake -DBUILD_TESTS=ON -DARCH="x86-64" -DBUILD_64=ON -DCMAKE_BUILD_TYPE=Debug $CMAKE_OPTIONS $TRAVIS_BUILD_DIR &&
         # build all tests
         make -j "$NUMBER_OF_CPUS" &&
         # run unit tests

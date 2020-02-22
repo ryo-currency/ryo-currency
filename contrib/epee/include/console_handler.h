@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include "misc_log_ex.h"
 #include "string_tools.h"
 #include <atomic>
 #include <condition_variable>
@@ -40,6 +39,8 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/thread.hpp>
+
+#include "common/gulps.hpp"
 
 #ifdef HAVE_READLINE
 #include "readline_buffer.h"
@@ -288,6 +289,7 @@ bool empty_commands_handler(t_server *psrv, const std::string &command)
 
 class async_console_handler
 {
+	GULPS_CAT_MAJOR("epee_csl_hand");
   public:
 	async_console_handler()
 	{
@@ -322,14 +324,12 @@ class async_console_handler
 				color_prompt += " ";
 			color_prompt += "\001\033[0m\002";
 			m_stdin_reader.get_readline_buffer().set_prompt(color_prompt);
-#else
-			epee::set_console_color(epee::console_color_yellow, true);
-			std::cout << prompt;
-			if(' ' != prompt.back())
-				std::cout << ' ';
-			epee::reset_console_color();
-			std::cout.flush();
 #endif
+
+			if(prompt.back() != ' ')
+				prompt += ' ';
+			gulps::inst().log(gulps::message(gulps::OUT_USER_0, gulps::LEVEL_PRINT, gulps_major_cat::c_str(),
+					"cmd_prompt", __FILE__, __LINE__, std::move(prompt), gulps::COLOR_BOLD_YELLOW, false));
 		}
 	}
 
@@ -357,11 +357,10 @@ class async_console_handler
 				}
 				if(!get_line_ret)
 				{
-					MERROR("Failed to read line.");
+					GULPS_ERROR("Failed to read line.");
 				}
 				string_tools::trim(command);
-
-				LOG_PRINT_L2("Read command: " << command);
+				GULPS_LOG_L2("Read command: ", command);
 				if(command.empty())
 				{
 					continue;
@@ -379,13 +378,13 @@ class async_console_handler
 #ifdef HAVE_READLINE
 					rdln::suspend_readline pause_readline;
 #endif
-					std::cout << "unknown command: " << command << std::endl;
-					std::cout << usage;
+					GULPS_PRINT("unknown command: ", command);
+					GULPS_PRINT(usage);
 				}
 			}
 			catch(const std::exception &ex)
 			{
-				LOG_ERROR("Exception at [console_handler], what=" << ex.what());
+				GULPSF_ERROR("Exception at [console_handler], what={}", ex.what());
 			}
 		}
 		if(exit_handler)
@@ -484,7 +483,7 @@ class command_handler
 
 		for(auto &x : m_command_handlers)
 		{
-			ss << x.second.second.first << ENDL;
+			ss << x.second.second.first << "\n";
 		}
 		return ss.str();
 	}

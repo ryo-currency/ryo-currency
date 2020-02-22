@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Ryo Currency Project
+# Copyright (c) 2020, Ryo Currency Project
 # Copyright (c) 2014-2018, The Monero Project
 #
 # All rights reserved.
@@ -29,7 +29,7 @@
 # Authors and copyright holders agree that:
 #
 # 8. This licence expires and the work covered by it is released into the 
-#    public domain on 1st of February 2020
+#    public domain on 1st of February 2021
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -57,6 +57,65 @@ endif()
 cmake_minimum_required(VERSION 3.1.0)
 
 project(ryo)
+
+# enforce C++11
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 11)
+
+# enforce C11
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_C_STANDARD 11)
+
+# helper function to generate options
+function(ryo_option name description default)
+  set(USE_${name} ${default} CACHE STRING "${description}")
+  set_property(CACHE USE_${name} PROPERTY
+    STRINGS "ON;TRUE;AUTO;OFF;FALSE")
+  if(HAVE_${name})
+    set(HAVE_${name} TRUE PARENT_SCOPE)
+  else()
+    set(HAVE_${name} PARENT_SCOPE)
+  endif()
+endfunction()
+
+# detect 64bit x86 architecture and set ARCH_X86_64
+if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+  set(ARCH_X86_64 TRUE)
+elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64")
+  set(ARCH_X86_64 TRUE)
+elseif (CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64")
+  # cmake reports AMD64 on Windows, but we might be building for 32-bit.
+  if (CMAKE_CL_64)
+  set(ARCH_X86_64 TRUE)
+  endif()
+endif()
+
+################################################################################
+### ELLIPTIC CURVE
+ryo_option(EC_64 "use optimized x86 64bit elliptic curve implementation" AUTO)
+# check if x86_64 elliptic curve implementation can be used
+if(USE_EC_64 STREQUAL AUTO)
+  enable_language(ASM_NASM OPTIONAL)
+  if(ARCH_X86_64 AND CMAKE_ASM_NASM_COMPILER) 
+    set(HAVE_EC_64 TRUE)
+  endif()
+elseif(USE_EC_64)
+  enable_language(ASM_NASM)
+  if(NOT CMAKE_ASM_NASM_COMPILER_LOADED)
+    message(FATAL_ERROR "Could not load NASM compiler.")
+  endif()
+  set(HAVE_EC_64 TRUE)
+endif()
+
+if(HAVE_EC_64)
+  message(STATUS "Using 64bit elliptic curve implementation for x68_64")
+  add_definitions("-DHAVE_EC_64")
+endif()
+
+### ELLIPTIC CURVE
+################################################################################
 
 function (die msg)
   if (NOT WIN32)
@@ -248,7 +307,7 @@ endif()
 # elseif(CMAKE_SYSTEM_NAME MATCHES ".*BSDI.*")
 #   set(BSDI TRUE)
 
-include_directories(external/rapidjson/include external/easylogging++ src contrib/epee/include external)
+include_directories(external/rapidjson/include src contrib/epee/include external)
 
 if(APPLE)
   include_directories(SYSTEM /usr/include/malloc)
@@ -369,10 +428,6 @@ add_definitions("-DBLOCKCHAIN_DB=${BLOCKCHAIN_DB}")
 if (APPLE)
   set(DEFAULT_STACK_TRACE OFF)
   set(LIBUNWIND_LIBRARIES "")
-elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND NOT MINGW)
-  set(DEFAULT_STACK_TRACE ON)
-  set(STACK_TRACE_LIB "easylogging++") # for diag output only
-  set(LIBUNWIND_LIBRARIES "")
 elseif (ARM AND STATIC)
   set(DEFAULT_STACK_TRACE OFF)
   set(LIBUNWIND_LIBRARIES "")
@@ -430,8 +485,6 @@ add_definition_if_library_exists(c memset_s "string.h" HAVE_MEMSET_S)
 add_definition_if_library_exists(c explicit_bzero "strings.h" HAVE_EXPLICIT_BZERO)
 add_definition_if_function_found(strptime HAVE_STRPTIME)
 
-add_definitions(-DAUTO_INITIALIZE_EASYLOGGINGPP)
-
 # Generate header for embedded translations
 include(ExternalProject)
 ExternalProject_Add(generate_translations_header
@@ -445,10 +498,6 @@ add_subdirectory(external)
 # Final setup for libunbound
 include_directories(${UNBOUND_INCLUDE})
 link_directories(${UNBOUND_LIBRARY_DIRS})
-
-# Final setup for easylogging++
-include_directories(${EASYLOGGING_INCLUDE})
-link_directories(${EASYLOGGING_LIBRARY_DIRS})
 
 # Final setup for liblmdb
 include_directories(${LMDB_INCLUDE})
@@ -621,8 +670,8 @@ else()
     message(STATUS "AES support disabled")
   endif()
 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -D_GNU_SOURCE ${MINGW_FLAG} ${STATIC_ASSERT_FLAG} ${WARNINGS} ${C_WARNINGS} ${ARCH_FLAG} ${COVERAGE_FLAGS} ${PIC_FLAG} ${C_SECURITY_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -D_GNU_SOURCE ${MINGW_FLAG} ${STATIC_ASSERT_CPP_FLAG} ${WARNINGS} ${CXX_WARNINGS} ${ARCH_FLAG} ${COVERAGE_FLAGS} ${PIC_FLAG} ${CXX_SECURITY_FLAGS}")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE ${MINGW_FLAG} ${STATIC_ASSERT_FLAG} ${WARNINGS} ${C_WARNINGS} ${ARCH_FLAG} ${COVERAGE_FLAGS} ${PIC_FLAG} ${C_SECURITY_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GNU_SOURCE ${MINGW_FLAG} ${STATIC_ASSERT_CPP_FLAG} ${WARNINGS} ${CXX_WARNINGS} ${ARCH_FLAG} ${COVERAGE_FLAGS} ${PIC_FLAG} ${CXX_SECURITY_FLAGS}")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LD_SECURITY_FLAGS}")
 
   # With GCC 6.1.1 the compiled binary malfunctions due to aliasing. Until that
@@ -786,6 +835,11 @@ if (${BOOST_IGNORE_SYSTEM_PATHS} STREQUAL "ON")
 endif()
 
 set(OLD_LIB_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
+
+if(MINGW)
+    set(Boost_NO_BOOST_CMAKE ON)
+endif()
+
 if(STATIC)
   if(MINGW)
     set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
@@ -801,7 +855,7 @@ if(NOT Boost_FOUND)
   die("Could not find Boost libraries, please make sure you have installed Boost or libboost-all-dev (1.58) or the equivalent")
 elseif(Boost_FOUND)
   message(STATUS "Found Boost Version: ${Boost_VERSION}")
-  if (Boost_VERSION VERSION_LESS 106200 AND NOT (OPENSSL_VERSION VERSION_LESS 1.1))
+  if (Boost_VERSION VERSION_LESS 1.62.0 AND NOT (OPENSSL_VERSION VERSION_LESS 1.1))
       message(FATAL_ERROR "Boost older than 1.62 is too old to link with OpenSSL 1.1 or newer. "
                           "Update Boost or install OpenSSL 1.0 and set path to it when running cmake: "
                           "cmake -DOPENSSL_ROOT_DIR='/usr/include/openssl-1.0;/usr/lib/openssl-1.0'")

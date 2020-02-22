@@ -44,6 +44,7 @@ namespace net_utils
 
 class network_throttle : public i_network_throttle
 {
+	GULPS_CAT_MAJOR("epee_net_tht_det");
   private:
 	struct packet_info
 	{

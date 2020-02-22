@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -48,14 +48,16 @@
 
 #include "rpc/core_rpc_server.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
+#include "common/gulps.hpp"
+
+
 
 namespace daemonize
 {
 
 class t_rpc final
 {
+	 GULPS_CAT_MAJOR("daemon_rpc");
   public:
 	static void init_options(boost::program_options::options_description &option_spec)
 	{
@@ -71,28 +73,28 @@ class t_rpc final
 		boost::program_options::variables_map const &vm, t_core &core, t_p2p &p2p, const bool restricted, const cryptonote::network_type nettype, const std::string &port, const std::string &description)
 		: m_server{core.get(), p2p.get()}, m_description{description}
 	{
-		MGINFO("Initializing " << m_description << " RPC server...");
+		GULPSF_GLOBAL_PRINT("Initializing {} RPC server...", m_description);
 
 		if(!m_server.init(vm, restricted, nettype, port))
 		{
 			throw std::runtime_error("Failed to initialize " + m_description + " RPC server.");
 		}
-		MGINFO(m_description << " RPC server initialized OK on port: " << m_server.get_binded_port());
+		GULPSF_GLOBAL_PRINT("{} RPC server initialized OK on port: {}", m_description, m_server.get_binded_port());
 	}
 
 	void run()
 	{
-		MGINFO("Starting " << m_description << " RPC server...");
+		GULPSF_GLOBAL_PRINT("Starting {} RPC server...",m_description);
 		if(!m_server.run(2, false))
 		{
 			throw std::runtime_error("Failed to start " + m_description + " RPC server.");
 		}
-		MGINFO(m_description << " RPC server started ok");
+		GULPSF_GLOBAL_PRINT("{} RPC server started ok", m_description);
 	}
 
 	void stop()
 	{
-		MGINFO("Stopping " << m_description << " RPC server...");
+		GULPSF_GLOBAL_PRINT("Stopping {} RPC server...", m_description);
 		m_server.send_stop_signal();
 		m_server.timed_wait_server_stop(5000);
 	}
@@ -104,14 +106,14 @@ class t_rpc final
 
 	~t_rpc()
 	{
-		MGINFO("Deinitializing " << m_description << " RPC server...");
+		GULPSF_GLOBAL_PRINT("Deinitializing {} RPC server...", m_description);
 		try
 		{
 			m_server.deinit();
 		}
 		catch(...)
 		{
-			MERROR("Failed to deinitialize " << m_description << " RPC server...");
+			GULPSF_ERROR("Failed to deinitialize {} RPC server...", m_description);
 		}
 	}
 };

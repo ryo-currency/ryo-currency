@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -56,16 +56,17 @@
 #include <system_error>
 
 #ifdef _WIN32
-#include "misc_log_ex.h"
 #include "windows.h"
 #endif
 
 #include "crypto/hash.h"
 
+#include "common/gulps.hpp"
+
 /*! \brief Various Tools
  *
- *  
- * 
+ *
+ *
  */
 namespace tools
 {
@@ -121,12 +122,12 @@ std::string get_default_data_dir();
 
 #ifdef WIN32
 /**
-   * @brief 
+   * @brief
    *
    * @param nfolder
    * @param iscreate
    *
-   * @return 
+   * @return
    */
 std::string get_special_folder_path(int nfolder, bool iscreate);
 #endif
@@ -141,7 +142,7 @@ std::string get_os_version_string();
 
 /*! \brief creates directories for a path
    *
-   *  wrapper around boost::filesyste::create_directories.  
+   *  wrapper around boost::filesyste::create_directories.
    *  (ensure-directory-exists): greenspun's tenth rule in action!
    */
 bool create_directories_if_necessary(const std::string &path);
@@ -194,7 +195,8 @@ class signal_handler
 		}
 		else
 		{
-			MGINFO_RED("Got control signal " << type << ". Exiting without saving...");
+			GULPS_CAT_MAJOR("cmn_util");
+			GULPSF_GLOBAL_PRINT_CLR(gulps::COLOR_RED, "Got control signal {}. Exiting without saving...", type);
 			return FALSE;
 		}
 		return TRUE;

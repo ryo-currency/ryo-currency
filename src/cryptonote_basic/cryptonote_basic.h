@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -454,6 +454,9 @@ struct block : public block_header
 /************************************************************************/
 struct account_public_address
 {
+	account_public_address(const crypto::public_key m_spend_public_key, const  crypto::public_key m_view_public_key) : m_spend_public_key(m_spend_public_key), 
+			      m_view_public_key(m_view_public_key) {}
+  
 	crypto::public_key m_spend_public_key;
 	crypto::public_key m_view_public_key;
 
@@ -462,7 +465,7 @@ struct account_public_address
 	FIELD(m_view_public_key)
 	END_SERIALIZE()
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(account_public_address)
 	KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE(m_spend_public_key)
 	KV_SERIALIZE_VAL_POD_AS_BLOB_FORCE(m_view_public_key)
 	END_KV_SERIALIZE_MAP()

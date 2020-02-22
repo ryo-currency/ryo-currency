@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -48,7 +48,7 @@
 
 #include "cryptonote_config.h"
 #include "crypto/crypto.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include "rctTypes.h"
 #include <vector>
 #include <boost/align/aligned_delete.hpp>
@@ -82,6 +82,7 @@ static constexpr size_t maxM = cryptonote::common_config::BULLETPROOF_MAX_OUTPUT
 
 struct MultiexpData
 {
+	GULPS_CAT_MAJOR("multiexp");
 	rct::key scalar;
 	ge_p3 point;
 
@@ -89,7 +90,7 @@ struct MultiexpData
 	MultiexpData(const rct::key &s, const ge_p3 &p) : scalar(s), point(p) {}
 	MultiexpData(const rct::key &s, const rct::key &p) : scalar(s)
 	{
-		CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&point, p.bytes) == 0, "ge_frombytes_vartime failed");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&point, p.bytes) == 0, "ge_frombytes_vartime failed");
 	}
 };
 
@@ -105,7 +106,7 @@ struct alignas(8) ge_cached_pad
 class pippenger_cache
 {
 public:
-	pippenger_cache() : size(0), alloc_size(0) {}	
+	pippenger_cache() : size(0), alloc_size(0) {}
 
 	inline ge_cached* pp_offset(size_t n) { return &cache[n].gec; };
 	inline const ge_cached& pp_offset(size_t n) const { return cache[n].gec; };
@@ -148,7 +149,7 @@ private:
 class straus_cache
 {
 public:
-	straus_cache() : size(0) {}	
+	straus_cache() : size(0) {}
 
 	static constexpr size_t STRAUS_C = 4;
 

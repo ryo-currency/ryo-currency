@@ -33,6 +33,7 @@
 
 struct gen_multisig_tx_validation_base : public test_chain_unit_base
 {
+	GULPS_CAT_MAJOR("test_multisig");
 	gen_multisig_tx_validation_base()
 		: m_invalid_tx_index(0), m_invalid_block_index(0)
 	{

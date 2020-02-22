@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Ryo Currency Project
+# Copyright (c) 2020, Ryo Currency Project
 # Portions copyright (c) 2014-2018, The Monero Project
 #
 # Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 # Authors and copyright holders agree that:
 #
 # 8. This licence expires and the work covered by it is released into the 
-#    public domain on 1st of February 2020
+#    public domain on 1st of February 2021
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -118,6 +118,7 @@ target_link_libraries(rpc_base
     ${Boost_REGEX_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_PROGRAM_OPTIONS_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})
 
@@ -130,10 +131,13 @@ target_link_libraries(rpc
     epee
     ${Boost_REGEX_LIBRARY}
     ${Boost_THREAD_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})
 
 target_link_libraries(daemon_messages
+  LINK_PUBLIC
+    fmt::fmt-header-only
   LINK_PRIVATE
     cryptonote_core
     cryptonote_protocol
@@ -141,6 +145,8 @@ target_link_libraries(daemon_messages
     ${EXTRA_LIBRARIES})
 
 target_link_libraries(daemon_rpc_server
+  LINK_PUBLIC
+    fmt::fmt-header-only
   LINK_PRIVATE
     rpc
     cryptonote_core

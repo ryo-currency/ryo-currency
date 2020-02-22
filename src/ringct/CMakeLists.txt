@@ -29,7 +29,7 @@
 # Authors and copyright holders agree that:
 #
 # 8. This licence expires and the work covered by it is released into the 
-#    public domain on 1st of February 2020
+#    public domain on 1st of February 2021
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -62,6 +62,7 @@ target_link_libraries(ringct_basic
   PUBLIC
     common
     cncrypto
+    fmt::fmt-header-only
   PRIVATE
     ${OPENSSL_LIBRARIES}
     ${EXTRA_LIBRARIES})
@@ -88,6 +89,7 @@ target_link_libraries(ringct
     cncrypto
     cryptonote_basic
     device
+    fmt::fmt-header-only
   PRIVATE
     ${OPENSSL_LIBRARIES}
     ${EXTRA_LIBRARIES})

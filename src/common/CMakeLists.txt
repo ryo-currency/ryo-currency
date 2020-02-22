@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Ryo Currency Project
+# Copyright (c) 2020, Ryo Currency Project
 # Portions copyright (c) 2014-2018, The Monero Project
 #
 # Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 # Authors and copyright holders agree that:
 #
 # 8. This licence expires and the work covered by it is released into the 
-#    public domain on 1st of February 2020
+#    public domain on 1st of February 2021
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -55,7 +55,8 @@ set(common_sources
   perf_timer.cpp
   threadpool.cpp
   updates.cpp
-  boost_locale.cpp)
+  boost_locale.cpp
+  string.cpp)
 
 if (STACK_TRACE)
   list(APPEND common_sources stack_trace.cpp)
@@ -64,6 +65,8 @@ endif()
 set(common_headers)
 
 set(common_private_headers
+  gulps.hpp
+  string.hpp
   apply_permutation.h
   base58.h
   boost_serialization_helper.h
@@ -105,11 +108,15 @@ target_link_libraries(common
     ${Boost_THREAD_LIBRARY}
     ${Boost_REGEX_LIBRARY}
     ${Boost_CHRONO_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${Boost_LOCALE_LIBRARY}
     ${OPENSSL_LIBRARIES}
     ${ICU_LIBRARIES}
     ${EXTRA_LIBRARIES})
+
+# activate extended color output for fmt
+target_compile_definitions(common PUBLIC -DFMT_EXTENDED_COLORS)
 
 #monero_install_headers(common
 #  ${common_headers})

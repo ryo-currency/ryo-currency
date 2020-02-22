@@ -28,17 +28,26 @@
 
 #include "enableable.h"
 #include "keyvalue_serialization_overloads.h"
-#include "misc_log_ex.h"
 #include <boost/foreach.hpp>
 #include <boost/utility/value_init.hpp>
+
+#include "common/gulps.hpp"
 
 namespace epee
 {
 /************************************************************************/
 /* Serialize map declarations                                           */
 /************************************************************************/
-#define BEGIN_KV_SERIALIZE_MAP()                                                                                 \
+#define BEGIN_KV_SERIALIZE_MAP(class_name)                                                                       \
+  private:                                                                                                       \
+	class epee_zero{};                                                                                           \
+	class_name(const epee_zero){}                                                                                \
   public:                                                                                                        \
+	class_name()                                                                                                 \
+	{                                                                                                            \
+		static typename std::remove_pointer<decltype(this)>::type set_zero(epee_zero{});                         \
+		*this = set_zero;                                                                                        \
+	}                                                                                                            \
 	template <class t_storage>                                                                                   \
 	bool store(t_storage &st, typename t_storage::hsection hparent_section = nullptr) const                      \
 	{                                                                                                            \
@@ -59,7 +68,7 @@ namespace epee
 		catch(const std::exception &err)                                                                         \
 		{                                                                                                        \
 			(void)(err);                                                                                         \
-			LOG_ERROR("Exception on unserializing: " << err.what());                                             \
+			GULPS_CAT2_ERROR("kv_ser","","Exception on unserializing: {}", err.what());                          \
 			return false;                                                                                        \
 		}                                                                                                        \
 	}                                                                                                            \

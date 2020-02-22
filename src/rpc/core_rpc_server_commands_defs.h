@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -73,7 +73,7 @@ struct COMMAND_RPC_GET_HEIGHT
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -83,7 +83,7 @@ struct COMMAND_RPC_GET_HEIGHT
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(height)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -99,7 +99,7 @@ struct COMMAND_RPC_GET_BLOCKS_FAST
 		std::list<crypto::hash> block_ids; //*first 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block */
 		uint64_t start_height;
 		bool prune;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(block_ids)
 		KV_SERIALIZE(start_height)
 		KV_SERIALIZE(prune)
@@ -110,7 +110,7 @@ struct COMMAND_RPC_GET_BLOCKS_FAST
 	{
 		std::vector<uint64_t> indices;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(tx_output_indices)
 		KV_SERIALIZE(indices)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -119,21 +119,21 @@ struct COMMAND_RPC_GET_BLOCKS_FAST
 	{
 		std::vector<tx_output_indices> indices;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(block_output_indices)
 		KV_SERIALIZE(indices)
 		END_KV_SERIALIZE_MAP()
 	};
 
 	struct response
 	{
-		std::list<block_complete_entry> blocks;
+		std::vector<block_complete_entry_v> blocks;
 		uint64_t start_height;
 		uint64_t current_height;
 		std::string status;
 		std::vector<block_output_indices> output_indices;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(blocks)
 		KV_SERIALIZE(start_height)
 		KV_SERIALIZE(current_height)
@@ -149,7 +149,7 @@ struct COMMAND_RPC_GET_BLOCKS_BY_HEIGHT
 	struct request
 	{
 		std::vector<uint64_t> heights;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(heights)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -160,7 +160,7 @@ struct COMMAND_RPC_GET_BLOCKS_BY_HEIGHT
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(blocks)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -172,7 +172,7 @@ struct COMMAND_RPC_GET_ALT_BLOCKS_HASHES
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -182,7 +182,7 @@ struct COMMAND_RPC_GET_ALT_BLOCKS_HASHES
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(blks_hashes)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -196,7 +196,7 @@ struct COMMAND_RPC_GET_HASHES_FAST
 	{
 		std::list<crypto::hash> block_ids; //*first 10 blocks id goes sequential, next goes in pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block */
 		uint64_t start_height;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(block_ids)
 		KV_SERIALIZE(start_height)
 		END_KV_SERIALIZE_MAP()
@@ -210,7 +210,7 @@ struct COMMAND_RPC_GET_HASHES_FAST
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(m_block_ids)
 		KV_SERIALIZE(start_height)
 		KV_SERIALIZE(current_height)
@@ -228,7 +228,7 @@ struct COMMAND_RPC_GET_ADDRESS_TXS
 		std::string address;
 		std::string view_key;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(address)
 		KV_SERIALIZE(view_key)
 		END_KV_SERIALIZE_MAP()
@@ -242,7 +242,7 @@ struct COMMAND_RPC_GET_ADDRESS_TXS
 		uint64_t out_index;
 		uint32_t mixin;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(spent_output)
 		KV_SERIALIZE(amount)
 		KV_SERIALIZE(key_image)
 		KV_SERIALIZE(tx_pub_key)
@@ -266,7 +266,7 @@ struct COMMAND_RPC_GET_ADDRESS_TXS
 		bool mempool;
 		uint32_t mixin;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(transaction)
 		KV_SERIALIZE(id)
 		KV_SERIALIZE(hash)
 		KV_SERIALIZE(timestamp)
@@ -292,7 +292,7 @@ struct COMMAND_RPC_GET_ADDRESS_TXS
 		uint64_t blockchain_height;
 		uint64_t scanned_block_height;
 		std::string status;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(total_received)
 		KV_SERIALIZE(total_received_unlocked)
 		KV_SERIALIZE(scanned_height)
@@ -312,7 +312,7 @@ struct COMMAND_RPC_GET_ADDRESS_INFO
 		std::string address;
 		std::string view_key;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(address)
 		KV_SERIALIZE(view_key)
 		END_KV_SERIALIZE_MAP()
@@ -326,7 +326,7 @@ struct COMMAND_RPC_GET_ADDRESS_INFO
 		uint64_t out_index;
 		uint32_t mixin;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(spent_output)
 		KV_SERIALIZE(amount)
 		KV_SERIALIZE(key_image)
 		KV_SERIALIZE(tx_pub_key)
@@ -346,7 +346,7 @@ struct COMMAND_RPC_GET_ADDRESS_INFO
 		uint64_t transaction_height;
 		uint64_t blockchain_height;
 		std::list<spent_output> spent_outputs;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(locked_funds)
 		KV_SERIALIZE(total_received)
 		KV_SERIALIZE(total_sent)
@@ -373,7 +373,7 @@ struct COMMAND_RPC_GET_UNSPENT_OUTS
 		bool use_dust;
 		std::string dust_threshold;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(amount)
 		KV_SERIALIZE(address)
 		KV_SERIALIZE(view_key)
@@ -397,7 +397,7 @@ struct COMMAND_RPC_GET_UNSPENT_OUTS
 		uint64_t timestamp;
 		uint64_t height;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(output)
 		KV_SERIALIZE(amount)
 		KV_SERIALIZE(public_key)
 		KV_SERIALIZE(index)
@@ -419,7 +419,7 @@ struct COMMAND_RPC_GET_UNSPENT_OUTS
 		uint64_t per_kb_fee;
 		std::string status;
 		std::string reason;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(amount)
 		KV_SERIALIZE(outputs)
 		KV_SERIALIZE(per_kb_fee)
@@ -437,7 +437,7 @@ struct COMMAND_RPC_GET_RANDOM_OUTS
 		std::vector<std::string> amounts;
 		uint32_t count;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(amounts)
 		KV_SERIALIZE(count)
 		END_KV_SERIALIZE_MAP()
@@ -449,7 +449,7 @@ struct COMMAND_RPC_GET_RANDOM_OUTS
 		uint64_t global_index;
 		std::string rct; // 64+64+64 characters long (<rct commit> + <encrypted mask> + <rct amount>)
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(output)
 		KV_SERIALIZE(public_key)
 		KV_SERIALIZE(global_index)
 		KV_SERIALIZE(rct)
@@ -460,7 +460,7 @@ struct COMMAND_RPC_GET_RANDOM_OUTS
 	{
 		uint64_t amount;
 		std::vector<output> outputs;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(amount_out)
 		KV_SERIALIZE(amount)
 		KV_SERIALIZE(outputs)
 		END_KV_SERIALIZE_MAP()
@@ -470,7 +470,7 @@ struct COMMAND_RPC_GET_RANDOM_OUTS
 	{
 		std::vector<amount_out> amount_outs;
 		std::string Error;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(amount_outs)
 		KV_SERIALIZE(Error)
 		END_KV_SERIALIZE_MAP()
@@ -485,7 +485,7 @@ struct COMMAND_RPC_SUBMIT_RAW_TX
 		std::string view_key;
 		std::string tx;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(address)
 		KV_SERIALIZE(view_key)
 		KV_SERIALIZE(tx)
@@ -497,7 +497,7 @@ struct COMMAND_RPC_SUBMIT_RAW_TX
 		std::string status;
 		std::string error;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(error)
 		END_KV_SERIALIZE_MAP()
@@ -512,7 +512,7 @@ struct COMMAND_RPC_LOGIN
 		std::string view_key;
 		bool create_account;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(address)
 		KV_SERIALIZE(view_key)
 		KV_SERIALIZE(create_account)
@@ -525,7 +525,7 @@ struct COMMAND_RPC_LOGIN
 		std::string reason;
 		bool new_address;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(reason)
 		KV_SERIALIZE(new_address)
@@ -540,7 +540,7 @@ struct COMMAND_RPC_IMPORT_WALLET_REQUEST
 		std::string address;
 		std::string view_key;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(address)
 		KV_SERIALIZE(view_key)
 		END_KV_SERIALIZE_MAP()
@@ -555,7 +555,7 @@ struct COMMAND_RPC_IMPORT_WALLET_REQUEST
 		std::string payment_address;
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(payment_id)
 		KV_SERIALIZE(import_fee)
 		KV_SERIALIZE(new_request)
@@ -574,7 +574,7 @@ struct COMMAND_RPC_GET_TRANSACTIONS
 		bool decode_as_json;
 		bool prune;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(txs_hashes)
 		KV_SERIALIZE(decode_as_json)
 		KV_SERIALIZE_OPT(prune, false)
@@ -592,7 +592,7 @@ struct COMMAND_RPC_GET_TRANSACTIONS
 		uint64_t block_timestamp;
 		std::vector<uint64_t> output_indices;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(entry)
 		KV_SERIALIZE(tx_hash)
 		KV_SERIALIZE(as_hex)
 		KV_SERIALIZE(as_json)
@@ -618,7 +618,7 @@ struct COMMAND_RPC_GET_TRANSACTIONS
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(txs_as_hex)
 		KV_SERIALIZE(txs_as_json)
 		KV_SERIALIZE(txs)
@@ -643,7 +643,7 @@ struct COMMAND_RPC_IS_KEY_IMAGE_SPENT
 	{
 		std::vector<std::string> key_images;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(key_images)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -654,7 +654,7 @@ struct COMMAND_RPC_IS_KEY_IMAGE_SPENT
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(spent_status)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -668,7 +668,7 @@ struct COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_INDEXES
 	struct request
 	{
 		crypto::hash txid;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE_VAL_POD_AS_BLOB(txid)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -678,7 +678,7 @@ struct COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_INDEXES
 		std::vector<uint64_t> o_indexes;
 		std::string status;
 		bool untrusted;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(o_indexes)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -692,7 +692,7 @@ struct COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS
 	{
 		std::vector<uint64_t> amounts;
 		uint64_t outs_count;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(amounts)
 		KV_SERIALIZE(outs_count)
 		END_KV_SERIALIZE_MAP()
@@ -711,7 +711,7 @@ struct COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS
 		uint64_t amount;
 		std::list<out_entry> outs;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(outs_for_amount)
 		KV_SERIALIZE(amount)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(outs)
 		END_KV_SERIALIZE_MAP()
@@ -722,7 +722,7 @@ struct COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS
 		std::vector<outs_for_amount> outs;
 		std::string status;
 		bool untrusted;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(outs)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -732,10 +732,12 @@ struct COMMAND_RPC_GET_RANDOM_OUTPUTS_FOR_AMOUNTS
 //-----------------------------------------------
 struct get_outputs_out
 {
+	get_outputs_out(uint64_t amount, uint64_t index) : amount(amount), index(index) {}
+  
 	uint64_t amount;
 	uint64_t index;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(get_outputs_out)
 	KV_SERIALIZE(amount)
 	KV_SERIALIZE(index)
 	END_KV_SERIALIZE_MAP()
@@ -747,20 +749,23 @@ struct COMMAND_RPC_GET_OUTPUTS_BIN
 	{
 		std::vector<get_outputs_out> outputs;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(outputs)
 		END_KV_SERIALIZE_MAP()
 	};
 
 	struct outkey
 	{
+		outkey(crypto::public_key key, rct::key mask, bool unlocked, uint64_t height, crypto::hash txid) : key(key), mask(mask),
+			unlocked(unlocked), height(height), txid(txid)  {}
+	  
 		crypto::public_key key;
 		rct::key mask;
 		bool unlocked;
 		uint64_t height;
 		crypto::hash txid;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(outkey)
 		KV_SERIALIZE_VAL_POD_AS_BLOB(key)
 		KV_SERIALIZE_VAL_POD_AS_BLOB(mask)
 		KV_SERIALIZE(unlocked)
@@ -775,7 +780,7 @@ struct COMMAND_RPC_GET_OUTPUTS_BIN
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(outs)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -789,7 +794,7 @@ struct COMMAND_RPC_GET_OUTPUTS
 	{
 		std::vector<get_outputs_out> outputs;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(outputs)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -802,7 +807,7 @@ struct COMMAND_RPC_GET_OUTPUTS
 		uint64_t height;
 		std::string txid;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(outkey)
 		KV_SERIALIZE(key)
 		KV_SERIALIZE(mask)
 		KV_SERIALIZE(unlocked)
@@ -817,7 +822,7 @@ struct COMMAND_RPC_GET_OUTPUTS
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(outs)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -830,7 +835,7 @@ struct COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS
 	struct request
 	{
 		uint64_t outs_count;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(outs_count)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -850,7 +855,7 @@ struct COMMAND_RPC_GET_RANDOM_RCT_OUTPUTS
 		std::list<out_entry> outs;
 		std::string status;
 		bool untrusted;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(outs)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -865,10 +870,9 @@ struct COMMAND_RPC_SEND_RAW_TX
 		std::string tx_as_hex;
 		bool do_not_relay;
 
-		request() {}
 		explicit request(const transaction &);
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(tx_as_hex)
 		KV_SERIALIZE_OPT(do_not_relay, false)
 		END_KV_SERIALIZE_MAP()
@@ -889,7 +893,7 @@ struct COMMAND_RPC_SEND_RAW_TX
 		bool not_rct;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(reason)
 		KV_SERIALIZE(not_relayed)
@@ -915,7 +919,7 @@ struct COMMAND_RPC_START_MINING
 		bool do_background_mining;
 		bool ignore_battery;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(miner_address)
 		KV_SERIALIZE(threads_count)
 		KV_SERIALIZE(do_background_mining)
@@ -927,7 +931,7 @@ struct COMMAND_RPC_START_MINING
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -938,7 +942,7 @@ struct COMMAND_RPC_GET_INFO
 	struct request
 	{
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -973,7 +977,7 @@ struct COMMAND_RPC_GET_INFO
 		uint64_t height_without_bootstrap;
 		bool was_bootstrap_ever_used;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(height)
 		KV_SERIALIZE(target_height)
@@ -1012,7 +1016,7 @@ struct COMMAND_RPC_STOP_MINING
 	struct request
 	{
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1020,7 +1024,7 @@ struct COMMAND_RPC_STOP_MINING
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1032,7 +1036,7 @@ struct COMMAND_RPC_MINING_STATUS
 	struct request
 	{
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1045,7 +1049,7 @@ struct COMMAND_RPC_MINING_STATUS
 		std::string address;
 		bool is_background_mining_enabled;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(active)
 		KV_SERIALIZE(speed)
@@ -1062,7 +1066,7 @@ struct COMMAND_RPC_SAVE_BC
 	struct request
 	{
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1070,7 +1074,7 @@ struct COMMAND_RPC_SAVE_BC
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1086,7 +1090,7 @@ struct COMMAND_RPC_GETBLOCKCOUNT
 		uint64_t count;
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(count)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
@@ -1107,7 +1111,7 @@ struct COMMAND_RPC_GETBLOCKTEMPLATE
 		uint64_t reserve_size; //max 255 bytes
 		std::string wallet_address;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(reserve_size)
 		KV_SERIALIZE(wallet_address)
 		END_KV_SERIALIZE_MAP()
@@ -1125,7 +1129,7 @@ struct COMMAND_RPC_GETBLOCKTEMPLATE
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(difficulty)
 		KV_SERIALIZE(height)
 		KV_SERIALIZE(reserved_offset)
@@ -1147,7 +1151,7 @@ struct COMMAND_RPC_SUBMITBLOCK
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1169,7 +1173,7 @@ struct block_header_response
 	uint64_t block_size;
 	uint64_t num_txes;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(block_header_response)
 	KV_SERIALIZE(major_version)
 	KV_SERIALIZE(minor_version)
 	KV_SERIALIZE(timestamp)
@@ -1190,7 +1194,7 @@ struct COMMAND_RPC_GET_LAST_BLOCK_HEADER
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1200,7 +1204,7 @@ struct COMMAND_RPC_GET_LAST_BLOCK_HEADER
 		block_header_response block_header;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(block_header)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -1214,7 +1218,7 @@ struct COMMAND_RPC_GET_BLOCK_HEADER_BY_HASH
 	{
 		std::string hash;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(hash)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1225,7 +1229,7 @@ struct COMMAND_RPC_GET_BLOCK_HEADER_BY_HASH
 		block_header_response block_header;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(block_header)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -1239,7 +1243,7 @@ struct COMMAND_RPC_GET_BLOCK_HEADER_BY_HEIGHT
 	{
 		uint64_t height;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(height)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1250,7 +1254,7 @@ struct COMMAND_RPC_GET_BLOCK_HEADER_BY_HEIGHT
 		block_header_response block_header;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(block_header)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(untrusted)
@@ -1265,7 +1269,7 @@ struct COMMAND_RPC_GET_BLOCK
 		std::string hash;
 		uint64_t height;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(hash)
 		KV_SERIALIZE(height)
 		END_KV_SERIALIZE_MAP()
@@ -1281,7 +1285,7 @@ struct COMMAND_RPC_GET_BLOCK
 		std::string json;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(block_header)
 		KV_SERIALIZE(miner_tx_hash)
 		KV_SERIALIZE(tx_hashes)
@@ -1301,8 +1305,6 @@ struct peer
 	uint16_t port;
 	uint64_t last_seen;
 
-	peer() = default;
-
 	peer(uint64_t id, const std::string &host, uint64_t last_seen)
 		: id(id), host(host), ip(0), port(0), last_seen(last_seen)
 	{
@@ -1312,7 +1314,7 @@ struct peer
 	{
 	}
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(peer)
 	KV_SERIALIZE(id)
 	KV_SERIALIZE(host)
 	KV_SERIALIZE(ip)
@@ -1325,7 +1327,7 @@ struct COMMAND_RPC_GET_PEER_LIST
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1335,7 +1337,7 @@ struct COMMAND_RPC_GET_PEER_LIST
 		std::vector<peer> white_list;
 		std::vector<peer> gray_list;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(white_list)
 		KV_SERIALIZE(gray_list)
@@ -1349,7 +1351,7 @@ struct COMMAND_RPC_SET_LOG_HASH_RATE
 	{
 		bool visible;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(visible)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1357,7 +1359,7 @@ struct COMMAND_RPC_SET_LOG_HASH_RATE
 	struct response
 	{
 		std::string status;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1369,7 +1371,7 @@ struct COMMAND_RPC_SET_LOG_LEVEL
 	{
 		int8_t level;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(level)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1377,7 +1379,7 @@ struct COMMAND_RPC_SET_LOG_LEVEL
 	struct response
 	{
 		std::string status;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1389,7 +1391,7 @@ struct COMMAND_RPC_SET_LOG_CATEGORIES
 	{
 		std::string categories;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(categories)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1399,7 +1401,7 @@ struct COMMAND_RPC_SET_LOG_CATEGORIES
 		std::string status;
 		std::string categories;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(categories)
 		END_KV_SERIALIZE_MAP()
@@ -1424,7 +1426,7 @@ struct tx_info
 	bool double_spend_seen;
 	std::string tx_blob;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(tx_info)
 	KV_SERIALIZE(id_hash)
 	KV_SERIALIZE(tx_json)
 	KV_SERIALIZE(blob_size)
@@ -1448,7 +1450,7 @@ struct spent_key_image_info
 	std::string id_hash;
 	std::vector<std::string> txs_hashes;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(spent_key_image_info)
 	KV_SERIALIZE(id_hash)
 	KV_SERIALIZE(txs_hashes)
 	END_KV_SERIALIZE_MAP()
@@ -1458,7 +1460,7 @@ struct COMMAND_RPC_GET_TRANSACTION_POOL
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1469,7 +1471,7 @@ struct COMMAND_RPC_GET_TRANSACTION_POOL
 		std::vector<spent_key_image_info> spent_key_images;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(transactions)
 		KV_SERIALIZE(spent_key_images)
@@ -1482,7 +1484,7 @@ struct COMMAND_RPC_GET_TRANSACTION_POOL_HASHES
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1492,7 +1494,7 @@ struct COMMAND_RPC_GET_TRANSACTION_POOL_HASHES
 		std::vector<crypto::hash> tx_hashes;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(tx_hashes)
 		KV_SERIALIZE(untrusted)
@@ -1511,7 +1513,7 @@ struct COMMAND_RPC_GET_TRANSACTION_POOL_BACKLOG
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1521,7 +1523,7 @@ struct COMMAND_RPC_GET_TRANSACTION_POOL_BACKLOG
 		std::vector<tx_backlog_entry> backlog;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(backlog)
 		KV_SERIALIZE(untrusted)
@@ -1534,7 +1536,7 @@ struct txpool_histo
 	uint32_t txs;
 	uint64_t bytes;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(txpool_histo)
 	KV_SERIALIZE(txs)
 	KV_SERIALIZE(bytes)
 	END_KV_SERIALIZE_MAP()
@@ -1573,7 +1575,7 @@ struct txpool_stats
 		num_double_spends = 0;
 	}
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(txpool_stats)
 	KV_SERIALIZE(bytes_total)
 	KV_SERIALIZE(bytes_min)
 	KV_SERIALIZE(bytes_max)
@@ -1594,7 +1596,7 @@ struct COMMAND_RPC_GET_TRANSACTION_POOL_STATS
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1604,7 +1606,7 @@ struct COMMAND_RPC_GET_TRANSACTION_POOL_STATS
 		txpool_stats pool_stats;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(pool_stats)
 		KV_SERIALIZE(untrusted)
@@ -1616,7 +1618,7 @@ struct COMMAND_RPC_GET_CONNECTIONS
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1625,7 +1627,7 @@ struct COMMAND_RPC_GET_CONNECTIONS
 		std::string status;
 		std::list<connection_info> connections;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(connections)
 		END_KV_SERIALIZE_MAP()
@@ -1639,7 +1641,7 @@ struct COMMAND_RPC_GET_BLOCK_HEADERS_RANGE
 		uint64_t start_height;
 		uint64_t end_height;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(start_height)
 		KV_SERIALIZE(end_height)
 		END_KV_SERIALIZE_MAP()
@@ -1651,7 +1653,7 @@ struct COMMAND_RPC_GET_BLOCK_HEADERS_RANGE
 		std::vector<block_header_response> headers;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(headers)
 		KV_SERIALIZE(untrusted)
@@ -1663,7 +1665,7 @@ struct COMMAND_RPC_STOP_DAEMON
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1671,7 +1673,7 @@ struct COMMAND_RPC_STOP_DAEMON
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1681,7 +1683,7 @@ struct COMMAND_RPC_FAST_EXIT
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1689,7 +1691,7 @@ struct COMMAND_RPC_FAST_EXIT
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1699,7 +1701,7 @@ struct COMMAND_RPC_GET_LIMIT
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1710,7 +1712,7 @@ struct COMMAND_RPC_GET_LIMIT
 		uint64_t limit_down;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(limit_up)
 		KV_SERIALIZE(limit_down)
@@ -1726,7 +1728,7 @@ struct COMMAND_RPC_SET_LIMIT
 		int64_t limit_down; // all limits (for get and set) are kB/s
 		int64_t limit_up;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(limit_down)
 		KV_SERIALIZE(limit_up)
 		END_KV_SERIALIZE_MAP()
@@ -1738,7 +1740,7 @@ struct COMMAND_RPC_SET_LIMIT
 		int64_t limit_up;
 		int64_t limit_down;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(limit_up)
 		KV_SERIALIZE(limit_down)
@@ -1751,7 +1753,7 @@ struct COMMAND_RPC_OUT_PEERS
 	struct request
 	{
 		uint64_t out_peers;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(out_peers)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1760,7 +1762,7 @@ struct COMMAND_RPC_OUT_PEERS
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1771,7 +1773,7 @@ struct COMMAND_RPC_IN_PEERS
 	struct request
 	{
 		uint64_t in_peers;
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(in_peers)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1780,7 +1782,7 @@ struct COMMAND_RPC_IN_PEERS
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1792,7 +1794,7 @@ struct COMMAND_RPC_HARD_FORK_INFO
 	{
 		uint8_t version;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(version)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1810,7 +1812,7 @@ struct COMMAND_RPC_HARD_FORK_INFO
 		std::string status;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(version)
 		KV_SERIALIZE(enabled)
 		KV_SERIALIZE(window)
@@ -1833,7 +1835,7 @@ struct COMMAND_RPC_GETBANS
 		uint32_t ip;
 		uint32_t seconds;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(ban)
 		KV_SERIALIZE(host)
 		KV_SERIALIZE(ip)
 		KV_SERIALIZE(seconds)
@@ -1842,7 +1844,7 @@ struct COMMAND_RPC_GETBANS
 
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1851,7 +1853,7 @@ struct COMMAND_RPC_GETBANS
 		std::string status;
 		std::vector<ban> bans;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(bans)
 		END_KV_SERIALIZE_MAP()
@@ -1860,14 +1862,14 @@ struct COMMAND_RPC_GETBANS
 
 struct COMMAND_RPC_SETBANS
 {
-	struct ban
+	struct ban_data
 	{
 		std::string host;
 		uint32_t ip;
 		bool ban;
 		uint32_t seconds;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(ban_data)
 		KV_SERIALIZE(host)
 		KV_SERIALIZE(ip)
 		KV_SERIALIZE(ban)
@@ -1877,9 +1879,9 @@ struct COMMAND_RPC_SETBANS
 
 	struct request
 	{
-		std::vector<ban> bans;
+		std::vector<ban_data> bans;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(bans)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1888,7 +1890,7 @@ struct COMMAND_RPC_SETBANS
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1900,7 +1902,7 @@ struct COMMAND_RPC_FLUSH_TRANSACTION_POOL
 	{
 		std::list<std::string> txids;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(txids)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1909,7 +1911,7 @@ struct COMMAND_RPC_FLUSH_TRANSACTION_POOL
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -1925,7 +1927,7 @@ struct COMMAND_RPC_GET_OUTPUT_HISTOGRAM
 		bool unlocked;
 		uint64_t recent_cutoff;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(amounts);
 		KV_SERIALIZE(min_count);
 		KV_SERIALIZE(max_count);
@@ -1941,7 +1943,7 @@ struct COMMAND_RPC_GET_OUTPUT_HISTOGRAM
 		uint64_t unlocked_instances;
 		uint64_t recent_instances;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(entry)
 		KV_SERIALIZE(amount);
 		KV_SERIALIZE(total_instances);
 		KV_SERIALIZE(unlocked_instances);
@@ -1949,7 +1951,6 @@ struct COMMAND_RPC_GET_OUTPUT_HISTOGRAM
 		END_KV_SERIALIZE_MAP()
 
 		entry(uint64_t amount, uint64_t total_instances, uint64_t unlocked_instances, uint64_t recent_instances) : amount(amount), total_instances(total_instances), unlocked_instances(unlocked_instances), recent_instances(recent_instances) {}
-		entry() {}
 	};
 
 	struct response
@@ -1958,7 +1959,7 @@ struct COMMAND_RPC_GET_OUTPUT_HISTOGRAM
 		std::vector<entry> histogram;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(histogram)
 		KV_SERIALIZE(untrusted)
@@ -1970,7 +1971,7 @@ struct COMMAND_RPC_GET_VERSION
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1980,7 +1981,7 @@ struct COMMAND_RPC_GET_VERSION
 		uint32_t version;
 		bool untrusted;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(version)
 		KV_SERIALIZE(untrusted)
@@ -1995,7 +1996,7 @@ struct COMMAND_RPC_GET_COINBASE_TX_SUM
 		uint64_t height;
 		uint64_t count;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(height);
 		KV_SERIALIZE(count);
 		END_KV_SERIALIZE_MAP()
@@ -2007,7 +2008,7 @@ struct COMMAND_RPC_GET_COINBASE_TX_SUM
 		uint64_t emission_amount;
 		uint64_t fee_amount;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(emission_amount)
 		KV_SERIALIZE(fee_amount)
@@ -2019,18 +2020,20 @@ struct COMMAND_RPC_GET_ALTERNATE_CHAINS
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
 	struct chain_info
 	{
+		chain_info(std::string block_hash, const uint64_t height, const uint64_t length, const uint64_t difficulty) : block_hash(block_hash), height(height), length(length), difficulty(difficulty) {}
+
 		std::string block_hash;
 		uint64_t height;
 		uint64_t length;
 		uint64_t difficulty;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(chain_info)
 		KV_SERIALIZE(block_hash)
 		KV_SERIALIZE(height)
 		KV_SERIALIZE(length)
@@ -2043,7 +2046,7 @@ struct COMMAND_RPC_GET_ALTERNATE_CHAINS
 		std::string status;
 		std::list<chain_info> chains;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(chains)
 		END_KV_SERIALIZE_MAP()
@@ -2057,7 +2060,7 @@ struct COMMAND_RPC_UPDATE
 		std::string command;
 		std::string path;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(command);
 		KV_SERIALIZE(path);
 		END_KV_SERIALIZE_MAP()
@@ -2073,7 +2076,7 @@ struct COMMAND_RPC_UPDATE
 		std::string hash;
 		std::string path;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(update)
 		KV_SERIALIZE(version)
@@ -2091,7 +2094,7 @@ struct COMMAND_RPC_RELAY_TX
 	{
 		std::list<std::string> txids;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(txids)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -2100,7 +2103,7 @@ struct COMMAND_RPC_RELAY_TX
 	{
 		std::string status;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -2110,21 +2113,26 @@ struct COMMAND_RPC_SYNC_INFO
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
 	struct peer
 	{
+		peer(connection_info info) : info(info) {}
+
 		connection_info info;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(peer)
 		KV_SERIALIZE(info)
 		END_KV_SERIALIZE_MAP()
 	};
 
 	struct span
 	{
+		span(uint64_t start_block_height, uint64_t nblocks, std::string connection_id, uint32_t rate, uint32_t speed, uint64_t size, std::string remote_address) :
+		    start_block_height(start_block_height), nblocks(nblocks), connection_id(connection_id), rate(rate), speed(speed), size(size), remote_address(remote_address)  {}
+	  
 		uint64_t start_block_height;
 		uint64_t nblocks;
 		std::string connection_id;
@@ -2133,7 +2141,7 @@ struct COMMAND_RPC_SYNC_INFO
 		uint64_t size;
 		std::string remote_address;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(span)
 		KV_SERIALIZE(start_block_height)
 		KV_SERIALIZE(nblocks)
 		KV_SERIALIZE(connection_id)
@@ -2152,7 +2160,7 @@ struct COMMAND_RPC_SYNC_INFO
 		std::list<peer> peers;
 		std::list<span> spans;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(height)
 		KV_SERIALIZE(target_height)
@@ -2171,7 +2179,7 @@ struct COMMAND_RPC_GET_OUTPUT_DISTRIBUTION
 		uint64_t to_height;
 		bool cumulative;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(amounts)
 		KV_SERIALIZE_OPT(from_height, (uint64_t)0)
 		KV_SERIALIZE_OPT(to_height, (uint64_t)0)
@@ -2179,14 +2187,16 @@ struct COMMAND_RPC_GET_OUTPUT_DISTRIBUTION
 		END_KV_SERIALIZE_MAP()
 	};
 
-	struct distribution
+	struct distribution_data
 	{
+		distribution_data(uint64_t amount, uint64_t start_height, std::vector<uint64_t> distribution, uint64_t base) :
+				  amount(amount), start_height(start_height), distribution(distribution), base(base) {}
 		uint64_t amount;
 		uint64_t start_height;
 		std::vector<uint64_t> distribution;
 		uint64_t base;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(distribution_data)
 		KV_SERIALIZE(amount)
 		KV_SERIALIZE(start_height)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(distribution)
@@ -2197,9 +2207,9 @@ struct COMMAND_RPC_GET_OUTPUT_DISTRIBUTION
 	struct response
 	{
 		std::string status;
-		std::vector<distribution> distributions;
+		std::vector<distribution_data> distributions;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(status)
 		KV_SERIALIZE(distributions)
 		END_KV_SERIALIZE_MAP()

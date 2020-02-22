@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -51,8 +51,12 @@
 #include <boost/filesystem/operations.hpp>
 #include <boost/filesystem/path.hpp>
 
+#define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
+
 namespace daemonizer
 {
+GULPS_CAT_MAJOR("posix_dmnzer");
+extern gulps_log_level log_scr, log_dsk;
 namespace
 {
 const command_line::arg_descriptor<bool> arg_detach = {
@@ -88,9 +92,10 @@ inline bool daemonize(
 	,
 	boost::program_options::variables_map const &vm)
 {
+
 	if(command_line::has_arg(vm, arg_detach))
 	{
-		tools::success_msg_writer() << "Forking to background...";
+		GULPS_PRINT_OK("Forking to background...");
 		std::string pidfile;
 		if(command_line::has_arg(vm, arg_pidfile))
 		{
@@ -106,7 +111,7 @@ inline bool daemonize(
 	}
 	else
 	{
-		//LOG_PRINT_L0("Ryo '" << RYO_RELEASE_NAME << "' (" << RYO_VERSION_FULL);
+		//GULPS_PRINT("Ryo '", RYO_RELEASE_NAME, " (", RYO_VERSION_FULL, ")");
 		return executor.run_interactive(vm);
 	}
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -62,6 +62,8 @@
 #include "storages/levin_abstract_invoke2.h"
 #include "warnings.h"
 
+#include "common/gulps.hpp"
+
 PUSH_WARNINGS
 DISABLE_VS_WARNINGS(4355)
 
@@ -82,6 +84,7 @@ class node_server : public epee::levin::levin_commands_handler<p2p_connection_co
 					public i_p2p_endpoint<typename t_payload_net_handler::connection_context>,
 					public epee::net_utils::i_connection_filter
 {
+	GULPS_CAT_MAJOR("net_node");
 	struct by_conn_id
 	{
 	};
@@ -281,11 +284,11 @@ class node_server : public epee::levin::levin_commands_handler<p2p_connection_co
 
 	void kill()
 	{ ///< will be called e.g. from deinit()
-		_info("Killing the net_node");
+		GULPS_INFO("Killing the net_node");
 		is_closing = true;
 		if(mPeersLoggerThread != nullptr)
 			mPeersLoggerThread->join(); // make sure the thread finishes
-		_info("Joined extra background net_node threads");
+		GULPS_INFO("Joined extra background net_node threads");
 	}
 
 	//debug functions
@@ -299,7 +302,7 @@ class node_server : public epee::levin::levin_commands_handler<p2p_connection_co
 		uint64_t m_peer_id;
 		uint32_t m_support_flags;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(config)
 		KV_SERIALIZE(m_net_config)
 		KV_SERIALIZE(m_peer_id)
 		KV_SERIALIZE(m_support_flags)

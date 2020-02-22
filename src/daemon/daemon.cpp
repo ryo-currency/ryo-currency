@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -45,7 +45,6 @@
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
 #include "daemon/daemon.h"
-#include "misc_log_ex.h"
 #include "rpc/daemon_handler.h"
 #include "rpc/zmq_server.h"
 #include <boost/algorithm/string/split.hpp>
@@ -63,12 +62,11 @@
 #include "daemon/rpc.h"
 #include "version.h"
 
+#include "common/gulps.hpp"
+
 using namespace epee;
 
 #include <functional>
-
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
 
 namespace daemonize
 {
@@ -173,7 +171,7 @@ bool t_daemon::run(bool interactive)
 
 		if(!zmq_server.addTCPSocket(zmq_rpc_bind_address, zmq_rpc_bind_port))
 		{
-			LOG_ERROR(std::string("Failed to add TCP Socket (") + zmq_rpc_bind_address + ":" + zmq_rpc_bind_port + ") to ZMQ RPC Server");
+			GULPSF_ERROR("Failed to add TCP Socket ({}:{}) to ZMQ RPC Server", zmq_rpc_bind_address, zmq_rpc_bind_port);
 
 			if(rpc_commands)
 				rpc_commands->stop_handling();
@@ -184,10 +182,10 @@ bool t_daemon::run(bool interactive)
 			return false;
 		}
 
-		MINFO("Starting ZMQ server...");
+		GULPS_INFO("Starting ZMQ server...");
 		zmq_server.run();
 
-		MINFO(std::string("ZMQ server started at ") + zmq_rpc_bind_address + ":" + zmq_rpc_bind_port + ".");
+		GULPSF_INFO("ZMQ server started at {}:{}.", zmq_rpc_bind_address, zmq_rpc_bind_port);
 
 		mp_internals->p2p.run(); // blocks until p2p goes down
 
@@ -199,17 +197,17 @@ bool t_daemon::run(bool interactive)
 		for(auto &rpc : mp_internals->rpcs)
 			rpc->stop();
 		mp_internals->core.get().get_miner().stop();
-		MGINFO("Node stopped.");
+		GULPS_GLOBAL_PRINT("Node stopped.");
 		return true;
 	}
 	catch(std::exception const &ex)
 	{
-		MFATAL("Uncaught exception! " << ex.what());
+		GULPSF_ERROR("Uncaught exception! {}", ex.what());
 		return false;
 	}
 	catch(...)
 	{
-		MFATAL("Uncaught exception!");
+		GULPS_ERROR("Uncaught exception!");
 		return false;
 	}
 }

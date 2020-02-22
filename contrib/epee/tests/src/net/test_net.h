@@ -270,11 +270,11 @@ inline bool do_run_test_server()
 
 	net_utils::connection_context_base cntxt_1;
 	bool r = srv1.connect("127.0.0.1", string_tools::num_to_string_fast(port2), 5000, cntxt_1);
-	CHECK_AND_ASSERT_MES(r, false, "connect to server failed");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "connect to server failed");
 
 	net_utils::connection_context_base cntxt_2;
 	r = srv2.connect("127.0.0.1", string_tools::num_to_string_fast(port1), 5000, cntxt_2);
-	CHECK_AND_ASSERT_MES(r, false, "connect to server failed");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "connect to server failed");
 
 	while(true)
 	{
@@ -311,7 +311,7 @@ inline bool do_test2_work_with_srv(test_levin_server &srv, int port)
 	{
 		net_utils::connection_context_base cntxt_local = AUTO_VAL_INIT(cntxt_local);
 		bool r = srv.connect_async("127.0.0.1", string_tools::num_to_string_fast(port), 5000, [&srv, &port, &wait_event, &i, &cntxt_local](const net_utils::connection_context_base &cntxt, const boost::system::error_code &ec) {
-			CHECK_AND_ASSERT_MES(!ec, void(), "Some problems at connect, message: " << ec.message());
+			GULPS_CHECK_AND_ASSERT_MES(!ec, void(), "Some problems at connect, message: " , ec.message());
 			cntxt_local = cntxt;
 			LOG_PRINT_L0("Invoking command 1 to " << port);
 			COMMAND_EXAMPLE_1::request arg = AUTO_VAL_INIT(arg);
@@ -320,7 +320,7 @@ inline bool do_test2_work_with_srv(test_levin_server &srv, int port)
 			int port_ = port;
 			boost::mutex &wait_event_ = wait_event;
 			int r = srv.invoke_async<COMMAND_EXAMPLE_1::request>(cntxt.m_connection_id, COMMAND_EXAMPLE_1::ID, arg, [port_, &wait_event_](int code, const COMMAND_EXAMPLE_1::request &rsp, const net_utils::connection_context_base &cntxt) {
-				CHECK_AND_ASSERT_MES(code > 0, void(), "Failed to invoke");
+				GULPS_CHECK_AND_ASSERT_MES(code > 0, void(), "Failed to invoke");
 				LOG_PRINT_L0("command 1 invoke to " << port_ << " OK.");
 				wait_event_.unlock();
 			});

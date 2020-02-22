@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -71,10 +71,10 @@ const command_line::arg_descriptor<std::string, false, true, 2> arg_log_file = {
         return (daemonizer::get_default_data_dir() / "stagenet" /
                 std::string(CRYPTONOTE_NAME ".log")).string();
       return val; }};
-const command_line::arg_descriptor<std::size_t> arg_max_log_file_size = {
-	"max-log-file-size", "Specify maximum log file size [B]", MAX_LOG_FILE_SIZE};
 const command_line::arg_descriptor<std::string> arg_log_level = {
-	"log-level", "", ""};
+	"log-level", "Screen log level", ""};
+const command_line::arg_descriptor<std::string> arg_log_file_level = {
+	"file-log-level", "File log level", ""};
 const command_line::arg_descriptor<std::vector<std::string>> arg_command = {
 	"daemon_command", "Hidden"};
 const command_line::arg_descriptor<bool> arg_os_version = {
@@ -92,6 +92,9 @@ const command_line::arg_descriptor<std::string, false, true, 2> arg_zmq_rpc_bind
       if (testnet_stagenet[1] && defaulted)
         return std::to_string(cryptonote::config<cryptonote::STAGENET>::ZMQ_RPC_DEFAULT_PORT);
       return val; }};
+
+const command_line::arg_descriptor<bool> arg_display_timestamps = {
+	"display-timestamps", "Display screen log with timestamps"};
 
 } // namespace daemon_args
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -145,6 +145,9 @@ class device
 	/*                               SUB ADDRESS                               */
 	/* ======================================================================= */
 	virtual bool derive_subaddress_public_key(const crypto::public_key &pub, const crypto::key_derivation &derivation, const std::size_t output_index, crypto::public_key &derived_pub) = 0;
+#ifdef HAVE_EC_64
+	virtual bool derive_subaddress_public_key_64(const crypto::public_key &pub, const crypto::key_derivation &derivation, const std::size_t output_index, crypto::public_key &derived_pub) = 0;
+#endif
 	virtual crypto::public_key get_subaddress_spend_public_key(const cryptonote::account_keys &keys, const cryptonote::subaddress_index &index) = 0;
 	virtual std::vector<crypto::public_key> get_subaddress_spend_public_keys(const cryptonote::account_keys &keys, uint32_t account, uint32_t begin, uint32_t end) = 0;
 	virtual cryptonote::account_public_address get_subaddress(const cryptonote::account_keys &keys, const cryptonote::subaddress_index &index) = 0;
@@ -159,6 +162,9 @@ class device
 	virtual bool sc_secret_add(crypto::secret_key &r, const crypto::secret_key &a, const crypto::secret_key &b) = 0;
 	virtual crypto::secret_key generate_legacy_keys(crypto::public_key &pub, crypto::secret_key &sec, const crypto::secret_key &recovery_key = crypto::secret_key(), bool recover = false) = 0;
 	virtual bool generate_key_derivation(const crypto::public_key &pub, const crypto::secret_key &sec, crypto::key_derivation &derivation) = 0;
+#ifdef HAVE_EC_64
+	virtual bool generate_key_derivation_64(const crypto::public_key &pub, const crypto::secret_key &sec, crypto::key_derivation &derivation) = 0;
+#endif
 	virtual bool conceal_derivation(crypto::key_derivation &derivation, const crypto::public_key &tx_pub_key, const std::vector<crypto::public_key> &additional_tx_pub_keys, const crypto::key_derivation &main_derivation, const std::vector<crypto::key_derivation> &additional_derivations) = 0;
 	virtual bool derivation_to_scalar(const crypto::key_derivation &derivation, const size_t output_index, crypto::ec_scalar &res) = 0;
 	virtual bool derive_secret_key(const crypto::key_derivation &derivation, const std::size_t output_index, const crypto::secret_key &sec, crypto::secret_key &derived_sec) = 0;
@@ -200,7 +206,7 @@ class device
 		// Encryption and decryption are the same operation (xor with a key)
 		return encrypt_payment_id(payment_id, public_key, secret_key);
 	}
-	
+
 	virtual bool ecdhEncode(rct::ecdhTuple &unmasked, const rct::key &sharedSec) = 0;
 	virtual bool ecdhDecode(rct::ecdhTuple &masked, const rct::key &sharedSec) = 0;
 

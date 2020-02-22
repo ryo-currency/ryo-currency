@@ -109,7 +109,7 @@ bool protocol_switcher::handle_recv(const void *ptr, size_t cb)
 		}
 		else
 		{
-			LOG_ERROR("Wrong protocol accepted on port...");
+			GULPS_ERROR("Wrong protocol accepted on port...");
 			return false;
 		}
 	}

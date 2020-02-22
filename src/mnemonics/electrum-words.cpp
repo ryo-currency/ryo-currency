@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -52,14 +52,15 @@
  * that method of "backing up" one's wallet keys.
  */
 
-#include "mnemonics/electrum-words.h"
-#include "crypto/crypto.h" // for declaration of crypto::secret_key
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/crc.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/locale.hpp>
 #include "common/boost_locale.hpp"
+
+#include "mnemonics/electrum-words.h"
+#include "crypto/crypto.h" // for declaration of crypto::secret_key
 #include <cassert>
 #include <cstdint>
 #include <fstream>

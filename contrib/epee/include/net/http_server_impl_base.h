@@ -32,8 +32,9 @@
 #include "net/http_server_cp2.h"
 #include "net/http_server_handlers_map2.h"
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net.http"
+#include "common/gulps.hpp"
+
+
 
 namespace epee
 {
@@ -41,7 +42,7 @@ namespace epee
 template <class t_child_class, class t_connection_context = epee::net_utils::connection_context_base>
 class http_server_impl_base : public net_utils::http::i_http_server_handler<t_connection_context>
 {
-
+	GULPS_CAT_MAJOR("epee_http_serv");
   public:
 	http_server_impl_base()
 		: m_net_server(epee::net_utils::e_connection_type_RPC)
@@ -71,11 +72,11 @@ class http_server_impl_base : public net_utils::http::i_http_server_handler<t_co
 
 		m_net_server.get_config_object().m_user = std::move(user);
 
-		MGINFO("Binding on " << bind_ip << ":" << bind_port);
+		GULPSF_GLOBAL_PRINT("Binding on {}:{}", bind_ip , bind_port);
 		bool res = m_net_server.init_server(bind_port, bind_ip);
 		if(!res)
 		{
-			LOG_ERROR("Failed to bind server");
+			GULPS_LOG_ERROR("Failed to bind server");
 			return false;
 		}
 		return true;
@@ -84,14 +85,14 @@ class http_server_impl_base : public net_utils::http::i_http_server_handler<t_co
 	bool run(size_t threads_count, bool wait = true)
 	{
 		//go to loop
-		MINFO("Run net_service loop( " << threads_count << " threads)...");
+		GULPSF_INFO("Run net_service loop( {} threads)...", threads_count );
 		if(!m_net_server.run_server(threads_count, wait))
 		{
-			LOG_ERROR("Failed to run net tcp server!");
+			GULPS_LOG_ERROR("Failed to run net tcp server!");
 		}
 
 		if(wait)
-			MINFO("net_service loop stopped.");
+			GULPS_INFO("net_service loop stopped.");
 		return true;
 	}
 

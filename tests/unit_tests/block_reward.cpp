@@ -56,7 +56,7 @@ TEST_F(block_reward_and_already_generated_coins, handles_first_values)
 	TEST_ALREADY_GENERATED_COINS(0, UINT64_C(32000000000), 1);
 	TEST_ALREADY_GENERATED_COINS(m_block_reward, UINT64_C(32000000000), 1);
 	/* 42 is an arbitrary chosen value because the already emitted coins are not
-	 * taken in account if the reward is higher than 4 RYO and PEAK_COIN_EMISSION_HEIGHT is not reached
+	 * taken in account if the reward is higher than 4 RYO and peak emission is not reached
 	 */
 	TEST_ALREADY_GENERATED_COINS(UINT64_C(42), UINT64_C(41970000000), 150000); //ryo v4 fork height
 }

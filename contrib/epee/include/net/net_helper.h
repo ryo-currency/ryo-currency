@@ -39,8 +39,9 @@
 #include <boost/version.hpp>
 #include <string>
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net"
+#include "common/gulps.hpp"
+
+
 
 #ifndef MAKE_IP
 #define MAKE_IP(a1, a2, a3, a4) (a1 | (a2 << 8) | (a3 << 16) | (a4 << 24))
@@ -129,7 +130,7 @@ class blocked_mode_client
 			boost::asio::ip::tcp::resolver::iterator end;
 			if(iterator == end)
 			{
-				LOG_ERROR("Failed to resolve " << addr);
+				GULPSF_LOG_ERROR("Failed to resolve {}", addr);
 				return false;
 			}
 
@@ -172,18 +173,18 @@ class blocked_mode_client
 			}
 			else
 			{
-				MWARNING("Some problems at connect, message: " << ec.message());
+				GULPSF_LOG_L1("Some problems at connect, message: {}", ec.message());
 				return false;
 			}
 		}
 		catch(const boost::system::system_error &er)
 		{
-			MDEBUG("Some problems at connect, message: " << er.what());
+			GULPSF_LOG_L1("Some problems at connect, message: {}", er.what());
 			return false;
 		}
 		catch(...)
 		{
-			MDEBUG("Some fatal problems.");
+			GULPS_LOG_L1("Some fatal problems.");
 			return false;
 		}
 
@@ -205,12 +206,12 @@ class blocked_mode_client
 
 		catch(const boost::system::system_error & /*er*/)
 		{
-			//LOG_ERROR("Some problems at disconnect, message: " << er.what());
+			//GULPSF_LOG_ERROR("Some problems at disconnect, message: {}", er.what());
 			return false;
 		}
 		catch(...)
 		{
-			//LOG_ERROR("Some fatal problems.");
+			//GULPS_LOG_ERROR("Some fatal problems.");
 			return false;
 		}
 		return true;
@@ -244,7 +245,7 @@ class blocked_mode_client
 
 			if(ec)
 			{
-				LOG_PRINT_L3("Problems at write: " << ec.message());
+				GULPSF_LOG_L3("Problems at write: {}", ec.message());
 				m_connected = false;
 				return false;
 			}
@@ -256,12 +257,12 @@ class blocked_mode_client
 
 		catch(const boost::system::system_error &er)
 		{
-			LOG_ERROR("Some problems at connect, message: " << er.what());
+			GULPSF_LOG_ERROR("Some problems at connect, message: {}", er.what());
 			return false;
 		}
 		catch(...)
 		{
-			LOG_ERROR("Some fatal problems.");
+			GULPS_LOG_ERROR("Some fatal problems.");
 			return false;
 		}
 
@@ -300,7 +301,7 @@ class blocked_mode_client
 
 			if(!writen || ec)
 			{
-				LOG_PRINT_L3("Problems at write: " << ec.message());
+				GULPSF_LOG_L3("Problems at write: {}", ec.message());
 				m_connected = false;
 				return false;
 			}
@@ -312,13 +313,13 @@ class blocked_mode_client
 
 		catch(const boost::system::system_error &er)
 		{
-			LOG_ERROR("Some problems at send, message: " << er.what());
+			GULPSF_LOG_ERROR("Some problems at send, message: {}", er.what());
 			m_connected = false;
 			return false;
 		}
 		catch(...)
 		{
-			LOG_ERROR("Some fatal problems.");
+			GULPS_LOG_ERROR("Some fatal problems.");
 			return false;
 		}
 
@@ -369,21 +370,21 @@ class blocked_mode_client
 
 			if(ec)
 			{
-				MTRACE("READ ENDS: Connection err_code " << ec.value());
+				GULPSF_LOG_L2("READ ENDS: Connection err_code {}", ec.value());
 				if(ec == boost::asio::error::eof)
 				{
-					MTRACE("Connection err_code eof.");
+					GULPS_LOG_L2("Connection err_code eof.");
 					//connection closed there, empty
 					return true;
 				}
 
-				MDEBUG("Problems at read: " << ec.message());
+				GULPSF_LOG_L1("Problems at read: {}", ec.message());
 				m_connected = false;
 				return false;
 			}
 			else
 			{
-				MTRACE("READ ENDS: Success. bytes_tr: " << bytes_transfered);
+				GULPSF_LOG_L2("READ ENDS: Success. bytes_tr: {}", bytes_transfered);
 				m_deadline.expires_at(std::chrono::steady_clock::time_point::max());
 			}
 
@@ -396,13 +397,13 @@ class blocked_mode_client
 
 		catch(const boost::system::system_error &er)
 		{
-			LOG_ERROR("Some problems at read, message: " << er.what());
+			GULPSF_LOG_ERROR("Some problems at read, message: {}", er.what());
 			m_connected = false;
 			return false;
 		}
 		catch(...)
 		{
-			LOG_ERROR("Some fatal problems at read.");
+			GULPS_LOG_ERROR("Some fatal problems at read.");
 			return false;
 		}
 
@@ -446,7 +447,7 @@ class blocked_mode_client
 
 			if(ec)
 			{
-				LOG_PRINT_L3("Problems at read: " << ec.message());
+				GULPSF_LOG_L3("Problems at read: {}", ec.message());
 				m_connected = false;
 				return false;
 			}
@@ -457,7 +458,7 @@ class blocked_mode_client
 
 			if(bytes_transfered != buff.size())
 			{
-				LOG_ERROR("Transferred mismatch with transfer_at_least value: m_bytes_transferred=" << bytes_transfered << " at_least value=" << buff.size());
+				GULPSF_LOG_ERROR("Transferred mismatch with transfer_at_least value: m_bytes_transferred={} at_least value={}", bytes_transfered , buff.size());
 				return false;
 			}
 
@@ -466,13 +467,13 @@ class blocked_mode_client
 
 		catch(const boost::system::system_error &er)
 		{
-			LOG_ERROR("Some problems at read, message: " << er.what());
+			GULPSF_LOG_ERROR("Some problems at read, message: {}", er.what());
 			m_connected = false;
 			return false;
 		}
 		catch(...)
 		{
-			LOG_ERROR("Some fatal problems at read.");
+			GULPS_LOG_ERROR("Some fatal problems at read.");
 			return false;
 		}
 
@@ -487,13 +488,13 @@ class blocked_mode_client
 			shutdown_ssl();
 		m_ssl_socket.next_layer().cancel(ec);
 		if(ec)
-			MDEBUG("Problems at cancel: " << ec.message());
+			GULPSF_LOG_L1("Problems at cancel: {}", ec.message());
 		m_ssl_socket.next_layer().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 		if(ec)
-			MDEBUG("Problems at shutdown: " << ec.message());
+			GULPSF_LOG_L1("Problems at shutdown: {}", ec.message());
 		m_ssl_socket.next_layer().close(ec);
 		if(ec)
-			MDEBUG("Problems at close: " << ec.message());
+			GULPSF_LOG_L1("Problems at close: {}", ec.message());
 		boost::interprocess::ipcdetail::atomic_write32(&m_shutdowned, 1);
 		m_connected = false;
 		return true;
@@ -524,7 +525,7 @@ class blocked_mode_client
 			// The deadline has passed. The socket is closed so that any outstanding
 			// asynchronous operations are cancelled. This allows the blocked
 			// connect(), read_line() or write_line() functions to return.
-			LOG_PRINT_L3("Timed out socket");
+			GULPS_LOG_L3("Timed out socket");
 			m_connected = false;
 			m_ssl_socket.next_layer().close();
 
@@ -556,7 +557,7 @@ class blocked_mode_client
 			   ERR_PACK(ERR_LIB_SSL, 0, SSL_R_SHORT_READ)
 #endif
 		   )
-			MDEBUG("Problems at ssl shutdown: " << ec.message());
+			GULPSF_LOG_L1("Problems at ssl shutdown: {}", ec.message());
 	}
 
   protected:
@@ -658,7 +659,7 @@ class async_blocked_mode_client : public blocked_mode_client
 
 			if(!writen || ec)
 			{
-				LOG_PRINT_L3("Problems at write: " << ec.message());
+				GULPSF_LOG_L3("Problems at write: {}", ec.message());
 				return false;
 			}
 			else
@@ -669,12 +670,12 @@ class async_blocked_mode_client : public blocked_mode_client
 
 		catch(const boost::system::system_error &er)
 		{
-			LOG_ERROR("Some problems at connect, message: " << er.what());
+			GULPSF_LOG_ERROR("Some problems at connect, message: {}", er.what());
 			return false;
 		}
 		catch(...)
 		{
-			LOG_ERROR("Some fatal problems.");
+			GULPS_LOG_ERROR("Some fatal problems.");
 			return false;
 		}
 
@@ -694,7 +695,7 @@ class async_blocked_mode_client : public blocked_mode_client
 			// The deadline has passed. The socket is closed so that any outstanding
 			// asynchronous operations are cancelled. This allows the blocked
 			// connect(), read_line() or write_line() functions to return.
-			LOG_PRINT_L3("Timed out socket");
+			GULPS_LOG_L3("Timed out socket");
 			m_ssl_socket.next_layer().close();
 
 			// There is no longer an active deadline. The expiry is set to positive

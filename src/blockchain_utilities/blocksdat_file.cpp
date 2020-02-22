@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -44,8 +44,9 @@
 
 #include "blocksdat_file.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "bcutil"
+#include "common/gulps.hpp"
+
+GULPS_CAT_MAJOR("blocksdat_file");
 
 namespace po = boost::program_options;
 
@@ -66,7 +67,7 @@ bool BlocksdatFile::open_writer(const boost::filesystem::path &file_path, uint64
 		{
 			if(!boost::filesystem::is_directory(dir_path))
 			{
-				MFATAL("export directory path is a file: " << dir_path);
+				GULPS_ERROR("export directory path is a file: " , dir_path);
 				return false;
 			}
 		}
@@ -74,7 +75,7 @@ bool BlocksdatFile::open_writer(const boost::filesystem::path &file_path, uint64
 		{
 			if(!boost::filesystem::create_directory(dir_path))
 			{
-				MFATAL("Failed to create directory " << dir_path);
+				GULPS_ERROR("Failed to create directory " , dir_path);
 				return false;
 			}
 		}
@@ -82,7 +83,7 @@ bool BlocksdatFile::open_writer(const boost::filesystem::path &file_path, uint64
 
 	m_raw_data_file = new std::ofstream();
 
-	MINFO("creating file");
+	GULPS_INFO("creating file");
 
 	m_raw_data_file->open(file_path.string(), std::ios_base::binary | std::ios_base::out | std::ios::trunc);
 	if(m_raw_data_file->fail())
@@ -145,21 +146,21 @@ bool BlocksdatFile::store_blockchain_raw(Blockchain *_blockchain_storage, tx_mem
 
 	uint64_t block_start = 0;
 	uint64_t block_stop = 0;
-	MINFO("source blockchain height: " << m_blockchain_storage->get_current_blockchain_height() - 1);
+	GULPSF_INFO("source blockchain height: {}",  m_blockchain_storage->get_current_blockchain_height() - 1);
 	if((requested_block_stop > 0) && (requested_block_stop < m_blockchain_storage->get_current_blockchain_height()))
 	{
-		MINFO("Using requested block height: " << requested_block_stop);
+		GULPSF_INFO("Using requested block height: {}" , requested_block_stop);
 		block_stop = requested_block_stop;
 	}
 	else
 	{
 		block_stop = m_blockchain_storage->get_current_blockchain_height() - 1;
-		MINFO("Using block height of source blockchain: " << block_stop);
+		GULPSF_INFO("Using block height of source blockchain: {}" , block_stop);
 	}
-	MINFO("Storing blocks raw data...");
+	GULPS_INFO("Storing blocks raw data...");
 	if(!BlocksdatFile::open_writer(output_file, block_stop))
 	{
-		MFATAL("failed to open raw file for write");
+		GULPS_ERROR("failed to open raw file for write");
 		return false;
 	}
 	for(m_cur_height = block_start; m_cur_height <= block_stop; ++m_cur_height)
@@ -173,15 +174,15 @@ bool BlocksdatFile::store_blockchain_raw(Blockchain *_blockchain_storage, tx_mem
 		}
 		if(m_cur_height % progress_interval == 0)
 		{
-			std::cout << refresh_string;
-			std::cout << "block " << m_cur_height << "/" << block_stop << std::flush;
+			GULPS_PRINT( refresh_string);
+			GULPSF_PRINT("block {}/{}", m_cur_height, block_stop);
 		}
 	}
 	// print message for last block, which may not have been printed yet due to progress_interval
-	std::cout << refresh_string;
-	std::cout << "block " << m_cur_height - 1 << "/" << block_stop << ENDL;
+	GULPS_PRINT( refresh_string);
+	GULPSF_PRINT("block {}/{}", m_cur_height - 1, block_stop);
 
-	MINFO("Number of blocks exported: " << num_blocks_written);
+	GULPSF_INFO("Number of blocks exported: {}" , num_blocks_written);
 
 	return BlocksdatFile::close();
 }

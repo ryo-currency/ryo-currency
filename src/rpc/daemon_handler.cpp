@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -43,6 +43,7 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "daemon_handler.h"
+#include "common/gulps.hpp"
 
 // likely included by daemon_handler.h's includes,
 // but including here for clarity
@@ -56,7 +57,7 @@ namespace cryptonote
 
 namespace rpc
 {
-
+GULPS_CAT_MAJOR("rpc_args");
 void DaemonHandler::handle(const GetHeight::Request &req, GetHeight::Response &res)
 {
 	res.height = m_core.get_current_blockchain_height();
@@ -344,11 +345,11 @@ void DaemonHandler::handle(const SendRawTx::Request &req, SendRawTx::Response &r
 	{
 		if(tvc.m_verifivation_failed)
 		{
-			LOG_PRINT_L0("[on_send_raw_tx]: tx verification failed");
+			GULPS_PRINT("[on_send_raw_tx]: tx verification failed");
 		}
 		else
 		{
-			LOG_PRINT_L0("[on_send_raw_tx]: Failed to process tx");
+			GULPS_PRINT("[on_send_raw_tx]: Failed to process tx");
 		}
 		res.status = Message::STATUS_FAILED;
 		res.error_details = "";
@@ -409,7 +410,7 @@ void DaemonHandler::handle(const SendRawTx::Request &req, SendRawTx::Response &r
 
 	if(!tvc.m_should_be_relayed || !req.relay)
 	{
-		LOG_PRINT_L0("[on_send_raw_tx]: tx accepted, but not relayed");
+		GULPS_PRINT("[on_send_raw_tx]: tx accepted, but not relayed");
 		res.error_details = "Not relayed";
 		res.relayed = false;
 		res.status = Message::STATUS_OK;
@@ -434,14 +435,14 @@ void DaemonHandler::handle(const StartMining::Request &req, StartMining::Respons
 	if(!get_account_address_from_str(m_core.get_nettype(), info, req.miner_address))
 	{
 		res.error_details = "Failed, wrong address";
-		LOG_PRINT_L0(res.error_details);
+		GULPS_PRINT(res.error_details);
 		res.status = Message::STATUS_FAILED;
 		return;
 	}
 	if(info.is_subaddress)
 	{
 		res.error_details = "Failed, mining to subaddress isn't supported yet";
-		LOG_PRINT_L0(res.error_details);
+		GULPS_PRINT(res.error_details);
 		res.status = Message::STATUS_FAILED;
 		return;
 	}
@@ -459,7 +460,7 @@ void DaemonHandler::handle(const StartMining::Request &req, StartMining::Respons
 	if(req.threads_count > concurrency_count)
 	{
 		res.error_details = "Failed, too many threads relative to CPU cores.";
-		LOG_PRINT_L0(res.error_details);
+		GULPS_PRINT(res.error_details);
 		res.status = Message::STATUS_FAILED;
 		return;
 	}
@@ -470,7 +471,7 @@ void DaemonHandler::handle(const StartMining::Request &req, StartMining::Respons
 	if(!m_core.get_miner().start(info.address, static_cast<size_t>(req.threads_count), attrs, req.do_background_mining, req.ignore_battery))
 	{
 		res.error_details = "Failed, mining not started";
-		LOG_PRINT_L0(res.error_details);
+		GULPS_PRINT(res.error_details);
 		res.status = Message::STATUS_FAILED;
 		return;
 	}
@@ -525,7 +526,7 @@ void DaemonHandler::handle(const StopMining::Request &req, StopMining::Response 
 	if(!m_core.get_miner().stop())
 	{
 		res.error_details = "Failed, mining not stopped";
-		LOG_PRINT_L0(res.error_details);
+		GULPS_PRINT(res.error_details);
 		res.status = Message::STATUS_FAILED;
 		return;
 	}
@@ -679,7 +680,6 @@ void DaemonHandler::handle(const SetLogLevel::Request &req, SetLogLevel::Respons
 	else
 	{
 		res.status = Message::STATUS_OK;
-		mlog_set_log_level(req.level);
 	}
 }
 
@@ -842,7 +842,7 @@ bool DaemonHandler::getBlockHeaderByHash(const crypto::hash &hash_in, cryptonote
 
 std::string DaemonHandler::handle(const std::string &request)
 {
-	MDEBUG("Handling RPC request: " << request);
+	GULPSF_LOG_L1("Handling RPC request: {}", request);
 
 	Message *resp_message = NULL;
 
@@ -893,7 +893,7 @@ std::string DaemonHandler::handle(const std::string &request)
 		delete resp_message;
 		resp_message = NULL;
 
-		MDEBUG("Returning RPC response: " << response);
+		GULPSF_LOG_L1("Returning RPC response: {}", response);
 
 		return response;
 	}

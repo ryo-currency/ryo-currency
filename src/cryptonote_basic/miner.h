@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -49,7 +49,7 @@
 #include "cryptonote_basic.h"
 #include "difficulty.h"
 #include "math_helper.h"
-#include "cryptonote_basic/blobdatatype.h" 
+#include "cryptonote_basic/blobdatatype.h"
 #include <atomic>
 #include <boost/logic/tribool_fwd.hpp>
 #include <boost/program_options.hpp>
@@ -61,6 +61,8 @@
 #include <time.h>
 #include <unistd.h>
 #endif
+
+#include "common/gulps.hpp"
 
 namespace cryptonote
 {
@@ -79,6 +81,7 @@ struct i_miner_handler
 /************************************************************************/
 class miner
 {
+	GULPS_CAT_MAJOR("crybas_miner");
   public:
 	miner(i_miner_handler *phandler);
 	~miner();
@@ -131,7 +134,7 @@ class miner
 	{
 		uint64_t current_extra_message_index;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(miner_config)
 		KV_SERIALIZE(current_extra_message_index)
 		END_KV_SERIALIZE_MAP()
 	};

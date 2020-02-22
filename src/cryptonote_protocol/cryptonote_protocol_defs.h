@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -93,7 +93,7 @@ struct connection_info
 
 	uint64_t height;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(connection_info)
 	KV_SERIALIZE(incoming)
 	KV_SERIALIZE(localhost)
 	KV_SERIALIZE(local_ip)
@@ -123,9 +123,24 @@ struct connection_info
 /************************************************************************/
 struct block_complete_entry
 {
+	block_complete_entry(blobdata block, std::list<blobdata> txs) : block(block), txs(txs)  {}
+
 	blobdata block;
 	std::list<blobdata> txs;
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(block_complete_entry)
+	KV_SERIALIZE(block)
+	KV_SERIALIZE(txs)
+	END_KV_SERIALIZE_MAP()
+};
+
+// As far as epee is concerned, those two are interchangeable
+struct block_complete_entry_v
+{
+	block_complete_entry_v(blobdata block, std::vector<blobdata> txs) : block(block), txs(txs)  {}
+
+	blobdata block;
+	std::vector<blobdata> txs;
+	BEGIN_KV_SERIALIZE_MAP(block_complete_entry_v)
 	KV_SERIALIZE(block)
 	KV_SERIALIZE(txs)
 	END_KV_SERIALIZE_MAP()
@@ -143,7 +158,7 @@ struct NOTIFY_NEW_BLOCK
 		block_complete_entry b;
 		uint64_t current_blockchain_height;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(b)
 		KV_SERIALIZE(current_blockchain_height)
 		END_KV_SERIALIZE_MAP()
@@ -161,7 +176,7 @@ struct NOTIFY_NEW_TRANSACTIONS
 	{
 		std::list<blobdata> txs;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(txs)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -178,7 +193,7 @@ struct NOTIFY_REQUEST_GET_OBJECTS
 		std::list<crypto::hash> txs;
 		std::list<crypto::hash> blocks;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(txs)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(blocks)
 		END_KV_SERIALIZE_MAP()
@@ -196,7 +211,7 @@ struct NOTIFY_RESPONSE_GET_OBJECTS
 		std::list<crypto::hash> missed_ids;
 		uint64_t current_blockchain_height;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(txs)
 		KV_SERIALIZE(blocks)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(missed_ids)
@@ -212,7 +227,7 @@ struct CORE_SYNC_DATA
 	crypto::hash top_id;
 	uint8_t top_version;
 
-	BEGIN_KV_SERIALIZE_MAP()
+	BEGIN_KV_SERIALIZE_MAP(CORE_SYNC_DATA)
 	KV_SERIALIZE(current_height)
 	KV_SERIALIZE(cumulative_difficulty)
 	KV_SERIALIZE_VAL_POD_AS_BLOB(top_id)
@@ -228,7 +243,7 @@ struct NOTIFY_REQUEST_CHAIN
 	{
 		std::list<crypto::hash> block_ids; /*IDs of the first 10 blocks are sequential, next goes with pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block */
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(block_ids)
 		END_KV_SERIALIZE_MAP()
 	};
@@ -245,7 +260,7 @@ struct NOTIFY_RESPONSE_CHAIN_ENTRY
 		uint64_t cumulative_difficulty;
 		std::list<crypto::hash> m_block_ids;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(start_height)
 		KV_SERIALIZE(total_height)
 		KV_SERIALIZE(cumulative_difficulty)
@@ -266,7 +281,7 @@ struct NOTIFY_NEW_FLUFFY_BLOCK
 		block_complete_entry b;
 		uint64_t current_blockchain_height;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE(b)
 		KV_SERIALIZE(current_blockchain_height)
 		END_KV_SERIALIZE_MAP()
@@ -286,7 +301,7 @@ struct NOTIFY_REQUEST_FLUFFY_MISSING_TX
 		uint64_t current_blockchain_height;
 		std::vector<uint64_t> missing_tx_indices;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		KV_SERIALIZE_VAL_POD_AS_BLOB(block_hash)
 		KV_SERIALIZE(current_blockchain_height)
 		KV_SERIALIZE_CONTAINER_POD_AS_BLOB(missing_tx_indices)

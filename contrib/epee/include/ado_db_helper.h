@@ -34,6 +34,8 @@
 #include <comutil.h>
 #include <vector>
 
+#include "common/gulps.hpp"
+
 #define BEGIN_TRY_SECTION() \
 	try                     \
 	{
@@ -44,7 +46,8 @@
 	}                                                                                                                                                                                           \
 	catch(const std::exception &ex)                                                                                                                                                             \
 	{                                                                                                                                                                                           \
-		LOG_PRINT_J("DB_ERROR: " << ex.what(), LOG_LEVEL_0);                                                                                                                                    \
+		GULPS_CAT_MAJOR("epee_ado_db_help");                                                                                                                                                         \
+		GULPSF_ERROR("DB_ERROR: {}", ex.what();                                                                                                                                                 \
 		return ret_val;                                                                                                                                                                         \
 	}                                                                                                                                                                                           \
 	catch(const _com_error &comm_err)                                                                                                                                                           \
@@ -53,13 +56,15 @@
 		std::string descr = string_encoding::convert_to_ansii(pstr ? pstr : TEXT(""));                                                                                                          \
 		const TCHAR *pmessage = comm_err.ErrorMessage();                                                                                                                                        \
 		pstr = comm_err.Source();                                                                                                                                                               \
+		GULPS_CAT_MAJOR("epee_ado_db_help");                                                                                                                                                         \
 		std::string source = string_encoding::convert_to_ansii(pstr ? pstr : TEXT(""));                                                                                                         \
-		LOG_PRINT_J("COM_ERROR " << mess_where << ":\n\tDescriprion:" << descr << ", \n\t Message: " << string_encoding::convert_to_ansii(pmessage) << "\n\t Source: " << source, LOG_LEVEL_0); \
+		GULPSF_ERROR("COM_ERROR {}:\n\tDescriprion:{}, \n\t Message: {}\n\t Source: {}", mess_where, descr, string_encoding::convert_to_ansii(pmessage), source);                               \
 		return ret_val;                                                                                                                                                                         \
 	}                                                                                                                                                                                           \
 	catch(...)                                                                                                                                                                                  \
 	{                                                                                                                                                                                           \
-		LOG_PRINT_J("..._ERROR: Unknown error.", LOG_LEVEL_0);                                                                                                                                  \
+		GULPS_CAT_MAJOR("epee_ado_db_help");                                                                                                                                                         \
+		GULPS_ERROR("..._ERROR: Unknown error.");                                                                                                                                               \
 		return ret_val;                                                                                                                                                                         \
 	}
 
@@ -82,6 +87,7 @@ struct profile_entry
 
 class profiler_manager
 {
+	GULPS_CAT_MAJOR("epee_ado_db_help");
   public:
 	typedef std::map<std::string, profile_entry> sqls_map;
 	profiler_manager() {}
@@ -352,7 +358,7 @@ inline bool select_helper(ADODB::_CommandPtr cmd, table &result_vector)
 	ADODB::_RecordsetPtr precordset = cmd->Execute(NULL, NULL, NULL);
 	if(!precordset)
 	{
-		LOG_ERROR("DB_ERROR: cmd->Execute returned NULL!!!");
+		GULPS_ERROR("DB_ERROR: cmd->Execute returned NULL!!!");
 		return false;
 	}
 
@@ -364,7 +370,7 @@ inline bool select_helper(ADODB::_CommandPtr cmd, table &result_vector)
 		{
 			if(precordset->MoveFirst()!= S_OK)
 			{
-				LOG_ERROR("DB_ERROR: Filed to move first!!!");
+				GULPS_ERROR("DB_ERROR: Filed to move first!!!");
 				return false;
 			}
 		}
@@ -956,18 +962,18 @@ class per_thread_connection_pool
 
 			if(S_OK != conn.CreateInstance(__uuidof(ADODB::Connection)))
 			{
-				LOG_ERROR("Failed to Create, instance, was CoInitialize called ???!");
+				GULPS_ERROR("Failed to Create, instance, was CoInitialize called ???!");
 				return conn;
 			}
 
 			HRESULT res = conn->Open(_bstr_t(m_connection_string.c_str()), _bstr_t(m_login.c_str()), _bstr_t(m_password.c_str()), NULL);
 			if(res != S_OK)
 			{
-				LOG_ERROR("Failed to connect do DB, connection str:" << m_connection_string);
+				GULPSF_ERROR("Failed to connect do DB, connection str:{}", m_connection_string);
 				return conn;
 			}
 			CATCH_TRY_SECTION_MESS(conn, "while creating another connection");
-			LOG_PRINT("New DB Connection added for threadid=" << ::GetCurrentThreadId(), LOG_LEVEL_0);
+			GULPSF_PRINT("New DB Connection added for threadid={}", ::GetCurrentThreadId());
 			ado_db_helper::execute_helper(conn, "set enable_seqscan=false;");
 			return conn;
 		}
@@ -994,7 +1000,7 @@ class per_thread_connection_pool
 			HRESULT res = rconn->Open(_bstr_t(m_connection_string.c_str()), _bstr_t(m_login.c_str()), _bstr_t(m_password.c_str()), NULL);
 			if(res != S_OK)
 			{
-				LOG_PRINT("Failed to restore connection to local AI DB", LOG_LEVEL_1);
+				GULPS_LOG_L1("Failed to restore connection to local AI DB");
 				return false;
 			}
 			CATCH_TRY_SECTION(false);
@@ -1053,7 +1059,7 @@ bool find_or_add_t(const std::string &sql_select_statment, const std::string &sq
 template <typename TParams, typename default_id_type, typename t_conn>
 bool find_or_add_t_multiparametred(const std::string &sql_select_statment, const std::string &sql_insert_statment, OUT default_id_type &id, OUT bool &new_object_added, TParams params, t_conn &c)
 {
-
+	GULPS_CAT_MAJOR("epee_ado_db_help");
 	//CHECK_CONNECTION(false);
 
 	new_object_added = false;
@@ -1067,8 +1073,8 @@ bool find_or_add_t_multiparametred(const std::string &sql_select_statment, const
 		{
 			//last time try to select
 			res = select_helper_multiparam(c.get_db_connection(), sql_select_statment, params, result_table);
-			CHECK_AND_ASSERT_MES(res, false, "Failed to execute statment: " << sql_select_statment);
-			CHECK_AND_ASSERT_MES(result_table.size(), false, "No records returned from statment: " << sql_select_statment);
+			GULPS_CHECK_AND_ASSERT_MES(res, false, "Failed to execute statment: " , sql_select_statment);
+			GULPS_CHECK_AND_ASSERT_MES(result_table.size(), false, "No records returned from statment: " , sql_select_statment);
 		}
 		else
 		{

@@ -26,6 +26,9 @@
 
 #pragma once
 
+#include "common/gulps.hpp"
+
+
 namespace epee
 {
 namespace misc_utils
@@ -76,7 +79,7 @@ inline std::string transform_to_escape_sequence(const std::string &src)
 	return res;
 }
 /*
-      
+
       \b  Backspace (ascii code 08)
       \f  Form feed (ascii code 0C)
       \n  New line
@@ -94,6 +97,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 	bool escape_mode = false;
 	std::string::const_iterator it = star_end_string;
 	++it;
+	GULPS_CAT_MAJOR("epee_pars_bs_utls");
 	for(; it != buf_end; it++)
 	{
 		if(escape_mode /*prev_ch == '\\'*/)
@@ -132,7 +136,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 				break;
 			default:
 				val.push_back(*it);
-				LOG_PRINT_L0("Unknown escape sequence :\"\\" << *it << "\"");
+				GULPSF_PRINT("Unknown escape sequence :\"\\{}\"", *it);
 			}
 			escape_mode = false;
 		}
@@ -150,7 +154,7 @@ inline void match_string2(std::string::const_iterator &star_end_string, std::str
 			val.push_back(*it);
 		}
 	}
-	ASSERT_MES_AND_THROW("Failed to match string in json entry: " << std::string(star_end_string, buf_end));
+	GULPS_ASSERT_MES_AND_THROW("Failed to match string in json entry: ", std::string(star_end_string, buf_end));
 }
 inline bool match_string(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {
@@ -169,6 +173,7 @@ inline void match_number2(std::string::const_iterator &star_end_string, std::str
 {
 	val.clear();
 	is_float_val = false;
+	GULPS_CAT_MAJOR("epee_pars_bs_utls");
 	for(std::string::const_iterator it = star_end_string; it != buf_end; it++)
 	{
 		if(isdigit(*it) || (it == star_end_string && *it == '-') || (val.size() && *it == '.') || (is_float_val && (*it == 'e' || *it == 'E' || *it == '-' || *it == '+')))
@@ -187,10 +192,10 @@ inline void match_number2(std::string::const_iterator &star_end_string, std::str
 				return;
 			}
 			else
-				ASSERT_MES_AND_THROW("wrong number in json entry: " << std::string(star_end_string, buf_end));
+				GULPS_ASSERT_MES_AND_THROW("wrong number in json entry: ", std::string(star_end_string, buf_end));
 		}
 	}
-	ASSERT_MES_AND_THROW("wrong number in json entry: " << std::string(star_end_string, buf_end));
+	GULPS_ASSERT_MES_AND_THROW("wrong number in json entry: ", std::string(star_end_string, buf_end));
 }
 inline bool match_number(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {
@@ -209,7 +214,7 @@ inline bool match_number(std::string::const_iterator &star_end_string, std::stri
 inline void match_word2(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {
 	val.clear();
-
+	GULPS_CAT_MAJOR("epee_pars_bs_utls");
 	for(std::string::const_iterator it = star_end_string; it != buf_end; it++)
 	{
 		if(!isalpha(*it))
@@ -221,10 +226,10 @@ inline void match_word2(std::string::const_iterator &star_end_string, std::strin
 				return;
 			}
 			else
-				ASSERT_MES_AND_THROW("failed to match word number in json entry: " << std::string(star_end_string, buf_end));
+				GULPS_ASSERT_MES_AND_THROW("failed to match word number in json entry: ", std::string(star_end_string, buf_end));
 		}
 	}
-	ASSERT_MES_AND_THROW("failed to match word number in json entry: " << std::string(star_end_string, buf_end));
+	GULPS_ASSERT_MES_AND_THROW("failed to match word number in json entry: ", std::string(star_end_string, buf_end));
 }
 inline bool match_word(std::string::const_iterator &star_end_string, std::string::const_iterator buf_end, std::string &val)
 {

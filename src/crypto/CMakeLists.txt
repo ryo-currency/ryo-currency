@@ -1,4 +1,4 @@
-# Copyright (c) 2019, Ryo Currency Project
+# Copyright (c) 2020, Ryo Currency Project
 # Portions copyright (c) 2014-2018, The Monero Project
 #
 # Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 # Authors and copyright holders agree that:
 #
 # 8. This licence expires and the work covered by it is released into the 
-#    public domain on 1st of February 2020
+#    public domain on 1st of February 2021
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -43,6 +43,7 @@
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 set(crypto_sources
+  ${ASM_FILE}
   chacha.c
   crypto-ops-data.c
   crypto-ops.c
@@ -57,6 +58,12 @@ set(crypto_sources
   pow_hash/cn_slow_hash_intel_avx2.cpp
   pow_hash/cn_slow_hash_hard_arm.cpp)
 
+if(HAVE_EC_64)
+  list(APPEND crypto_sources 
+    ecops64/ecops64-c.c
+    ecops64/ecops64-data.c
+    ecops64/ecops64.asm)
+endif()
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 	if (${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
@@ -80,6 +87,11 @@ set(crypto_private_headers
   random.hpp
   pow_hash/cn_slow_hash.hpp)
 
+if(HAVE_EC_64)
+  list(APPEND crypto_private_headers 
+    ecops64/ecops64.h)
+endif()
+
 ryo_private_headers(cncrypto
   ${crypto_private_headers})
 ryo_add_library(cncrypto
@@ -90,6 +102,7 @@ target_link_libraries(cncrypto
   PUBLIC
     epee
     ${Boost_SYSTEM_LIBRARY}
+    fmt::fmt-header-only
   PRIVATE
     ${EXTRA_LIBRARIES})
 
@@ -104,6 +117,7 @@ if(BUILD_TESTS)
     PUBLIC
       epee
       ${Boost_SYSTEM_LIBRARY}
+      fmt::fmt-header-only
     PRIVATE
       ${EXTRA_LIBRARIES})
   target_compile_definitions(cncrypto_for_test

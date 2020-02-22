@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -59,9 +59,16 @@
 #include <utility>
 #include <windows.h>
 
+#include "common/gulps.hpp"
+
+
+#define GULPS_PRINT_FAIL(...) GULPS_ERROR("Error: ", __VA_ARGS__)
+#define GULPS_PRINT_OK(...) GULPS_PRINT(__VA_ARGS__)
+
+
 namespace windows
 {
-
+GULPS_CAT_MAJOR("win_ser");
 namespace
 {
 typedef std::unique_ptr<std::remove_pointer<SC_HANDLE>::type, decltype(&::CloseServiceHandle)> service_handle;
@@ -97,7 +104,7 @@ bool relaunch_as_admin(
 	info.nShow = SW_SHOWNORMAL;
 	if(!ShellExecuteEx(&info))
 	{
-		tools::fail_msg_writer() << "Admin relaunch failed: " << get_last_error();
+		GULPS_PRINT_FAIL("Admin relaunch failed: ", get_last_error());
 		return false;
 	}
 	else
@@ -125,14 +132,14 @@ bool check_admin(bool &result)
 	if(!AllocateAndInitializeSid(
 		   &nt_authority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &p_administrators_group))
 	{
-		tools::fail_msg_writer() << "Security Identifier creation failed: " << get_last_error();
+		GULPS_PRINT_FAIL("Security Identifier creation failed: ", get_last_error());
 		return false;
 	}
 
 	if(!CheckTokenMembership(
 		   nullptr, p_administrators_group, &is_admin))
 	{
-		tools::fail_msg_writer() << "Permissions check failed: " << get_last_error();
+		GULPS_PRINT_FAIL("Permissions check failed: ", get_last_error());
 		return false;
 	}
 
@@ -175,7 +182,7 @@ bool install_service(
 		&::CloseServiceHandle};
 	if(p_manager == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't connect to service manager: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't connect to service manager: ", get_last_error());
 		return false;
 	}
 
@@ -193,11 +200,11 @@ bool install_service(
 		&::CloseServiceHandle};
 	if(p_service == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't create service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't create service: ", get_last_error());
 		return false;
 	}
 
-	tools::success_msg_writer() << "Service installed";
+	GULPS_PRINT_FAIL("Service installed", get_last_error());
 
 	pause_to_display_admin_window_messages();
 
@@ -207,7 +214,7 @@ bool install_service(
 bool start_service(
 	std::string const &service_name)
 {
-	tools::msg_writer() << "Starting service";
+	GULPS_INFO("Starting service");
 
 	SERVICE_STATUS_PROCESS service_status = {};
 	DWORD unused = 0;
@@ -218,7 +225,7 @@ bool start_service(
 		&::CloseServiceHandle};
 	if(p_manager == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't connect to service manager: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't connect to service manager: ", get_last_error());
 		return false;
 	}
 
@@ -231,18 +238,18 @@ bool start_service(
 		&::CloseServiceHandle};
 	if(p_service == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't find service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't find service: ", get_last_error());
 		return false;
 	}
 
 	if(!StartService(
 		   p_service.get(), 0, nullptr))
 	{
-		tools::fail_msg_writer() << "Service start request failed: " << get_last_error();
+		GULPS_PRINT_FAIL("Service start request failed: ", get_last_error());
 		return false;
 	}
 
-	tools::success_msg_writer() << "Service started";
+	GULPS_PRINT_FAIL("Service started", get_last_error());
 
 	pause_to_display_admin_window_messages();
 
@@ -252,7 +259,7 @@ bool start_service(
 bool stop_service(
 	std::string const &service_name)
 {
-	tools::msg_writer() << "Stopping service";
+	GULPS_INFO("Stopping service");
 
 	service_handle p_manager{
 		OpenSCManager(
@@ -260,7 +267,7 @@ bool stop_service(
 		&::CloseServiceHandle};
 	if(p_manager == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't connect to service manager: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't connect to service manager: ", get_last_error());
 		return false;
 	}
 
@@ -270,18 +277,18 @@ bool stop_service(
 		&::CloseServiceHandle};
 	if(p_service == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't find service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't find service: ", get_last_error());
 		return false;
 	}
 
 	SERVICE_STATUS status = {};
 	if(!ControlService(p_service.get(), SERVICE_CONTROL_STOP, &status))
 	{
-		tools::fail_msg_writer() << "Couldn't request service stop: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't request service stop: ", get_last_error());
 		return false;
 	}
 
-	tools::success_msg_writer() << "Service stopped";
+	GULPS_PRINT_FAIL("Service stopped", get_last_error());
 
 	pause_to_display_admin_window_messages();
 
@@ -297,7 +304,7 @@ bool uninstall_service(
 		&::CloseServiceHandle};
 	if(p_manager == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't connect to service manager: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't connect to service manager: ", get_last_error());
 		return false;
 	}
 
@@ -307,18 +314,18 @@ bool uninstall_service(
 		&::CloseServiceHandle};
 	if(p_service == nullptr)
 	{
-		tools::fail_msg_writer() << "Couldn't find service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't find service: ", get_last_error());
 		return false;
 	}
 
 	SERVICE_STATUS status = {};
 	if(!DeleteService(p_service.get()))
 	{
-		tools::fail_msg_writer() << "Couldn't uninstall service: " << get_last_error();
+		GULPS_PRINT_FAIL("Couldn't uninstall service: ", get_last_error());
 		return false;
 	}
 
-	tools::success_msg_writer() << "Service uninstalled";
+	GULPS_PRINT_FAIL("Service uninstalled", get_last_error());
 
 	pause_to_display_admin_window_messages();
 

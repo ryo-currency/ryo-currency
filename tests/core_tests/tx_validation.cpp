@@ -36,6 +36,8 @@ using namespace epee;
 using namespace crypto;
 using namespace cryptonote;
 
+GULPS_CAT_MAJOR("test");
+
 namespace
 {
 struct tx_builder
@@ -390,7 +392,7 @@ bool gen_tx_input_wo_key_offsets::generate(std::vector<test_event_entry> &events
 	txin_to_key &in_to_key = boost::get<txin_to_key>(builder.m_tx.vin.front());
 	uint64_t key_offset = in_to_key.key_offsets.front();
 	in_to_key.key_offsets.pop_back();
-	CHECK_AND_ASSERT_MES(in_to_key.key_offsets.empty(), false, "txin contained more than one key_offset");
+	GULPS_CHECK_AND_ASSERT_MES(in_to_key.key_offsets.empty(), false, "txin contained more than one key_offset");
 	builder.step4_calc_hash();
 	in_to_key.key_offsets.push_back(key_offset);
 	builder.step5_sign(sources);

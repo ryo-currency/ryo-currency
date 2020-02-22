@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -47,20 +47,19 @@
 // https://blogs.msdn.microsoft.com/oldnewthing/20170109-00/?p=95145
 
 #pragma once
-
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include <functional>
 #include <vector>
 
 namespace tools
 {
-
+GULPS_CAT_MAJOR("common_tools");
 template <typename F>
 void apply_permutation(std::vector<size_t> permutation, const F &swap)
 {
 	//sanity check
 	for(size_t n = 0; n < permutation.size(); ++n)
-		CHECK_AND_ASSERT_THROW_MES(std::find(permutation.begin(), permutation.end(), n) != permutation.end(), "Bad permutation");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(std::find(permutation.begin(), permutation.end(), n) != permutation.end(), "Bad permutation");
 
 	for(size_t i = 0; i < permutation.size(); ++i)
 	{
@@ -79,7 +78,7 @@ void apply_permutation(std::vector<size_t> permutation, const F &swap)
 template <typename T>
 void apply_permutation(const std::vector<size_t> &permutation, std::vector<T> &v)
 {
-	CHECK_AND_ASSERT_THROW_MES(permutation.size() == v.size(), "Mismatched vector sizes");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(permutation.size() == v.size(), "Mismatched vector sizes");
 	apply_permutation(permutation, [&v](size_t i0, size_t i1) { std::swap(v[i0], v[i1]); });
 }
 }

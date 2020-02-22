@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -50,8 +50,7 @@
 #include "ringct/rctOps.h"
 #include <unordered_set>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "multisig"
+
 
 using namespace std;
 
@@ -59,6 +58,7 @@ static const rct::key multisig_salt = {{'M', 'u', 'l', 't', 'i', 's', 'i', 'g', 
 
 namespace cryptonote
 {
+GULPS_CAT_MAJOR("multisig");
 //-----------------------------------------------------------------
 crypto::secret_key get_multisig_blinded_secret_key(const crypto::secret_key &key)
 {
@@ -73,7 +73,7 @@ void generate_multisig_N_N(const account_keys &keys, const std::vector<crypto::p
 	// the multisig spend public key is the sum of all spend public keys
 	multisig_keys.clear();
 	const crypto::secret_key spend_secret_key = get_multisig_blinded_secret_key(keys.m_spend_secret_key);
-	CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(spend_secret_key, (crypto::public_key &)spend_pkey), "Failed to derive public key");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(crypto::secret_key_to_public_key(spend_secret_key, (crypto::public_key &)spend_pkey), "Failed to derive public key");
 	for(const auto &k : spend_keys)
 		rct::addKeys(spend_pkey, spend_pkey, rct::pk2rct(k));
 	multisig_keys.push_back(spend_secret_key);

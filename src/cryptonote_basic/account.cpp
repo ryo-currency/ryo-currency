@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -56,8 +56,10 @@ extern "C" {
 #include "cryptonote_basic_impl.h"
 #include "cryptonote_format_utils.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "account"
+#include "common/gulps.hpp"
+
+
+GULPS_CAT_MAJOR("crybas_account");
 
 using namespace std;
 
@@ -75,19 +77,9 @@ hw::device &account_keys::get_device() const
 void account_keys::set_device(hw::device &hwdev)
 {
 	m_device = &hwdev;
-	MCDEBUG("device", "account_keys::set_device device type: " << typeid(hwdev).name());
+	GULPS_CAT_LOG_L1("device", "account_keys::set_device device type: ", typeid(hwdev).name());
 }
 
-//-----------------------------------------------------------------
-account_base::account_base()
-{
-	set_null();
-}
-//-----------------------------------------------------------------
-void account_base::set_null()
-{
-	m_keys = account_keys();
-}
 //-----------------------------------------------------------------
 void account_base::forget_spend_key()
 {
@@ -170,7 +162,7 @@ void account_base::create_from_device(const std::string &device_name)
 	hw::device &hwdev = hw::get_device(device_name);
 	m_keys.set_device(hwdev);
 	hwdev.set_name(device_name);
-	MCDEBUG("ledger", "device type: " << typeid(hwdev).name());
+	GULPS_CAT_LOG_L1("ledger", "device type: ", typeid(hwdev).name());
 	hwdev.init();
 	hwdev.connect();
 	hwdev.get_public_address(m_keys.m_account_address);
@@ -217,7 +209,7 @@ std::string account_base::get_public_address_str(network_type nettype) const
 	case STAGENET:
 		return get_public_address_as_str<STAGENET>(false, m_keys.m_account_address);
 	default:
-		CHECK_AND_ASSERT_THROW_MES(false, "Unknown nettype");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "Unknown nettype");
 	}
 }
 //-----------------------------------------------------------------
@@ -232,7 +224,7 @@ std::string account_base::get_public_integrated_address_str(const crypto::hash8 
 	case STAGENET:
 		return get_account_integrated_address_as_str<STAGENET>(m_keys.m_account_address, payment_id);
 	default:
-		CHECK_AND_ASSERT_THROW_MES(false, "Unknown nettype");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "Unknown nettype");
 	}
 }
 //-----------------------------------------------------------------

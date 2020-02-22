@@ -54,8 +54,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net"
+
 
 #define ABSTRACT_SERVER_SEND_QUE_MAX_COUNT 1000
 
@@ -83,6 +82,7 @@ class connection
 	  public i_service_endpoint,
 	  public connection_basic
 {
+	GULPS_CAT_MAJOR("epee_tcp_srv");
   public:
 	typedef typename t_protocol_handler::connection_context t_connection_context;
 	/// Construct a connection with the given io_service.

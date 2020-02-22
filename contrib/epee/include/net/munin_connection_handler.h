@@ -47,6 +47,8 @@
 #define END_MUNIN_SERVICE() }
 #define MUNIN_SERVICE_PARAM(munin_var_name_str, variable) paramters_text += std::string() + munin_var_name_str ".value " + boost::lexical_cast<std::string>(variable) + "\n"
 
+#include "common/gulps.hpp"
+
 namespace epee
 {
 namespace net_utils
@@ -94,6 +96,8 @@ struct fake_send_handler : public i_service_endpoint
 /************************************************************************/
 class munin_node_server_connection_handler
 {
+  GULPS_CAT_MAJOR("epee_mun_conn");
+
   public:
 	typedef node_server_config config_type;
 	typedef connection_context_base connection_context;
@@ -139,9 +143,7 @@ class munin_node_server_connection_handler
 
 		const char *pbuff = (const char *)ptr;
 		std::string recvd_buff(pbuff, cb);
-		LOG_PRINT("munin_recv: \n"
-					  << recvd_buff,
-				  LOG_LEVEL_3);
+		GULPS_PRINT_L3("munin_recv: \n{}", recvd_buff);
 
 		m_cache += recvd_buff;
 
@@ -169,7 +171,7 @@ class munin_node_server_connection_handler
 				stop_handling = true;
 				return false;
 			default:
-				LOG_ERROR("Error in munin state machine! Unknown state=" << m_machine_state);
+				GULPS_LOG_ERROR("Error in munin state machine! Unknown state=" , m_machine_state);
 				stop_handling = true;
 				m_machine_state = http_state_error;
 				return false;
@@ -287,9 +289,7 @@ class munin_node_server_connection_handler
 
 	bool send_hook(const std::string &buff)
 	{
-		LOG_PRINT("munin_send: \n"
-					  << buff,
-				  LOG_LEVEL_3);
+		GULPS_PRINT_L3("munin_send: \n{}", buff);
 
 		if(m_psnd_hndlr)
 			return m_psnd_hndlr->do_send(buff.data(), buff.size());
@@ -332,8 +332,8 @@ inline bool test_self()
 			node_server_config sc;
 			sc.m_services.push_back(munin_service());
 			sc.m_services.back().m_service_name = "test_service";
-			
-			sc.m_services.back().m_service_config_string =     
+
+			sc.m_services.back().m_service_config_string =
 				"graph_args --base 1000 -l 0 --vertical-label N --upper-limit 329342976\n"
 				"graph_title REPORTS STATICTICS\n"
 				"graph_category bind\n"
@@ -358,10 +358,10 @@ inline bool test_self()
 			sc.m_services.back().m_service_name = "test_service1";
 			fake_send_handler fh;
 			munin_node_server_connection_handler mh(&fh, sc);
-			
+
 			std::string buff = "list\n";
 			mh.handle_recv(buff.data(), buff.size());
-			
+
 
 			buff = "nodes\n";
 			mh.handle_recv(buff.data(), buff.size());

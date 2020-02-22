@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -46,6 +46,8 @@
 
 #pragma once
 
+#include "common/gulps.hpp"
+
 #include "common/util.h"
 #include "net/http_server_impl_base.h"
 #include "wallet2.h"
@@ -55,9 +57,6 @@
 #include <boost/program_options/variables_map.hpp>
 #include <string>
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "wallet.rpc"
-
 namespace tools
 {
 /************************************************************************/
@@ -65,6 +64,7 @@ namespace tools
 /************************************************************************/
 class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 {
+	GULPS_CAT_MAJOR("wallet_rpc");
   public:
 	typedef epee::net_utils::connection_context_base connection_context;
 
@@ -76,8 +76,8 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 	bool init(const boost::program_options::variables_map *vm);
 	bool run();
 
-	inline void stop_wallet_backend() 
-	{ 
+	inline void stop_wallet_backend()
+	{
 		if(m_wallet == nullptr) return;
 		m_wallet->store();
 		delete m_wallet;
@@ -85,7 +85,7 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 	}
 
 	inline void start_wallet_backend(std::unique_ptr<wallet2>&& cr)
-	{ 
+	{
 		stop_wallet_backend();
 		m_wallet = cr.release();
 	};

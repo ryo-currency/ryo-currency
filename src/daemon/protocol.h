@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -46,14 +46,16 @@
 
 #pragma once
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
+#include "common/gulps.hpp"
+
+
 
 namespace daemonize
 {
 
 class t_protocol final
 {
+	 GULPS_CAT_MAJOR("daemon_proto");
   private:
 	typedef cryptonote::t_cryptonote_protocol_handler<cryptonote::core> t_protocol_raw;
 	typedef nodetool::node_server<t_protocol_raw> t_node_server;
@@ -65,12 +67,12 @@ class t_protocol final
 		boost::program_options::variables_map const &vm, t_core &core, bool offline = false)
 		: m_protocol{core.get(), nullptr, offline}
 	{
-		MGINFO("Initializing cryptonote protocol...");
+		GULPS_GLOBAL_PRINT("Initializing cryptonote protocol...");
 		if(!m_protocol.init(vm))
 		{
 			throw std::runtime_error("Failed to initialize cryptonote protocol.");
 		}
-		MGINFO("Cryptonote protocol initialized OK");
+		GULPS_GLOBAL_PRINT("Cryptonote protocol initialized OK");
 	}
 
 	t_protocol_raw &get()
@@ -86,16 +88,16 @@ class t_protocol final
 
 	~t_protocol()
 	{
-		MGINFO("Stopping cryptonote protocol...");
+		GULPS_GLOBAL_PRINT("Stopping cryptonote protocol...");
 		try
 		{
 			m_protocol.deinit();
 			m_protocol.set_p2p_endpoint(nullptr);
-			MGINFO("Cryptonote protocol stopped successfully");
+			GULPS_GLOBAL_PRINT("Cryptonote protocol stopped successfully");
 		}
 		catch(...)
 		{
-			LOG_ERROR("Failed to stop cryptonote protocol!");
+			GULPS_ERROR("Failed to stop cryptonote protocol!");
 		}
 	}
 };
