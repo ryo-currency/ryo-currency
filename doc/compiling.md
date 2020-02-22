@@ -36,7 +36,7 @@ library archives (`.a`).
 [^] On Debian/Ubuntu `libgtest-dev` only includes sources and headers. You must
 build the library binary manually. This can be done with the following command ```sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake . && sudo make && sudo mv libg* /usr/lib/ ```
 
-Debian / Ubuntu one liner for all dependencies  
+Debian / Ubuntu one liner for all dependencies
 ``` sudo apt update && sudo apt install build-essential cmake pkg-config libboost-all-dev libssl-dev libzmq3-dev libunbound-dev libsodium-dev libunwind8-dev liblzma-dev libreadline6-dev libldns-dev libexpat1-dev doxygen graphviz libpgm-dev```
 
 ### Cloning the repository
@@ -60,7 +60,7 @@ invokes cmake commands as needed.
 * Change to the root of the source code directory, change to the most recent release branch, and build:
 
         cd ryo-currency
-        git checkout tags/0.4.0.0
+        git checkout tags/0.5.0.0
         make
 
     *Optional*: If your machine has several cores and enough memory, enable
@@ -73,7 +73,7 @@ invokes cmake commands as needed.
 
     *Note*: The instructions above will compile the most stable release of the
     Ryo software. If you would like to use and test the most recent software,
-    use ```git checkout master```. The master branch may contain updates that are
+    use ```git checkout dev```. The dev branch may contain updates that are
     both unstable and incompatible with release software, though testing is always
     encouraged.
 
@@ -120,8 +120,8 @@ Tested on a Raspberry Pi Zero with a clean install of minimal Raspbian Stretch (
 * Clone ryo and checkout most recent release version:
 ```
         git clone https://github.com/ryo-currency/ryo-currency.git
-	cd ryo-currency
-	git checkout tags/0.2.0
+        cd ryo-currency
+        git checkout tags/0.5.0.0
 ```
 * Build:
 ```
@@ -217,9 +217,9 @@ application.
 
         cd ryo-currency
 
-* If you would like a specific [version/tag](https://github.com/ryo-currency/ryo-currency/tags), do a git checkout for that version. eg. '0.2.0'. If you dont care about the version and just want binaries from master, skip this step:
+* If you would like a specific [version/tag](https://github.com/ryo-currency/ryo-currency/tags), do a git checkout for that version. eg. '0.5.0.0'. If you dont care about the version and just want binaries from master, skip this step:
 
-        git checkout 0.2.0
+        git checkout tags/0.5.0.0
 
 * If you are on a 64-bit system, run:
 
