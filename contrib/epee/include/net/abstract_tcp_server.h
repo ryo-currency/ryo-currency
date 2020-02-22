@@ -36,8 +36,9 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net"
+#include "common/gulps.hpp"
+
+
 
 namespace epee
 {
@@ -56,7 +57,8 @@ class soket_sender : public i_service_endpoint
 		if(cb != send(m_sock, (char *)ptr, (int)cb, 0))
 		{
 			int sock_err = WSAGetLastError();
-			LOG_ERROR("soket_sender: Failed to send " << cb << " bytes, Error=" << sock_err);
+			GULPS_CAT_MAJOR("epee_tcp_srv");
+			GULPSF_LOG_ERROR("soket_sender: Failed to send {} bytes, Error={}", cb , sock_err);
 			return false;
 		}
 		return true;
@@ -71,6 +73,7 @@ class soket_sender : public i_service_endpoint
 template <class THandler>
 class abstract_tcp_server
 {
+	GULPS_CAT_MAJOR("epee_tcp_srv");
   public:
 	abstract_tcp_server();
 
@@ -121,7 +124,7 @@ unsigned __stdcall abstract_tcp_server<THandler>::ConnectionHandlerProc(void *lp
 
 	::CoInitialize(NULL);
 
-	LOG_PRINT("Handler thread STARTED with socket=" << pthread_context->m_socket, LOG_LEVEL_2);
+	GULPSF_LOG_L2("Handler thread STARTED with socket={}", pthread_context->m_socket);
 	int res = 0;
 
 	soket_sender sndr(pthread_context->m_socket);
@@ -133,7 +136,7 @@ unsigned __stdcall abstract_tcp_server<THandler>::ConnectionHandlerProc(void *lp
 	std::string ansver;
 	while((res = recv(pthread_context->m_socket, (char *)buff, 1000, 0)) > 0)
 	{
-		LOG_PRINT("Data in, " << res << " bytes", LOG_LEVEL_3);
+		GULPSF_LOG_L3("Data in, {} bytes", res );
 		if(!srv.handle_recv(buff, res))
 			break;
 	}
@@ -141,7 +144,7 @@ unsigned __stdcall abstract_tcp_server<THandler>::ConnectionHandlerProc(void *lp
 	closesocket(pthread_context->m_socket);
 
 	abstract_tcp_server *powner = pthread_context->powner;
-	LOG_PRINT("Handler thread with socket=" << pthread_context->m_socket << " STOPPED", LOG_LEVEL_2);
+	GULPSF_LOG_L2("Handler thread with socket={} STOPPED", pthread_context->m_socket );
 	powner->m_connections_lock.lock();
 	::CloseHandle(pthread_context->m_htread);
 	pthread_context->powner->m_connections.erase(pthread_context->m_self_it);
@@ -167,7 +170,7 @@ bool abstract_tcp_server<THandler>::init_server(int port_no)
 	int err = ::WSAStartup(MAKEWORD(2, 2), &wsad);
 	if(err != 0 || LOBYTE(wsad.wVersion) != 2 || HIBYTE(wsad.wVersion) != 2)
 	{
-		LOG_ERROR("Could not find a usable WinSock DLL, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+		GULPSF_LOG_ERROR("Could not find a usable WinSock DLL, err = {} \"{}\"", err , socket_errors::get_socket_error_text(err) );
 		return false;
 	}
 
@@ -177,7 +180,7 @@ bool abstract_tcp_server<THandler>::init_server(int port_no)
 	if(INVALID_SOCKET == m_listen_socket)
 	{
 		err = ::WSAGetLastError();
-		LOG_ERROR("Failed to create socket, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+		GULPSF_LOG_ERROR("Failed to create socket, err = {} \"{}\"", err , socket_errors::get_socket_error_text(err) );
 		return false;
 	}
 
@@ -193,7 +196,7 @@ bool abstract_tcp_server<THandler>::init_server(int port_no)
 	if(SOCKET_ERROR == err)
 	{
 		err = ::WSAGetLastError();
-		LOG_PRINT("Failed to Bind, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"", LOG_LEVEL_2);
+		GULPSF_LOG_L2("Failed to Bind, err = {} \"{}\"", err, socket_errors::get_socket_error_text(err));
 		deinit_server();
 		return false;
 	}
@@ -217,7 +220,7 @@ bool abstract_tcp_server<THandler>::deinit_server()
 		if(SOCKET_ERROR == res)
 		{
 			int err = ::WSAGetLastError();
-			LOG_ERROR("Failed to closesocket(), err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+			GULPSF_LOG_ERROR("Failed to closesocket(), err = {} \"{}\"", err , socket_errors::get_socket_error_text(err) );
 		}
 		m_listen_socket = INVALID_SOCKET;
 	}
@@ -226,7 +229,7 @@ bool abstract_tcp_server<THandler>::deinit_server()
 	if(SOCKET_ERROR == res)
 	{
 		int err = ::WSAGetLastError();
-		LOG_ERROR("Failed to WSACleanup(), err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+		GULPSF_LOG_ERROR("Failed to WSACleanup(), err = {} \"{}\"", err , socket_errors::get_socket_error_text(err) );
 	}
 	m_initialized = false;
 
@@ -247,11 +250,11 @@ bool abstract_tcp_server<THandler>::run_server()
 	if(SOCKET_ERROR == err)
 	{
 		err = ::WSAGetLastError();
-		LOG_ERROR("Failed to listen, err = " << err << " \"" << socket_errors::get_socket_error_text(err) << "\"");
+		GULPSF_LOG_ERROR("Failed to listen, err = {} \"{}\"", err , socket_errors::get_socket_error_text(err) );
 		return false;
 	}
 
-	LOG_PRINT("Listening port " << m_port << "....", LOG_LEVEL_2);
+	GULPSF_LOG_L2("Listening port {}....", m_port );
 
 	while(!m_stop_server)
 	{
@@ -266,7 +269,7 @@ bool abstract_tcp_server<THandler>::run_server()
 		if(!select_res)
 			continue;
 		SOCKET new_sock = WSAAccept(m_listen_socket, (sockaddr *)&adr_from, &adr_len, NULL, NULL);
-		LOG_PRINT("Accepted connection on socket=" << new_sock, LOG_LEVEL_2);
+		GULPSF_LOG_L2("Accepted connection on socket={}", new_sock);
 		invoke_connection(new_sock, adr_from.sin_addr.s_addr, adr_from.sin_port);
 	}
 
@@ -282,7 +285,7 @@ bool abstract_tcp_server<THandler>::run_server()
 		::Sleep(ABSTR_TCP_SRV_WAIT_COUNT_INTERVAL);
 		wait_count++;
 	}
-	LOG_PRINT("abstract_tcp_server exit with wait count=" << wait_count * ABSTR_TCP_SRV_WAIT_COUNT_INTERVAL << "(max=" << ABSTR_TCP_SRV_WAIT_COUNT_MAX << ")", LOG_LEVEL_0);
+	GULPSF_PRINT("abstract_tcp_server exit with wait count={}(max={})", wait_count * ABSTR_TCP_SRV_WAIT_COUNT_INTERVAL , ABSTR_TCP_SRV_WAIT_COUNT_MAX );
 
 	return true;
 }

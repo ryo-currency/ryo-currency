@@ -34,8 +34,7 @@
 #include <boost/optional/optional.hpp>
 #include <string>
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net.http"
+
 
 namespace epee
 {
@@ -181,7 +180,7 @@ class http_custom_handler : public simple_http_connection_handler<t_connection_c
 	}
 	inline bool handle_request(const http_request_info &query_info, http_response_info &response)
 	{
-		CHECK_AND_ASSERT_MES(m_config.m_phandler, false, "m_config.m_phandler is NULL!!!!");
+		GULPS_CHECK_AND_ASSERT_MES(m_config.m_phandler, false, "m_config.m_phandler is NULL!!!!");
 
 		const auto auth_response = m_auth.get_response(query_info);
 		if(auth_response)

@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -57,8 +57,13 @@
 #include <boost/program_options/parsers.hpp>
 #include <boost/program_options/variables_map.hpp>
 
+#include "common/gulps.hpp"
+
+
 namespace command_line
 {
+
+GULPS_CAT_MAJOR("cmd_line");
 
 //! \return True if `str` is `is_iequal("y" || "yes" || `tr("yes"))`.
 bool is_yes(const std::string &str);
@@ -206,7 +211,7 @@ void add_arg(boost::program_options::options_description &description, const arg
 {
 	if(0 != description.find_nothrow(arg.name, false))
 	{
-		CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " << arg.name);
+		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " , arg.name);
 		return;
 	}
 
@@ -218,7 +223,7 @@ void add_arg(boost::program_options::options_description &description, const arg
 {
 	if(0 != description.find_nothrow(arg.name, false))
 	{
-		CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " << arg.name);
+		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " , arg.name);
 		return;
 	}
 
@@ -230,7 +235,7 @@ inline void add_arg(boost::program_options::options_description &description, co
 {
 	if(0 != description.find_nothrow(arg.name, false))
 	{
-		CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " << arg.name);
+		GULPS_CHECK_AND_ASSERT_MES(!unique, void(), "Argument already exists: " , arg.name);
 		return;
 	}
 
@@ -259,14 +264,14 @@ bool handle_error_helper(const boost::program_options::options_description &desc
 	}
 	catch(const std::exception &e)
 	{
-		std::cerr << "Failed to parse arguments: " << e.what() << std::endl;
-		std::cerr << desc << std::endl;
+		GULPSF_ERROR("Failed to parse arguments: {}", e.what());
+		GULPS_PRINT(desc);
 		return false;
 	}
 	catch(...)
 	{
-		std::cerr << "Failed to parse arguments: unknown exception" << std::endl;
-		std::cerr << desc << std::endl;
+		GULPS_ERROR("Failed to parse arguments: unknown exception");
+		GULPS_PRINT(desc);
 		return false;
 	}
 }

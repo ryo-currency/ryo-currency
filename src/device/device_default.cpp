@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -153,6 +153,12 @@ bool device_default::derive_subaddress_public_key(const crypto::public_key &out_
 {
 	return crypto::derive_subaddress_public_key(out_key, derivation, output_index, derived_key);
 }
+#ifdef HAVE_EC_64
+bool device_default::derive_subaddress_public_key_64(const crypto::public_key &out_key, const crypto::key_derivation &derivation, const std::size_t output_index, crypto::public_key &derived_key)
+{
+	return crypto::derive_subaddress_public_key_64(out_key, derivation, output_index, derived_key);
+}
+#endif
 
 crypto::public_key device_default::get_subaddress_spend_public_key(const cryptonote::account_keys &keys, const cryptonote::subaddress_index &index)
 {
@@ -173,15 +179,15 @@ crypto::public_key device_default::get_subaddress_spend_public_key(const crypton
 
 std::vector<crypto::public_key> device_default::get_subaddress_spend_public_keys(const cryptonote::account_keys &keys, uint32_t account, uint32_t begin, uint32_t end)
 {
-	CHECK_AND_ASSERT_THROW_MES(begin <= end, "begin > end");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(begin <= end, "begin > end");
 
 	std::vector<crypto::public_key> pkeys;
 	pkeys.reserve(end - begin);
-	cryptonote::subaddress_index index = {account, begin};
+	cryptonote::subaddress_index index(account, begin);
 
 	ge_p3 p3;
 	ge_cached cached;
-	CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&p3, (const unsigned char *)keys.m_account_address.m_spend_public_key.data) == 0,
+	GULPS_CHECK_AND_ASSERT_THROW_MES(ge_frombytes_vartime(&p3, (const unsigned char *)keys.m_account_address.m_spend_public_key.data) == 0,
 							   "ge_frombytes_vartime failed to convert spend public key");
 	ge_p3_to_cached(&cached, &p3);
 
@@ -280,6 +286,12 @@ bool device_default::generate_key_derivation(const crypto::public_key &key1, con
 {
 	return crypto::generate_key_derivation(key1, key2, derivation);
 }
+#ifdef HAVE_EC_64
+bool device_default::generate_key_derivation_64(const crypto::public_key &key1, const crypto::secret_key &key2, crypto::key_derivation &derivation)
+{
+	return crypto::generate_key_derivation_64(key1, key2, derivation);
+}
+#endif
 
 bool device_default::derivation_to_scalar(const crypto::key_derivation &derivation, const size_t output_index, crypto::ec_scalar &res)
 {
@@ -409,10 +421,10 @@ bool device_default::mlsag_hash(const rct::keyV &toHash, rct::key &c_old)
 
 bool device_default::mlsag_sign(const rct::key &c, const rct::keyV &xx, const rct::keyV &alpha, const size_t rows, const size_t dsRows, rct::keyV &ss)
 {
-	CHECK_AND_ASSERT_THROW_MES(dsRows <= rows, "dsRows greater than rows");
-	CHECK_AND_ASSERT_THROW_MES(xx.size() == rows, "xx size does not match rows");
-	CHECK_AND_ASSERT_THROW_MES(alpha.size() == rows, "alpha size does not match rows");
-	CHECK_AND_ASSERT_THROW_MES(ss.size() == rows, "ss size does not match rows");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(dsRows <= rows, "dsRows greater than rows");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(xx.size() == rows, "xx size does not match rows");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(alpha.size() == rows, "alpha size does not match rows");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(ss.size() == rows, "ss size does not match rows");
 	for(size_t j = 0; j < rows; j++)
 	{
 		sc_mulsub(ss[j].bytes, c.bytes, xx[j].bytes, alpha[j].bytes);

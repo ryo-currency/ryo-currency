@@ -5,7 +5,6 @@
 //
 
 #include "daemonizer/posix_fork.h"
-#include "misc_log_ex.h"
 
 #include <cstdlib>
 #include <fcntl.h>
@@ -13,19 +12,23 @@
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <signal.h>
 
 #ifndef TMPDIR
 #define TMPDIR "/tmp"
 #endif
 
+#include "common/gulps.hpp"
+
+
 namespace posix
 {
-
+	GULPS_CAT_MAJOR("posix_fork");
 namespace
 {
 void quit(const std::string &message)
 {
-	LOG_ERROR(message);
+	GULPS_ERROR(message);
 	throw std::runtime_error(message);
 }
 }

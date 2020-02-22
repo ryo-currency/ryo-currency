@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -60,6 +60,10 @@
 #include "hash.h"
 #include "warnings.h"
 #include "random.hpp"
+
+#ifdef HAVE_EC_64
+#	include "ecops64/ecops64.h"
+#endif
 
 namespace
 {
@@ -112,9 +116,9 @@ static inline bool scalar_ok(const unsigned char *k)
 {
 	// l = 2^252 + 27742317777372353535851937790883648493
 	// l15 = 15*l
-	//unsigned char l15[32] = { 
-	//	0xe3, 0x6a, 0x67, 0x72, 0x8b, 0xce, 0x13, 0x29, 0x8f, 0x30, 0x82, 0x8c, 0x0b, 0xa4, 0x10, 0x39, 
-	//	0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0 
+	//unsigned char l15[32] = {
+	//	0xe3, 0x6a, 0x67, 0x72, 0x8b, 0xce, 0x13, 0x29, 0x8f, 0x30, 0x82, 0x8c, 0x0b, 0xa4, 0x10, 0x39,
+	//	0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf0
 	//};
 	// Scalar above in little-endian words
 	constexpr uint64_t lw3 = 0xf000000000000000ull;
@@ -170,10 +174,10 @@ void hash_to_scalar(const void *data, size_t length, ec_scalar &res)
 	sc_reduce32(&res);
 }
 
-/* 
+/*
    * generate public and secret keys from a random 256-bit integer
    * TODO: allow specifying random value (for wallet recovery)
-   * 
+   *
    */
 secret_key crypto_ops::generate_legacy_keys(public_key &pub, secret_key &sec, const secret_key &recovery_key, bool recover)
 {
@@ -324,6 +328,46 @@ bool crypto_ops::derive_subaddress_public_key(const public_key &out_key, const k
 	ge_tobytes(&derived_key, &point5);
 	return true;
 }
+
+#ifdef HAVE_EC_64
+
+bool crypto_ops::generate_key_derivation_64(const public_key &key1, const secret_key &key2, key_derivation &derivation)
+{
+	ge64_p3 point;
+	ge64_p2 point2;
+	ge64_p1p1 point3;
+	assert(sc_check(&key2) == 0);
+	if(ge64_frombytes_vartime(&point, &key1) != 0)
+	{
+		return false;
+	}
+	ge64_scalarmult(&point2, &unwrap(key2), &point);
+	ge64_mul8(&point3, &point2);
+	ge64_p1p1_to_p2(&point2, &point3);
+	ge64_tobytes(&derivation, &point2);
+	return true;
+}
+
+bool crypto_ops::derive_subaddress_public_key_64(const public_key& out_key, const key_derivation& derivation, const std::size_t output_index, public_key &derived_key)
+{
+	ec_scalar scalar;
+	ge64_p3 point1;
+	ge64_p3 point3;
+	ge64_p1p1 point4;
+	ge64_p2 point5;
+	if(ge64_frombytes_vartime(&point1, &out_key) != 0)
+	{
+		return false;
+	}
+	derivation_to_scalar(derivation, output_index, scalar);
+	ge64_scalarmult_base(&point3, &scalar);
+	ge64_sub(&point4, &point1, &point3);
+	ge64_p1p1_to_p2(&point5, &point4);
+	ge64_tobytes(&derived_key, &point5);
+	return true;
+}
+
+#endif
 
 struct s_comm
 {

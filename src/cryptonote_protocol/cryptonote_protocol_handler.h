@@ -2,7 +2,7 @@
 /// @author rfree (current maintainer/user in monero.cc project - most of code is from CryptoNote)
 /// @brief This is the original cryptonote protocol network-events handler, modified by us
 
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -34,7 +34,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -63,6 +63,8 @@
 #include "warnings.h"
 #include <boost/circular_buffer.hpp>
 
+#include "common/gulps.hpp"
+
 PUSH_WARNINGS
 DISABLE_VS_WARNINGS(4355)
 
@@ -74,6 +76,7 @@ namespace cryptonote
 class cryptonote_protocol_handler_base_pimpl;
 class cryptonote_protocol_handler_base
 {
+	GULPS_CAT_MAJOR("cn_pcl_hand");
   private:
 	std::unique_ptr<cryptonote_protocol_handler_base_pimpl> mI;
 
@@ -90,6 +93,7 @@ class cryptonote_protocol_handler_base
 template <class t_core>
 class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_protocol_handler_base
 {
+	GULPS_CAT_MAJOR("cn_pcl_hand");
   public:
 	typedef cryptonote_connection_context connection_context;
 	typedef core_stat_info stat_info;
@@ -169,7 +173,7 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	template <class t_parameter>
 	bool post_notify(typename t_parameter::request &arg, cryptonote_connection_context &context)
 	{
-		LOG_PRINT_L2("[" << epee::net_utils::print_connection_context_short(context) << "] post " << typeid(t_parameter).name() << " -->");
+		GULPSF_LOG_L2("[{}] post {} -->", epee::net_utils::print_connection_context_short(context), typeid(t_parameter).name());
 		std::string blob;
 		epee::serialization::store_t_to_binary(arg, blob);
 		//handler_response_blocks_now(blob.size()); // XXX
@@ -179,7 +183,7 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	template <class t_parameter>
 	bool relay_post_notify(typename t_parameter::request &arg, cryptonote_connection_context &exclude_context)
 	{
-		LOG_PRINT_L2("[" << epee::net_utils::print_connection_context_short(exclude_context) << "] post relay " << typeid(t_parameter).name() << " -->");
+		GULPSF_LOG_L2("[{}] post relay {} -->", epee::net_utils::print_connection_context_short(exclude_context), typeid(t_parameter).name());
 		std::string arg_buff;
 		epee::serialization::store_t_to_binary(arg, arg_buff);
 		return m_p2p->relay_notify_to_all(t_parameter::ID, arg_buff, exclude_context);

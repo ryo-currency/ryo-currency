@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2016, Monero Research Labs
 //
 // Author: Shen Noether <shen.noether@gmx.com>
@@ -32,7 +32,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -50,19 +50,19 @@
 #include "common/threadpool.h"
 #include "common/util.h"
 #include "cryptonote_basic/cryptonote_format_utils.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 
 using namespace crypto;
 using namespace std;
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "ringct"
+GULPS_CAT_MAJOR("rctSigs");
 
-#define CHECK_AND_ASSERT_MES_L1(expr, ret, message) \
+
+#define CHECK_AND_ASSERT_MES_L1(expr, ret, ...) \
 	{                                               \
 		if(!(expr))                                 \
 		{                                           \
-			MCERROR("verify", message);             \
+			GULPS_CAT_ERROR("verify", __VA_ARGS__);             \
 			return ret;                             \
 		}                                           \
 	}
@@ -73,7 +73,7 @@ Bulletproof proveRangeBulletproof(key &C, key &mask, uint64_t amount)
 {
 	mask = rct::skGen();
 	Bulletproof proof = bulletproof_PROVE(amount, mask);
-	CHECK_AND_ASSERT_THROW_MES(proof.V.size() == 1, "V has not exactly one element");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(proof.V.size() == 1, "V has not exactly one element");
 	C = proof.V[0];
 	return proof;
 }
@@ -82,7 +82,7 @@ Bulletproof proveRangeBulletproof(keyV &C, keyV &masks, const std::vector<uint64
 {
 	masks = rct::skvGen(amounts.size());
 	Bulletproof proof = bulletproof_PROVE(amounts, masks);
-	CHECK_AND_ASSERT_THROW_MES(proof.V.size() == amounts.size(), "V does not have the expected size");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(proof.V.size() == amounts.size(), "V does not have the expected size");
 	C = proof.V;
 	return proof;
 }
@@ -196,18 +196,18 @@ mgSig MLSAG_Gen(const key &message, const keyM &pk, const keyV &xx, const multis
 {
 	mgSig rv;
 	size_t cols = pk.size();
-	CHECK_AND_ASSERT_THROW_MES(cols >= 2, "Error! What is c if cols = 1!");
-	CHECK_AND_ASSERT_THROW_MES(index < cols, "Index out of range");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(cols >= 2, "Error! What is c if cols = 1!");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(index < cols, "Index out of range");
 	size_t rows = pk[0].size();
-	CHECK_AND_ASSERT_THROW_MES(rows >= 1, "Empty pk");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(rows >= 1, "Empty pk");
 	for(size_t i = 1; i < cols; ++i)
 	{
-		CHECK_AND_ASSERT_THROW_MES(pk[i].size() == rows, "pk is not rectangular");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(pk[i].size() == rows, "pk is not rectangular");
 	}
-	CHECK_AND_ASSERT_THROW_MES(xx.size() == rows, "Bad xx size");
-	CHECK_AND_ASSERT_THROW_MES(dsRows <= rows, "Bad dsRows size");
-	CHECK_AND_ASSERT_THROW_MES((kLRki && mscout) || (!kLRki && !mscout), "Only one of kLRki/mscout is present");
-	CHECK_AND_ASSERT_THROW_MES(!kLRki || dsRows == 1, "Multisig requires exactly 1 dsRows");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(xx.size() == rows, "Bad xx size");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(dsRows <= rows, "Bad dsRows size");
+	GULPS_CHECK_AND_ASSERT_THROW_MES((kLRki && mscout) || (!kLRki && !mscout), "Only one of kLRki/mscout is present");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(!kLRki || dsRows == 1, "Multisig requires exactly 1 dsRows");
 
 	size_t i = 0, j = 0, ii = 0;
 	key c, c_old, L, R, Hi;
@@ -303,25 +303,25 @@ bool MLSAG_Ver(const key &message, const keyM &pk, const mgSig &rv, size_t dsRow
 {
 
 	size_t cols = pk.size();
-	CHECK_AND_ASSERT_MES(cols >= 2, false, "Error! What is c if cols = 1!");
+	GULPS_CHECK_AND_ASSERT_MES(cols >= 2, false, "Error! What is c if cols = 1!");
 	size_t rows = pk[0].size();
-	CHECK_AND_ASSERT_MES(rows >= 1, false, "Empty pk");
+	GULPS_CHECK_AND_ASSERT_MES(rows >= 1, false, "Empty pk");
 	for(size_t i = 1; i < cols; ++i)
 	{
-		CHECK_AND_ASSERT_MES(pk[i].size() == rows, false, "pk is not rectangular");
+		GULPS_CHECK_AND_ASSERT_MES(pk[i].size() == rows, false, "pk is not rectangular");
 	}
-	CHECK_AND_ASSERT_MES(rv.II.size() == dsRows, false, "Bad II size");
-	CHECK_AND_ASSERT_MES(rv.ss.size() == cols, false, "Bad rv.ss size");
+	GULPS_CHECK_AND_ASSERT_MES(rv.II.size() == dsRows, false, "Bad II size");
+	GULPS_CHECK_AND_ASSERT_MES(rv.ss.size() == cols, false, "Bad rv.ss size");
 	for(size_t i = 0; i < cols; ++i)
 	{
-		CHECK_AND_ASSERT_MES(rv.ss[i].size() == rows, false, "rv.ss is not rectangular");
+		GULPS_CHECK_AND_ASSERT_MES(rv.ss[i].size() == rows, false, "rv.ss is not rectangular");
 	}
-	CHECK_AND_ASSERT_MES(dsRows <= rows, false, "Bad dsRows value");
+	GULPS_CHECK_AND_ASSERT_MES(dsRows <= rows, false, "Bad dsRows value");
 
 	for(size_t i = 0; i < rv.ss.size(); ++i)
 		for(size_t j = 0; j < rv.ss[i].size(); ++j)
-			CHECK_AND_ASSERT_MES(sc_check(rv.ss[i][j].bytes) == 0, false, "Bad ss slot");
-	CHECK_AND_ASSERT_MES(sc_check(rv.cc.bytes) == 0, false, "Bad cc");
+			GULPS_CHECK_AND_ASSERT_MES(sc_check(rv.ss[i][j].bytes) == 0, false, "Bad ss slot");
+	GULPS_CHECK_AND_ASSERT_MES(sc_check(rv.cc.bytes) == 0, false, "Bad cc");
 
 	size_t i = 0, j = 0, ii = 0;
 	key c, L, R, Hi;
@@ -342,7 +342,7 @@ bool MLSAG_Ver(const key &message, const keyM &pk, const mgSig &rv, size_t dsRow
 		{
 			addKeys2(L, rv.ss[i][j], c_old, pk[i][j]);
 			hashToPoint(Hi, pk[i][j]);
-			CHECK_AND_ASSERT_MES(!(Hi == rct::identity()), false, "Data hashed to point at infinity");
+			GULPS_CHECK_AND_ASSERT_MES(!(Hi == rct::identity()), false, "Data hashed to point at infinity");
 			addKeys3(R, rv.ss[i][j], Hi, c_old, Ip[j].k);
 			toHash[3 * j + 1] = pk[i][j];
 			toHash[3 * j + 2] = L;
@@ -454,11 +454,11 @@ key get_pre_mlsag_hash(const rctSig &rv, hw::device &hwdev)
 
 	std::stringstream ss;
 	binary_archive<true> ba(ss);
-	CHECK_AND_ASSERT_THROW_MES(!rv.mixRing.empty(), "Empty mixRing");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(!rv.mixRing.empty(), "Empty mixRing");
 	const size_t inputs = (rv.type == RCTTypeBulletproof || rv.type == RCTTypeSimple) ? rv.mixRing.size() : rv.mixRing[0].size();
 	const size_t outputs = rv.ecdhInfo.size();
 	key prehash;
-	CHECK_AND_ASSERT_THROW_MES(const_cast<rctSig &>(rv).serialize_rctsig_base(ba, inputs, outputs),
+	GULPS_CHECK_AND_ASSERT_THROW_MES(const_cast<rctSig &>(rv).serialize_rctsig_base(ba, inputs, outputs),
 							   "Failed to serialize rctSigBase");
 	cryptonote::get_blob_hash(ss.str(), h);
 	hashes.push_back(hash2rct(h));
@@ -518,16 +518,16 @@ mgSig proveRctMG(const key &message, const ctkeyM &pubs, const ctkeyV &inSk, con
 	mgSig mg;
 	//setup vars
 	size_t cols = pubs.size();
-	CHECK_AND_ASSERT_THROW_MES(cols >= 1, "Empty pubs");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(cols >= 1, "Empty pubs");
 	size_t rows = pubs[0].size();
-	CHECK_AND_ASSERT_THROW_MES(rows >= 1, "Empty pubs");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(rows >= 1, "Empty pubs");
 	for(size_t i = 1; i < cols; ++i)
 	{
-		CHECK_AND_ASSERT_THROW_MES(pubs[i].size() == rows, "pubs is not rectangular");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(pubs[i].size() == rows, "pubs is not rectangular");
 	}
-	CHECK_AND_ASSERT_THROW_MES(inSk.size() == rows, "Bad inSk size");
-	CHECK_AND_ASSERT_THROW_MES(outSk.size() == outPk.size(), "Bad outSk/outPk size");
-	CHECK_AND_ASSERT_THROW_MES((kLRki && mscout) || (!kLRki && !mscout), "Only one of kLRki/mscout is present");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(inSk.size() == rows, "Bad inSk size");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(outSk.size() == outPk.size(), "Bad outSk/outPk size");
+	GULPS_CHECK_AND_ASSERT_THROW_MES((kLRki && mscout) || (!kLRki && !mscout), "Only one of kLRki/mscout is present");
 
 	keyV sk(rows + 1);
 	keyV tmp(rows + 1);
@@ -585,8 +585,8 @@ mgSig proveRctMGSimple(const key &message, const ctkeyV &pubs, const ctkey &inSk
 	//setup vars
 	size_t rows = 1;
 	size_t cols = pubs.size();
-	CHECK_AND_ASSERT_THROW_MES(cols >= 1, "Empty pubs");
-	CHECK_AND_ASSERT_THROW_MES((kLRki && mscout) || (!kLRki && !mscout), "Only one of kLRki/mscout is present");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(cols >= 1, "Empty pubs");
+	GULPS_CHECK_AND_ASSERT_THROW_MES((kLRki && mscout) || (!kLRki && !mscout), "Only one of kLRki/mscout is present");
 	keyV tmp(rows + 1);
 	keyV sk(rows + 1);
 	size_t i;
@@ -617,12 +617,12 @@ bool verRctMG(const mgSig &mg, const ctkeyM &pubs, const ctkeyV &outPk, key txnF
 	PERF_TIMER(verRctMG);
 	//setup vars
 	size_t cols = pubs.size();
-	CHECK_AND_ASSERT_MES(cols >= 1, false, "Empty pubs");
+	GULPS_CHECK_AND_ASSERT_MES(cols >= 1, false, "Empty pubs");
 	size_t rows = pubs[0].size();
-	CHECK_AND_ASSERT_MES(rows >= 1, false, "Empty pubs");
+	GULPS_CHECK_AND_ASSERT_MES(rows >= 1, false, "Empty pubs");
 	for(size_t i = 1; i < cols; ++i)
 	{
-		CHECK_AND_ASSERT_MES(pubs[i].size() == rows, false, "pubs is not rectangular");
+		GULPS_CHECK_AND_ASSERT_MES(pubs[i].size() == rows, false, "pubs is not rectangular");
 	}
 
 	keyV tmp(rows + 1);
@@ -666,7 +666,7 @@ bool verRctMGSimple(const key &message, const mgSig &mg, const ctkeyV &pubs, con
 		//setup vars
 		size_t rows = 1;
 		size_t cols = pubs.size();
-		CHECK_AND_ASSERT_MES(cols >= 1, false, "Empty pubs");
+		GULPS_CHECK_AND_ASSERT_MES(cols >= 1, false, "Empty pubs");
 		keyV tmp(rows + 1);
 		size_t i;
 		keyM M(cols, tmp);
@@ -757,14 +757,14 @@ ryo_amount populateFromBlockchainSimple(ctkeyV &mixRing, const ctkey &inPk, int 
 //   Thus the amounts vector will be "one" longer than the destinations vectort
 rctSig genRct(const key &message, const ctkeyV &inSk, const keyV &destinations, const vector<ryo_amount> &amounts, const ctkeyM &mixRing, const keyV &amount_keys, const multisig_kLRki *kLRki, multisig_out *msout, unsigned int index, ctkeyV &outSk, hw::device &hwdev)
 {
-	CHECK_AND_ASSERT_THROW_MES(amounts.size() == destinations.size() || amounts.size() == destinations.size() + 1, "Different number of amounts/destinations");
-	CHECK_AND_ASSERT_THROW_MES(amount_keys.size() == destinations.size(), "Different number of amount_keys/destinations");
-	CHECK_AND_ASSERT_THROW_MES(index < mixRing.size(), "Bad index into mixRing");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(amounts.size() == destinations.size() || amounts.size() == destinations.size() + 1, "Different number of amounts/destinations");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(amount_keys.size() == destinations.size(), "Different number of amount_keys/destinations");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(index < mixRing.size(), "Bad index into mixRing");
 	for(size_t n = 0; n < mixRing.size(); ++n)
 	{
-		CHECK_AND_ASSERT_THROW_MES(mixRing[n].size() == inSk.size(), "Bad mixRing size");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(mixRing[n].size() == inSk.size(), "Bad mixRing size");
 	}
-	CHECK_AND_ASSERT_THROW_MES((kLRki && msout) || (!kLRki && !msout), "Only one of kLRki/msout is present");
+	GULPS_CHECK_AND_ASSERT_THROW_MES((kLRki && msout) || (!kLRki && !msout), "Only one of kLRki/msout is present");
 
 	rctSig rv;
 	rv.type = RCTTypeFull;
@@ -783,7 +783,7 @@ rctSig genRct(const key &message, const ctkeyV &inSk, const keyV &destinations, 
 		//compute range proof
 		rv.p.rangeSigs[i] = proveRange(rv.outPk[i].mask, outSk[i].mask, amounts[i]);
 #ifndef NDEBUG
-		CHECK_AND_ASSERT_THROW_MES(verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]), "verRange failed on newly created proof");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]), "verRange failed on newly created proof");
 #endif
 		//mask amount and mask
 		rv.ecdhInfo[i].mask = copy(outSk[i].mask);
@@ -822,20 +822,20 @@ rctSig genRct(const key &message, const ctkeyV &inSk, const ctkeyV &inPk, const 
 //for post-rct only
 rctSig genRctSimple(const key &message, const ctkeyV &inSk, const keyV &destinations, const vector<ryo_amount> &inamounts, const vector<ryo_amount> &outamounts, ryo_amount txnFee, const ctkeyM &mixRing, const keyV &amount_keys, const std::vector<multisig_kLRki> *kLRki, multisig_out *msout, const std::vector<unsigned int> &index, ctkeyV &outSk, bool bulletproof, hw::device &hwdev)
 {
-	CHECK_AND_ASSERT_THROW_MES(inamounts.size() > 0, "Empty inamounts");
-	CHECK_AND_ASSERT_THROW_MES(inamounts.size() == inSk.size(), "Different number of inamounts/inSk");
-	CHECK_AND_ASSERT_THROW_MES(outamounts.size() == destinations.size(), "Different number of amounts/destinations");
-	CHECK_AND_ASSERT_THROW_MES(amount_keys.size() == destinations.size(), "Different number of amount_keys/destinations");
-	CHECK_AND_ASSERT_THROW_MES(index.size() == inSk.size(), "Different number of index/inSk");
-	CHECK_AND_ASSERT_THROW_MES(mixRing.size() == inSk.size(), "Different number of mixRing/inSk");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(inamounts.size() > 0, "Empty inamounts");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(inamounts.size() == inSk.size(), "Different number of inamounts/inSk");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(outamounts.size() == destinations.size(), "Different number of amounts/destinations");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(amount_keys.size() == destinations.size(), "Different number of amount_keys/destinations");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(index.size() == inSk.size(), "Different number of index/inSk");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(mixRing.size() == inSk.size(), "Different number of mixRing/inSk");
 	for(size_t n = 0; n < mixRing.size(); ++n)
 	{
-		CHECK_AND_ASSERT_THROW_MES(index[n] < mixRing[n].size(), "Bad index into mixRing");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(index[n] < mixRing[n].size(), "Bad index into mixRing");
 	}
-	CHECK_AND_ASSERT_THROW_MES((kLRki && msout) || (!kLRki && !msout), "Only one of kLRki/msout is present");
+	GULPS_CHECK_AND_ASSERT_THROW_MES((kLRki && msout) || (!kLRki && !msout), "Only one of kLRki/msout is present");
 	if(kLRki && msout)
 	{
-		CHECK_AND_ASSERT_THROW_MES(kLRki->size() == inamounts.size(), "Mismatched kLRki/inamounts sizes");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(kLRki->size() == inamounts.size(), "Mismatched kLRki/inamounts sizes");
 	}
 
 	rctSig rv;
@@ -859,7 +859,7 @@ rctSig genRctSimple(const key &message, const ctkeyV &inSk, const keyV &destinat
 			rv.p.rangeSigs[i] = proveRange(rv.outPk[i].mask, outSk[i].mask, outamounts[i]);
 #ifndef NDEBUG
 		if(!bulletproof)
-			CHECK_AND_ASSERT_THROW_MES(verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]), "verRange failed on newly created proof");
+			GULPS_CHECK_AND_ASSERT_THROW_MES(verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]), "verRange failed on newly created proof");
 #endif
 	}
 
@@ -869,7 +869,7 @@ rctSig genRctSimple(const key &message, const ctkeyV &inSk, const keyV &destinat
 		rct::keyV C, masks;
 		rv.p.bulletproofs.push_back(proveRangeBulletproof(C, masks, outamounts));
 #ifndef NDEBUG
-		CHECK_AND_ASSERT_THROW_MES(verBulletproof(rv.p.bulletproofs.back()), "verBulletproof failed on newly created proof");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(verBulletproof(rv.p.bulletproofs.back()), "verBulletproof failed on newly created proof");
 #endif
 		for(i = 0; i < outamounts.size(); ++i)
 		{
@@ -948,12 +948,12 @@ rctSig genRctSimple(const key &message, const ctkeyV &inSk, const ctkeyV &inPk, 
 bool verRct(const rctSig &rv, bool semantics)
 {
 	PERF_TIMER(verRct);
-	CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull, false, "verRct called on non-full rctSig");
+	GULPS_CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull, false, "verRct called on non-full rctSig");
 	if(semantics)
 	{
-		CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.p.rangeSigs.size(), false, "Mismatched sizes of outPk and rv.p.rangeSigs");
-		CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.ecdhInfo.size(), false, "Mismatched sizes of outPk and rv.ecdhInfo");
-		CHECK_AND_ASSERT_MES(rv.p.MGs.size() == 1, false, "full rctSig has not one MG");
+		GULPS_CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.p.rangeSigs.size(), false, "Mismatched sizes of outPk and rv.p.rangeSigs");
+		GULPS_CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.ecdhInfo.size(), false, "Mismatched sizes of outPk and rv.ecdhInfo");
+		GULPS_CHECK_AND_ASSERT_MES(rv.p.MGs.size() == 1, false, "full rctSig has not one MG");
 	}
 	else
 	{
@@ -977,7 +977,7 @@ bool verRct(const rctSig &rv, bool semantics)
 			{
 				if(!results[i])
 				{
-					LOG_PRINT_L1("Range proof verified failed for proof " << i);
+					GULPSF_LOG_L1("Range proof verified failed for proof {}", i);
 					return false;
 				}
 			}
@@ -992,7 +992,7 @@ bool verRct(const rctSig &rv, bool semantics)
 			DP(mgVerd);
 			if(!mgVerd)
 			{
-				LOG_PRINT_L1("MG signature verification failed");
+				GULPS_LOG_L1("MG signature verification failed");
 				return false;
 			}
 		}
@@ -1001,12 +1001,12 @@ bool verRct(const rctSig &rv, bool semantics)
 	}
 	catch(const std::exception &e)
 	{
-		LOG_PRINT_L1("Error in verRct: " << e.what());
+		GULPSF_LOG_L1("Error in verRct: {}", e.what());
 		return false;
 	}
 	catch(...)
 	{
-		LOG_PRINT_L1("Error in verRct, but not an actual exception");
+		GULPS_LOG_L1("Error in verRct, but not an actual exception");
 		return false;
 	}
 }
@@ -1027,25 +1027,25 @@ bool verRctSemanticsSimple(const std::vector<const rctSig *> &rvv)
 
 		for(const rctSig *rvp : rvv)
 		{
-			CHECK_AND_ASSERT_MES(rvp, false, "rctSig pointer is NULL");
+			GULPS_CHECK_AND_ASSERT_MES(rvp, false, "rctSig pointer is NULL");
 			const rctSig &rv = *rvp;
-			CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof, false, "verRctSemanticsSimple called on non simple rctSig");
+			GULPS_CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof, false, "verRctSemanticsSimple called on non simple rctSig");
 			const bool bulletproof = rv.type == RCTTypeBulletproof;
 			if(bulletproof)
 			{
-				CHECK_AND_ASSERT_MES(rv.outPk.size() <= cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS, false, "Too many outputs");
-				CHECK_AND_ASSERT_MES(rv.outPk.size() == n_bulletproof_amounts(rv.p.bulletproofs), false, "Mismatched sizes of outPk and bulletproofs");
-				CHECK_AND_ASSERT_MES(is_canonical_bulletproof_layout(rv.p.bulletproofs), false, "Non-canonical layout");
-				CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.size() == rv.p.MGs.size(), false, "Mismatched sizes of rv.p.pseudoOuts and rv.p.MGs");
-				CHECK_AND_ASSERT_MES(rv.pseudoOuts.empty(), false, "rv.pseudoOuts is not empty");
+				GULPS_CHECK_AND_ASSERT_MES(rv.outPk.size() <= cryptonote::common_config::BULLETPROOF_MAX_OUTPUTS, false, "Too many outputs");
+				GULPS_CHECK_AND_ASSERT_MES(rv.outPk.size() == n_bulletproof_amounts(rv.p.bulletproofs), false, "Mismatched sizes of outPk and bulletproofs");
+				GULPS_CHECK_AND_ASSERT_MES(is_canonical_bulletproof_layout(rv.p.bulletproofs), false, "Non-canonical layout");
+				GULPS_CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.size() == rv.p.MGs.size(), false, "Mismatched sizes of rv.p.pseudoOuts and rv.p.MGs");
+				GULPS_CHECK_AND_ASSERT_MES(rv.pseudoOuts.empty(), false, "rv.pseudoOuts is not empty");
 			}
 			else
 			{
-				CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.p.rangeSigs.size(), false, "Mismatched sizes of outPk and rv.p.rangeSigs");
-				CHECK_AND_ASSERT_MES(rv.pseudoOuts.size() == rv.p.MGs.size(), false, "Mismatched sizes of rv.pseudoOuts and rv.p.MGs");
-				CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.empty(), false, "rv.p.pseudoOuts is not empty");
+				GULPS_CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.p.rangeSigs.size(), false, "Mismatched sizes of outPk and rv.p.rangeSigs");
+				GULPS_CHECK_AND_ASSERT_MES(rv.pseudoOuts.size() == rv.p.MGs.size(), false, "Mismatched sizes of rv.pseudoOuts and rv.p.MGs");
+				GULPS_CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.empty(), false, "rv.p.pseudoOuts is not empty");
 			}
-			CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.ecdhInfo.size(), false, "Mismatched sizes of outPk and rv.ecdhInfo");
+			GULPS_CHECK_AND_ASSERT_MES(rv.outPk.size() == rv.ecdhInfo.size(), false, "Mismatched sizes of outPk and rv.ecdhInfo");
 
 			if(!bulletproof)
 				max_non_bp_proofs += rv.p.rangeSigs.size();
@@ -1075,7 +1075,7 @@ bool verRctSemanticsSimple(const std::vector<const rctSig *> &rvv)
 			//check pseudoOuts vs Outs..
 			if(!equalKeys(sumPseudoOuts, sumOutpks))
 			{
-				LOG_PRINT_L1("Sum check failed");
+				GULPS_LOG_L1("Sum check failed");
 				return false;
 			}
 
@@ -1093,7 +1093,7 @@ bool verRctSemanticsSimple(const std::vector<const rctSig *> &rvv)
 		}
 		if(!proofs.empty() && !verBulletproof(proofs))
 		{
-			LOG_PRINT_L1("Aggregate range proof verified failed");
+			GULPS_LOG_L1("Aggregate range proof verified failed");
 			return false;
 		}
 
@@ -1102,7 +1102,7 @@ bool verRctSemanticsSimple(const std::vector<const rctSig *> &rvv)
 		{
 			if(!results[i])
 			{
-				LOG_PRINT_L1("Range proof verified failed for proof " << i);
+				GULPSF_LOG_L1("Range proof verified failed for proof {}", i);
 				return false;
 			}
 		}
@@ -1112,12 +1112,12 @@ bool verRctSemanticsSimple(const std::vector<const rctSig *> &rvv)
 	// we can get deep throws from ge_frombytes_vartime if input isn't valid
 	catch(const std::exception &e)
 	{
-		LOG_PRINT_L1("Error in verRctSemanticsSimple: " << e.what());
+		GULPSF_LOG_L1("Error in verRctSemanticsSimple: {}", e.what());
 		return false;
 	}
 	catch(...)
 	{
-		LOG_PRINT_L1("Error in verRctSemanticsSimple, but not an actual exception");
+		GULPS_LOG_L1("Error in verRctSemanticsSimple, but not an actual exception");
 		return false;
 	}
 }
@@ -1135,13 +1135,13 @@ bool verRctNonSemanticsSimple(const rctSig &rv)
 	{
 		PERF_TIMER(verRctNonSemanticsSimple);
 
-		CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof, false, "verRctNonSemanticsSimple called on non simple rctSig");
+		GULPS_CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof, false, "verRctNonSemanticsSimple called on non simple rctSig");
 		const bool bulletproof = rv.type == RCTTypeBulletproof;
 		// semantics check is early, and mixRing/MGs aren't resolved yet
 		if(bulletproof)
-			CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.size() == rv.mixRing.size(), false, "Mismatched sizes of rv.p.pseudoOuts and mixRing");
+			GULPS_CHECK_AND_ASSERT_MES(rv.p.pseudoOuts.size() == rv.mixRing.size(), false, "Mismatched sizes of rv.p.pseudoOuts and mixRing");
 		else
-			CHECK_AND_ASSERT_MES(rv.pseudoOuts.size() == rv.mixRing.size(), false, "Mismatched sizes of rv.pseudoOuts and mixRing");
+			GULPS_CHECK_AND_ASSERT_MES(rv.pseudoOuts.size() == rv.mixRing.size(), false, "Mismatched sizes of rv.pseudoOuts and mixRing");
 
 		const size_t threads = std::max(rv.outPk.size(), rv.mixRing.size());
 
@@ -1167,7 +1167,7 @@ bool verRctNonSemanticsSimple(const rctSig &rv)
 		{
 			if(!results[i])
 			{
-				LOG_PRINT_L1("verRctMGSimple failed for input " << i);
+				GULPSF_LOG_L1("verRctMGSimple failed for input {}", i);
 				return false;
 			}
 		}
@@ -1177,12 +1177,12 @@ bool verRctNonSemanticsSimple(const rctSig &rv)
 	// we can get deep throws from ge_frombytes_vartime if input isn't valid
 	catch(const std::exception &e)
 	{
-		LOG_PRINT_L1("Error in verRctNonSemanticsSimple: " << e.what());
+		GULPSF_LOG_L1("Error in verRctNonSemanticsSimple: {}", e.what());
 		return false;
 	}
 	catch(...)
 	{
-		LOG_PRINT_L1("Error in verRctNonSemanticsSimple, but not an actual exception");
+		GULPS_LOG_L1("Error in verRctNonSemanticsSimple, but not an actual exception");
 		return false;
 	}
 }
@@ -1199,9 +1199,9 @@ bool verRctNonSemanticsSimple(const rctSig &rv)
 //   must know the destination private key to find the correct amount, else will return a random number
 ryo_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, key &mask, hw::device &hwdev)
 {
-	CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull, false, "decodeRct called on non-full rctSig");
-	CHECK_AND_ASSERT_THROW_MES(i < rv.ecdhInfo.size(), "Bad index");
-	CHECK_AND_ASSERT_THROW_MES(rv.outPk.size() == rv.ecdhInfo.size(), "Mismatched sizes of rv.outPk and rv.ecdhInfo");
+	GULPS_CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull, false, "decodeRct called on non-full rctSig");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(i < rv.ecdhInfo.size(), "Bad index");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(rv.outPk.size() == rv.ecdhInfo.size(), "Mismatched sizes of rv.outPk and rv.ecdhInfo");
 
 	//mask amount and mask
 	ecdhTuple ecdh_info = rv.ecdhInfo[i];
@@ -1212,14 +1212,14 @@ ryo_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, key &mask,
 	DP("C");
 	DP(C);
 	key Ctmp;
-	CHECK_AND_ASSERT_THROW_MES(sc_check(mask.bytes) == 0, "warning, bad ECDH mask");
-	CHECK_AND_ASSERT_THROW_MES(sc_check(amount.bytes) == 0, "warning, bad ECDH amount");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(sc_check(mask.bytes) == 0, "warning, bad ECDH mask");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(sc_check(amount.bytes) == 0, "warning, bad ECDH amount");
 	addKeys2(Ctmp, mask, amount, H);
 	DP("Ctmp");
 	DP(Ctmp);
 	if(equalKeys(C, Ctmp) == false)
 	{
-		CHECK_AND_ASSERT_THROW_MES(false, "warning, amount decoded incorrectly, will be unable to spend");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "warning, amount decoded incorrectly, will be unable to spend");
 	}
 	return h2d(amount);
 }
@@ -1232,9 +1232,9 @@ ryo_amount decodeRct(const rctSig &rv, const key &sk, unsigned int i, hw::device
 
 ryo_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, key &mask, hw::device &hwdev)
 {
-	CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof, false, "decodeRct called on non simple rctSig");
-	CHECK_AND_ASSERT_THROW_MES(i < rv.ecdhInfo.size(), "Bad index");
-	CHECK_AND_ASSERT_THROW_MES(rv.outPk.size() == rv.ecdhInfo.size(), "Mismatched sizes of rv.outPk and rv.ecdhInfo");
+	GULPS_CHECK_AND_ASSERT_MES(rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof, false, "decodeRct called on non simple rctSig");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(i < rv.ecdhInfo.size(), "Bad index");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(rv.outPk.size() == rv.ecdhInfo.size(), "Mismatched sizes of rv.outPk and rv.ecdhInfo");
 
 	//mask amount and mask
 	ecdhTuple ecdh_info = rv.ecdhInfo[i];
@@ -1245,14 +1245,14 @@ ryo_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, key 
 	DP("C");
 	DP(C);
 	key Ctmp;
-	CHECK_AND_ASSERT_THROW_MES(sc_check(mask.bytes) == 0, "warning, bad ECDH mask");
-	CHECK_AND_ASSERT_THROW_MES(sc_check(amount.bytes) == 0, "warning, bad ECDH amount");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(sc_check(mask.bytes) == 0, "warning, bad ECDH mask");
+	GULPS_CHECK_AND_ASSERT_THROW_MES(sc_check(amount.bytes) == 0, "warning, bad ECDH amount");
 	addKeys2(Ctmp, mask, amount, H);
 	DP("Ctmp");
 	DP(Ctmp);
 	if(equalKeys(C, Ctmp) == false)
 	{
-		CHECK_AND_ASSERT_THROW_MES(false, "warning, amount decoded incorrectly, will be unable to spend");
+		GULPS_CHECK_AND_ASSERT_THROW_MES(false, "warning, amount decoded incorrectly, will be unable to spend");
 	}
 	return h2d(amount);
 }
@@ -1265,19 +1265,19 @@ ryo_amount decodeRctSimple(const rctSig &rv, const key &sk, unsigned int i, hw::
 
 bool signMultisig(rctSig &rv, const std::vector<unsigned int> &indices, const keyV &k, const multisig_out &msout, const key &secret_key)
 {
-	CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull || rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof,
+	GULPS_CHECK_AND_ASSERT_MES(rv.type == RCTTypeFull || rv.type == RCTTypeSimple || rv.type == RCTTypeBulletproof,
 						 false, "unsupported rct type");
-	CHECK_AND_ASSERT_MES(indices.size() == k.size(), false, "Mismatched k/indices sizes");
-	CHECK_AND_ASSERT_MES(k.size() == rv.p.MGs.size(), false, "Mismatched k/MGs size");
-	CHECK_AND_ASSERT_MES(k.size() == msout.c.size(), false, "Mismatched k/msout.c size");
+	GULPS_CHECK_AND_ASSERT_MES(indices.size() == k.size(), false, "Mismatched k/indices sizes");
+	GULPS_CHECK_AND_ASSERT_MES(k.size() == rv.p.MGs.size(), false, "Mismatched k/MGs size");
+	GULPS_CHECK_AND_ASSERT_MES(k.size() == msout.c.size(), false, "Mismatched k/msout.c size");
 	if(rv.type == RCTTypeFull)
 	{
-		CHECK_AND_ASSERT_MES(rv.p.MGs.size() == 1, false, "MGs not a single element");
+		GULPS_CHECK_AND_ASSERT_MES(rv.p.MGs.size() == 1, false, "MGs not a single element");
 	}
 	for(size_t n = 0; n < indices.size(); ++n)
 	{
-		CHECK_AND_ASSERT_MES(indices[n] < rv.p.MGs[n].ss.size(), false, "Index out of range");
-		CHECK_AND_ASSERT_MES(!rv.p.MGs[n].ss[indices[n]].empty(), false, "empty ss line");
+		GULPS_CHECK_AND_ASSERT_MES(indices[n] < rv.p.MGs[n].ss.size(), false, "Index out of range");
+		GULPS_CHECK_AND_ASSERT_MES(!rv.p.MGs[n].ss[indices[n]].empty(), false, "empty ss line");
 	}
 
 	for(size_t n = 0; n < indices.size(); ++n)

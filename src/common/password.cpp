@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -60,7 +60,11 @@
 
 #include "memwipe.h"
 
+#include "common/gulps.hpp"
+
 #define EOT 0x4
+
+GULPS_CAT_MAJOR("password");
 
 namespace
 {
@@ -95,7 +99,7 @@ bool read_from_tty(epee::wipeable_string &pass)
 		}
 		else if(ch == '\n' || ch == '\r')
 		{
-			std::cout << std::endl;
+			GULPS_PRINT("\n");
 			break;
 		}
 		else if(ch == BACKSPACE)
@@ -154,7 +158,7 @@ bool read_from_tty(epee::wipeable_string &aPass)
 		}
 		else if(ch == '\n' || ch == '\r')
 		{
-			std::cout << std::endl;
+			GULPS_PRINT("\n");
 			break;
 		}
 		else if(ch == BACKSPACE)
@@ -180,17 +184,17 @@ bool read_from_tty(const bool verify, const char *message, epee::wipeable_string
 	while(true)
 	{
 		if(message)
-			std::cout << message << ": " << std::flush;
+			GULPS_PRINT_NOLF(message, ": ");
 		if(!read_from_tty(pass1))
 			return false;
 		if(verify)
 		{
-			std::cout << "Confirm password: ";
+			GULPS_PRINT_NOLF("Confirm password: ");
 			if(!read_from_tty(pass2))
 				return false;
 			if(pass1 != pass2)
 			{
-				std::cout << "Passwords do not match! Please try again." << std::endl;
+				GULPS_PRINT("Passwords do not match! Please try again.");
 				pass1.clear();
 				pass2.clear();
 			}

@@ -43,10 +43,16 @@
 #include "p2p/net_node.inl"
 #include "string_tools.h"
 #include "unit_tests_utils.h"
+#include "common/gulps.hpp"
 
 namespace po = boost::program_options;
 
+GULPS_CAT_MAJOR("test");
+
 boost::filesystem::path unit_test::data_dir;
+
+// is not used by the test but must be defined to fulfill linker dependencies of core_rpc-server
+gulps_log_level log_scr;
 
 namespace nodetool
 {
@@ -59,12 +65,12 @@ template class t_cryptonote_protocol_handler<cryptonote::core>;
 
 int main(int argc, char **argv)
 {
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 
 	tools::on_startup();
 	epee::string_tools::set_module_name_and_folder(argv[0]);
-	mlog_configure(mlog_get_default_log_path("unit_tests.log"), true);
-	epee::debug::get_set_enable_assert(true, false);
+
+	debug::get_set_enable_assert(true, false);
 
 	::testing::InitGoogleTest(&argc, argv);
 
@@ -83,7 +89,7 @@ int main(int argc, char **argv)
 
 	unit_test::data_dir = command_line::get_arg(vm, arg_data_dir);
 
-	CATCH_ENTRY_L0("main", 1);
+	GULPS_CATCH_ENTRY_L0("main", 1);
 
 	return RUN_ALL_TESTS();
 }

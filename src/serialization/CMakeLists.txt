@@ -29,7 +29,7 @@
 # Authors and copyright holders agree that:
 #
 # 8. This licence expires and the work covered by it is released into the 
-#    public domain on 1st of February 2020
+#    public domain on 1st of February 2021
 # 
 # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 # EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -56,6 +56,8 @@ ryo_add_library(serialization
   ${serialization_headers}
   ${serialization_private_headers})
 target_link_libraries(serialization
+  LINK_PUBLIC
+    fmt::fmt-header-only
   LINK_PRIVATE
     cryptonote_core
     cryptonote_protocol

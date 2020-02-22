@@ -47,6 +47,7 @@
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.inl"
 #include "version.h"
+#include "common/gulps.hpp"
 
 #if defined(WIN32)
 #include <crtdbg.h>
@@ -58,6 +59,8 @@ using namespace epee;
 using namespace cryptonote;
 using namespace crypto;
 
+GULPS_CAT_MAJOR("test");
+
 BOOST_CLASS_VERSION(nodetool::node_server<cryptonote::t_cryptonote_protocol_handler<tests::proxy_core>>, 1);
 
 int main(int argc, char *argv[])
@@ -67,14 +70,14 @@ int main(int argc, char *argv[])
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-	TRY_ENTRY();
+	GULPS_TRY_ENTRY();
 
 	tools::on_startup();
 	string_tools::set_module_name_and_folder(argv[0]);
 
 	//set up logging options
-	mlog_configure(mlog_get_default_log_path("core_proxy.log"), true);
-	mlog_set_log_level(2);
+
+
 
 	po::options_description desc("Allowed options");
 	command_line::add_arg(desc, cryptonote::arg_data_dir);
@@ -89,8 +92,8 @@ int main(int argc, char *argv[])
 	if(!r)
 		return 1;
 
-	MGINFO("Module folder: " << argv[0]);
-	MGINFO("Node starting ...");
+	std::cout << "Module folder: " <<  argv[0] << std::endl;
+	std::cout << "Node starting ..." << std::endl;
 
 	//create objects and link them
 	tests::proxy_core pr_core;
@@ -103,41 +106,41 @@ int main(int argc, char *argv[])
 
 	//initialize objects
 
-	MGINFO("Initializing p2p server...");
+	std::cout << "Initializing p2p server..." << std::endl;
 	bool res = p2psrv.init(vm);
-	CHECK_AND_ASSERT_MES(res, 1, "Failed to initialize p2p server.");
-	MGINFO("P2p server initialized OK");
+	GULPS_CHECK_AND_ASSERT_MES(res, 1, "Failed to initialize p2p server.");
+	std::cout << "P2p server initialized OK" << std::endl;
 
-	MGINFO("Initializing cryptonote protocol...");
+	std::cout << "Initializing cryptonote protocol..." << std::endl;
 	res = cprotocol.init(vm);
-	CHECK_AND_ASSERT_MES(res, 1, "Failed to initialize cryptonote protocol.");
-	MGINFO("Cryptonote protocol initialized OK");
+	GULPS_CHECK_AND_ASSERT_MES(res, 1, "Failed to initialize cryptonote protocol.");
+	std::cout << "Cryptonote protocol initialized OK" << std::endl;
 
 	//initialize core here
-	MGINFO("Initializing proxy core...");
+	std::cout << "Initializing proxy core..." << std::endl;
 	res = pr_core.init(vm);
-	CHECK_AND_ASSERT_MES(res, 1, "Failed to initialize core");
-	MGINFO("Core initialized OK");
+	GULPS_CHECK_AND_ASSERT_MES(res, 1, "Failed to initialize core");
+	std::cout << "Core initialized OK" << std::endl;
 
-	MGINFO("Starting p2p net loop...");
+	std::cout << "Starting p2p net loop..." << std::endl;
 	p2psrv.run();
-	MGINFO("p2p net loop stopped");
+	std::cout << "p2p net loop stopped" << std::endl;
 
 	//deinitialize components
-	MGINFO("Deinitializing core...");
+	std::cout << "Deinitializing core..." << std::endl;
 	pr_core.deinit();
-	MGINFO("Deinitializing cryptonote_protocol...");
+	std::cout << "Deinitializing cryptonote_protocol..." << std::endl;
 	cprotocol.deinit();
-	MGINFO("Deinitializing p2p...");
+	std::cout << "Deinitializing p2p..." << std::endl;
 	p2psrv.deinit();
 
 	//pr_core.set_cryptonote_protocol(NULL);
 	cprotocol.set_p2p_endpoint(NULL);
 
-	MGINFO("Node stopped.");
+	std::cout << "Node stopped." << std::endl;
 	return 0;
 
-	CATCH_ENTRY_L0("main", 1);
+	GULPS_CATCH_ENTRY_L0("main", 1);
 }
 
 /*

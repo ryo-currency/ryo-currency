@@ -51,9 +51,7 @@
 #include "cryptonote_basic/cryptonote_format_utils.h"
 #include "cryptonote_core/cryptonote_core.h"
 #include "misc_language.h"
-
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "tests.core"
+#include "common/gulps.hpp"
 
 struct callback_entry
 {
@@ -284,6 +282,7 @@ bool check_block_verification_context(const cryptonote::block_verification_conte
 template <class t_test_class>
 struct push_core_event_visitor : public boost::static_visitor<bool>
 {
+	GULPS_CAT_MAJOR("test_chaining");
   private:
 	cryptonote::core &m_c;
 	const std::vector<test_event_entry> &m_events;
@@ -324,7 +323,7 @@ struct push_core_event_visitor : public boost::static_visitor<bool>
 		m_c.handle_incoming_tx(t_serializable_object_to_blob(tx), tvc, m_txs_keeped_by_block, false, false);
 		bool tx_added = pool_size + 1 == m_c.get_pool_transactions_count();
 		bool r = check_tx_verification_context(tvc, tx_added, m_ev_index, tx, m_validator);
-		CHECK_AND_NO_ASSERT_MES(r, false, "tx verification context check failed");
+		GULPS_CHECK_AND_NO_ASSERT_MES(r, false, "tx verification context check failed");
 		return true;
 	}
 
@@ -335,7 +334,7 @@ struct push_core_event_visitor : public boost::static_visitor<bool>
 		cryptonote::block_verification_context bvc = AUTO_VAL_INIT(bvc);
 		m_c.handle_incoming_block(t_serializable_object_to_blob(b), bvc);
 		bool r = check_block_verification_context(bvc, m_ev_index, b, m_validator);
-		CHECK_AND_NO_ASSERT_MES(r, false, "block verification context check failed");
+		GULPS_CHECK_AND_NO_ASSERT_MES(r, false, "block verification context check failed");
 		return r;
 	}
 
@@ -368,7 +367,7 @@ struct push_core_event_visitor : public boost::static_visitor<bool>
 			blk = cryptonote::block();
 		}
 		bool r = check_block_verification_context(bvc, m_ev_index, blk, m_validator);
-		CHECK_AND_NO_ASSERT_MES(r, false, "block verification context check failed");
+		GULPS_CHECK_AND_NO_ASSERT_MES(r, false, "block verification context check failed");
 		return true;
 	}
 
@@ -392,25 +391,26 @@ struct push_core_event_visitor : public boost::static_visitor<bool>
 		}
 
 		bool r = check_tx_verification_context(tvc, tx_added, m_ev_index, tx, m_validator);
-		CHECK_AND_NO_ASSERT_MES(r, false, "transaction verification context check failed");
+		GULPS_CHECK_AND_NO_ASSERT_MES(r, false, "transaction verification context check failed");
 		return true;
 	}
 
   private:
 	void log_event(const std::string &event_type) const
 	{
-		MGINFO_YELLOW("=== EVENT # " << m_ev_index << ": " << event_type);
+		std::cout << "=== EVENT # " <<  m_ev_index << ": "<< event_type << std::endl;
 	}
 };
 //--------------------------------------------------------------------------
 template <class t_test_class>
 inline bool replay_events_through_core(cryptonote::core &cr, const std::vector<test_event_entry> &events, t_test_class &validator)
 {
-	TRY_ENTRY();
+	GULPS_CAT_MAJOR("test_chaingen");
+	GULPS_TRY_ENTRY();
 
 	//init core here
 
-	CHECK_AND_ASSERT_MES(typeid(cryptonote::block) == events[0].type(), false, "First event must be genesis block creation");
+	GULPS_CHECK_AND_ASSERT_MES(typeid(cryptonote::block) == events[0].type(), false, "First event must be genesis block creation");
 	cr.set_genesis_block(boost::get<cryptonote::block>(events[0]));
 
 	bool r = true;
@@ -423,7 +423,7 @@ inline bool replay_events_through_core(cryptonote::core &cr, const std::vector<t
 
 	return r;
 
-	CATCH_ENTRY_L0("replay_events_through_core", false);
+	GULPS_CATCH_ENTRY_L0("replay_events_through_core", false);
 }
 //--------------------------------------------------------------------------
 template <typename t_test_class>
@@ -457,7 +457,7 @@ inline bool do_replay_events(std::vector<test_event_entry> &events)
 	get_test_options<t_test_class> gto;
 	if(!c.init(vm, NULL, &gto.test_options))
 	{
-		MERROR("Failed to init core");
+		std::cout << "Failed to init core" << std::endl;
 		return false;
 	}
 	c.get_blockchain_storage().get_db().set_batch_transactions(true);
@@ -466,7 +466,7 @@ inline bool do_replay_events(std::vector<test_event_entry> &events)
 	std::vector<crypto::hash> pool_txs;
 	if(!c.get_pool_transaction_hashes(pool_txs))
 	{
-		MERROR("Failed to flush txpool");
+		std::cout << "Failed to flush txpool" << std::endl;
 		return false;
 	}
 	c.get_blockchain_storage().flush_txes_from_pool(std::list<crypto::hash>(pool_txs.begin(), pool_txs.end()));
@@ -483,7 +483,7 @@ inline bool do_replay_file(const std::string &filename)
 	std::vector<test_event_entry> events;
 	if(!tools::unserialize_obj_from_file(events, filename))
 	{
-		MERROR("Failed to deserialize data from file: ");
+		std::cout << "Failed to deserialize data from file: " << std::endl;
 		return false;
 	}
 	return do_replay_events<t_test_class>(events);
@@ -494,7 +494,7 @@ inline bool do_replay_file(const std::string &filename)
 	account.generate_new(false);
 
 #define GENERATE_MULTISIG_ACCOUNT(account, threshold, total)                                                                                                     \
-	CHECK_AND_ASSERT_MES(threshold >= 2 && threshold <= total, false, "Invalid multisig scheme");                                                                \
+	GULPS_CHECK_AND_ASSERT_MES(threshold >= 2 && threshold <= total, false, "Invalid multisig scheme");                                                                \
 	std::vector<cryptonote::account_base> account(total);                                                                                                        \
 	do                                                                                                                                                           \
 	{                                                                                                                                                            \
@@ -638,7 +638,7 @@ inline bool do_replay_file(const std::string &filename)
 		g.generate(events);                                               \
 		if(!tools::serialize_obj_to_file(events, filename))               \
 		{                                                                 \
-			MERROR("Failed to serialize data to file: " << filename);     \
+			std::cout << "Failed to serialize data to file: " << filename << std::endl;     \
 			throw std::runtime_error("Failed to serialize data to file"); \
 		}                                                                 \
 	}
@@ -646,7 +646,7 @@ inline bool do_replay_file(const std::string &filename)
 #define PLAY(filename, genclass)                       \
 	if(!do_replay_file<genclass>(filename))            \
 	{                                                  \
-		MERROR("Failed to pass test : " << #genclass); \
+		std::cout << "Failed to pass test : " << #genclass << std::endl; \
 		return 1;                                      \
 	}
 
@@ -663,19 +663,19 @@ inline bool do_replay_file(const std::string &filename)
 		}                                                                  \
 		catch(const std::exception &ex)                                    \
 		{                                                                  \
-			MERROR(#genclass << " generation failed: what=" << ex.what()); \
+			std::cout << #genclass << " generation failed: what=" << ex.what() << std::endl; \
 		}                                                                  \
 		catch(...)                                                         \
 		{                                                                  \
-			MERROR(#genclass << " generation failed: generic exception");  \
+			std::cout << #genclass << " generation failed: generic exception" << std::endl;  \
 		}                                                                  \
 		if(generated && do_replay_events<genclass>(events))                \
 		{                                                                  \
-			MGINFO_GREEN("#TEST# Succeeded " << #genclass);                \
+			std::cout << "#TEST# Succeeded " << #genclass << std::endl;                \
 		}                                                                  \
 		else                                                               \
 		{                                                                  \
-			MERROR("#TEST# Failed " << #genclass);                         \
+			std::cout << "#TEST# Failed " << #genclass << std::endl;                         \
 			failed_tests.push_back(#genclass);                             \
 		}                                                                  \
 	}
@@ -684,18 +684,18 @@ inline bool do_replay_file(const std::string &filename)
 	{                                                       \
 		if(!function())                                     \
 		{                                                   \
-			MERROR("#TEST# Failed " << test_name);          \
+			std::cout << "#TEST# Failed {}" << test_name << std::endl;          \
 			return 1;                                       \
 		}                                                   \
 		else                                                \
 		{                                                   \
-			MGINFO_GREEN("#TEST# Succeeded " << test_name); \
+			std::cout << "#TEST# Succeeded " test_name << std::endl; \
 		}                                                   \
 	}
 
 #define QUOTEME(x) #x
 #define DEFINE_TESTS_ERROR_CONTEXT(text) const char *perr_context = text;
-#define CHECK_TEST_CONDITION(cond) CHECK_AND_ASSERT_MES(cond, false, "[" << perr_context << "] failed: \"" << QUOTEME(cond) << "\"")
-#define CHECK_EQ(v1, v2) CHECK_AND_ASSERT_MES(v1 == v2, false, "[" << perr_context << "] failed: \"" << QUOTEME(v1) << " == " << QUOTEME(v2) << "\", " << v1 << " != " << v2)
-#define CHECK_NOT_EQ(v1, v2) CHECK_AND_ASSERT_MES(!(v1 == v2), false, "[" << perr_context << "] failed: \"" << QUOTEME(v1) << " != " << QUOTEME(v2) << "\", " << v1 << " == " << v2)
+#define CHECK_TEST_CONDITION(cond) GULPS_CHECK_AND_ASSERT_MES(cond, false, "[", perr_context, "] failed: \"", QUOTEME(cond), "\"")
+#define CHECK_EQ(v1, v2) GULPS_CHECK_AND_ASSERT_MES(v1 == v2, false, "[", perr_context, "] failed: \"", QUOTEME(v1), " == ", QUOTEME(v2), "\", ", v1, " != ", v2)
+#define CHECK_NOT_EQ(v1, v2) GULPS_CHECK_AND_ASSERT_MES(!(v1 == v2), false, "[", perr_context, "] failed: \"", QUOTEME(v1), " != ", QUOTEME(v2), "\", ", v1, " == ", v2)
 #define TESTS_DEFAULT_FEE ((uint64_t)20000000000) // 2 * pow(10, 10)

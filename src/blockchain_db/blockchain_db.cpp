@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -63,8 +63,7 @@ static const char *db_types[] = {
 #endif
 	NULL};
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "blockchain.db"
+
 
 using epee::string_tools::pod_to_hex;
 
@@ -132,12 +131,12 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 {
 	bool miner_tx = false;
 	crypto::hash tx_hash;
-	
+
 	if(!tx_hash_ptr)
 	{
 		// should only need to compute hash for miner transactions
 		tx_hash = get_transaction_hash(tx);
-		LOG_PRINT_L3("null tx_hash_ptr - needed to compute: " << tx_hash);
+		GULPS_LOG_L3("null tx_hash_ptr - needed to compute: ", tx_hash);
 	}
 	else
 	{
@@ -157,7 +156,7 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 		}
 		else
 		{
-			LOG_PRINT_L1("Unsupported input type, removing key images and aborting transaction addition");
+			GULPS_LOG_L1("Unsupported input type, removing key images and aborting transaction addition");
 			for(const txin_v &tx_input : tx.vin)
 			{
 				if(tx_input.type() == typeid(txin_to_key))
@@ -195,7 +194,7 @@ void BlockchainDB::add_transaction(const crypto::hash &blk_hash, const transacti
 			if(tx.vout[i].amount != 0)
 			{
 				//Better be safe than sorry
-				LOG_PRINT_L1("Unsupported index type, removing key images and aborting transaction addition");
+				GULPS_LOG_L1("Unsupported index type, removing key images and aborting transaction addition");
 				for(const txin_v &tx_input : tx.vin)
 				{
 					if(tx_input.type() == typeid(txin_to_key))
@@ -347,23 +346,8 @@ void BlockchainDB::reset_stats()
 
 void BlockchainDB::show_stats()
 {
-	LOG_PRINT_L1(ENDL
-				 << "*********************************"
-				 << ENDL
-				 << "num_calls: " << num_calls
-				 << ENDL
-				 << "time_blk_hash: " << time_blk_hash << "ms"
-				 << ENDL
-				 << "time_tx_exists: " << time_tx_exists << "ms"
-				 << ENDL
-				 << "time_add_block1: " << time_add_block1 << "ms"
-				 << ENDL
-				 << "time_add_transaction: " << time_add_transaction << "ms"
-				 << ENDL
-				 << "time_commit1: " << time_commit1 << "ms"
-				 << ENDL
-				 << "*********************************"
-				 << ENDL);
+	GULPSF_LOG_L1("\n*********************************\nnum_calls: {}\ntime_blk_hash: {}ms\ntime_tx_exists: {}ms\ntime_add_block1: {}ms\ntime_add_transaction: {}ms\ntime_commit1: {}ms\n*********************************\n",
+				num_calls,	time_blk_hash, time_tx_exists , time_add_block1, time_add_transaction, time_commit1);
 }
 
 void BlockchainDB::fixup()
@@ -498,14 +482,14 @@ void BlockchainDB::fixup()
 
 	if(is_read_only())
 	{
-		LOG_PRINT_L1("Database is opened read only - skipping fixup check");
+		GULPS_LOG_L1("Database is opened read only - skipping fixup check");
 		return;
 	}
 
 	set_batch_transactions(true);
 	batch_start();
 
-	// premine key images 
+	// premine key images
 	static const char* const premine_key_images[] =
 	{
 		"a42fa875b187e7f9e8d25ad158187458cdcce0db9582b5ccd02e9a5d99a79239", //txid 29b65a4ddd5ad2502f4a5e536651de577837fef2b62e1eeccf518806a5195d98
@@ -522,7 +506,7 @@ void BlockchainDB::fixup()
 		epee::string_tools::hex_to_pod(kis, ki);
 		if(!has_key_image(ki))
 		{
-			LOG_PRINT_L1("Fixup: adding missing spent key " << ki);
+			GULPS_LOG_L1("Fixup: adding missing spent key ", ki);
 			add_spent_key(ki);
 		}
 	}

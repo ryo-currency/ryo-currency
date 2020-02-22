@@ -30,8 +30,9 @@
 #include "levin_base.h"
 #include <boost/uuid/uuid_generators.hpp>
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net"
+#include "common/gulps.hpp"
+
+
 
 namespace epee
 {
@@ -52,6 +53,7 @@ struct protocl_handler_config
 template <class t_connection_context = net_utils::connection_context_base>
 class protocol_handler
 {
+	GULPS_CAT_MAJOR("epee_lev_proto");
   public:
 	typedef t_connection_context connection_context;
 	typedef protocl_handler_config<t_connection_context> config_type;
@@ -91,7 +93,7 @@ bool protocol_handler<t_connection_context>::handle_recv(const void *ptr, size_t
 {
 	if(!m_config.m_pcommands_handler)
 	{
-		LOG_ERROR_CC(m_conn_context, "Command handler not set!");
+		GULPS_ERROR(m_conn_context, "Command handler not set!");
 		return false;
 	}
 	m_cach_in_buffer.append((const char *)ptr, cb);
@@ -106,7 +108,7 @@ bool protocol_handler<t_connection_context>::handle_recv(const void *ptr, size_t
 			{
 				if(m_cach_in_buffer.size() >= sizeof(uint64_t) && *((uint64_t *)m_cach_in_buffer.data()) != LEVIN_SIGNATURE)
 				{
-					LOG_ERROR_CC(m_conn_context, "Signature mismatch on accepted connection");
+					GULPS_ERROR(m_conn_context, "Signature mismatch on accepted connection");
 					return false;
 				}
 				is_continue = false;
@@ -116,7 +118,7 @@ bool protocol_handler<t_connection_context>::handle_recv(const void *ptr, size_t
 				bucket_head *phead = (bucket_head *)m_cach_in_buffer.data();
 				if(LEVIN_SIGNATURE != phead->m_signature)
 				{
-					LOG_ERROR_CC(m_conn_context, "Signature mismatch on accepted connection");
+					GULPS_ERROR(m_conn_context, "Signature mismatch on accepted connection");
 					return false;
 				}
 				m_current_head = *phead;
@@ -158,7 +160,7 @@ bool protocol_handler<t_connection_context>::handle_recv(const void *ptr, size_t
 			m_state = conn_state_reading_head;
 			break;
 		default:
-			LOG_ERROR_CC(m_conn_context, "Undefined state in levin_server_impl::connection_handler, m_state=" << m_state);
+			GULPS_ERROR(m_conn_context, "Undefined state in levin_server_impl::connection_handler, m_state=", m_state);
 			return false;
 		}
 	}

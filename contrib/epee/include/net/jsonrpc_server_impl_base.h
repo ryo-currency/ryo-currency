@@ -8,13 +8,15 @@
 #include "net/jsonrpc_protocol_handler.h"
 #include "net/jsonrpc_server_handlers_map.h"
 
+#include "common/gulps.hpp"
+
 namespace epee
 {
 
 template <class t_child_class, class t_connection_context = epee::net_utils::connection_context_base>
 class jsonrpc_server_impl_base : public net_utils::jsonrpc2::i_jsonrpc2_server_handler<t_connection_context>
 {
-
+	GULPS_CAT_MAJOR("epee_jsrpc_serv");
   public:
 	jsonrpc_server_impl_base()
 		: m_net_server()
@@ -31,11 +33,11 @@ class jsonrpc_server_impl_base : public net_utils::jsonrpc2::i_jsonrpc2_server_h
 		//set self as callback handler
 		m_net_server.get_config_object().m_phandler = static_cast<t_child_class *>(this);
 
-		LOG_PRINT_L0("Binding on " << bind_ip << ":" << bind_port);
+		GULPSF_PRINT("Binding on {}:{}", bind_ip , bind_port);
 		bool res = m_net_server.init_server(bind_port, bind_ip);
 		if(!res)
 		{
-			LOG_ERROR("Failed to bind server");
+			GULPS_ERROR("Failed to bind server");
 			return false;
 		}
 		return true;
@@ -44,14 +46,14 @@ class jsonrpc_server_impl_base : public net_utils::jsonrpc2::i_jsonrpc2_server_h
 	bool run(size_t threads_count, bool wait = true)
 	{
 		//go to loop
-		LOG_PRINT("Run net_service loop( " << threads_count << " threads)...", LOG_LEVEL_0);
+		GULPSF_PRINT("Run net_service loop( {} threads)...", threads_count );
 		if(!m_net_server.run_server(threads_count, wait))
 		{
-			LOG_ERROR("Failed to run net tcp server!");
+			GULPS_ERROR("Failed to run net tcp server!");
 		}
 
 		if(wait)
-			LOG_PRINT("net_service loop stopped.", LOG_LEVEL_0);
+			GULPS_PRINT("net_service loop stopped.");
 		return true;
 	}
 

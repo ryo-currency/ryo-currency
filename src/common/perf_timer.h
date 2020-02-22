@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -44,7 +44,7 @@
 
 #pragma once
 
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include <memory>
 #include <stdio.h>
 #include <string>
@@ -54,7 +54,7 @@ namespace tools
 
 class PerformanceTimer;
 
-extern el::Level performance_timer_log_level;
+extern gulps::level performance_timer_log_level;
 
 uint64_t get_tick_count();
 uint64_t get_ticks_per_ns();
@@ -79,23 +79,22 @@ class PerformanceTimer
 class LoggingPerformanceTimer : public PerformanceTimer
 {
   public:
-	LoggingPerformanceTimer(const std::string &s, const std::string &cat, uint64_t unit, el::Level l = el::Level::Debug);
+	LoggingPerformanceTimer(const std::string &s, const std::string &cat, uint64_t unit, gulps::level l = gulps::LEVEL_DEBUG);
 	~LoggingPerformanceTimer();
 
   private:
 	std::string name;
 	std::string cat;
 	uint64_t unit;
-	el::Level level;
 };
 
-void set_performance_timer_log_level(el::Level level);
+void set_performance_timer_log_level(gulps::level level);
 
 #define PERF_TIMER_UNIT(name, unit) tools::LoggingPerformanceTimer pt_##name(#name, "perf.oldlog", unit, tools::performance_timer_log_level)
 #define PERF_TIMER_UNIT_L(name, unit, l) tools::LoggingPerformanceTimer pt_##name(#name, "perf.oldlog", unit, l)
 #define PERF_TIMER(name) PERF_TIMER_UNIT(name, 1000000)
 #define PERF_TIMER_L(name, l) PERF_TIMER_UNIT_L(name, 1000000, l)
-#define PERF_TIMER_START_UNIT(name, unit) std::unique_ptr<tools::LoggingPerformanceTimer> pt_##name(new tools::LoggingPerformanceTimer(#name, "perf.oldlog", unit, el::Level::Info))
+#define PERF_TIMER_START_UNIT(name, unit) std::unique_ptr<tools::LoggingPerformanceTimer> pt_##name(new tools::LoggingPerformanceTimer(#name, "perf.oldlog", unit, gulps::LEVEL_INFO))
 #define PERF_TIMER_START(name) PERF_TIMER_START_UNIT(name, 1000000)
 #define PERF_TIMER_STOP(name)  \
 	do                         \

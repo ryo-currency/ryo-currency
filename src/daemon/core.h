@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -46,16 +46,17 @@
 
 #include "cryptonote_core/cryptonote_core.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
-#include "misc_log_ex.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
+#include "common/gulps.hpp"
+
+
 
 namespace daemonize
 {
 
 class t_core final
 {
+	GULPS_CAT_MAJOR("daemon_core");
   public:
 	static void init_options(boost::program_options::options_description &option_spec)
 	{
@@ -98,13 +99,13 @@ class t_core final
 	bool run()
 	{
 		//initialize core here
-		MGINFO("Initializing core...");
+		GULPS_GLOBAL_PRINT("Initializing core...");
 		std::string config_subdir = get_config_subdir();
 		if(!m_core.init(m_vm_HACK, config_subdir.empty() ? NULL : config_subdir.c_str()))
 		{
 			return false;
 		}
-		MGINFO("Core initialized OK");
+		GULPS_GLOBAL_PRINT("Core initialized OK");
 		return true;
 	}
 
@@ -115,7 +116,7 @@ class t_core final
 
 	~t_core()
 	{
-		MGINFO("Deinitializing core...");
+		GULPS_GLOBAL_PRINT("Deinitializing core...");
 		try
 		{
 			m_core.deinit();
@@ -123,7 +124,7 @@ class t_core final
 		}
 		catch(...)
 		{
-			MERROR("Failed to deinitialize core...");
+			GULPS_ERROR("Failed to deinitialize core...");
 		}
 	}
 };

@@ -28,7 +28,7 @@
 
 #include "wipeable_string.h"
 #include "memwipe.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include <string.h>
 
 namespace epee

@@ -39,7 +39,7 @@
 	std::vector<std::string> unknown_parameters;                                                                      \
 	tools::wallet2 w(cryptonote::TESTNET);                                                                            \
 	bool ret = w.parse_uri(uri, address, payment_id, amount, description, recipient_name, unknown_parameters, error); \
-	if(!ret) MERROR("parse_uri error: " << error);                                                                    \
+	if(!ret) std::cout << "parse_uri error: " << error << std::endl;                                                                    \
 	ASSERT_EQ(ret, expected);
 
 TEST(uri, empty_string)

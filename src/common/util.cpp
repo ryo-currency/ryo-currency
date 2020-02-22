@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -78,8 +78,10 @@ using namespace epee;
 #include <boost/filesystem.hpp>
 #include <openssl/sha.h>
 
+
 namespace tools
 {
+GULPS_CAT_MAJOR("cmn_util");
 std::function<void(int)> signal_handler::m_handler;
 
 private_file::private_file() noexcept : m_handle(), m_filename() {}
@@ -432,7 +434,7 @@ std::string get_windows_version_display_string()
 	}
 	else
 	{
-		printf("This sample does not support this version of Windows.\n");
+		GULPS_PRINT("This sample does not support this version of Windows.\n");
 		return pszOS;
 	}
 }
@@ -469,7 +471,7 @@ std::string get_special_folder_path(int nfolder, bool iscreate)
 		return folder_name;
 	}
 
-	LOG_ERROR("SHGetSpecialFolderPathW() failed, could not obtain requested path.");
+	GULPS_LOG_ERROR("SHGetSpecialFolderPathW() failed, could not obtain requested path.");
 	return "";
 }
 #endif
@@ -512,11 +514,11 @@ bool create_directories_if_necessary(const std::string &path)
 	bool res = fs::create_directories(fs_path, ec);
 	if(res)
 	{
-		LOG_PRINT_L2("Created directory: " << path);
+		GULPS_LOG_L2("Created directory: ", path);
 	}
 	else
 	{
-		LOG_PRINT_L2("Can't create directory: " << path << ", err: " << ec.message());
+		GULPSF_LOG_L2("Can't create directory: {}, err {}", path, ec.message());
 	}
 
 	return res;
@@ -559,7 +561,7 @@ static bool unbound_built_with_threads()
 	// if no threads, bails out early with UB_NOERROR, otherwise fails with UB_AFTERFINAL id already finalized
 	bool with_threads = ub_ctx_async(ctx, 1) != 0; // UB_AFTERFINAL is not defined in public headers, check any error
 	ub_ctx_delete(ctx);
-	MINFO("libunbound was built " << (with_threads ? "with" : "without") << " threads");
+	GULPSF_LOG_L0("libunbound was built {} threads",  (with_threads ? "with" : "without") );
 	return with_threads;
 }
 
@@ -625,8 +627,6 @@ static void setup_crash_dump()
 
 bool on_startup()
 {
-	mlog_configure("", true);
-
 	setup_crash_dump();
 
 	sanitize_locale();
@@ -634,7 +634,7 @@ bool on_startup()
 #ifdef __GLIBC__
 	const char *ver = gnu_get_libc_version();
 	if(!strcmp(ver, "2.25"))
-		MCLOG_RED(el::Level::Warning, "global", "Running with glibc " << ver << ", hangs may occur - change glibc version if possible");
+		GULPS_CAT_WARN("global", "Running with glibc ", ver, " hangs may occur - change glibc version if possible");
 #endif
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000 || defined(LIBRESSL_VERSION_TEXT)
@@ -644,8 +644,7 @@ bool on_startup()
 #endif
 
 	if(!unbound_built_with_threads())
-		MCLOG_RED(el::Level::Warning, "global", "libunbound was not built with threads enabled - crashes may occur");
-
+		GULPS_CAT_WARN("global", "libunbound was not built with threads enabled - crashes may occur");
 	return true;
 }
 void set_strict_default_file_permissions(bool strict)
@@ -687,12 +686,12 @@ bool is_local_address(const std::string &address)
 	epee::net_utils::http::url_content u_c;
 	if(!epee::net_utils::parse_url(address, u_c))
 	{
-		MWARNING("Failed to determine whether address '" << address << "' is local, assuming not");
+		GULPSF_WARN("Failed to determine whether address '{}' is local, assuming not",  address );
 		return false;
 	}
 	if(u_c.host.empty())
 	{
-		MWARNING("Failed to determine whether address '" << address << "' is local, assuming not");
+		GULPSF_WARN("Failed to determine whether address '{}' is local, assuming not",  address );
 		return false;
 	}
 
@@ -706,13 +705,13 @@ bool is_local_address(const std::string &address)
 		const boost::asio::ip::tcp::endpoint &ep = *i;
 		if(ep.address().is_loopback())
 		{
-			MDEBUG("Address '" << address << "' is local");
+			GULPSF_LOG_L0("Address '{}' is local",  address );
 			return true;
 		}
 		++i;
 	}
 
-	MDEBUG("Address '" << address << "' is not local");
+	GULPSF_LOG_L0("Address '{}' is not local",  address );
 	return false;
 }
 int vercmp(const char *v0, const char *v1)

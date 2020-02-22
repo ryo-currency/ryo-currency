@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -50,14 +50,16 @@
 #include "daemon/protocol.h"
 #include "p2p/net_node.h"
 
-//#undef RYO_DEFAULT_LOG_CATEGORY
-//#define RYO_DEFAULT_LOG_CATEGORY "daemon"
+#include "common/gulps.hpp"
+
+
 
 namespace daemonize
 {
 
 class t_p2p final
 {
+	GULPS_CAT_MAJOR("daemon_p2p");
   private:
 	typedef cryptonote::t_cryptonote_protocol_handler<cryptonote::core> t_protocol_raw;
 	typedef nodetool::node_server<t_protocol_raw> t_node_server;
@@ -77,12 +79,12 @@ class t_p2p final
 		: m_server{protocol.get()}
 	{
 		//initialize objects
-		MGINFO("Initializing p2p server...");
+		GULPS_GLOBAL_PRINT("Initializing p2p server...");
 		if(!m_server.init(vm))
 		{
 			throw std::runtime_error("Failed to initialize p2p server.");
 		}
-		MGINFO("p2p server initialized OK");
+		GULPS_GLOBAL_PRINT("p2p server initialized OK");
 	}
 
 	t_node_server &get()
@@ -92,9 +94,9 @@ class t_p2p final
 
 	void run()
 	{
-		MGINFO("Starting p2p net loop...");
+		GULPS_GLOBAL_PRINT("Starting p2p net loop...");
 		m_server.run();
-		MGINFO("p2p net loop stopped");
+		GULPS_GLOBAL_PRINT("p2p net loop stopped");
 	}
 
 	void stop()
@@ -104,14 +106,14 @@ class t_p2p final
 
 	~t_p2p()
 	{
-		MGINFO("Deinitializing p2p...");
+		GULPS_GLOBAL_PRINT("Deinitializing p2p...");
 		try
 		{
 			m_server.deinit();
 		}
 		catch(...)
 		{
-			MERROR("Failed to deinitialize p2p...");
+			GULPS_ERROR("Failed to deinitialize p2p...");
 		}
 	}
 };

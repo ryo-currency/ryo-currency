@@ -29,6 +29,9 @@
 #include <boost/thread.hpp>
 #include <boost/utility/value_init.hpp>
 #include <limits>
+
+#include "common/gulps.hpp"
+
 namespace epee
 {
 #define STD_TRY_BEGIN() \
@@ -39,12 +42,14 @@ namespace epee
 	}                                                                \
 	catch(const std::exception &e)                                   \
 	{                                                                \
-		LOG_ERROR("EXCEPTION: " << where_ << ", mes: " << e.what()); \
+		GULPS_CAT_MAJOR("epee_msc_lang"); \
+		GULPSF_ERROR("EXCEPTION: {}, mes: {}", where_, e.what()); \
 		return ret_val;                                              \
 	}                                                                \
 	catch(...)                                                       \
 	{                                                                \
-		LOG_ERROR("EXCEPTION: " << where_);                          \
+		GULPS_CAT_MAJOR("epee_msc_lang"); \
+		GULPSF_ERROR("EXCEPTION: {}", where_);                          \
 		return ret_val;                                              \
 	}
 

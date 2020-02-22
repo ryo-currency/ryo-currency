@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -106,6 +106,9 @@ struct subaddress_receive_info
 	crypto::key_derivation derivation;
 };
 boost::optional<subaddress_receive_info> is_out_to_acc_precomp(const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, const crypto::public_key &out_key, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t output_index, hw::device &hwdev);
+#ifdef HAVE_EC_64
+boost::optional<subaddress_receive_info> is_out_to_acc_precomp_64(const std::unordered_map<crypto::public_key, subaddress_index> &subaddresses, const crypto::public_key &out_key, const crypto::key_derivation &derivation, const std::vector<crypto::key_derivation> &additional_derivations, size_t output_index, hw::device &hwdev);
+#endif
 bool lookup_acc_outs(const account_keys &acc, const transaction &tx, const crypto::public_key &tx_pub_key, const std::vector<crypto::public_key> &additional_tx_public_keys, std::vector<size_t> &outs, uint64_t &money_transfered);
 bool lookup_acc_outs(const account_keys &acc, const transaction &tx, std::vector<size_t> &outs, uint64_t &money_transfered);
 bool get_tx_fee(const transaction &tx, uint64_t &fee);
@@ -191,7 +194,8 @@ std::string obj_to_json_str(T &obj)
 	std::stringstream ss;
 	json_archive<true> ar(ss, true);
 	bool r = ::serialization::serialize(ar, obj);
-	CHECK_AND_ASSERT_MES(r, "", "obj_to_json_str failed: serialization::serialize returned false");
+	GULPS_CAT_MAJOR("formt_utils");
+	GULPS_CHECK_AND_ASSERT_MES(r, "", "obj_to_json_str failed: serialization::serialize returned false");
 	return ss.str();
 }
 //---------------------------------------------------------------
@@ -205,7 +209,31 @@ crypto::hash get_tx_tree_hash(const block &b);
 bool is_valid_decomposed_amount(uint64_t amount);
 void get_hash_stats(uint64_t &tx_hashes_calculated, uint64_t &tx_hashes_cached, uint64_t &block_hashes_calculated, uint64_t &block_hashes_cached);
 
+//------------------------------------------------------------------------------------------------------------------------------
+inline blobdata get_pruned_tx_blob(transaction &tx)
+{
+	GULPS_CAT_MAJOR("formt_utils");
+	std::stringstream ss;
+	binary_archive<true> ba(ss);
+	bool r = tx.serialize_base(ba);
+	GULPS_CHECK_AND_ASSERT_MES(r, cryptonote::blobdata(), "Failed to serialize rct signatures base");
+	return ss.str();
+}
+//------------------------------------------------------------------------------------------------------------------------------
+inline blobdata get_pruned_tx_blob(const blobdata &blobdata)
+{
+	GULPS_CAT_MAJOR("formt_utils");
+	cryptonote::transaction tx;
+
+	if(!cryptonote::parse_and_validate_tx_base_from_blob(blobdata, tx))
+	{
+		GULPS_ERROR("Failed to parse and validate tx from blob");
+		return cryptonote::blobdata();
+	}
+	return get_pruned_tx_blob(tx);
+}
+
 #define CHECKED_GET_SPECIFIC_VARIANT(variant_var, specific_type, variable_name, fail_return_val)                                                                                              \
-	CHECK_AND_ASSERT_MES(variant_var.type() == typeid(specific_type), fail_return_val, "wrong variant type: " << variant_var.type().name() << ", expected " << typeid(specific_type).name()); \
+	GULPS_CHECK_AND_ASSERT_MES(variant_var.type() == typeid(specific_type), fail_return_val, "wrong variant type: " , variant_var.type().name() , ", expected " , typeid(specific_type).name()); \
 	specific_type &variable_name = boost::get<specific_type>(variant_var);
 }

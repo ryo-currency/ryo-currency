@@ -33,8 +33,11 @@
 #include "cryptonote_core/cryptonote_tx_utils.h"
 #include "include_base_utils.h"
 #include "misc_language.h"
+#include "common/gulps.hpp"
 
 using namespace cryptonote;
+
+GULPS_CAT_MAJOR("test");
 
 bool test_transaction_generation_and_ring_signature()
 {
@@ -106,7 +109,7 @@ bool test_transaction_generation_and_ring_signature()
 
 	transaction tx_rc1;
 	bool r = construct_tx(miner_acc2.get_keys(), sources, destinations, boost::none, nullptr, tx_rc1, 0);
-	CHECK_AND_ASSERT_MES(r, false, "failed to construct transaction");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to construct transaction");
 
 	crypto::hash pref_hash = get_transaction_prefix_hash(tx_rc1);
 	std::vector<const crypto::public_key *> output_keys;
@@ -117,18 +120,18 @@ bool test_transaction_generation_and_ring_signature()
 	output_keys.push_back(&boost::get<txout_to_key>(tx_mine_5.vout[0].target).key);
 	output_keys.push_back(&boost::get<txout_to_key>(tx_mine_6.vout[0].target).key);
 	r = crypto::check_ring_signature(pref_hash, boost::get<txin_to_key>(tx_rc1.vin[0]).k_image, output_keys, &tx_rc1.signatures[0][0]);
-	CHECK_AND_ASSERT_MES(r, false, "failed to check ring signature");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to check ring signature");
 
 	std::vector<size_t> outs;
 	uint64_t money = 0;
 
 	r = lookup_acc_outs(rv_acc.get_keys(), tx_rc1, get_tx_pub_key_from_extra(tx_rc1), get_additional_tx_pub_keys_from_extra(tx_rc1), outs, money);
-	CHECK_AND_ASSERT_MES(r, false, "failed to lookup_acc_outs");
-	CHECK_AND_ASSERT_MES(td.amount == money, false, "wrong money amount in new transaction");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to lookup_acc_outs");
+	GULPS_CHECK_AND_ASSERT_MES(td.amount == money, false, "wrong money amount in new transaction");
 	money = 0;
 	r = lookup_acc_outs(rv_acc2.get_keys(), tx_rc1, get_tx_pub_key_from_extra(tx_rc1), get_additional_tx_pub_keys_from_extra(tx_rc1), outs, money);
-	CHECK_AND_ASSERT_MES(r, false, "failed to lookup_acc_outs");
-	CHECK_AND_ASSERT_MES(0 == money, false, "wrong money amount in new transaction");
+	GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to lookup_acc_outs");
+	GULPS_CHECK_AND_ASSERT_MES(0 == money, false, "wrong money amount in new transaction");
 	return true;
 }
 
@@ -140,7 +143,7 @@ bool test_block_creation()
 	bool r;
 	//\todo hex addresses were removed
 	//bool r = get_account_address_from_str(info, MAINNET, "0099be99c70ef10fd534c43c88e9d13d1c8853213df7e362afbec0e4ee6fec4948d0c190b58f4b356cd7feaf8d9d0a76e7c7e5a9a0a497a6b1faf7a765882dd08ac2");
-	//CHECK_AND_ASSERT_MES(r, false, "failed to import");
+	//GULPS_CHECK_AND_ASSERT_MES(r, false, "failed to import");
 	block b;
 	r = construct_miner_tx(MAINNET, 90, epee::misc_utils::median(szs), 3553616528562147, 33094, 10000000, info.address, b.miner_tx, blobdata());
 	return r;

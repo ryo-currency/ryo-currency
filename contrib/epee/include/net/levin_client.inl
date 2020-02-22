@@ -26,10 +26,12 @@
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+
 #include "string_tools.h"
 
-#undef RYO_DEFAULT_LOG_CATEGORY
-#define RYO_DEFAULT_LOG_CATEGORY "net"
+#include "common/gulps.hpp"
+
+
 
 namespace epee
 {
@@ -88,7 +90,7 @@ inline int levin_client_impl::invoke(int command, const std::string &in_buff, st
 
 	if(head.m_signature != LEVIN_SIGNATURE)
 	{
-		LOG_PRINT_L1("Signature mismatch in response");
+		GULPS_LOG_L1("Signature mismatch in response");
 		return -1;
 	}
 
@@ -146,7 +148,7 @@ inline int levin_client_impl2::invoke(int command, const std::string &in_buff, s
 
 	if(head.m_signature != LEVIN_SIGNATURE)
 	{
-		LOG_PRINT_L1("Signature mismatch in response");
+		GULPS_LOG_L1("Signature mismatch in response");
 		return -1;
 	}
 

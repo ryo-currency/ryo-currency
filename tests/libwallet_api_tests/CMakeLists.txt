@@ -52,7 +52,8 @@ target_link_libraries(libwallet_api_tests
     ${Boost_SYSTEM_LIBRARY}
     ${GTEST_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 
 set_property(TARGET libwallet_api_tests
   PROPERTY

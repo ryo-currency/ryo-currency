@@ -9,12 +9,17 @@
 #include "storages/portable_storage.h"
 #include "storages/portable_storage_template_helper.h"
 
+#include "common/gulps.hpp"
+
 namespace epee
 {
 namespace net_utils
 {
 namespace jsonrpc2
 {
+
+GULPS_CAT_MAJOR("epee_jsrpc_proto");
+
 inline std::string &make_error_resp_json(int64_t code, const std::string &message,
 										 std::string &response_data,
 										 const epee::serialization::storage_entry &id = nullptr)
@@ -97,8 +102,7 @@ class jsonrpc2_connection_handler
 	virtual bool handle_recv(const void *ptr, size_t cb)
 	{
 		std::string buf((const char *)ptr, cb);
-		LOG_PRINT_L0("JSONRPC2_RECV: " << ptr << "\r\n"
-									   << buf);
+		GULPSF_PRINT("JSONRPC2_RECV: {}\r\n{}", ptr , buf);
 
 		bool res = handle_buff_in(buf);
 		return res;
@@ -121,7 +125,7 @@ class jsonrpc2_connection_handler
 				m_is_stop_handling = true;
 				if(m_cache.size() > 4096)
 				{
-					LOG_ERROR("jsonrpc2_connection_handler::handle_buff_in: Too long request");
+					GULPS_ERROR("jsonrpc2_connection_handler::handle_buff_in: Too long request");
 					return false;
 				}
 				break;
@@ -147,14 +151,12 @@ class jsonrpc2_connection_handler
 	}
 	bool handle_request_and_send_response(const std::string &request_data)
 	{
-		CHECK_AND_ASSERT_MES(m_config.m_phandler, false, "m_config.m_phandler is NULL!!!!");
+		GULPS_CHECK_AND_ASSERT_MES(m_config.m_phandler, false, "m_config.m_phandler is NULL!!!!");
 		std::string response_data;
 
-		LOG_PRINT_L3("JSONRPC2_REQUEST: >> \r\n"
-					 << request_data);
+		GULPSF_LOG_L3("JSONRPC2_REQUEST: >> \r\n{}", request_data);
 		bool rpc_result = m_config.m_phandler->handle_rpc_request(request_data, response_data, m_conn_context);
-		LOG_PRINT_L3("JSONRPC2_RESPONSE: << \r\n"
-					 << response_data);
+		GULPSF_LOG_L3("JSONRPC2_RESPONSE: << \r\n{}", response_data);
 
 		m_psnd_hndlr->do_send((void *)response_data.data(), response_data.size());
 		return rpc_result;

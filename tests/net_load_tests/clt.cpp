@@ -39,7 +39,7 @@
 
 #include "include_base_utils.h"
 #include "misc_language.h"
-#include "misc_log_ex.h"
+#include "common/gulps.hpp"
 #include "storages/levin_abstract_invoke2.h"
 
 #include "net_load_tests.h"
@@ -202,7 +202,7 @@ class net_load_test_clt : public ::testing::Test
 			}
 			else
 			{
-				LOG_ERROR("Connection error: " << ec.message());
+				std::cout << "Connection error: " << ec.message() << std::endl;
 			}
 			conn_status.store(1, std::memory_order_seq_cst);
 		}));
@@ -303,7 +303,7 @@ class net_load_test_clt : public ::testing::Test
 																									}
 																									else
 																									{
-																										LOG_ERROR("Get server statistics error: " << code);
+																										std::cout << "Get server statistics error: " << code << std::endl;
 																									}
 																									req_status.store(0 < code ? 1 : -1, std::memory_order_seq_cst);
 																								}));
@@ -356,7 +356,7 @@ TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_
 
 	// Wait for all open requests to complete
 	EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&] { return CONNECTION_COUNT + RESERVED_CONN_CNT <= m_commands_handler.new_connection_counter() + connection_opener.error_count(); }));
-	LOG_PRINT_L0("number of opened connections / fails (total): " << m_commands_handler.new_connection_counter() << " / " << connection_opener.error_count() << " (" << (m_commands_handler.new_connection_counter() + connection_opener.error_count()) << ")");
+	std::cout << "number of opened connections / fails (total): " << m_commands_handler.new_connection_counter() << " / " << connection_opener.error_count() << " (" << (m_commands_handler.new_connection_counter() + connection_opener.error_count()) << ")" << std::endl;
 
 	// Check
 	ASSERT_GT(m_commands_handler.new_connection_counter(), RESERVED_CONN_CNT);
@@ -373,7 +373,7 @@ TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_
 
 	// Wait for all opened connections to close
 	EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&] { return m_commands_handler.new_connection_counter() - RESERVED_CONN_CNT <= m_commands_handler.close_connection_counter(); }));
-	LOG_PRINT_L0("number of opened / closed connections: " << m_tcp_server.get_config_object().get_connections_count() << " / " << m_commands_handler.close_connection_counter());
+	std::cout << "number of opened / closed connections: " << m_tcp_server.get_config_object().get_connections_count() << " / " << m_commands_handler.close_connection_counter() << std::endl;
 
 	// Check all connections are closed
 	ASSERT_EQ(m_commands_handler.new_connection_counter() - RESERVED_CONN_CNT, m_commands_handler.close_connection_counter());
@@ -382,7 +382,7 @@ TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_
 	// Wait for server to handle all open and close requests
 	CMD_GET_STATISTICS::response srv_stat;
 	busy_wait_for_server_statistics(srv_stat, [](const CMD_GET_STATISTICS::response &stat) { return stat.new_connection_counter - RESERVED_CONN_CNT <= stat.close_connection_counter; });
-	LOG_PRINT_L0("server statistics: " << srv_stat.to_string());
+	std::cout << "server statistics: " << srv_stat.to_string() << std::endl;
 
 	// Check server status
 	// It's OK, if server didn't close all opened connections, because of it could receive not all FIN packets
@@ -394,7 +394,7 @@ TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_
 
 	// Wait for server to close rest connections
 	busy_wait_for_server_statistics(srv_stat, [](const CMD_GET_STATISTICS::response &stat) { return stat.new_connection_counter - RESERVED_CONN_CNT <= stat.close_connection_counter; });
-	LOG_PRINT_L0("server statistics: " << srv_stat.to_string());
+	std::cout << "server statistics: " << srv_stat.to_string() << std::endl;
 
 	// Check server status. All connections should be closed
 	ASSERT_EQ(srv_stat.close_connection_counter, srv_stat.new_connection_counter - RESERVED_CONN_CNT);
@@ -412,7 +412,7 @@ TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_
 
 	// Wait for all open requests to complete
 	EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&]() { return CONNECTION_COUNT + RESERVED_CONN_CNT <= m_commands_handler.new_connection_counter() + connection_opener.error_count(); }));
-	LOG_PRINT_L0("number of opened connections / fails (total): " << m_commands_handler.new_connection_counter() << " / " << connection_opener.error_count() << " (" << (m_commands_handler.new_connection_counter() + connection_opener.error_count()) << ")");
+	std::cout << "number of opened connections / fails (total): " << m_commands_handler.new_connection_counter() << " / " << connection_opener.error_count() << " (" << (m_commands_handler.new_connection_counter() + connection_opener.error_count()) << ")" << std::endl;
 
 	// Check
 	ASSERT_GT(m_commands_handler.new_connection_counter(), RESERVED_CONN_CNT);
@@ -438,7 +438,7 @@ TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_
 
 	// Wait for all opened connections to close
 	busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&]() { return m_commands_handler.new_connection_counter() - RESERVED_CONN_CNT <= m_commands_handler.close_connection_counter(); });
-	LOG_PRINT_L0("number of opened / closed connections: " << m_tcp_server.get_config_object().get_connections_count() << " / " << m_commands_handler.close_connection_counter());
+	std::cout << "number of opened / closed connections: " << m_tcp_server.get_config_object().get_connections_count() << " / " << m_commands_handler.close_connection_counter() << std::endl;
 
 	// It's OK, if server didn't close all connections, because it could accept not all our connections
 	ASSERT_LE(m_commands_handler.close_connection_counter(), m_commands_handler.new_connection_counter() - RESERVED_CONN_CNT);
@@ -446,7 +446,7 @@ TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_
 
 	// Wait for server to handle all open and close requests
 	busy_wait_for_server_statistics(srv_stat, [](const CMD_GET_STATISTICS::response &stat) { return stat.new_connection_counter - RESERVED_CONN_CNT <= stat.close_connection_counter; });
-	LOG_PRINT_L0("server statistics: " << srv_stat.to_string());
+	std::cout << "server statistics: " << srv_stat.to_string() << std::endl;
 
 	// Check server status
 	ASSERT_EQ(srv_stat.close_connection_counter, srv_stat.new_connection_counter - RESERVED_CONN_CNT);
@@ -461,18 +461,18 @@ TEST_F(net_load_test_clt, a_lot_of_client_connections_and_connections_closed_by_
 																							   m_tcp_server.get_config_object(), [=](int code, const CMD_DATA_REQUEST::response &rsp, const test_connection_context &) {
 																								   if(code <= 0)
 																								   {
-																									   LOG_PRINT_L0("Failed to invoke CMD_DATA_REQUEST. code = " << code);
+																									   std::cout << "Failed to invoke CMD_DATA_REQUEST. code = " << code << std::endl;
 																								   }
 																							   });
 			if(!r)
-				LOG_PRINT_L0("Failed to invoke CMD_DATA_REQUEST");
+				std::cout << "Failed to invoke CMD_DATA_REQUEST" << std::endl;
 		}
 		return true;
 	});
 
 	// Wait for all opened connections to close
 	EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&]() { return m_commands_handler.new_connection_counter() - RESERVED_CONN_CNT <= m_commands_handler.close_connection_counter(); }));
-	LOG_PRINT_L0("number of opened / closed connections: " << m_tcp_server.get_config_object().get_connections_count() << " / " << m_commands_handler.close_connection_counter());
+	std::cout << "number of opened / closed connections: " << m_tcp_server.get_config_object().get_connections_count() << " / " << m_commands_handler.close_connection_counter() << std::endl;
 
 	// Check
 	ASSERT_EQ(m_commands_handler.close_connection_counter(), m_commands_handler.new_connection_counter() - RESERVED_CONN_CNT);
@@ -492,7 +492,7 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_cli
 
 	// Wait for all open requests to complete
 	EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&]() { return CONNECTION_COUNT + RESERVED_CONN_CNT <= m_commands_handler.new_connection_counter() + connection_opener.error_count(); }));
-	LOG_PRINT_L0("number of opened connections / fails (total): " << m_commands_handler.new_connection_counter() << " / " << connection_opener.error_count() << " (" << (m_commands_handler.new_connection_counter() + connection_opener.error_count()) << ")");
+	std::cout << "number of opened connections / fails (total): " << m_commands_handler.new_connection_counter() << " / " << connection_opener.error_count() << " (" << (m_commands_handler.new_connection_counter() + connection_opener.error_count()) << ")" << std::endl;
 
 	// Check
 	ASSERT_GT(m_commands_handler.new_connection_counter(), RESERVED_CONN_CNT);
@@ -500,7 +500,7 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_cli
 
 	// Wait for all close requests to complete
 	EXPECT_TRUE(busy_wait_for(4 * DEFAULT_OPERATION_TIMEOUT, [&]() { return connection_opener.opened_connection_count() <= MAX_OPENED_CONN_COUNT; }));
-	LOG_PRINT_L0("actual number of opened connections: " << connection_opener.opened_connection_count());
+	std::cout << "actual number of opened connections: " << connection_opener.opened_connection_count() << std::endl;
 
 	// Check
 	ASSERT_EQ(MAX_OPENED_CONN_COUNT, connection_opener.opened_connection_count());
@@ -509,7 +509,7 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_cli
 
 	// Wait for all close requests to complete
 	EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&]() { return m_commands_handler.new_connection_counter() <= m_commands_handler.close_connection_counter() + RESERVED_CONN_CNT; }));
-	LOG_PRINT_L0("actual number of opened connections: " << connection_opener.opened_connection_count());
+	std::cout << "actual number of opened connections: " << connection_opener.opened_connection_count() << std::endl;
 
 	ASSERT_EQ(m_commands_handler.new_connection_counter(), m_commands_handler.close_connection_counter() + RESERVED_CONN_CNT);
 	ASSERT_EQ(0, connection_opener.opened_connection_count());
@@ -518,7 +518,7 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_cli
 	// Wait for server to handle all open and close requests
 	CMD_GET_STATISTICS::response srv_stat;
 	busy_wait_for_server_statistics(srv_stat, [](const CMD_GET_STATISTICS::response &stat) { return stat.new_connection_counter - RESERVED_CONN_CNT <= stat.close_connection_counter; });
-	LOG_PRINT_L0("server statistics: " << srv_stat.to_string());
+	std::cout << "server statistics: " << srv_stat.to_string() << std::endl;
 
 	// Check server status
 	// It's OK, if server didn't close all opened connections, because of it could receive not all FIN packets
@@ -530,7 +530,7 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_cli
 
 	// Wait for server to close rest connections
 	busy_wait_for_server_statistics(srv_stat, [](const CMD_GET_STATISTICS::response &stat) { return stat.new_connection_counter - RESERVED_CONN_CNT <= stat.close_connection_counter; });
-	LOG_PRINT_L0("server statistics: " << srv_stat.to_string());
+	std::cout << "server statistics: " << srv_stat.to_string() << std::endl;
 
 	// Check server status. All connections should be closed
 	ASSERT_EQ(srv_stat.close_connection_counter, srv_stat.new_connection_counter - RESERVED_CONN_CNT);
@@ -564,8 +564,8 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_ser
 
 	// Wait for all open requests to complete
 	EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&]() { return CONNECTION_COUNT + RESERVED_CONN_CNT <= m_commands_handler.new_connection_counter() + connection_opener.error_count(); }));
-	LOG_PRINT_L0("number of opened connections / fails (total): " << m_commands_handler.new_connection_counter() << " / " << connection_opener.error_count() << " (" << (m_commands_handler.new_connection_counter() + connection_opener.error_count()) << ")");
-	LOG_PRINT_L0("actual number of opened connections: " << m_tcp_server.get_config_object().get_connections_count());
+	std::cout << "number of opened connections / fails (total): " << m_commands_handler.new_connection_counter() << " / " << connection_opener.error_count() << " (" << (m_commands_handler.new_connection_counter() + connection_opener.error_count()) << ")" << std::endl;
+	std::cout << "actual number of opened connections: " << m_tcp_server.get_config_object().get_connections_count() << std::endl;
 
 	ASSERT_GT(m_commands_handler.new_connection_counter(), RESERVED_CONN_CNT);
 	ASSERT_EQ(m_commands_handler.new_connection_counter() + connection_opener.error_count(), CONNECTION_COUNT + RESERVED_CONN_CNT);
@@ -596,7 +596,7 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_ser
 
 	// Wait for server to handle all open and close requests
 	busy_wait_for_server_statistics(srv_stat, [](const CMD_GET_STATISTICS::response &stat) { return stat.new_connection_counter - RESERVED_CONN_CNT <= stat.close_connection_counter; });
-	LOG_PRINT_L0("server statistics: " << srv_stat.to_string());
+	std::cout << "server statistics: " << srv_stat.to_string() << std::endl;
 
 	// Check server status
 	ASSERT_EQ(srv_stat.close_connection_counter, srv_stat.new_connection_counter - RESERVED_CONN_CNT);
@@ -611,18 +611,18 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_ser
 																							   m_tcp_server.get_config_object(), [=](int code, const CMD_DATA_REQUEST::response &rsp, const test_connection_context &) {
 																								   if(code <= 0)
 																								   {
-																									   LOG_PRINT_L0("Failed to invoke CMD_DATA_REQUEST. code = " << code);
+																									   std::cout << "Failed to invoke CMD_DATA_REQUEST. code = " << code << std::endl;
 																								   }
 																							   });
 			if(!r)
-				LOG_PRINT_L0("Failed to invoke CMD_DATA_REQUEST");
+				std::cout << "Failed to invoke CMD_DATA_REQUEST" << std::endl;
 		}
 		return true;
 	});
 
 	// Wait for all opened connections to close
 	EXPECT_TRUE(busy_wait_for(DEFAULT_OPERATION_TIMEOUT, [&]() { return m_commands_handler.new_connection_counter() - RESERVED_CONN_CNT <= m_commands_handler.close_connection_counter(); }));
-	LOG_PRINT_L0("number of opened / closed connections: " << m_tcp_server.get_config_object().get_connections_count() << " / " << m_commands_handler.close_connection_counter());
+	std::cout << "number of opened / closed connections: " << m_tcp_server.get_config_object().get_connections_count() << " / " << m_commands_handler.close_connection_counter() << std::endl;
 
 	// Check
 	ASSERT_EQ(m_commands_handler.close_connection_counter(), m_commands_handler.new_connection_counter() - RESERVED_CONN_CNT);
@@ -632,9 +632,9 @@ TEST_F(net_load_test_clt, permament_open_and_close_and_connections_closed_by_ser
 int main(int argc, char **argv)
 {
 	tools::on_startup();
-	epee::debug::get_set_enable_assert(true, false);
+	debug::get_set_enable_assert(true, false);
 	//set up logging options
-	mlog_configure(mlog_get_default_log_path("net_load_tests_clt.log"), true);
+	
 
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();

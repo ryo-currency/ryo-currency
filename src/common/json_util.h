@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,7 +30,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -41,7 +41,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 #pragma once
 
 #define GET_FIELD_FROM_JSON_RETURN_ON_ERROR(json, name, type, jtype, mandatory, def)  \
@@ -58,13 +57,13 @@
 			}                                                                         \
 			else                                                                      \
 			{                                                                         \
-				LOG_ERROR("Field " << #name << " found in JSON, but not " << #jtype); \
+				GULPSF_LOG_ERROR("Field {} found in JSON, but not {}", #name, #jtype); \
 				return false;                                                         \
 			}                                                                         \
 		}                                                                             \
 		else if(mandatory)                                                            \
 		{                                                                             \
-			LOG_ERROR("Field " << #name << " not found in JSON");                     \
+			GULPSF_LOG_ERROR("Field {} not found in JSON", #name);                     \
 			return false;                                                             \
 		}                                                                             \
 	while(0)

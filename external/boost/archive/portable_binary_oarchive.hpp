@@ -226,8 +226,7 @@ BOOST_SERIALIZATION_REGISTER_ARCHIVE(portable_binary_oarchive)
 // http://www.boost.org/LICENSE_1_0.txt)
 
 //  See http://www.boost.org for updates, documentation, and revision history.
-
-#include <boost/detail/endian.hpp>
+#include <boost/predef/other/endian.h>
 #include <ostream>
 
 namespace boost
@@ -269,7 +268,7 @@ portable_binary_oarchive::save_impl(
 	else
 		ll = l;
 	char *cptr = reinterpret_cast<char *>(&ll);
-#ifdef BOOST_BIG_ENDIAN
+#if BOOST_ENDIAN_BIG_BYTE
 	cptr += (sizeof(boost::intmax_t) - size);
 	if(m_flags & endian_little)
 		reverse_bytes(size, cptr);

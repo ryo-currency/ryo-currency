@@ -40,8 +40,10 @@ set(unit_tests_sources
   checkpoints.cpp
   command_line.cpp
   crypto.cpp
+  crypto2.cpp
   device.cpp
   dns_resolver.cpp
+  emission_curve.cpp
   epee_boosted_tcp_server.cpp
   epee_levin_protocol_handler_async.cpp
   epee_utils.cpp
@@ -94,7 +96,8 @@ target_link_libraries(unit_tests
     ${Boost_THREAD_LIBRARY}
     ${GTEST_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
-    ${EXTRA_LIBRARIES})
+    ${EXTRA_LIBRARIES}
+    fmt::fmt-header-only)
 set_property(TARGET unit_tests
   PROPERTY
     FOLDER "tests")

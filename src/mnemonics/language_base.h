@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 // Portions copyright (c) 2014-2018, The Monero Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
@@ -30,17 +30,18 @@
 
 /*!
  * \file language_base.h
- * 
+ *
  * \brief Language Base class for Polymorphism.
  */
 
 #ifndef LANGUAGE_BASE_H
 #define LANGUAGE_BASE_H
 
-#include "misc_log_ex.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "common/gulps.hpp"
 
 /*!
  * \namespace Language
@@ -75,6 +76,7 @@ inline std::string utf8prefix(const std::string &s, size_t count)
    */
 class Base
 {
+	GULPS_CAT_MAJOR("lan_base");
   protected:
 	enum
 	{
@@ -102,7 +104,7 @@ class Base
 			if((*it).size() < unique_prefix_length)
 			{
 				if(flags & ALLOW_SHORT_WORDS)
-					MWARNING(language_name << " word '" << *it << "' is shorter than its prefix length, " << unique_prefix_length);
+					GULPS_LOG_L2("{} word {}' is shorter than its prefix length, {}'", language_name,  *it, unique_prefix_length);
 				else
 					throw std::runtime_error("Too short word in " + language_name + " word list: " + *it);
 			}
@@ -118,7 +120,7 @@ class Base
 			if(trimmed_word_map.find(trimmed) != trimmed_word_map.end())
 			{
 				if(flags & ALLOW_DUPLICATE_PREFIXES)
-					MWARNING("Duplicate prefix in " << language_name << " word list: " << trimmed);
+					GULPS_WARN("Duplicate prefix in ", language_name, " word list: ", trimmed);
 				else
 					throw std::runtime_error("Duplicate prefix in " + language_name + " word list: " + trimmed);
 			}

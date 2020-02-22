@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Ryo Currency Project
+// Copyright (c) 2020, Ryo Currency Project
 //
 // Portions of this file are available under BSD-3 license. Please see ORIGINAL-LICENSE for details
 // All rights reserved.
@@ -29,7 +29,7 @@
 // Authors and copyright holders agree that:
 //
 // 8. This licence expires and the work covered by it is released into the
-//    public domain on 1st of February 2020
+//    public domain on 1st of February 2021
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 // EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -97,7 +97,10 @@ inline bool check_avx2()
 {
 	int32_t cpu_info[4];
 	cpuid(7, 0, cpu_info);
-	return (cpu_info[1] & (1 << 5)) != 0;
+	const bool has_avx2 = (cpu_info[1] & (1 << 5)) != 0;
+	cpuid(1, 0, cpu_info);
+	const bool osxsave = (cpu_info[2] & (1 << 27)) != 0;
+	return has_avx2 && osxsave;
 }
 #endif
 
@@ -142,7 +145,7 @@ class cn_sptr
 	inline int32_t& as_dword(size_t i) { return *(reinterpret_cast<int32_t*>(base_ptr) + i); }
 	inline uint32_t& as_udword(size_t i) { return *(reinterpret_cast<uint32_t*>(base_ptr) + i); }
 	inline const uint32_t& as_udword(size_t i) const { return *(reinterpret_cast<uint32_t*>(base_ptr) + i); }
-	
+
 	template <typename cast_t>
 	inline cast_t* as_ptr() { return reinterpret_cast<cast_t*>(base_ptr); }
 
