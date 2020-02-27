@@ -263,6 +263,16 @@ int main(int argc, char* argv[])
 
 		// If there are positional options, we're running a daemon command
 		{
+			gulps::inst().remove_output(temp_out_id);
+
+			gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
+			gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
+				if(msg.out == gulps::OUT_USER_1)
+					return true;
+				return false;
+			});
+			gulps::inst().add_output(std::move(gout_ptr));
+
 			auto command = command_line::get_arg(vm, daemon_args::arg_command);
 
 			if(command.size())
@@ -324,7 +334,7 @@ int main(int argc, char* argv[])
 		gout_ptr.reset(new gulps::gulps_print_output(gulps::COLOR_WHITE, gulps::TEXT_ONLY));
 		gout_ptr->add_filter([](const gulps::message& msg, bool printed, bool logged) -> bool {
 			if(msg.out == gulps::OUT_USER_1)
-				return true;
+				return !printed;
 			return false;
 		});
 		gulps::inst().add_output(std::move(gout_ptr));
