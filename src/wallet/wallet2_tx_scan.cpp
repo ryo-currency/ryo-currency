@@ -220,7 +220,7 @@ bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid
 		if(!derivation_res)
 		{
 			GULPS_WARN("Failed to generate key derivation from extra pubkey ", i, ", skipping");
-			additional_derivations.pop_back();
+			memcpy(&additional_derivations[i], rct::identity().bytes, sizeof(additional_derivations[i]));
 		}
 	}
 
@@ -238,10 +238,16 @@ bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid
 		crypto::public_key subaddress_spendkey;
 		const crypto::public_key& out_pubkey = boost::get<cryptonote::txout_to_key>(tx.vout[out_idx].target).key;
 #ifdef HAVE_EC_64
-		crypto::derive_subaddress_public_key_64(out_pubkey, derivation, out_idx, subaddress_spendkey);
+		derivation_res = crypto::derive_subaddress_public_key_64(out_pubkey, derivation, out_idx, subaddress_spendkey);
 #else
-		crypto::derive_subaddress_public_key(out_pubkey, derivation, out_idx, subaddress_spendkey);
+		derivation_res = crypto::derive_subaddress_public_key(out_pubkey, derivation, out_idx, subaddress_spendkey);
 #endif
+
+		if(!derivation_res)
+		{
+			GULPS_WARN("Failed to derive main addresses public key, skipping...");
+			continue;
+		}
 
 		auto found = m_subaddresses.find(subaddress_spendkey);
 		if(found != m_subaddresses.end())
@@ -268,11 +274,19 @@ bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid
 				GULPS_LOG_L0("Wrong number of additional derivations");
 				return false;
 			}
+
 #ifdef HAVE_EC_64
-			crypto::derive_subaddress_public_key_64(out_pubkey, additional_derivations[out_idx], out_idx, subaddress_spendkey);
+			derivation_res = crypto::derive_subaddress_public_key_64(out_pubkey, additional_derivations[out_idx], out_idx, subaddress_spendkey);
 #else
-			crypto::derive_subaddress_public_key(out_pubkey, additional_derivations[out_idx], out_idx, subaddress_spendkey);
+			derivation_res = crypto::derive_subaddress_public_key(out_pubkey, additional_derivations[out_idx], out_idx, subaddress_spendkey);
 #endif
+
+			if(!derivation_res)
+			{
+				GULPS_WARN("Failed to derive subaddresses public key, skipping...");
+				continue;
+			}
+
 			found = m_subaddresses.find(subaddress_spendkey);
 			if(found != m_subaddresses.end())
 			{
@@ -280,7 +294,7 @@ bool wallet2::block_scan_tx(const wallet_scan_ctx& ctx, const crypto::hash& txid
 				{
 					cryptonote::keypair eph;
 					crypto::key_image ki;
-					bool r = cryptonote::generate_key_image_helper_precomp(keys, out_pubkey, derivation, out_idx, found->second, eph, ki, dummy_dev);
+					bool r = cryptonote::generate_key_image_helper_precomp(keys, out_pubkey, additional_derivations[out_idx], out_idx, found->second, eph, ki, dummy_dev);
 					THROW_WALLET_EXCEPTION_IF(!r, error::wallet_internal_error, "Failed to generate key image");
 					THROW_WALLET_EXCEPTION_IF(eph.pub != out_pubkey,
 										error::wallet_internal_error, "key_image generated ephemeral public key not matched with output_key");
