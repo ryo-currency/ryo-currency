@@ -183,11 +183,20 @@ boost::optional<boost::program_options::variables_map> main(
 			}
 		}
 
-		if(!command_line::is_arg_defaulted(vm, arg_file_level))
+		if(!command_line::is_arg_defaulted(vm, arg_log_file) || !command_line::is_arg_defaulted(vm, arg_file_level))
 		{
-			if(!log_dsk.parse_cat_string(command_line::get_arg(vm, arg_file_level).c_str()))
+			const char* arg_file_str;
+			if(command_line::is_arg_defaulted(vm, arg_file_level))
 			{
-				GULPS_ERROR(wallet_args::tr("Failed to parse filter string "), command_line::get_arg(vm, arg_file_level).c_str());
+				GULPSF_PRINT("Argument log-file is set, but log-file-level is not. Defaulting log-file-level to 2");
+				arg_file_str = "*:INFO";
+			}
+			else
+				arg_file_str = command_line::get_arg(vm, arg_file_level).c_str();
+
+			if(!log_dsk.parse_cat_string(arg_file_str))
+			{
+				GULPS_ERROR(wallet_args::tr("Failed to parse filter string "), arg_file_str);
 				return false;
 			}
 

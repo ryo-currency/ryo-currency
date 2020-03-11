@@ -74,7 +74,7 @@ const command_line::arg_descriptor<std::string, false, true, 2> arg_log_file = {
 const command_line::arg_descriptor<std::string> arg_log_level = {
 	"log-level", "Screen log level", ""};
 const command_line::arg_descriptor<std::string> arg_log_file_level = {
-	"file-log-level", "File log level", ""};
+	"log-file-level", "File log level", ""};
 const command_line::arg_descriptor<std::vector<std::string>> arg_command = {
 	"daemon_command", "Hidden"};
 const command_line::arg_descriptor<bool> arg_os_version = {
