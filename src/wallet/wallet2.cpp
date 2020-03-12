@@ -1063,6 +1063,8 @@ void wallet2::scan_output(const cryptonote::transaction &tx, const crypto::publi
 //----------------------------------------------------------------------------------------------------
 void wallet2::process_new_transaction(const crypto::hash &txid, const cryptonote::transaction &tx, const std::vector<uint64_t> &o_indices, uint64_t height, uint64_t ts, bool miner_tx, bool pool, bool double_spend_seen)
 {
+	GULPSF_LOG_L1("Processing new transaction {} on height {}", txid, height);
+
 	//ensure device is let in NONE mode in any case
 	hw::device &hwdev = m_account.get_device();
 
@@ -1968,33 +1970,46 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 {
 	// First things, first, check for any forks, our data is new so it overrides anything else
 	// Including previous data (can happen if there is a fork during the scan)
+	GULPSF_LOG_L1("m_blockchain top: {} - {}", m_blockchain.size()-1, m_blockchain[m_blockchain.size()-1]);
+	GULPSF_LOG_L1("blocks_parsed front: {} - {}", res->blocks_parsed.front().block_height, res->blocks_parsed.front().block_hash);
 	THROW_WALLET_EXCEPTION_IF(res->blocks_parsed.size() == 0, error::wallet_internal_error, "Integrated blocks vector is empty");
 	THROW_WALLET_EXCEPTION_IF(!m_blockchain.is_in_bounds(res->blocks_parsed.front().block_height), error::wallet_internal_error, "Index out of bounds of hashchain");
 	GULPSF_LOG_L1("Integrating results blocks: {} - {}", res->blocks_parsed.front().block_height, res->blocks_parsed.back().block_height);
-	for(const auto& bl : res->blocks_parsed)
+	
+	for(auto& bl : res->blocks_parsed)
 	{
-		if(bl.block_height >= m_blockchain.size())
+		if(bl.block_height < m_blockchain.size())
 		{
-			m_blockchain.push_back(bl.block_hash);
-			++m_local_bc_height;
+			if(m_blockchain[bl.block_height] != bl.block_hash)
+			{
+				detach_blockchain(bl.block_height);
+				GULPSF_LOG_L1("On reorg {} - {}", bl.block_height, bl.block_hash);
+			}
+			else
+			{
+				GULPSF_LOG_L1("Block is already in blockchain: {}", bl.block_hash);
+				bl.skipped = true;
+				continue;
+			}
+		}
 
-			if(m_callback != nullptr)
-				m_callback->on_new_block(bl.block_height, bl.block);
-		}
-		else if(m_blockchain[bl.block_height] != bl.block_hash)
-		{
-			detach_blockchain(bl.block_height);
-		}
-		else
-		{
-			GULPS_LOG_L2("Block is already in blockchain: ", epee::string_tools::pod_to_hex(bl.block_hash));
-		}
+		THROW_WALLET_EXCEPTION_IF(m_blockchain.size() != bl.block_height, error::wallet_internal_error, "Integration order error!");
+		GULPSF_LOG_L1("On new block {} - {}", bl.block_height, bl.block_hash);
+
+		m_blockchain.push_back(bl.block_hash);
+		++m_local_bc_height;
+		
+		if(m_callback != nullptr)
+			m_callback->on_new_block(bl.block_height, bl.block);
 	}
 
 	tx_call_map tx_calls;
 	// Now, process incoming funds
 	for(const auto& i : res->indices_found)
 	{
+		if(res->blocks_parsed[i.block_idx].skipped)
+			continue;
+
 		const cryptonote::block& b = res->blocks_parsed[i.block_idx].block;
 		const std::vector<uint64_t>& tx_indices = res->o_indices[i.block_idx].indices[i.tx_idx].indices;
 		size_t height = res->blocks_parsed[i.block_idx].block_height;
@@ -2038,6 +2053,9 @@ void wallet2::integrate_scanned_result(std::unique_ptr<wallet_rpc_scan_data>& re
 	{
 		for(size_t blk_idx = 0; blk_idx < res->blocks_parsed.size(); blk_idx++)
 		{
+			if(res->blocks_parsed[blk_idx].skipped)
+				continue;
+
 			for(size_t tx_idx = 0; tx_idx < res->blocks_parsed[blk_idx].txes.size(); tx_idx++)
 			{
 				for(const auto& in : res->blocks_parsed[blk_idx].txes[tx_idx].vin)
