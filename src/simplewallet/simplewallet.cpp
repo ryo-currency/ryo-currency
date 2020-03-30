@@ -98,6 +98,7 @@
 #define GULPSF_PRINT_OK(...) do{PAUSE_READLINE();GULPSF_PRINT(__VA_ARGS__);}while(false)
 #define GULPS_PRINT_BOLD(...) do{PAUSE_READLINE();GULPS_PRINT_CLR(gulps::COLOR_BOLD_WHITE, __VA_ARGS__);}while(false)
 #define GULPS_PRINT_GREEN(...) do{PAUSE_READLINE();GULPS_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__);}while(false)
+#define GULPS_PRINT_MAGENTA(...) do{PAUSE_READLINE();GULPS_PRINT_CLR(gulps::COLOR_MAGENTA, __VA_ARGS__);}while(false)
 #define GULPSF_PRINT_GREEN(...) do{PAUSE_READLINE();GULPSF_PRINT_CLR(gulps::COLOR_GREEN, __VA_ARGS__);}while(false)
 #define GULPS_PRINT_SECRET(...) do{PAUSE_READLINE();GULPS_OUTPUT(gulps::OUT_USER_1, gulps::LEVEL_PRINT, gulps_major_cat::c_str(), "secret", gulps::COLOR_WHITE, __VA_ARGS__);}while(false)
 
@@ -3905,7 +3906,7 @@ void simple_wallet::on_unconfirmed_money_received(uint64_t height, const crypto:
 //----------------------------------------------------------------------------------------------------
 void simple_wallet::on_money_spent(uint64_t height, const crypto::hash &txid, const cryptonote::transaction &in_tx, uint64_t amount, const cryptonote::transaction &spend_tx, const cryptonote::subaddress_index &subaddr_index)
 {
-	GULPS_PRINT_CLR(gulps::COLOR_MAGENTA, "\r", tr("Height "), height, ", ", tr("txid "), txid, ", ", tr("spent "), print_money(amount), ", ", tr("idx "), subaddr_index);
+	GULPS_PRINT_MAGENTA("\r", tr("Height "), height, ", ", tr("txid "), txid, ", ", tr("spent "), print_money(amount), ", ", tr("idx "), subaddr_index);
 
 	if(m_auto_refresh_refreshing)
 		m_cmd_binder.print_prompt();
