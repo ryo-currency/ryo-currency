@@ -261,6 +261,12 @@ int main(int argc, char* argv[])
 			}
 		}
 
+		if(!command_line::is_arg_defaulted(vm, daemon_args::arg_log_file) && command_line::is_arg_defaulted(vm, daemon_args::arg_log_file_level))
+		{
+			GULPSF_PRINT("Argument log-file is set, but log-file-level is not. Defaulting log-file-level to 2");
+			log_dsk.parse_cat_string("*:INFO");
+		}
+
 		// If there are positional options, we're running a daemon command
 		{
 			gulps::inst().remove_output(temp_out_id);
