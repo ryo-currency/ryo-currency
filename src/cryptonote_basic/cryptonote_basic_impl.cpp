@@ -129,6 +129,10 @@ bool get_dev_fund_amount(uint64_t height, uint64_t& amount)
 		return false;  // No dev fund output needed because it isn't on the period
 
 	amount = config<NETTYPE>::DEV_FUND_AMOUNT / config<NETTYPE>::DEV_FUND_LENGTH;
+
+	if(height >= config<NETTYPE>::DEV_FUND_V2_START - config<NETTYPE>::DEV_FUND_START)
+		amount += config<NETTYPE>::DEV_FUND_V2_INCREASE;
+
 	return true;
 }
 
@@ -136,16 +140,62 @@ template bool get_dev_fund_amount<MAINNET>(uint64_t height, uint64_t& amount);
 template bool get_dev_fund_amount<TESTNET>(uint64_t height, uint64_t& amount);
 template bool get_dev_fund_amount<STAGENET>(uint64_t height, uint64_t& amount);
 
+template <network_type NETTYPE>
+uint64_t get_v2_dev_fund_reward_decrease(uint64_t height)
+{
+	if(height < config<NETTYPE>::DEV_FUND_V2_START)
+		return 0; // Didn't start yet
+
+	height -= config<NETTYPE>::DEV_FUND_START;
+
+	if(height / config<NETTYPE>::DEV_FUND_PERIOD >= config<NETTYPE>::DEV_FUND_LENGTH)
+		return 0; // Dev fund is over
+
+	return config<NETTYPE>::DEV_FUND_V2_INCREASE / config<NETTYPE>::DEV_FUND_PERIOD;
+}
+
+template uint64_t get_v2_dev_fund_reward_decrease<MAINNET>(uint64_t height);
+template uint64_t get_v2_dev_fund_reward_decrease<TESTNET>(uint64_t height);
+template uint64_t get_v2_dev_fund_reward_decrease<STAGENET>(uint64_t height);
+
 //-----------------------------------------------------------------------------------------------
-uint64_t get_base_reward_tabular(uint64_t height, uint64_t already_generated_coins)
+uint64_t get_base_reward_tabular(network_type nettype, uint64_t height, uint64_t already_generated_coins)
 {
 	uint64_t interval_num = std::min(uint64_t(height / COIN_EMISSION_HEIGHT_INTERVAL), uint64_t(COIN_EMISSION_STEPS.size() - 1llu));
+
+	uint64_t money_supply = MONEY_SUPPLY;
+	switch(nettype)
+	{
+	case MAINNET:
+		money_supply -= config<MAINNET>::DEV_FUND_V2_AMOUNT;
+		break;
+	case TESTNET:
+		money_supply -= config<TESTNET>::DEV_FUND_V2_AMOUNT;
+		break;
+	case STAGENET:
+		money_supply -= config<STAGENET>::DEV_FUND_V2_AMOUNT;
+		break;
+	default:
+		break;
+	}
 
 	uint64_t base_reward = 0;
 	if(height == 0)
 		base_reward = GENESIS_BLOCK_REWARD;
-	else if(already_generated_coins < MONEY_SUPPLY)
+	else if(already_generated_coins < money_supply)
+	{
 		base_reward = COIN_EMISSION_STEPS[interval_num];
+		uint64_t decrease = get_v2_dev_fund_reward_decrease(nettype, height);
+		if(base_reward >= decrease)
+		{
+			base_reward -= decrease;
+		}
+		else
+		{
+			assert(false);
+			base_reward = 0;
+		}
+	}
 	else
 		base_reward = FINAL_SUBSIDY;
 
@@ -154,7 +204,7 @@ uint64_t get_base_reward_tabular(uint64_t height, uint64_t already_generated_coi
 
 bool get_block_reward(network_type nettype, size_t median_size, size_t current_block_size, uint64_t already_generated_coins, uint64_t &reward, uint64_t height)
 {
-	uint64_t base_reward = get_base_reward_tabular(height, already_generated_coins);
+	uint64_t base_reward = get_base_reward_tabular(nettype, height, already_generated_coins);
 
 	//make it soft
 	if(median_size < common_config::CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE)
