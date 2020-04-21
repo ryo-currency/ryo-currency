@@ -309,6 +309,9 @@ struct config<MAINNET>
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
 	static constexpr uint64_t DEV_FUND_LENGTH = 52 * 6; // 6 years
 	static constexpr uint64_t DEV_FUND_START  = 161500;
+	static constexpr uint64_t DEV_FUND_V2_START = 388300;
+	static constexpr uint64_t DEV_FUND_V2_INCREASE = DEV_FUND_AMOUNT / DEV_FUND_LENGTH;
+	static constexpr uint64_t DEV_FUND_V2_AMOUNT = (DEV_FUND_LENGTH - (DEV_FUND_V2_START-DEV_FUND_START)/DEV_FUND_PERIOD) * DEV_FUND_V2_INCREASE;
 };
 
 template <>
@@ -340,6 +343,9 @@ struct config<TESTNET>
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
 	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day period)
 	static constexpr uint64_t DEV_FUND_START  = 129750;
+	static constexpr uint64_t DEV_FUND_V2_START = 283110;
+	static constexpr uint64_t DEV_FUND_V2_INCREASE = DEV_FUND_AMOUNT / DEV_FUND_LENGTH;
+	static constexpr uint64_t DEV_FUND_V2_AMOUNT = (DEV_FUND_LENGTH - (DEV_FUND_V2_START-DEV_FUND_START)/DEV_FUND_PERIOD) * DEV_FUND_V2_INCREASE;
 };
 
 template <>
@@ -371,6 +377,9 @@ struct config<STAGENET>
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
 	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day period)
 	static constexpr uint64_t DEV_FUND_START  = 129750;
+	static constexpr uint64_t DEV_FUND_V2_START = 283110;
+	static constexpr uint64_t DEV_FUND_V2_INCREASE = DEV_FUND_AMOUNT / DEV_FUND_LENGTH;
+	static constexpr uint64_t DEV_FUND_V2_AMOUNT = (DEV_FUND_LENGTH - (DEV_FUND_V2_START-DEV_FUND_START)/DEV_FUND_PERIOD) * DEV_FUND_V2_INCREASE;
 };
 
 extern template struct config<MAINNET>;
