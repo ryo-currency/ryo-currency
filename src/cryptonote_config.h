@@ -179,7 +179,8 @@ enum hard_fork_feature
 	FORK_DEV_FUND,
 	FORK_FEE_V2,
 	FORK_UNIFORM_IDS,
-	FORK_UNIFORM_IDS_REQ
+	FORK_UNIFORM_IDS_REQ,
+	FORK_CHECK_BLOCK_BACKDATE
 };
 
 struct hardfork_conf
@@ -208,7 +209,8 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_BULLETPROOFS, 6, 8, 1},
 	{FORK_BULLETPROOFS_REQ, 7, 9, 1},
 	{FORK_UNIFORM_IDS, 6, 7, 1},
-	{FORK_UNIFORM_IDS_REQ, 7, 8, 1}
+	{FORK_UNIFORM_IDS_REQ, 7, 8, 1},
+	{FORK_CHECK_BLOCK_BACKDATE, 9, 10, 1}
 };
 
 // COIN - number of smallest units in one coin
