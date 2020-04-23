@@ -3390,6 +3390,13 @@ bool Blockchain::check_block_timestamp(std::vector<uint64_t> &timestamps, const 
 	GULPS_LOG_L3("Blockchain::", __func__);
 	median_ts = epee::misc_utils::median(timestamps);
 
+	uint64_t top_block_timestamp = timestamps.back();
+	if(b.major_version >= get_fork_v(m_nettype, FORK_CHECK_BLOCK_BACKDATE) && b.timestamp + common_config::BLOCK_FUTURE_TIME_LIMIT_V3 < top_block_timestamp)
+	{
+		GULPSF_VERIFY_ERR_BLK("Back-dated block! Block with id: {}, timestamp {}, for top block timestamp {}", get_block_hash(b), b.timestamp, top_block_timestamp);
+		return false;
+	}
+
 	if(b.timestamp < median_ts)
 	{
 		GULPSF_VERIFY_ERR_BLK("Timestamp of block with id: {}, {}, less than median of last {} blocks, {}", get_block_hash(b) , b.timestamp , timestamps.size(),  median_ts);
