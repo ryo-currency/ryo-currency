@@ -151,7 +151,7 @@ def calculate_emssion_speed():
         circ_supply = already_generated_coins + dev_fund - PREMINE_BURN_AMOUNT
 
         # Print every month
-        if int(height % floor(COIN_EMISSION_HEIGHT_INTERVAL/6)) == 0:
+        if (height < 388300 and int(height % floor(COIN_EMISSION_HEIGHT_INTERVAL/6)) == 0) or (height >= 388300 and (height - 161500) % (7*24*15) == (7*24*15)-1):
             _height = format(height, '07')
             _block_reward = '{0:.2f}'.format(block_reward/1000000000.0)
             _circ_supply = '{0:.2f}'.format(circ_supply/1000000000.0)

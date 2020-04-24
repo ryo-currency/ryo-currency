@@ -179,7 +179,8 @@ enum hard_fork_feature
 	FORK_DEV_FUND,
 	FORK_FEE_V2,
 	FORK_UNIFORM_IDS,
-	FORK_UNIFORM_IDS_REQ
+	FORK_UNIFORM_IDS_REQ,
+	FORK_CHECK_BLOCK_BACKDATE
 };
 
 struct hardfork_conf
@@ -208,7 +209,8 @@ static constexpr hardfork_conf FORK_CONFIG[] = {
 	{FORK_BULLETPROOFS, 6, 8, 1},
 	{FORK_BULLETPROOFS_REQ, 7, 9, 1},
 	{FORK_UNIFORM_IDS, 6, 7, 1},
-	{FORK_UNIFORM_IDS_REQ, 7, 8, 1}
+	{FORK_UNIFORM_IDS_REQ, 7, 8, 1},
+	{FORK_CHECK_BLOCK_BACKDATE, 9, 10, 1}
 };
 
 // COIN - number of smallest units in one coin
@@ -309,6 +311,9 @@ struct config<MAINNET>
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
 	static constexpr uint64_t DEV_FUND_LENGTH = 52 * 6; // 6 years
 	static constexpr uint64_t DEV_FUND_START  = 161500;
+	static constexpr uint64_t DEV_FUND_V2_START = 388300;
+	static constexpr uint64_t DEV_FUND_V2_INCREASE = DEV_FUND_AMOUNT / DEV_FUND_LENGTH;
+	static constexpr uint64_t DEV_FUND_V2_AMOUNT = (DEV_FUND_LENGTH - (DEV_FUND_V2_START-DEV_FUND_START)/DEV_FUND_PERIOD) * DEV_FUND_V2_INCREASE;
 };
 
 template <>
@@ -340,6 +345,9 @@ struct config<TESTNET>
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
 	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day period)
 	static constexpr uint64_t DEV_FUND_START  = 129750;
+	static constexpr uint64_t DEV_FUND_V2_START = 283110;
+	static constexpr uint64_t DEV_FUND_V2_INCREASE = DEV_FUND_AMOUNT / DEV_FUND_LENGTH;
+	static constexpr uint64_t DEV_FUND_V2_AMOUNT = (DEV_FUND_LENGTH - (DEV_FUND_V2_START-DEV_FUND_START)/DEV_FUND_PERIOD) * DEV_FUND_V2_INCREASE;
 };
 
 template <>
@@ -371,6 +379,9 @@ struct config<STAGENET>
 	static constexpr uint64_t DEV_FUND_AMOUNT = MK_COINS(8000000);
 	static constexpr uint64_t DEV_FUND_LENGTH = 7 * 52 * 6; // 6 years (one day period)
 	static constexpr uint64_t DEV_FUND_START  = 129750;
+	static constexpr uint64_t DEV_FUND_V2_START = 283110;
+	static constexpr uint64_t DEV_FUND_V2_INCREASE = DEV_FUND_AMOUNT / DEV_FUND_LENGTH;
+	static constexpr uint64_t DEV_FUND_V2_AMOUNT = (DEV_FUND_LENGTH - (DEV_FUND_V2_START-DEV_FUND_START)/DEV_FUND_PERIOD) * DEV_FUND_V2_INCREASE;
 };
 
 extern template struct config<MAINNET>;
