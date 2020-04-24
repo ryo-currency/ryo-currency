@@ -117,7 +117,8 @@ static const struct
 	{5, 161500, 0, 1533767730},
 	{6, MAINNET_HARDFORK_V6_HEIGHT, 0, 1550067000},
 	{7, 228870, 0, 1550095800},
-	{8, 362000, 0, 1583250000}
+	{8, 362000, 0, 1583250000},
+	{9, 388000, 0, 1589684782}
 };
 
 static const uint64_t mainnet_hard_fork_version_1_till = (uint64_t)-1;
@@ -137,7 +138,8 @@ static const struct
 	{6, 130425, 0, 1532868450},
 	{7, 159180, 0, 1542300607},
 	{8, 162815, 0, 1543265893},
-	{9, 182750, 0, 1548096165}
+	{9, 182750, 0, 1548096165},
+	{10, 283000, 0, 1587479648}
 };
 static const uint64_t testnet_hard_fork_version_1_till = (uint64_t)-1;
 
@@ -3387,6 +3389,13 @@ bool Blockchain::check_block_timestamp(std::vector<uint64_t> &timestamps, const 
 {
 	GULPS_LOG_L3("Blockchain::", __func__);
 	median_ts = epee::misc_utils::median(timestamps);
+
+	uint64_t top_block_timestamp = timestamps.back();
+	if(b.major_version >= get_fork_v(m_nettype, FORK_CHECK_BLOCK_BACKDATE) && b.timestamp + common_config::BLOCK_FUTURE_TIME_LIMIT_V3 < top_block_timestamp)
+	{
+		GULPSF_VERIFY_ERR_BLK("Back-dated block! Block with id: {}, timestamp {}, for top block timestamp {}", get_block_hash(b), b.timestamp, top_block_timestamp);
+		return false;
+	}
 
 	if(b.timestamp < median_ts)
 	{

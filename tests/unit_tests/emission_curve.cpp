@@ -66,6 +66,7 @@ TEST(emission_curve, validate_with_lookup_table)
 	std::string line;
 	getline(file, line);
 
+	uint64_t total_v2_dev_fund = 0;
 	while( circ_supply < MONEY_SUPPLY + 500000) //: # loop through block 0 to a few years after tail
 	{
 		uint64_t dev_block_reward = 0u;
@@ -75,23 +76,33 @@ TEST(emission_curve, validate_with_lookup_table)
 		bool err = get_block_reward(MAINNET, 0, 0, already_generated_coins, block_reward, height);
 		ASSERT_TRUE(err);
 
+		uint64_t deduction = get_v2_dev_fund_reward_decrease(MAINNET, height);
 		already_generated_coins += block_reward;
 		dev_fund += dev_block_reward;
+		total_v2_dev_fund += deduction;
 
 		circ_supply = already_generated_coins + dev_fund - common_config::PREMINE_BURN_AMOUNT;
 
-		if(int(height % (COIN_EMISSION_HEIGHT_INTERVAL/6)) == 0)
+		if((height < config<MAINNET>::DEV_FUND_V2_START && int(height % (COIN_EMISSION_HEIGHT_INTERVAL/6)) == 0) ||
+			(height >= config<MAINNET>::DEV_FUND_V2_START && 
+			(height - config<MAINNET>::DEV_FUND_V2_START) % config<MAINNET>::DEV_FUND_PERIOD == config<MAINNET>::DEV_FUND_PERIOD-1))
 		{
+			// This deliberately uses the pre v2 dev fund script to prove total emission doesn't change
+			// As such we need to check just before each dev fund emission
+			// There is a small rounding error of 5550 atomic units of Ryo
+
 			getline(file, line);
 			std::vector< std::string > vs;
 			testing::internal::SplitString(line, '\t', &vs);
 			ASSERT_EQ(std::stoul(vs[0]), height);
-			ASSERT_EQ(std::stoul(vs[1]), block_reward);
-			ASSERT_EQ(std::stoul(vs[2]), circ_supply);
-			ASSERT_EQ(std::stoul(vs[4]), dev_fund);
+			ASSERT_EQ(std::stoul(vs[1]), block_reward + deduction);
+			ASSERT_TRUE(circ_supply - std::stoul(vs[2]) <= 5550); // Small rounding error of 5550 AU
+			ASSERT_TRUE((dev_fund - total_v2_dev_fund) - std::stoul(vs[4]) <= 5550);
 		}
 		height++;
 	}
+
+	ASSERT_TRUE(uint64_t(config<MAINNET>::DEV_FUND_V2_AMOUNT) - total_v2_dev_fund <= 5550);
 }
 
 
@@ -159,9 +170,10 @@ TEST(emission_curve, old_vs_table)
 		err = get_block_reward_old(MAINNET, already_generated_coins, block_reward_old, height);
 		ASSERT_TRUE(err);
 
+		uint64_t deduction = get_v2_dev_fund_reward_decrease(MAINNET, height);
 		already_generated_coins += block_reward;
 		dev_fund += dev_block_reward;
-		ASSERT_EQ(block_reward_old, block_reward);
+		ASSERT_EQ(block_reward_old-deduction, block_reward);
 
 		height++;
 	}

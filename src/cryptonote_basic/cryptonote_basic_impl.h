@@ -129,6 +129,29 @@ inline bool get_dev_fund_amount(network_type nettype, uint64_t height, uint64_t&
 	}
 }
 
+template <network_type NETTYPE>
+uint64_t get_v2_dev_fund_reward_decrease(uint64_t height);
+
+extern template uint64_t get_v2_dev_fund_reward_decrease<MAINNET>(uint64_t height);
+extern template uint64_t get_v2_dev_fund_reward_decrease<TESTNET>(uint64_t height);
+extern template uint64_t get_v2_dev_fund_reward_decrease<STAGENET>(uint64_t height);
+
+inline uint64_t get_v2_dev_fund_reward_decrease(network_type nettype, uint64_t height)
+{
+	switch(nettype)
+	{
+		case MAINNET:
+			return get_v2_dev_fund_reward_decrease<MAINNET>(height);
+		case TESTNET:
+			return get_v2_dev_fund_reward_decrease<TESTNET>(height);
+		case STAGENET:
+			return get_v2_dev_fund_reward_decrease<STAGENET>(height);
+		default:
+			assert(false);
+			return 0;
+	}
+}
+
 bool get_block_reward(network_type nettype, size_t median_size, size_t current_block_size, uint64_t already_generated_coins, uint64_t &reward, uint64_t height);
 uint8_t get_account_address_checksum(const public_address_outer_blob &bl);
 uint8_t get_account_integrated_address_checksum(const public_integrated_address_outer_blob &bl);
