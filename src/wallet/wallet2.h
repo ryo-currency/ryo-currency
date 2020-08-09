@@ -499,7 +499,7 @@ class wallet2
      */
 	void generate_legacy(const std::string &wallet_, const epee::wipeable_string &password, const crypto::secret_key &seed_legacy, bool create_address_file = false);
 
-	crypto::secret_key_16 generate_new(const std::string &wallet_, const epee::wipeable_string &password, const crypto::secret_key_16 *seed = nullptr, uint8_t extra = cryptonote::ACC_OPT_LONG_ADDRESS, bool create_address_file = false);
+	crypto::secret_key_16 generate_new(const std::string &wallet_, const epee::wipeable_string &password, acc_options extra, const crypto::secret_key_16 *seed = nullptr, bool create_address_file = false);
 	/*!
      * \brief Creates a wallet from a public address and a spend/view secret key pair.
      * \param  wallet_              Name of wallet file

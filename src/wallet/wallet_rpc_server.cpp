@@ -2293,7 +2293,9 @@ bool wallet_rpc_server::on_create_wallet(const wallet_rpc::COMMAND_RPC_CREATE_WA
 
 	try
 	{
-		wal->generate_new(wallet_file, req.password, nullptr, req.short_address ? cryptonote::ACC_OPT_KURZ_ADDRESS : cryptonote::ACC_OPT_LONG_ADDRESS);
+		uint8_t key_type = req.short_address ? acc_options::ACC_OPT_KURZ_ADDRESS : acc_options::ACC_OPT_LONG_ADDRESS;
+		acc_options seed_extra(key_type, wal->estimate_blockchain_height());
+		wal->generate_new(wallet_file, req.password, seed_extra, nullptr);
 
 		if(!wal)
 		{
@@ -2372,12 +2374,14 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 
 	std::string language;
 	crypto::secret_key_16 seed_14;
-	uint8_t seed_extra;
+	acc_options seed_extra;
 	crypto::secret_key seed_25;
 	bool decode_14 = false, decode_25 = false;
 	if(wseed.size() == 12 || wseed.size() == 14)
 	{
-		decode_14 = crypto::Electrum14Words::words_to_bytes(req.seed, seed_14, seed_extra, language);
+		uint8_t extra_val;
+		decode_14 = crypto::Electrum14Words::words_to_bytes(req.seed, seed_14, extra_val, language);
+		seed_extra.set_opt_value(extra_val);
 	}
 	else if(wseed.size() >= 24 && wseed.size() <= 26)
 	{
@@ -2407,12 +2411,16 @@ bool wallet_rpc_server::on_restore_wallet(const wallet_rpc::COMMAND_RPC_RESTORE_
 	}
 
 	wallet->set_seed_language(language);
-	wallet->set_refresh_from_block_height(req.refresh_start_height);
+	uint64_t seed_height = seed_extra.get_seed_restore_height();
+	if(req.refresh_start_height == 0 && seed_height != 0)
+		wallet->set_refresh_from_block_height(seed_height);
+	else
+		wallet->set_refresh_from_block_height(req.refresh_start_height);
 
 	try
 	{
 		if(decode_14)
-			wallet->generate_new(wallet_file, req.password, &seed_14, seed_extra, false);
+			wallet->generate_new(wallet_file, req.password, seed_extra, &seed_14, false);
 		else
 			wallet->generate_legacy(wallet_file, req.password, seed_25, false);
 		start_wallet_backend(std::move(wallet));
