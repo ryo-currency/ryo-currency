@@ -134,8 +134,8 @@ bool transactions_flow_test(std::string &working_folder,
 
 	try
 	{
-		w1.generate_new(working_folder + "/" + path_source_wallet, "");
-		w2.generate_new(working_folder + "/" + path_target_wallet, "");
+		w1.generate_new(working_folder + "/" + path_source_wallet, "", acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
+		w2.generate_new(working_folder + "/" + path_target_wallet, "", acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 	}
 	catch(const std::exception &e)
 	{
