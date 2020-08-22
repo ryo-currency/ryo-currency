@@ -491,7 +491,7 @@ inline bool do_replay_file(const std::string &filename)
 //--------------------------------------------------------------------------
 #define GENERATE_ACCOUNT(account)     \
 	cryptonote::account_base account; \
-	account.generate_new(false);
+	account.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 
 #define GENERATE_MULTISIG_ACCOUNT(account, threshold, total)                                                                                                     \
 	GULPS_CHECK_AND_ASSERT_MES(threshold >= 2 && threshold <= total, false, "Invalid multisig scheme");                                                                \
@@ -499,7 +499,7 @@ inline bool do_replay_file(const std::string &filename)
 	do                                                                                                                                                           \
 	{                                                                                                                                                            \
 		for(size_t msidx = 0; msidx < total; ++msidx)                                                                                                            \
-			account[msidx].generate_new(false);                                                                                                                  \
+			account[msidx].generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));                                                                         \
 		std::unordered_set<crypto::public_key> all_multisig_keys;                                                                                                \
 		std::vector<std::vector<crypto::secret_key>> view_keys(total);                                                                                           \
 		std::vector<std::vector<crypto::public_key>> spend_keys(total);                                                                                          \
@@ -545,7 +545,7 @@ inline bool do_replay_file(const std::string &filename)
 
 #define MAKE_ACCOUNT(VEC_EVENTS, account) \
 	cryptonote::account_base account;     \
-	account.generate_new(false);          \
+	account.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));          \
 	VEC_EVENTS.push_back(account);
 
 #define DO_CALLBACK(VEC_EVENTS, CB_NAME)        \

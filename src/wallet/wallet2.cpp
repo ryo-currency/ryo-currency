@@ -753,7 +753,7 @@ bool wallet2::get_seed(std::string &electrum_words, bool &short_seed) const
 	else
 	{
 		crypto::secret_key_16 key = get_account().get_keys().m_short_seed;
-		if(!crypto::Electrum14Words::bytes_to_words(key, get_account().get_account_options(), electrum_words, seed_language))
+		if(!crypto::Electrum14Words::bytes_to_words(key, get_account().get_account_options().get_opt_value(), electrum_words, seed_language))
 		{
 			std::cout << "Failed to create seed from key for language: " << seed_language << std::endl;
 			return false;
@@ -2979,7 +2979,7 @@ void wallet2::generate_legacy(const std::string &wallet_, const epee::wipeable_s
 		store();
 }
 
-crypto::secret_key_16 wallet2::generate_new(const std::string &wallet_, const epee::wipeable_string &password, const crypto::secret_key_16 *seed, uint8_t extra, bool create_address_file)
+crypto::secret_key_16 wallet2::generate_new(const std::string &wallet_, const epee::wipeable_string &password, acc_options extra, const crypto::secret_key_16 *seed, bool create_address_file)
 {
 	clear();
 	prepare_file_names(wallet_);
@@ -8195,10 +8195,10 @@ uint64_t wallet2::get_daemon_blockchain_target_height(string &err)
 uint64_t wallet2::get_approximate_blockchain_height() const
 {
 	if (m_nettype == TESTNET) return 0;
-	// time of v4 fork
-	const time_t fork_time = 1530990884;
-	// v4 fork block
-	const uint64_t fork_block = 150000;
+	// time of v9 fork
+	const time_t fork_time = 1589775672;
+	// v9 fork block
+	const uint64_t fork_block = 388000;
 
 	// Calculated blockchain height
 	time_t current_time = time(NULL);
