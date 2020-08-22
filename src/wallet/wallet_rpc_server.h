@@ -236,6 +236,7 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 	bool on_finalize_multisig(const wallet_rpc::COMMAND_RPC_FINALIZE_MULTISIG::request &req, wallet_rpc::COMMAND_RPC_FINALIZE_MULTISIG::response &res, epee::json_rpc::error &er);
 	bool on_sign_multisig(const wallet_rpc::COMMAND_RPC_SIGN_MULTISIG::request &req, wallet_rpc::COMMAND_RPC_SIGN_MULTISIG::response &res, epee::json_rpc::error &er);
 	bool on_submit_multisig(const wallet_rpc::COMMAND_RPC_SUBMIT_MULTISIG::request &req, wallet_rpc::COMMAND_RPC_SUBMIT_MULTISIG::response &res, epee::json_rpc::error &er);
+	bool on_validate_address(const wallet_rpc::COMMAND_RPC_VALIDATE_ADDRESS::request &req, wallet_rpc::COMMAND_RPC_VALIDATE_ADDRESS::response &res, epee::json_rpc::error &er);
 
 	//json rpc v2
 	bool on_query_key(const wallet_rpc::COMMAND_RPC_QUERY_KEY::request &req, wallet_rpc::COMMAND_RPC_QUERY_KEY::response &res, epee::json_rpc::error &er);

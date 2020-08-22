@@ -1879,5 +1879,36 @@ struct COMMAND_RPC_SUBMIT_MULTISIG
 		END_KV_SERIALIZE_MAP()
 	};
 };
+
+struct COMMAND_RPC_VALIDATE_ADDRESS
+{
+	struct request
+	{
+		std::string address;
+		bool any_net_type;
+
+		BEGIN_KV_SERIALIZE_MAP(request)
+		KV_SERIALIZE(address)
+		KV_SERIALIZE_OPT(any_net_type, false)
+		END_KV_SERIALIZE_MAP()
+	};
+	
+	struct response
+	{
+		bool valid;
+		bool kurz;
+		bool integrated;
+		bool subaddress;
+		std::string nettype;
+
+		BEGIN_KV_SERIALIZE_MAP(response)
+		KV_SERIALIZE(valid)
+		KV_SERIALIZE(kurz)
+		KV_SERIALIZE(integrated)
+		KV_SERIALIZE(subaddress)
+		KV_SERIALIZE(nettype)
+		END_KV_SERIALIZE_MAP()
+	};
+};
 }
 }
