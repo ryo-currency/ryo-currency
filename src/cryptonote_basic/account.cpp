@@ -90,7 +90,7 @@ void account_base::forget_spend_key()
 crypto::secret_key_16 account_base::generate()
 {
 	using namespace crypto;
-	if(m_acc_opt == ACC_OPT_KURZ_ADDRESS)
+	if(m_options.get_keying_type() == acc_options::ACC_OPT_KURZ_ADDRESS)
 	{
 		crypto::generate_wallet_keys(m_keys.m_account_address.m_spend_public_key, m_keys.m_spend_secret_key, m_keys.m_short_seed, KEY_VARIANT_KURZ);
 		m_keys.m_account_address.m_view_public_key = m_keys.m_account_address.m_spend_public_key;
@@ -129,12 +129,12 @@ bool account_base::has_25word_seed() const
 bool account_base::has_14word_seed() const
 {
 	using namespace crypto;
-	if(m_acc_opt == ACC_OPT_UNKNOWN)
+	if(m_options.get_keying_type() == acc_options::ACC_OPT_UNKNOWN)
 		return false;
 
 	public_key pview, pspend;
 	secret_key view, spend;
-	if(m_acc_opt == ACC_OPT_KURZ_ADDRESS)
+	if(m_options.get_keying_type() == acc_options::ACC_OPT_KURZ_ADDRESS)
 	{
 		generate_wallet_keys(pspend, spend, m_keys.m_short_seed, KEY_VARIANT_KURZ);
 		return spend == m_keys.m_spend_secret_key;
