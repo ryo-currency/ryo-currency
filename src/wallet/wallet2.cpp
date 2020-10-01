@@ -6936,7 +6936,7 @@ std::vector<wallet2::pending_tx> wallet2::create_transactions_all(uint64_t below
 	std::vector<size_t> unused_transfers_indices;
 	std::vector<size_t> unused_dust_indices;
 
-	THROW_WALLET_EXCEPTION_IF(unlocked_balance(subaddr_account) == 0, error::wallet_internal_error, "No unlocked balance in the entire wallet");
+	THROW_WALLET_EXCEPTION_IF(unlocked_balance(subaddr_account) == 0, error::wallet_internal_error, "No unlocked balance in the specified account");
 
 	std::map<uint32_t, std::pair<std::vector<size_t>, std::vector<size_t>>> unused_transfer_dust_indices_per_subaddr;
 
