@@ -1220,7 +1220,7 @@ bool device_ledger::conceal_derivation(crypto::key_derivation &derivation, const
 			if(derivation == additional_derivations[n])
 			{
 				pkey = &additional_tx_pub_keys[n];
-				MDEBUG("conceal derivation with additionnal tx pub key");
+				MDEBUG("conceal derivation with additional tx pub key");
 				break;
 			}
 		}
