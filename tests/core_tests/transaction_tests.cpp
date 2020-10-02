@@ -43,24 +43,24 @@ bool test_transaction_generation_and_ring_signature()
 {
 
 	account_base miner_acc1;
-	miner_acc1.generate_new(false);
+	miner_acc1.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 	account_base miner_acc2;
-	miner_acc2.generate_new(false);
+	miner_acc2.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 	account_base miner_acc3;
-	miner_acc3.generate_new(false);
+	miner_acc3.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 	account_base miner_acc4;
-	miner_acc4.generate_new(false);
+	miner_acc4.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 	account_base miner_acc5;
-	miner_acc5.generate_new(false);
+	miner_acc5.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 	account_base miner_acc6;
-	miner_acc6.generate_new(false);
+	miner_acc6.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 
 	std::string add_str = miner_acc3.get_public_address_str(MAINNET);
 
 	account_base rv_acc;
-	rv_acc.generate_new(false);
+	rv_acc.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 	account_base rv_acc2;
-	rv_acc2.generate_new(false);
+	rv_acc2.generate_new(acc_options(acc_options::ACC_OPT_LONG_ADDRESS));
 	transaction tx_mine_1;
 	construct_miner_tx(MAINNET, 0, 0, 0, 10, 0, miner_acc1.get_keys().m_account_address, tx_mine_1);
 	transaction tx_mine_2;

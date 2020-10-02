@@ -48,14 +48,11 @@
 
 #include "crypto/crypto.h"
 #include "cryptonote_basic.h"
+#include "account_opt.h"
 #include "serialization/keyvalue_serialization.h"
 
 namespace cryptonote
 {
-static constexpr uint8_t ACC_OPT_UNKNOWN = 0;
-static constexpr uint8_t ACC_OPT_KURZ_ADDRESS = 1;
-static constexpr uint8_t ACC_OPT_LONG_ADDRESS = 2;
-
 struct account_keys
 {
 	account_public_address m_account_address;
@@ -86,18 +83,18 @@ class account_base
 {
   public:
 
-	inline crypto::secret_key_16 generate_new(uint8_t acc_opt)
+	inline crypto::secret_key_16 generate_new(acc_options acc_opt)
 	{
 		crypto::generate_wallet_secret(m_keys.m_short_seed);
-		m_acc_opt = acc_opt;
+		m_options = acc_opt;
 		m_creation_timestamp = time(NULL);
 		return generate();
 	}
 
-	inline void recover(const crypto::secret_key_16 &recovery_seed, uint8_t acc_opt)
+	inline void recover(const crypto::secret_key_16 &recovery_seed, acc_options acc_opt)
 	{
 		m_keys.m_short_seed = recovery_seed;
-		m_acc_opt = acc_opt;
+		m_options = acc_opt;
 		m_creation_timestamp = EARLIEST_TIMESTAMP;
 		generate();
 	}
@@ -119,7 +116,7 @@ class account_base
 	uint64_t get_createtime() const { return m_creation_timestamp; }
 	void set_createtime(uint64_t val) { m_creation_timestamp = val; }
 
-	uint8_t get_account_options() const { return m_acc_opt; }
+	const acc_options& get_account_options() const { return m_options; }
 	bool is_kurz() const { return m_keys.m_spend_secret_key == m_keys.m_view_secret_key; }
 
 	bool has_25word_seed() const;
@@ -140,17 +137,30 @@ class account_base
 
 	static constexpr uint64_t EARLIEST_TIMESTAMP = 1483228800; // 01-01-2017 00:00
 
+	
 	BEGIN_KV_SERIALIZE_MAP(account_base)
 	KV_SERIALIZE(m_keys)
 	KV_SERIALIZE(m_creation_timestamp)
-	KV_SERIALIZE(m_acc_opt)
+	do {
+		uint8_t acc_opt;
+		if(!is_store)
+		{
+			if(epee::serialization::selector<is_store>::serialize(acc_opt, stg, hparent_section, "m_acc_opt"))
+				const_cast<account_base&>(this_ref).m_options.set_opt_value(acc_opt);
+		}
+		else
+		{
+			acc_opt = this_ref.m_options.get_opt_value();
+			epee::serialization::selector<is_store>::serialize(acc_opt, stg, hparent_section, "m_acc_opt");
+		}
+	} while (0);
 	END_KV_SERIALIZE_MAP()
 
-  private:
+private:
 	crypto::secret_key_16 generate();
 
 	account_keys m_keys = account_keys();
 	uint64_t m_creation_timestamp;
-	uint8_t m_acc_opt;
+	acc_options m_options;
 };
 }
