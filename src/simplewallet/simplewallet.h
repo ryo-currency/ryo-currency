@@ -113,7 +113,7 @@ class simple_wallet : public tools::i_wallet2_callback
 																			const std::function<boost::optional<tools::password_container>(const char *, bool)> &password_prompter);
 
 	bool new_wallet_from_seed(const boost::program_options::variables_map &vm, std::string seed);
-	bool new_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key_16 *seed = nullptr, uint8_t seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS);
+	bool new_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, acc_options seed_extra, const crypto::secret_key_16 *seed = nullptr);
 	bool restore_legacy_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key &seed_legacy);
 
 	bool new_wallet(const boost::program_options::variables_map &vm, const cryptonote::account_public_address &address,

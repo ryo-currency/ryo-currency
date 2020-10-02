@@ -3022,7 +3022,8 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 			if(m_electrum_seed.empty())
 			{
 				std::string kurz_addr = input_line(tr("Would you like to use a shorter address format without a viewkey?  (Y/Yes/N/No): "));
-				r = new_wallet(vm, get_mnemonic_language(false), nullptr, command_line::is_yes(kurz_addr) ? cryptonote::ACC_OPT_KURZ_ADDRESS : cryptonote::ACC_OPT_LONG_ADDRESS);
+				uint8_t key_type = command_line::is_yes(kurz_addr) ? acc_options::ACC_OPT_KURZ_ADDRESS : acc_options::ACC_OPT_LONG_ADDRESS;
+				r = new_wallet(vm, get_mnemonic_language(false), acc_options(key_type), nullptr);
 			}
 			else
 			{
@@ -3042,20 +3043,17 @@ bool simple_wallet::init(const boost::program_options::variables_map &vm)
 		{
 			uint32_t version;
 			bool connected = try_connect_to_daemon(false, &version);
+			std::string prompt = fmt::format("Restore from specific blockchain height (optional, default {}),\n"
+				"or alternatively from specific date (YYYY-MM-DD): ", m_restore_height);
+
 			while(true)
 			{
 				std::string heightstr;
-				if(!connected || version < MAKE_CORE_RPC_VERSION(1, 6))
-					heightstr = input_line("Restore from specific blockchain height (optional, default 0): ");
-				else
-					heightstr = input_line("Restore from specific blockchain height (optional, default 0),\nor alternatively from specific date (YYYY-MM-DD): ");
+				heightstr = input_line(prompt);
 				if(std::cin.eof())
 					return false;
 				if(heightstr.empty())
-				{
-					m_restore_height = 0;
 					break;
-				}
 				try
 				{
 					m_restore_height = boost::lexical_cast<uint64_t>(heightstr);
@@ -3302,21 +3300,24 @@ bool simple_wallet::new_wallet_from_seed(const boost::program_options::variables
 
 	std::string language;
 	crypto::secret_key_16 seed_14;
-	uint8_t seed_extra;
+	acc_options seed_extra;
 	crypto::secret_key seed_25;
 	bool decode_14 = false, decode_25 = false;
 	if(wseed.size() == 12 || wseed.size() == 14)
 	{
-		decode_14 = crypto::Electrum14Words::words_to_bytes(seed, seed_14, seed_extra, language);
+		uint8_t extra_val;
+		decode_14 = crypto::Electrum14Words::words_to_bytes(seed, seed_14, extra_val, language);
 
 		if(wseed.size() == 12)
 		{
 			std::string kurz_addr = input_line(tr("Was the wallet created as a kurz address?  (Y/Yes/N/No): "));
 			if(command_line::is_yes(kurz_addr))
-				seed_extra = cryptonote::ACC_OPT_KURZ_ADDRESS;
+				seed_extra = acc_options(acc_options::ACC_OPT_KURZ_ADDRESS);
 			else
-				seed_extra = cryptonote::ACC_OPT_LONG_ADDRESS;
+				seed_extra = acc_options(acc_options::ACC_OPT_LONG_ADDRESS);
 		}
+		else
+			seed_extra.set_opt_value(extra_val);
 	}
 	else if(wseed.size() >= 24 && wseed.size() <= 26)
 	{
@@ -3335,7 +3336,16 @@ bool simple_wallet::new_wallet_from_seed(const boost::program_options::variables
 	}
 
 	if(decode_14)
-		return new_wallet(vm, language, &seed_14, seed_extra);
+	{
+		if(new_wallet(vm, language, seed_extra, &seed_14))
+		{
+			if(command_line::is_arg_defaulted(vm, arg_restore_height))
+				m_restore_height = seed_extra.get_seed_restore_height();
+			return true;
+		}
+		else
+			return false;
+	}
 	else
 		return restore_legacy_wallet(vm, language, seed_25);
 }
@@ -3355,7 +3365,7 @@ std::pair<std::unique_ptr<tools::wallet2>, tools::password_container> simple_wal
 }
 
 //----------------------------------------------------------------------------------------------------
-bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, const crypto::secret_key_16 *seed, uint8_t seed_extra)
+bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, const std::string& seed_lang, acc_options seed_extra, const crypto::secret_key_16 *seed)
 {
 	auto rc = make_new_wrapped(vm, password_prompter);
 	m_wallet = std::move(rc.first);
@@ -3378,7 +3388,8 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	crypto::secret_key_16 recovery_val;
 	try
 	{
-		recovery_val = m_wallet->generate_new(m_wallet_file, std::move(rc.second).password(), seed, seed_extra, create_address_file);
+		seed_extra.set_seed_restore_height(m_wallet->estimate_blockchain_height());
+		recovery_val = m_wallet->generate_new(m_wallet_file, std::move(rc.second).password(), seed_extra, seed, create_address_file);
 		GULPS_PRINT_BOLD(tr("Generated new wallet: "), m_wallet->get_account().get_public_address_str(m_wallet->nettype()));
 		if(!m_wallet->get_account().is_kurz())
 			GULPS_PRINT_SECRET(tr("View key: "), string_tools::pod_to_hex(m_wallet->get_account().get_keys().m_view_secret_key));
@@ -3392,9 +3403,9 @@ bool simple_wallet::new_wallet(const boost::program_options::variables_map &vm, 
 	// convert rng value to electrum-style word list
 	std::string electrum_words;
 	if(seed == nullptr)
-		crypto::Electrum14Words::bytes_to_words(recovery_val, seed_extra, electrum_words, m_wallet->get_seed_language());
+		crypto::Electrum14Words::bytes_to_words(recovery_val, seed_extra.get_opt_value(), electrum_words, m_wallet->get_seed_language());
 	else
-		crypto::Electrum14Words::bytes_to_words(*seed, seed_extra, electrum_words, m_wallet->get_seed_language());
+		crypto::Electrum14Words::bytes_to_words(*seed, seed_extra.get_opt_value(), electrum_words, m_wallet->get_seed_language());
 
 	GULPS_PRINT_OK("**********************************************************************\n",
 					tr("Your wallet has been generated!\n"
