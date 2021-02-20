@@ -1011,6 +1011,37 @@ struct COMMAND_RPC_GET_INFO
 };
 
 //-----------------------------------------------
+struct COMMAND_RPC_GET_NET_STATS
+{
+  struct request_t: public rpc_request_base
+  {
+    BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE_PARENT(rpc_request_base)
+    END_KV_SERIALIZE_MAP()
+  };
+  typedef epee::misc_utils::struct_init<request_t> request;
+
+  struct response_t: public rpc_response_base
+  {
+    uint64_t start_time;
+    uint64_t total_packets_in;
+    uint64_t total_bytes_in;
+    uint64_t total_packets_out;
+    uint64_t total_bytes_out;
+
+    BEGIN_KV_SERIALIZE_MAP()
+      KV_SERIALIZE_PARENT(rpc_response_base)
+      KV_SERIALIZE(start_time)
+      KV_SERIALIZE(total_packets_in)
+      KV_SERIALIZE(total_bytes_in)
+      KV_SERIALIZE(total_packets_out)
+      KV_SERIALIZE(total_bytes_out)
+    END_KV_SERIALIZE_MAP()
+  };
+  typedef epee::misc_utils::struct_init<response_t> response;
+};
+
+//-----------------------------------------------
 struct COMMAND_RPC_STOP_MINING
 {
 	struct request
