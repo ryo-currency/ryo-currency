@@ -1015,7 +1015,7 @@ struct COMMAND_RPC_GET_NET_STATS
 {
 	struct request
 	{
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(request)
 		END_KV_SERIALIZE_MAP()
 	};
 
@@ -1027,7 +1027,7 @@ struct COMMAND_RPC_GET_NET_STATS
 		uint64_t total_packets_out;
 		uint64_t total_bytes_out;
 
-		BEGIN_KV_SERIALIZE_MAP()
+		BEGIN_KV_SERIALIZE_MAP(response)
 		KV_SERIALIZE(start_time)
 		KV_SERIALIZE(total_packets_in)
 		KV_SERIALIZE(total_bytes_in)
