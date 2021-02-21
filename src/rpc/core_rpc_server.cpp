@@ -1576,7 +1576,7 @@ bool core_rpc_server::on_get_info_json(const COMMAND_RPC_GET_INFO::request &req,
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
-bool core_rpc_server::on_get_net_stats(const COMMAND_RPC_GET_NET_STATS::request& req, COMMAND_RPC_GET_NET_STATS::response& res, epee::json_rpc::error &error_resp)
+bool core_rpc_server::on_get_net_stats(const COMMAND_RPC_GET_NET_STATS::request& req, COMMAND_RPC_GET_NET_STATS::response& res)
 {
   RPC_TRACKER(get_net_stats);
   // No bootstrap daemon check: Only ever get stats about local server
