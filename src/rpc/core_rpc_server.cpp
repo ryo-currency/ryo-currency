@@ -1578,7 +1578,7 @@ bool core_rpc_server::on_get_info_json(const COMMAND_RPC_GET_INFO::request &req,
 //------------------------------------------------------------------------------------------------------------------------------
 bool core_rpc_server::on_get_net_stats(const COMMAND_RPC_GET_NET_STATS::request& req, COMMAND_RPC_GET_NET_STATS::response& res)
 {
-  RPC_TRACKER(get_net_stats);
+  RPC_TRACKER(on_get_net_stats);
   // No bootstrap daemon check: Only ever get stats about local server
   res.start_time = (uint64_t)m_core.get_start_time();
   {
