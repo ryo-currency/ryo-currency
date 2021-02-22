@@ -1033,6 +1033,7 @@ struct COMMAND_RPC_GET_NET_STATS
 		KV_SERIALIZE(total_bytes_in)
 		KV_SERIALIZE(total_packets_out)
 		KV_SERIALIZE(total_bytes_out)
+		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
 };
