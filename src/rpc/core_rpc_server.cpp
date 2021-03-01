@@ -1576,6 +1576,21 @@ bool core_rpc_server::on_get_info_json(const COMMAND_RPC_GET_INFO::request &req,
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
+bool core_rpc_server::on_get_net_stats(const COMMAND_RPC_GET_NET_STATS::request& req, COMMAND_RPC_GET_NET_STATS::response& res)
+{
+	res.start_time = (uint64_t)m_core.get_start_time();
+	{
+		CRITICAL_REGION_LOCAL(epee::net_utils::network_throttle_manager::m_lock_get_global_throttle_in);
+		epee::net_utils::network_throttle_manager::get_global_throttle_in().get_stats(res.total_packets_in, res.total_bytes_in);
+	}
+	{
+		CRITICAL_REGION_LOCAL(epee::net_utils::network_throttle_manager::m_lock_get_global_throttle_out);
+		epee::net_utils::network_throttle_manager::get_global_throttle_out().get_stats(res.total_packets_out, res.total_bytes_out);
+	}
+	res.status = CORE_RPC_STATUS_OK;
+	return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------
 bool core_rpc_server::on_hard_fork_info(const COMMAND_RPC_HARD_FORK_INFO::request &req, COMMAND_RPC_HARD_FORK_INFO::response &res, epee::json_rpc::error &error_resp)
 {
 	PERF_TIMER(on_hard_fork_info);

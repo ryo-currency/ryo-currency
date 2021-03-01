@@ -65,7 +65,7 @@ namespace cryptonote
 // advance which version they will stop working with
 // Don't go over 32767 for any of these
 #define CORE_RPC_VERSION_MAJOR 1
-#define CORE_RPC_VERSION_MINOR 19
+#define CORE_RPC_VERSION_MINOR 20
 #define MAKE_CORE_RPC_VERSION(major, minor) (((major) << 16) | (minor))
 #define CORE_RPC_VERSION MAKE_CORE_RPC_VERSION(CORE_RPC_VERSION_MAJOR, CORE_RPC_VERSION_MINOR)
 
@@ -1006,6 +1006,35 @@ struct COMMAND_RPC_GET_INFO
 		KV_SERIALIZE(bootstrap_daemon_address)
 		KV_SERIALIZE(height_without_bootstrap)
 		KV_SERIALIZE(was_bootstrap_ever_used)
+		END_KV_SERIALIZE_MAP()
+	};
+};
+
+//-----------------------------------------------
+struct COMMAND_RPC_GET_NET_STATS
+{
+	struct request
+	{
+		BEGIN_KV_SERIALIZE_MAP(request)
+		END_KV_SERIALIZE_MAP()
+	};
+
+	struct response
+	{
+		uint64_t start_time;
+		uint64_t total_packets_in;
+		uint64_t total_bytes_in;
+		uint64_t total_packets_out;
+		uint64_t total_bytes_out;
+		std::string status;
+
+		BEGIN_KV_SERIALIZE_MAP(response)
+		KV_SERIALIZE(start_time)
+		KV_SERIALIZE(total_packets_in)
+		KV_SERIALIZE(total_bytes_in)
+		KV_SERIALIZE(total_packets_out)
+		KV_SERIALIZE(total_bytes_out)
+		KV_SERIALIZE(status)
 		END_KV_SERIALIZE_MAP()
 	};
 };
