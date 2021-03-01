@@ -150,6 +150,8 @@ class t_command_parser_executor final
 	bool sync_info(const std::vector<std::string> &args);
 
 	bool version(const std::vector<std::string> &args);
+	
+	bool print_net_stats(const std::vector<std::string>& args);
 };
 
 } // namespace daemonize

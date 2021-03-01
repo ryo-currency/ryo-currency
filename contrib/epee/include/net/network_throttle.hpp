@@ -151,6 +151,7 @@ class i_network_throttle
 
 	virtual double get_time_seconds() const = 0; // a timer
 	virtual void logger_handle_net(const std::string &filename, double time, size_t size) = 0;
+	virtual void get_stats(uint64_t &total_packets, uint64_t &total_bytes) const =0;
 };
 
 // ... more in the -advanced.h file
