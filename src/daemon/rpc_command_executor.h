@@ -160,6 +160,8 @@ class t_rpc_command_executor final
 	bool relay_tx(const std::string &txid);
 
 	bool sync_info();
+	
+	bool print_net_stats();
 };
 
 } // namespace daemonize
