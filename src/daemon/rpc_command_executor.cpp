@@ -552,6 +552,67 @@ GULPSF_PRINT_OK("{:<30}{:<20}{:<20}{:<30}{:<25}{:<20}{:<12}{:<14}{:<10}{:<13}",
 	return true;
 }
 
+bool t_rpc_command_executor::print_net_stats()
+{
+	cryptonote::COMMAND_RPC_GET_NET_STATS::request req;
+	cryptonote::COMMAND_RPC_GET_NET_STATS::response res;
+	cryptonote::COMMAND_RPC_GET_LIMIT::request lreq;
+	cryptonote::COMMAND_RPC_GET_LIMIT::response lres;
+
+	std::string fail_message = "Unsuccessful";
+
+	if (m_is_rpc)
+	{
+		if (!m_rpc_client->json_rpc_request(req, res, "get_net_stats", fail_message.c_str()))
+		{
+			return true;
+		}
+		if (!m_rpc_client->json_rpc_request(lreq, lres, "get_limit", fail_message.c_str()))
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if (!m_rpc_server->on_get_net_stats(req, res) || res.status != CORE_RPC_STATUS_OK)
+		{
+			GULPS_PRINT_FAIL( make_error(fail_message, res.status));
+			return true;
+		}
+		if (!m_rpc_server->on_get_limit(lreq, lres) || lres.status != CORE_RPC_STATUS_OK)
+		{
+			GULPS_PRINT_FAIL( make_error(fail_message, lres.status));
+			return true;
+		}
+	}
+
+	uint64_t seconds = (uint64_t)time(NULL) - res.start_time;
+	uint64_t raverage = seconds > 0 ? res.total_bytes_in / seconds : 0;
+	uint64_t saverage = seconds > 0 ? res.total_bytes_out / seconds : 0;
+	uint64_t rlimit = lres.limit_down * 1024;   // convert to bytes, as limits are always kB/s
+	uint64_t slimit = lres.limit_up * 1024;
+	double rpercent = (double)raverage / (double)rlimit * 100.0;
+	double spercent = (double)saverage / (double)slimit * 100.0;
+
+	GULPSF_PRINT_SUCCESS("Received {} bytes ({}) in {} packets, average {}/s ({:.1f}%) of the limit of {}/s",
+								res.total_bytes_in,
+								tools::get_human_readable_bytes(res.total_bytes_in),
+								res.total_packets_in,
+								tools::get_human_readable_bytes(raverage),
+								rpercent,
+								tools::get_human_readable_bytes(rlimit));
+  
+	GULPSF_PRINT_SUCCESS("Sent {} bytes ({}) in {} packets, average {}/s ({:.1f}%) of the limit of {}/s",
+								res.total_bytes_out,
+								tools::get_human_readable_bytes(res.total_bytes_out),
+								res.total_packets_out,
+								tools::get_human_readable_bytes(saverage),
+								spercent,
+								tools::get_human_readable_bytes(slimit));
+
+	return true;
+}
+
 bool t_rpc_command_executor::print_blockchain_info(uint64_t start_block_index, uint64_t end_block_index)
 {
 	cryptonote::COMMAND_RPC_GET_BLOCK_HEADERS_RANGE::request req;
