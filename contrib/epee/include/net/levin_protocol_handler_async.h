@@ -298,7 +298,7 @@ class async_protocol_handler
 		GULPS_LOG_L2(m_connection_context, "[levin_protocol] -->> start_outer_call");
 		if(!m_pservice_endpoint->add_ref())
 		{
-			GULPS_ERROR(m_connection_context , " [levin_protocol] -->> start_outer_call failed");
+			GULPS_LOG_L1(m_connection_context , " [levin_protocol] -->> start_outer_call failed");
 			return false;
 		}
 		boost::interprocess::ipcdetail::atomic_inc32(&m_wait_count);
