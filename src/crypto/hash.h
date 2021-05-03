@@ -124,6 +124,16 @@ struct formatter<crypto::hash> : formatter<string_view>
 		return formatter<string_view>::format(epee::string_tools::pod_to_hex(hash), ctx);
 	}
 };
+
+template <>
+struct formatter<crypto::hash8> : formatter<string_view>
+{
+	template <typename FormatContext>
+	auto format(const crypto::hash8 &hash, FormatContext &ctx)  -> decltype(ctx.out())  
+	{
+		return formatter<string_view>::format(epee::string_tools::pod_to_hex(hash), ctx);
+	}
+};
 }
 CRYPTO_MAKE_HASHABLE(hash)
 CRYPTO_MAKE_COMPARABLE(hash8)
