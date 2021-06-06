@@ -124,6 +124,8 @@ alignas(16) extern const uint8_t saes_sbox[256] = saes_data(saes_h0);
 
 struct aesdata
 {
+	aesdata() {}
+
 	uint64_t v64x0;
 	uint64_t v64x1;
 
@@ -145,6 +147,7 @@ struct aesdata
 		mem.as_uqword(1) = v64x1;
 	}
 
+	aesdata(const aesdata& oth) noexcept { *this = oth; }  
 	inline aesdata& operator=(const aesdata& rhs) noexcept
 	{
 		v64x0 = rhs.v64x0;
