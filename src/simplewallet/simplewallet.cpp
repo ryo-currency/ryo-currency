@@ -4508,7 +4508,7 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
 		}
 		if(locked_blocks > 1000000)
 		{
-			GULPS_PRINT_FAIL(tr("Locked blocks too high, max 1000000 (˜4 yrs)"));
+			GULPS_PRINT_FAIL(tr("Locked blocks too high, max 1000000 (˜8 yrs)"));
 			return true;
 		}
 		local_args.pop_back();

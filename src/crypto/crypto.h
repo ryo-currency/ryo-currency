@@ -399,6 +399,33 @@ struct formatter<crypto::public_key> : formatter<string_view>
 		return formatter<string_view>::format(epee::string_tools::pod_to_hex(pk), ctx);
 	}
 };
+template <>
+struct formatter<crypto::secret_key> : formatter<string_view>
+{
+	template <typename FormatContext>
+	auto format(const crypto::secret_key &sk, FormatContext &ctx)  -> decltype(ctx.out())
+	{
+		return formatter<string_view>::format(epee::string_tools::pod_to_hex(sk), ctx);
+	}
+};
+template <>
+struct formatter<crypto::key_image> : formatter<string_view>
+{
+	template <typename FormatContext>
+	auto format(const crypto::key_image &ki, FormatContext &ctx)  -> decltype(ctx.out())
+	{
+		return formatter<string_view>::format(epee::string_tools::pod_to_hex(ki), ctx);
+	}
+};
+template <>
+struct formatter<crypto::signature> : formatter<string_view>
+{
+	template <typename FormatContext>
+	auto format(const crypto::signature &sig, FormatContext &ctx)  -> decltype(ctx.out())
+	{
+		return formatter<string_view>::format(epee::string_tools::pod_to_hex(sig), ctx);
+	}
+};
 }
 
 CRYPTO_MAKE_HASHABLE(public_key)
