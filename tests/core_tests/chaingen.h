@@ -53,6 +53,11 @@
 #include "misc_language.h"
 #include "common/gulps.hpp"
 
+#include <boost/bind/placeholders.hpp>
+using boost::placeholders::_1;
+using boost::placeholders::_2;
+using boost::placeholders::_3;
+
 struct callback_entry
 {
 	std::string callback_name;
