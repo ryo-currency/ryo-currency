@@ -2277,6 +2277,10 @@ bool Blockchain::get_transactions_blobs(const t_ids_container &txs_ids, t_tx_con
 	}
 	return true;
 }
+
+template bool Blockchain::get_transactions_blobs<std::vector<crypto::hash>, std::list<cryptonote::blobdata>, std::list<crypto::hash>>(const std::vector<crypto::hash>&, std::list<cryptonote::blobdata>&, std::list<crypto::hash>&) const;
+template bool Blockchain::get_transactions_blobs<std::list<crypto::hash>, std::list<cryptonote::blobdata>, std::list<crypto::hash>>(const std::list<crypto::hash>&, std::list<cryptonote::blobdata>&, std::list<crypto::hash>&) const;
+ 
 //------------------------------------------------------------------
 template <class t_ids_container, class t_tx_container, class t_missed_container>
 bool Blockchain::get_transactions(const t_ids_container &txs_ids, t_tx_container &txs, t_missed_container &missed_txs) const
