@@ -225,8 +225,10 @@ endif ()
 if (MINGW)
   # There is no variable for this (probably due to the fact that the pthread
   # library is implicit with a link in msys).
+  set(CMAKE_FIND_LIBRARY_SUFFIXES .dll ${CMAKE_FIND_LIBRARY_SUFFIXES})
   find_library(win32pthread
-    NAMES libwinpthread-1.dll)
+    NAMES winpthread-1 libwinpthread-1.dll
+    HINTS "C:\\msys64\\mingw64\\bin")
   foreach (input IN LISTS win32pthread OPENSSL_LIBRARIES)
     # Copy shared libraries into the build tree so that no PATH manipulation is
     # necessary.
