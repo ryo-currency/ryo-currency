@@ -145,6 +145,25 @@ struct COMMAND_RPC_GET_ADDRESS
 	};
 };
 
+struct COMMAND_RPC_GET_ADDRESS_INDEX
+{
+	struct request
+	{
+		std::string address;
+		BEGIN_KV_SERIALIZE_MAP(request)
+		KV_SERIALIZE(address)
+		END_KV_SERIALIZE_MAP()
+	};
+	
+	struct response
+	{
+		cryptonote::subaddress_index index;
+		BEGIN_KV_SERIALIZE_MAP(response)
+		KV_SERIALIZE(index)
+		END_KV_SERIALIZE_MAP()
+	};
+};
+
 struct COMMAND_RPC_CREATE_ADDRESS
 {
 	struct request
