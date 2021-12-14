@@ -402,6 +402,30 @@ bool wallet_rpc_server::on_getaddress(const wallet_rpc::COMMAND_RPC_GET_ADDRESS:
 	return true;
 }
 //------------------------------------------------------------------------------------------------------------------------------
+bool wallet_rpc_server::on_getaddress_index(const wallet_rpc::COMMAND_RPC_GET_ADDRESS_INDEX::request& req, wallet_rpc::COMMAND_RPC_GET_ADDRESS_INDEX::response& res, epee::json_rpc::error& er)
+{
+	if (!m_wallet) 
+		return not_open(er);
+
+	cryptonote::address_parse_info info;
+	if(!get_account_address_from_str(m_wallet->nettype(), info, req.address))
+	{
+		er.code = WALLET_RPC_ERROR_CODE_WRONG_ADDRESS;
+		er.message = "Invalid address";
+		return false;
+	}
+
+	auto index = m_wallet->get_subaddress_index(info.address);
+	if (!index)
+	{
+		er.code = WALLET_RPC_ERROR_CODE_WRONG_ADDRESS;
+		er.message = "Address doesn't belong to the wallet";
+		return false;
+	}
+	res.index = *index;
+	return true;
+}
+//------------------------------------------------------------------------------------------------------------------------------
 bool wallet_rpc_server::on_create_address(const wallet_rpc::COMMAND_RPC_CREATE_ADDRESS::request &req, wallet_rpc::COMMAND_RPC_CREATE_ADDRESS::response &res, epee::json_rpc::error &er)
 {
 	if(!m_wallet)
