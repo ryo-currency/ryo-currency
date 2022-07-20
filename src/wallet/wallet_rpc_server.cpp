@@ -537,7 +537,7 @@ bool wallet_rpc_server::on_label_account(const wallet_rpc::COMMAND_RPC_LABEL_ACC
 bool wallet_rpc_server::on_get_account_tags(const wallet_rpc::COMMAND_RPC_GET_ACCOUNT_TAGS::request &req, wallet_rpc::COMMAND_RPC_GET_ACCOUNT_TAGS::response &res, epee::json_rpc::error &er)
 {
 	const std::pair<std::map<std::string, std::string>, std::vector<std::string>> account_tags = m_wallet->get_account_tags();
-	for(const std::pair<std::string, std::string> &p : account_tags.first)
+	for(const auto& p : account_tags.first)
 	{
 		res.account_tags.resize(res.account_tags.size() + 1);
 		auto &info = res.account_tags.back();
