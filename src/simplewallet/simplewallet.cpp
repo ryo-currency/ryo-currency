@@ -2453,10 +2453,10 @@ bool simple_wallet::set_log(const std::vector<std::string> &args)
 		return true;
 	}
 
-    if(wallet_args::log_scr.parse_cat_string(args[0].c_str()))
-        GULPS_PRINT_OK("New log categories: ", args[0]);
-    else
-        GULPS_PRINT_FAIL(tr("Wrong log level or category.\nusage: set_log <log_level_number_0-4> | <categories>"));
+	if(wallet_args::log_scr.parse_cat_string(args[0].c_str()))
+		GULPS_PRINT_OK("New log categories: ", args[0]);
+	else
+		GULPS_PRINT_FAIL(tr("Wrong log level or category.\nusage: set_log <log_level_number_0-4> | <categories>"));
 
 	return true;
 }
@@ -6548,7 +6548,7 @@ void simple_wallet::print_accounts()
 {
 	const std::pair<std::map<std::string, std::string>, std::vector<std::string>> &account_tags = m_wallet->get_account_tags();
 	size_t num_untagged_accounts = m_wallet->get_num_subaddress_accounts();
-	for(const std::pair<std::string, std::string> &p : account_tags.first)
+	for(const auto& p : account_tags.first)
 	{
 		const std::string &tag = p.first;
 		print_accounts(tag);
