@@ -494,7 +494,7 @@ std::vector<std::string> parse_dns_public(const char *s)
 	{
 		for(size_t i = 0; i < sizeof(DEFAULT_DNS_PUBLIC_ADDR) / sizeof(DEFAULT_DNS_PUBLIC_ADDR[0]); ++i)
 			dns_public_addr.push_back(DEFAULT_DNS_PUBLIC_ADDR[i]);
-			GULPSF_LOG_L0("Using default public DNS server(s):{}  (TCP)", boost::join(dns_public_addr, ", "));
+		GULPSF_LOG_L0("Using default public DNS server(s):{}  (TCP)", boost::join(dns_public_addr, ", "));
 	}
 	else if(sscanf(s, "tcp://%u.%u.%u.%u%c", &ip0, &ip1, &ip2, &ip3, &c) == 4)
 	{
