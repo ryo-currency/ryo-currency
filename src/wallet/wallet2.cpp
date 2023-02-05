@@ -97,6 +97,30 @@ using namespace crypto;
 using namespace cryptonote;
 using namespace epee;
 
+/*
+// Headers live in current Monero Release and not in Ryo
+#include"common/combinator.h"
+#include"common/notify.h"
+#include"common/perf_timer.h"
+#include"cryptonote_core/tx_sanity_check.h"
+#include"device_trezor/device_trezor.hpp"
+#include"device/device_cold.hpp"
+#include"int-util.h"
+#include"net/parse.h"
+#include"net/socks_connect.h"
+#include"net/parse.h"
+#include"net/socks_connect.h"
+#include"rpc/core_rpc_server_error_codes.h"
+#include"rpc/rpc_payment_costs.h"
+#include"rpc/rpc_payment_signature.h"
+#include"wallet_rpc_helpers.h"
+#include<boost/algorithm/string/join.hpp>
+#include<boost/asio/ip/address.hpp>
+#include<boost/preprocessor/stringize.hpp>
+#include<boost/range/adaptor/transformed.hpp>
+#include<openssl/evp.h>
+*/
+
 GULPS_CAT_MAJOR("wallet_backend");
 
 // used to choose when to stop adding outputs to a tx
