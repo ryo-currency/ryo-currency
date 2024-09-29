@@ -29,7 +29,6 @@
 #include <boost/archive/iterators/ostream_iterator.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <istream>

@@ -49,7 +49,7 @@
 #include "common/i18n.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/asio/ip/address.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include "common/gulps.hpp"
 
@@ -123,7 +123,7 @@ boost::optional<rpc_args> rpc_args::process(const boost::program_options::variab
 
 		std::vector<std::string> access_control_origins;
 		boost::split(access_control_origins, access_control_origins_input, boost::is_any_of(","));
-		std::for_each(access_control_origins.begin(), access_control_origins.end(), boost::bind(&boost::trim<std::string>, _1, std::locale::classic()));
+		std::for_each(access_control_origins.begin(), access_control_origins.end(), boost::bind(&boost::trim<std::string>, boost::placeholders::_1, std::locale::classic()));
 		config.access_control_origins = std::move(access_control_origins);
 	}
 
