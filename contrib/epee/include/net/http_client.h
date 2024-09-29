@@ -369,10 +369,18 @@ class http_simple_client_template : public i_target_handler
 			//--
 
 			bool res = m_net_client.send(req_buff, timeout);
-			GULPS_CHECK_AND_ASSERT_MES(res, false, "HTTP_CLIENT: Failed to SEND");
+			if(!res)
+			{
+				GULPSF_LOG_L1("HTTP_CLIENT: Failed to SEND");
+				return false;
+			}
 			if(body.size())
 				res = m_net_client.send(body, timeout);
-			GULPS_CHECK_AND_ASSERT_MES(res, false, "HTTP_CLIENT: Failed to SEND");
+			if(!res)
+			{
+				GULPSF_LOG_L1("HTTP_CLIENT: Failed to SEND");
+				return false;
+			}
 
 			m_response_info.clear();
 			m_state = reciev_machine_state_header;
