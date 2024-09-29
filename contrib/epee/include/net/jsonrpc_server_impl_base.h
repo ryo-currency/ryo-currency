@@ -1,7 +1,6 @@
 #ifndef JSONRPC_SERVER_IMPL_BASE_H
 #define JSONRPC_SERVER_IMPL_BASE_H
 
-#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 
 #include "net/abstract_tcp_server2.h"

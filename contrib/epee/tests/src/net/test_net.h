@@ -26,7 +26,6 @@
 
 #pragma once
 
-#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 
 #include "net/levin_server_cp2.h"

@@ -736,13 +736,16 @@ int vercmp(const char *v0, const char *v1)
 
 bool sha256sum(const uint8_t *data, size_t len, crypto::hash &hash)
 {
-	SHA256_CTX ctx;
-	if(!SHA256_Init(&ctx))
+	EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
+	if(mdctx == nullptr)
 		return false;
-	if(!SHA256_Update(&ctx, data, len))
+	if(EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL) != 1)
 		return false;
-	if(!SHA256_Final((unsigned char *)hash.data, &ctx))
+	if(EVP_DigestUpdate(mdctx, data, len) != 1)
 		return false;
+	if(EVP_DigestFinal_ex(mdctx, reinterpret_cast<unsigned char*>(hash.data), nullptr) != 1)
+		return false;
+	EVP_MD_CTX_free(mdctx);
 	return true;
 }
 
@@ -756,8 +759,10 @@ bool sha256sum(const std::string &filename, crypto::hash &hash)
 	if(!f)
 		return false;
 	std::ifstream::pos_type file_size = f.tellg();
-	SHA256_CTX ctx;
-	if(!SHA256_Init(&ctx))
+	EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
+	if(mdctx == nullptr)
+		return false;
+	if(EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL) != 1)
 		return false;
 	size_t size_left = file_size;
 	f.seekg(0, std::ios::beg);
@@ -768,13 +773,14 @@ bool sha256sum(const std::string &filename, crypto::hash &hash)
 		f.read(buf, read_size);
 		if(!f || !f.good())
 			return false;
-		if(!SHA256_Update(&ctx, buf, read_size))
+		if(EVP_DigestUpdate(mdctx, buf, read_size) != 1)
 			return false;
 		size_left -= read_size;
 	}
 	f.close();
-	if(!SHA256_Final((unsigned char *)hash.data, &ctx))
+	if(EVP_DigestFinal_ex(mdctx, reinterpret_cast<unsigned char*>(hash.data), nullptr) != 1)
 		return false;
+	EVP_MD_CTX_free(mdctx);
 	return true;
 }
 
