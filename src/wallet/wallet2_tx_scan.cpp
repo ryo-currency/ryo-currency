@@ -54,7 +54,12 @@ std::unique_ptr<wallet2::wallet_rpc_scan_data> wallet2::pull_blocks(uint64_t sta
 	req.prune = true;
 	req.start_height = start_height;
 	m_daemon_rpc_mutex.lock();
-	bool r = epee::net_utils::invoke_http_bin("/getblocks.bin", req, res, m_http_client, rpc_timeout);
+	bool r = false;
+	for(size_t i=0; i <= 3 && r != true; i++)
+	{
+		GULPSF_LOG_L1("invoke_http_bin attempt {}", i);
+		r = epee::net_utils::invoke_http_bin("/getblocks.bin", req, res, m_http_client, rpc_timeout);
+	}
 	m_daemon_rpc_mutex.unlock();
 	THROW_WALLET_EXCEPTION_IF(!r, error::no_connection_to_daemon, "getblocks.bin");
 	THROW_WALLET_EXCEPTION_IF(res.status == CORE_RPC_STATUS_BUSY, error::daemon_busy, "getblocks.bin");
