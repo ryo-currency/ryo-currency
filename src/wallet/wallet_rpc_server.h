@@ -166,6 +166,7 @@ class wallet_rpc_server : public epee::http_server_impl_base<wallet_rpc_server>
 	MAP_JON_RPC_WE("finalize_multisig", on_finalize_multisig, wallet_rpc::COMMAND_RPC_FINALIZE_MULTISIG)
 	MAP_JON_RPC_WE("sign_multisig", on_sign_multisig, wallet_rpc::COMMAND_RPC_SIGN_MULTISIG)
 	MAP_JON_RPC_WE("submit_multisig", on_submit_multisig, wallet_rpc::COMMAND_RPC_SUBMIT_MULTISIG)
+	MAP_JON_RPC_WE("validate_address", on_validate_address, wallet_rpc::COMMAND_RPC_VALIDATE_ADDRESS)
 	END_JSON_RPC_MAP()
 	END_URI_MAP2()
 
