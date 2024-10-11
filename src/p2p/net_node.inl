@@ -121,7 +121,7 @@ bool node_server<t_payload_net_handler>::init_config()
 		catch(...)
 		{
 			// if failed, try reading in unportable mode
-			boost::filesystem::copy_file(state_file_path, state_file_path + ".unportable", boost::filesystem::copy_option::overwrite_if_exists);
+			boost::filesystem::copy_file(state_file_path, state_file_path + ".unportable", boost::filesystem::copy_options::overwrite_existing);
 			p2p_data.close();
 			p2p_data.open(state_file_path, std::ios_base::binary | std::ios_base::in);
 			if(!p2p_data.fail())

@@ -128,7 +128,7 @@ bool unserialize_obj_from_file(t_object &obj, const std::string &file_path)
 	catch(...)
 	{
 		// if failed, try reading in unportable mode
-		boost::filesystem::copy_file(file_path, file_path + ".unportable", boost::filesystem::copy_option::overwrite_if_exists);
+		boost::filesystem::copy_file(file_path, file_path + ".unportable", boost::filesystem::copy_options::overwrite_existing);
 		data_file.close();
 		data_file.open(file_path, std::ios_base::binary | std::ios_base::in);
 		if(data_file.fail())
