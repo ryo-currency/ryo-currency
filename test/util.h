@@ -34,7 +34,7 @@ fmt::buffered_file open_buffered_file(FILE** fp = nullptr);
 inline FILE* safe_fopen(const char* filename, const char* mode) {
 #if defined(_WIN32) && !defined(__MINGW32__)
   // Fix MSVC warning about "unsafe" fopen.
-  FILE* f = 0;
+  FILE* f = nullptr;
   errno = fopen_s(&f, filename, mode);
   return f;
 #else
@@ -77,5 +77,5 @@ class date {
   int day() const { return day_; }
 };
 
-// Returns a locale with the given name if available or classic locale othewise.
+// Returns a locale with the given name if available or classic locale otherwise.
 std::locale get_locale(const char* name, const char* alt_name = nullptr);
