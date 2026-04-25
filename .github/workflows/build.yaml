@@ -33,7 +33,7 @@ jobs:
       # Environment variables for ccache telling it where to store temporary cache files and the cache itself.
       CCACHE_TEMPDIR: C:\Users\runneradmin\.ccache-temp
       CCACHE_DIR: C:\Users\runneradmin\.ccache
-      BOOST_ROOT: /mingw64/boost-1.83
+      BOOST_PREFIX: /mingw64/boost-1.83
     defaults:
       run:
         shell: msys2 {0}
@@ -110,10 +110,10 @@ jobs:
           tar -xzf boost_1_83_0.tar.gz
           cd boost_1_83_0
 
-          ./bootstrap.sh --prefix="$BOOST_ROOT"
+          ./bootstrap.sh --prefix="$BOOST_PREFIX"
 
           ./b2 -j${{ steps.make-jobs.outputs.count }} install \
-            --prefix="$BOOST_ROOT" \
+            --prefix="$BOOST_PREFIX" \
             address-model=64 \
             variant=release \
             link=static \
@@ -134,7 +134,7 @@ jobs:
         id: boost-install
         run: |
           boost_include_dir=""
-          for candidate in "$BOOST_ROOT/include/boost-1_83" "$BOOST_ROOT/include"; do
+          for candidate in "$BOOST_PREFIX/include/boost-1_83" "$BOOST_PREFIX/include"; do
             if test -f "$candidate/boost/version.hpp"; then
               boost_include_dir="$candidate"
               break
@@ -142,14 +142,14 @@ jobs:
           done
 
           if test -z "$boost_include_dir"; then
-            echo "Could not find Boost headers under $BOOST_ROOT/include" >&2
-            find "$BOOST_ROOT" -maxdepth 4 -type f -name version.hpp >&2 || true
+            echo "Could not find Boost headers under $BOOST_PREFIX/include" >&2
+            find "$BOOST_PREFIX" -maxdepth 4 -type f -name version.hpp >&2 || true
             exit 1
           fi
 
-          test -d "$BOOST_ROOT/lib"
-          ls "$BOOST_ROOT"/lib/libboost_system-*.a
-          ls "$BOOST_ROOT"/lib/libboost_filesystem-*.a
+          test -d "$BOOST_PREFIX/lib"
+          ls "$BOOST_PREFIX"/lib/libboost_system-*.a
+          ls "$BOOST_PREFIX"/lib/libboost_filesystem-*.a
           echo "include_dir=$boost_include_dir" >> "$GITHUB_OUTPUT"
           echo "Boost include dir: $boost_include_dir"
 
@@ -198,10 +198,9 @@ jobs:
             -DARCH="x86-64" \
             -DBUILD_64=ON \
             -DCMAKE_BUILD_TYPE=Release \
-            -DBOOST_ROOT="$BOOST_ROOT" \
-            -DBoost_ROOT="$BOOST_ROOT" \
+            -DBOOST_ROOT="$BOOST_PREFIX" \
             -DBOOST_INCLUDEDIR="${{ steps.boost-install.outputs.include_dir }}" \
-            -DBOOST_LIBRARYDIR="$BOOST_ROOT/lib" \
+            -DBOOST_LIBRARYDIR="$BOOST_PREFIX/lib" \
             -DBoost_ARCHITECTURE=-x64 \
             -DBoost_NO_SYSTEM_PATHS=ON \
             -DBoost_NO_BOOST_CMAKE=ON \
