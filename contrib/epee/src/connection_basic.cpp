@@ -165,7 +165,7 @@ connection_basic::connection_basic(boost::asio::io_service &io_service, std::ato
 	{
 	};
 
-	GULPSF_LOG_L1("Spawned connection p2p#{} to {} currently we have sockets count:{}", mI->m_peer_number, remote_addr_str, m_ref_sock_count);
+	GULPSF_LOG_L1("Spawned connection p2p#{} to {} currently we have sockets count:{}", mI->m_peer_number, remote_addr_str, m_ref_sock_count.load());
 }
 
 connection_basic::~connection_basic() noexcept(false)
