@@ -54,7 +54,7 @@ if (IOS)
     INCLUDE(CmakeLists_IOS.txt)
 endif()
 
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.8...3.28)
 
 project(ryo)
 
