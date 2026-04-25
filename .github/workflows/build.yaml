@@ -131,11 +131,27 @@ jobs:
             --with-atomic
 
       - name: verify Boost 1.83 install
+        id: boost-install
         run: |
-          test -f "$BOOST_ROOT/include/boost/version.hpp"
+          boost_include_dir=""
+          for candidate in "$BOOST_ROOT/include/boost-1_83" "$BOOST_ROOT/include"; do
+            if test -f "$candidate/boost/version.hpp"; then
+              boost_include_dir="$candidate"
+              break
+            fi
+          done
+
+          if test -z "$boost_include_dir"; then
+            echo "Could not find Boost headers under $BOOST_ROOT/include" >&2
+            find "$BOOST_ROOT" -maxdepth 4 -type f -name version.hpp >&2 || true
+            exit 1
+          fi
+
           test -d "$BOOST_ROOT/lib"
           ls "$BOOST_ROOT"/lib/libboost_system-*.a
           ls "$BOOST_ROOT"/lib/libboost_filesystem-*.a
+          echo "include_dir=$boost_include_dir" >> "$GITHUB_OUTPUT"
+          echo "Boost include dir: $boost_include_dir"
 
       - name: save Boost 1.83
         if: steps.cache-boost.outputs.cache-hit != 'true'
@@ -184,7 +200,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DBOOST_ROOT="$BOOST_ROOT" \
             -DBoost_ROOT="$BOOST_ROOT" \
-            -DBOOST_INCLUDEDIR="$BOOST_ROOT/include" \
+            -DBOOST_INCLUDEDIR="${{ steps.boost-install.outputs.include_dir }}" \
             -DBOOST_LIBRARYDIR="$BOOST_ROOT/lib" \
             -DBoost_ARCHITECTURE=-x64 \
             -DBoost_NO_SYSTEM_PATHS=ON \
