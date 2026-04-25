@@ -6,7 +6,7 @@ import errno, os, shutil, sys, tempfile
 from subprocess import check_call, check_output, CalledProcessError, Popen, PIPE
 from distutils.version import LooseVersion
 
-versions = ['1.0.0', '1.1.0', '2.0.0', '3.0.2', '4.0.0', '4.1.0', '5.0.0', '5.1.0']
+versions = ['1.0.0', '1.1.0', '2.0.0', '3.0.2', '4.0.0', '4.1.0', '5.0.0', '5.1.0', '5.2.0', '5.2.1', '5.3.0', '6.0.0', '6.1.0', '6.1.1', '6.1.2', '6.2.0', '6.2.1', '7.0.0']
 
 def pip_install(package, commit=None, **kwargs):
   "Install package using pip."
@@ -74,8 +74,8 @@ def build_docs(version='dev', **kwargs):
       GENERATE_MAN      = NO
       GENERATE_RTF      = NO
       CASE_SENSE_NAMES  = NO
-      INPUT             = {0}/core.h {0}/format.h {0}/ostream.h \
-                          {0}/printf.h {0}/time.h
+      INPUT             = {0}/core.h {0}/compile.h {0}/format.h {0}/os.h \
+                          {0}/ostream.h {0}/printf.h {0}/time.h
       QUIET             = YES
       JAVADOC_AUTOBRIEF = YES
       AUTOLINK_SUPPORT  = NO
@@ -89,9 +89,12 @@ def build_docs(version='dev', **kwargs):
                           FMT_USE_VARIADIC_TEMPLATES=1 \
                           FMT_USE_RVALUE_REFERENCES=1 \
                           FMT_USE_USER_DEFINED_LITERALS=1 \
+                          FMT_USE_ALIAS_TEMPLATES=1 \
                           FMT_API= \
                           "FMT_BEGIN_NAMESPACE=namespace fmt {{" \
-                          "FMT_END_NAMESPACE=}}"
+                          "FMT_END_NAMESPACE=}}" \
+                          "FMT_STRING_ALIAS=1" \
+                          "FMT_ENABLE_IF(B)="
       EXCLUDE_SYMBOLS   = fmt::internal::* StringValue write_str
     '''.format(include_dir, doxyxml_dir).encode('UTF-8'))
   if p.returncode != 0:
