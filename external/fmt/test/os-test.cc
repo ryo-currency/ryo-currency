@@ -14,10 +14,6 @@
 #include "gtest-extra.h"
 #include "util.h"
 
-#ifdef fileno
-#  undef fileno
-#endif
-
 using fmt::buffered_file;
 using testing::HasSubstr;
 using wstring_view = fmt::basic_string_view<wchar_t>;
@@ -26,68 +22,15 @@ using wstring_view = fmt::basic_string_view<wchar_t>;
 
 #  include <windows.h>
 
-TEST(util_test, utf16_to_utf8) {
-  auto s = std::string("ёжик");
-  fmt::detail::utf16_to_utf8 u(L"\x0451\x0436\x0438\x043A");
-  EXPECT_EQ(s, u.str());
-  EXPECT_EQ(s.size(), u.size());
-}
-
-TEST(util_test, utf16_to_utf8_empty_string) {
-  std::string s = "";
-  fmt::detail::utf16_to_utf8 u(L"");
-  EXPECT_EQ(s, u.str());
-  EXPECT_EQ(s.size(), u.size());
-}
-
-template <typename Converter, typename Char>
-void check_utf_conversion_error(
-    const char* message,
-    fmt::basic_string_view<Char> str = fmt::basic_string_view<Char>(0, 1)) {
-  fmt::memory_buffer out;
-  fmt::detail::format_windows_error(out, ERROR_INVALID_PARAMETER, message);
-  auto error = std::system_error(std::error_code());
-  try {
-    (Converter)(str);
-  } catch (const std::system_error& e) {
-    error = e;
-  }
-  EXPECT_EQ(ERROR_INVALID_PARAMETER, error.code().value());
-  EXPECT_THAT(error.what(), HasSubstr(fmt::to_string(out)));
-}
-
-TEST(util_test, utf16_to_utf8_error) {
-  check_utf_conversion_error<fmt::detail::utf16_to_utf8, wchar_t>(
-      "cannot convert string from UTF-16 to UTF-8");
-}
-
-TEST(util_test, utf16_to_utf8_convert) {
-  fmt::detail::utf16_to_utf8 u;
-  EXPECT_EQ(ERROR_INVALID_PARAMETER, u.convert(wstring_view(0, 1)));
-  EXPECT_EQ(ERROR_INVALID_PARAMETER,
-            u.convert(wstring_view(L"foo", INT_MAX + 1u)));
-}
-
-TEST(os_test, format_std_error_code) {
-  EXPECT_EQ("generic:42",
-            fmt::format(FMT_STRING("{0}"),
-                        std::error_code(42, std::generic_category())));
-  EXPECT_EQ("system:42",
-            fmt::format(FMT_STRING("{0}"),
-                        std::error_code(42, fmt::system_category())));
-  EXPECT_EQ("system:-42",
-            fmt::format(FMT_STRING("{0}"),
-                        std::error_code(-42, fmt::system_category())));
-}
-
 TEST(os_test, format_windows_error) {
-  LPWSTR message = 0;
+  LPWSTR message = nullptr;
   auto result = FormatMessageW(
       FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
           FORMAT_MESSAGE_IGNORE_INSERTS,
-      0, ERROR_FILE_EXISTS, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-      reinterpret_cast<LPWSTR>(&message), 0, 0);
-  fmt::detail::utf16_to_utf8 utf8_message(wstring_view(message, result - 2));
+      nullptr, ERROR_FILE_EXISTS, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+      reinterpret_cast<LPWSTR>(&message), 0, nullptr);
+  fmt::detail::unicode_to_utf8<wchar_t> utf8_message(
+      wstring_view(message, result - 2));
   LocalFree(message);
   fmt::memory_buffer actual_message;
   fmt::detail::format_windows_error(actual_message, ERROR_FILE_EXISTS, "test");
@@ -97,22 +40,23 @@ TEST(os_test, format_windows_error) {
 }
 
 TEST(os_test, format_long_windows_error) {
-  LPWSTR message = 0;
+  LPWSTR message = nullptr;
   // this error code is not available on all Windows platforms and
   // Windows SDKs, so do not fail the test if the error string cannot
   // be retrieved.
   int provisioning_not_allowed = 0x80284013L;  // TBS_E_PROVISIONING_NOT_ALLOWED
-  auto result = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                                   FORMAT_MESSAGE_FROM_SYSTEM |
-                                   FORMAT_MESSAGE_IGNORE_INSERTS,
-                               0, static_cast<DWORD>(provisioning_not_allowed),
-                               MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                               reinterpret_cast<LPWSTR>(&message), 0, 0);
+  auto result = FormatMessageW(
+      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+          FORMAT_MESSAGE_IGNORE_INSERTS,
+      nullptr, static_cast<DWORD>(provisioning_not_allowed),
+      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+      reinterpret_cast<LPWSTR>(&message), 0, nullptr);
   if (result == 0) {
     LocalFree(message);
     return;
   }
-  fmt::detail::utf16_to_utf8 utf8_message(wstring_view(message, result - 2));
+  fmt::detail::unicode_to_utf8<wchar_t> utf8_message(
+      wstring_view(message, result - 2));
   LocalFree(message);
   fmt::memory_buffer actual_message;
   fmt::detail::format_windows_error(actual_message, provisioning_not_allowed,
@@ -142,6 +86,17 @@ TEST(os_test, report_windows_error) {
                fmt::report_windows_error(ERROR_FILE_EXISTS, "test error"),
                fmt::to_string(out));
 }
+
+#  if FMT_USE_FCNTL && !defined(__MINGW32__)
+TEST(file_test, open_windows_file) {
+  using fmt::file;
+  file out = file::open_windows_file(L"test-file",
+                                     file::WRONLY | file::CREATE | file::TRUNC);
+  out.write("x", 1);
+  file in = file::open_windows_file(L"test-file", file::RDONLY);
+  EXPECT_READ(in, "x");
+}
+#  endif  // FMT_USE_FCNTL && !defined(__MINGW32__)
 
 #endif  // _WIN32
 
@@ -205,7 +160,7 @@ TEST(buffered_file_test, move_assignment) {
 TEST(buffered_file_test, move_assignment_closes_file) {
   buffered_file bf = open_buffered_file();
   buffered_file bf2 = open_buffered_file();
-  int old_fd = bf2.fileno();
+  int old_fd = bf2.descriptor();
   bf2 = std::move(bf);
   EXPECT_TRUE(isclosed(old_fd));
 }
@@ -225,7 +180,7 @@ TEST(buffered_file_test, move_from_temporary_in_assignment) {
 
 TEST(buffered_file_test, move_from_temporary_in_assignment_closes_file) {
   buffered_file f = open_buffered_file();
-  int old_fd = f.fileno();
+  int old_fd = f.descriptor();
   f = open_buffered_file();
   EXPECT_TRUE(isclosed(old_fd));
 }
@@ -234,7 +189,7 @@ TEST(buffered_file_test, close_file_in_dtor) {
   int fd = 0;
   {
     buffered_file f = open_buffered_file();
-    fd = f.fileno();
+    fd = f.descriptor();
   }
   EXPECT_TRUE(isclosed(fd));
 }
@@ -249,7 +204,7 @@ TEST(buffered_file_test, close_error_in_dtor) {
         // otherwise the system may recycle closed file descriptor when
         // redirecting the output in EXPECT_STDERR and the second close
         // will break output redirection.
-        FMT_POSIX(close(f->fileno()));
+        FMT_POSIX(close(f->descriptor()));
         SUPPRESS_ASSERT(f.reset(nullptr));
       },
       system_error_message(EBADF, "cannot close file") + "\n");
@@ -257,7 +212,7 @@ TEST(buffered_file_test, close_error_in_dtor) {
 
 TEST(buffered_file_test, close) {
   buffered_file f = open_buffered_file();
-  int fd = f.fileno();
+  int fd = f.descriptor();
   f.close();
   EXPECT_TRUE(f.get() == nullptr);
   EXPECT_TRUE(isclosed(fd));
@@ -265,15 +220,15 @@ TEST(buffered_file_test, close) {
 
 TEST(buffered_file_test, close_error) {
   buffered_file f = open_buffered_file();
-  FMT_POSIX(close(f.fileno()));
+  FMT_POSIX(close(f.descriptor()));
   EXPECT_SYSTEM_ERROR_NOASSERT(f.close(), EBADF, "cannot close file");
   EXPECT_TRUE(f.get() == nullptr);
 }
 
-TEST(buffered_file_test, fileno) {
+TEST(buffered_file_test, descriptor) {
   auto f = open_buffered_file();
-  EXPECT_TRUE(f.fileno() != -1);
-  file copy = file::dup(f.fileno());
+  EXPECT_TRUE(f.descriptor() != -1);
+  file copy = file::dup(f.descriptor());
   EXPECT_READ(copy, file_content);
 }
 
@@ -334,6 +289,14 @@ TEST(ostream_test, truncate) {
   }
   file in("test-file", file::RDONLY);
   EXPECT_EQ("foo", read(in, 4));
+}
+
+TEST(ostream_test, flush) {
+  auto out = fmt::output_file("test-file");
+  out.print("x");
+  out.flush();
+  auto in = fmt::file("test-file", file::RDONLY);
+  EXPECT_READ(in, "x");
 }
 
 TEST(file_test, default_ctor) {
@@ -540,13 +503,4 @@ TEST(file_test, fdopen) {
   int read_fd = read_end.descriptor();
   EXPECT_EQ(read_fd, FMT_POSIX(fileno(read_end.fdopen("r").get())));
 }
-
-#  ifdef FMT_LOCALE
-TEST(locale_test, strtod) {
-  fmt::locale loc;
-  const char *start = "4.2", *ptr = start;
-  EXPECT_EQ(4.2, loc.strtod(ptr));
-  EXPECT_EQ(start + 3, ptr);
-}
-#  endif
 #endif  // FMT_USE_FCNTL

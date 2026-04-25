@@ -2,17 +2,24 @@ name: macos
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    runs-on: macos-10.15
+    runs-on: macos-11
     strategy:
       matrix:
         build_type: [Debug, Release]
+        std: [11, 17]
         include:
           - shared: -DBUILD_SHARED_LIBS=ON
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+
+    - name: Set timezone
+      run: sudo systemsetup -settimezone 'Asia/Yekaterinburg'
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -21,6 +28,7 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake -DCMAKE_BUILD_TYPE=${{matrix.build_type}} ${{matrix.shared}} \
+              -DCMAKE_CXX_STANDARD=${{matrix.std}} \
               -DCMAKE_CXX_VISIBILITY_PRESET=hidden -DCMAKE_VISIBILITY_INLINES_HIDDEN=ON \
               -DFMT_DOC=OFF -DFMT_PEDANTIC=ON -DFMT_WERROR=ON $GITHUB_WORKSPACE
 
