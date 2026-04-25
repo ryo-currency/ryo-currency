@@ -162,17 +162,10 @@ jobs:
           key: ${{ steps.cache-boost.outputs.cache-primary-key }}
 
       # Temporary patches to work around Windows build issues.
-      # The first patch removes the workaround for a MinGW bug in fmt's posix.h, which breaks builds with newer MinGW versions.
-      # The second patch adds crypt32 to line 872 of CMAKELists.txt, set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi) to set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32).
-      # The third patch is from console_handler.h. It changes the return type of WaitForSingleObject from int to DWORD, which is required to compile with GCC 15.
+      # The first patch adds crypt32 to line 872 of CMAKELists.txt, set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi) to set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32).
+      # The second patch is from console_handler.h. It changes the return type of WaitForSingleObject from int to DWORD, which is required to compile with GCC 15.
       - name: patch Windows build compatibility
         run: |
-          perl -0pi -e 's/#if defined\(__MINGW32__\) \|\| defined\(__CYGWIN__\)\R\/\/ Workaround MinGW bug[^\R]*\R# undef __STRICT_ANSI__\R#endif\R\R//' external/fmt/include/fmt/posix.h
-          if grep -q '__STRICT_ANSI__' external/fmt/include/fmt/posix.h; then
-            echo "Failed to patch fmt MinGW __STRICT_ANSI__ workaround" >&2
-            exit 1
-          fi
-
           perl -0pi -e 's/set\(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi\)/set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32)/' CMakeLists.txt
           if ! grep -q 'mswsock;ws2_32;iphlpapi;crypt32' CMakeLists.txt; then
             echo "Failed to add crypt32 to MinGW link libraries" >&2
