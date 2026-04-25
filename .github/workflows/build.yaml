@@ -33,6 +33,7 @@ jobs:
       # Environment variables for ccache telling it where to store temporary cache files and the cache itself.
       CCACHE_TEMPDIR: C:\Users\runneradmin\.ccache-temp
       CCACHE_DIR: C:\Users\runneradmin\.ccache
+      BOOST_ROOT: /mingw64/boost-1.83
     defaults:
       run:
         shell: msys2 {0}
@@ -49,6 +50,7 @@ jobs:
             ccache-${{ runner.os }}-build-
 
       - uses: msys2/setup-msys2@v2
+        id: msys2
         with:
           msystem: MINGW64
           release: true
@@ -75,12 +77,22 @@ jobs:
             git
             perl
 
+      - name: set Boost cache key
+        id: boost-cache-key
+        run: |
+          gcc_version="$(g++ -dumpfullversion -dumpversion)"
+          gcc_major="${gcc_version%%.*}"
+          target="$(g++ -dumpmachine)"
+          key="boost-1.83-${{ runner.os }}-mingw64-${target}-gcc${gcc_major}-static-v2"
+          echo "key=${key}" >> "$GITHUB_OUTPUT"
+          echo "Boost cache key: ${key}"
+
       - name: restore Boost 1.83
         id: cache-boost
         uses: actions/cache/restore@v4
         with:
-          path: C:\msys64\mingw64\boost-1.83
-          key: boost-1.83-${{ runner.os }}-mingw64-static-v1
+          path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
+          key: ${{ steps.boost-cache-key.outputs.key }}
 
       - name: set make job count
         id: make-jobs
@@ -98,10 +110,10 @@ jobs:
           tar -xzf boost_1_83_0.tar.gz
           cd boost_1_83_0
 
-          ./bootstrap.sh --prefix=/mingw64/boost-1.83
+          ./bootstrap.sh --prefix="$BOOST_ROOT"
 
           ./b2 -j${{ steps.make-jobs.outputs.count }} install \
-            --prefix=/mingw64/boost-1.83 \
+            --prefix="$BOOST_ROOT" \
             address-model=64 \
             variant=release \
             link=static \
@@ -118,12 +130,20 @@ jobs:
             --with-system \
             --with-atomic
 
+      - name: verify Boost 1.83 install
+        run: |
+          test -f "$BOOST_ROOT/include/boost/version.hpp"
+          test -d "$BOOST_ROOT/lib"
+          ls "$BOOST_ROOT"/lib/libboost_system-*.a
+          ls "$BOOST_ROOT"/lib/libboost_filesystem-*.a
+
       - name: save Boost 1.83
         if: steps.cache-boost.outputs.cache-hit != 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
-          path: C:\msys64\mingw64\boost-1.83
-          key: boost-1.83-${{ runner.os }}-mingw64-static-v1
+          path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
+          key: ${{ steps.cache-boost.outputs.cache-primary-key }}
 
       # Temporary patches to work around Windows build issues.
       # The first patch removes the workaround for a MinGW bug in fmt's posix.h, which breaks builds with newer MinGW versions.
@@ -157,7 +177,20 @@ jobs:
           CXXFLAGS: -DHAVE_EVP_MD_CTX_NEW=1 -Wno-deprecated-declarations -fext-numeric-literals
         run: |
           ${{ env.CCACHE_SETTINGS }}
-          cmake -S . -B build/release -D STATIC=ON -D ARCH="x86-64" -D BUILD_64=ON -D CMAKE_BUILD_TYPE=Release -D BOOST_ROOT=/mingw64/boost-1.83 -D Boost_NO_SYSTEM_PATHS=ON -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake -S . -B build/release \
+            -DSTATIC=ON \
+            -DARCH="x86-64" \
+            -DBUILD_64=ON \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBOOST_ROOT="$BOOST_ROOT" \
+            -DBoost_ROOT="$BOOST_ROOT" \
+            -DBOOST_INCLUDEDIR="$BOOST_ROOT/include" \
+            -DBOOST_LIBRARYDIR="$BOOST_ROOT/lib" \
+            -DBoost_ARCHITECTURE=-x64 \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DBoost_NO_BOOST_CMAKE=ON \
+            -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
           
           cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
 
