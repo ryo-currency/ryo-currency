@@ -1,0 +1,182 @@
+name: ci/windows-msys2
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*'
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
+  pull_request:
+    branches:
+      - '**'
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CCACHE_SETTINGS: |
+    ccache --max-size=150M
+    ccache --set-config=compression=true
+
+jobs:
+  build-windows:
+    name: Windows (MSYS2)
+    runs-on: windows-latest
+    env:
+      # Environment variables for ccache telling it where to store temporary cache files and the cache itself.
+      CCACHE_TEMPDIR: C:\Users\runneradmin\.ccache-temp
+      CCACHE_DIR: C:\Users\runneradmin\.ccache
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-build-
+
+      - name: cache Boost 1.83
+        id: cache-boost
+        uses: actions/cache@v4
+        with:
+          path: C:\msys64\mingw64\boost-1.83
+          key: boost-1.83-${{ runner.os }}-mingw64-static-v1
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          release: true
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            make
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ccache
+            mingw-w64-x86_64-openssl
+            mingw-w64-x86_64-cppzmq
+            mingw-w64-x86_64-zeromq
+            mingw-w64-x86_64-libsodium
+            mingw-w64-x86_64-hidapi
+            mingw-w64-x86_64-protobuf
+            mingw-w64-x86_64-libusb
+            mingw-w64-x86_64-unbound
+            mingw-w64-x86_64-readline
+            mingw-w64-x86_64-icu
+            mingw-w64-x86_64-rust
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-7zip
+            curl
+            git
+            perl
+
+      - name: set make job count
+        id: make-jobs
+        run: echo "count=$(nproc)" >> "$GITHUB_OUTPUT"
+
+      # Windows defaults to Boost 1.90, which breaks this build.
+      # Manually build Boost 1.83 to match the expected dependency version.
+      - name: Build Boost 1.83 manually
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        run: |
+          curl -L --fail --retry 5 --retry-delay 5 \
+            -o boost_1_83_0.tar.gz \
+            https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz
+
+          tar -xzf boost_1_83_0.tar.gz
+          cd boost_1_83_0
+
+          ./bootstrap.sh --prefix=/mingw64/boost-1.83
+
+          ./b2 -j${{ steps.make-jobs.outputs.count }} install \
+            --prefix=/mingw64/boost-1.83 \
+            address-model=64 \
+            variant=release \
+            link=static \
+            runtime-link=static \
+            threading=multi \
+            --with-filesystem \
+            --with-thread \
+            --with-date_time \
+            --with-chrono \
+            --with-regex \
+            --with-serialization \
+            --with-program_options \
+            --with-locale \
+            --with-system \
+            --with-atomic
+
+      # Temporary patches to work around Windows build issues.
+      # The first patch removes the workaround for a MinGW bug in fmt's posix.h, which breaks builds with newer MinGW versions.
+      # The second patch adds crypt32 to line 872 of CMAKELists.txt, set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi) to set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32).
+      # The third patch is from console_handler.h. It changes the return type of WaitForSingleObject from int to DWORD, which is required to compile with GCC 15.
+      - name: patch Windows build compatibility
+        run: |
+          perl -0pi -e 's/#if defined\(__MINGW32__\) \|\| defined\(__CYGWIN__\)\R\/\/ Workaround MinGW bug[^\R]*\R# undef __STRICT_ANSI__\R#endif\R\R//' external/fmt/include/fmt/posix.h
+          if grep -q '__STRICT_ANSI__' external/fmt/include/fmt/posix.h; then
+            echo "Failed to patch fmt MinGW __STRICT_ANSI__ workaround" >&2
+            exit 1
+          fi
+
+          perl -0pi -e 's/set\(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi\)/set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32)/' CMakeLists.txt
+          if ! grep -q 'mswsock;ws2_32;iphlpapi;crypt32' CMakeLists.txt; then
+            echo "Failed to add crypt32 to MinGW link libraries" >&2
+            exit 1
+          fi
+
+          perl -0pi -e 's/int retval = ::WaitForSingleObject\(::GetStdHandle\(STD_INPUT_HANDLE\), 100\);/DWORD retval = ::WaitForSingleObject(::GetStdHandle(STD_INPUT_HANDLE), 100);/' contrib/epee/include/console_handler.h
+          if ! grep -q 'DWORD retval = ::WaitForSingleObject' contrib/epee/include/console_handler.h; then
+            echo "Failed to patch WaitForSingleObject return type for GCC 15" >&2
+            exit 1
+          fi
+
+      - name: build
+        env:
+          CMAKE_GENERATOR: MSYS Makefiles
+          # Flags for conditional OpenSSL compatibility checks.
+          CFLAGS: -DHAVE_EVP_MD_CTX_NEW=1 -Wno-deprecated-declarations
+          CXXFLAGS: -DHAVE_EVP_MD_CTX_NEW=1 -Wno-deprecated-declarations -fext-numeric-literals
+        run: |
+          ${{ env.CCACHE_SETTINGS }}
+          cmake -S . -B build/release -D STATIC=ON -D ARCH="x86-64" -D BUILD_64=ON -D CMAKE_BUILD_TYPE=Release -D BOOST_ROOT=/mingw64/boost-1.83 -D Boost_NO_SYSTEM_PATHS=ON
+          cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
+
+      - name: package
+        id: package
+        run: |
+          mkdir -p dist/bin
+          find build/release/bin -maxdepth 1 -type f \( -name "*.exe" -o -name "*.dll" \) -exec cp {} dist/bin/ \; || true
+
+          if ! find dist/bin -maxdepth 1 -type f -name "*.exe" | grep -q .; then
+            echo "No Windows executables were packaged" >&2
+            find build/release -maxdepth 3 -type f >&2 || true
+            exit 1
+          fi
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          else
+            VERSION="dev-${GITHUB_SHA::7}"
+          fi
+
+          rm -f "ryo-windows-${VERSION}.zip"
+          7z a "ryo-windows-${VERSION}.zip" ./dist/*
+          echo "output=ryo-windows-${VERSION}.zip" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.output }}
+          path: ${{ steps.package.outputs.output }}
+          if-no-files-found: error
