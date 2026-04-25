@@ -1,15 +1,27 @@
+
 // General gradle arguments for root project
 buildscript {    
     repositories {
         google()
         jcenter()
     }
-
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
+        //
+        // https://developer.android.com/studio/releases/gradle-plugin
+        //
+        // Notice that 3.3.0 here is the version of [Android Gradle Plugin]
+        // Accroding to URL above you will need Gradle 5.0 or higher
+        //
+        // If you are using Android Studio, and it is using Gradle's lower 
+        // version, Use the plugin version 3.1.3 ~ 3.2.0 for Gradle 4.4 ~ 4.10
+        classpath 'com.android.tools.build:gradle:3.3.0'
     }
 }
-
+repositories {
+    google()
+    jcenter()
+}
+    
 // Output: Shared library (.so) for Android 
 apply plugin: 'com.android.library'
 
@@ -24,20 +36,17 @@ android {
     splits {
         abi {
             enable true
-            // Be general, as much as possible ...
-            // universalApk true 
-
             // Specify platforms for Application
             reset()
-            include "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
+            include  "arm64-v8a", "armeabi-v7a", "x86_64"
         }
     }
 
     defaultConfig {
         minSdkVersion 21    // Android 5.0+
         targetSdkVersion 25 // Follow Compile SDK
-        versionCode 16      // Follow release count
-        versionName "4.1.0" // Follow Official version
+        versionCode 21      // Follow release count
+        versionName "5.3.0" // Follow Official version
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         
         externalNativeBuild {
@@ -46,7 +55,7 @@ android {
                 arguments "-DBUILD_SHARED_LIBS=true"    // Build shared object
                 arguments "-DFMT_TEST=false"            // Skip test
                 arguments "-DFMT_DOC=false"             // Skip document
-                cppFlags  "-std=c++14"
+                cppFlags  "-std=c++17"
             }
         }
         println("Gradle CMake Plugin: ")
