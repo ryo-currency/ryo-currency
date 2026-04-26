@@ -1,4 +1,4 @@
-name: ci/windows-msys2
+name: ci/build
 
 on:
   push:
@@ -223,6 +223,94 @@ jobs:
           rm -f "ryo-windows-${VERSION}.zip"
           7z a "ryo-windows-${VERSION}.zip" ./dist/*
           echo "output=ryo-windows-${VERSION}.zip" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.output }}
+          path: ${{ steps.package.outputs.output }}
+          if-no-files-found: error
+  
+  build-linux:
+    name: Linux (Ubuntu)
+    runs-on: ubuntu-22.04
+
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+    
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-build-
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            ca-certificates \
+            ccache \
+            cmake \
+            cppzmq-dev \
+            curl \
+            git \
+            graphviz \
+            libboost-all-dev \
+            libexpat1-dev \
+            libhidapi-dev \
+            libldns-dev \
+            liblzma-dev \
+            libminiupnpc-dev \
+            libpgm-dev \
+            libreadline-dev \
+            libsodium-dev \
+            libssl-dev \
+            libunbound-dev \
+            libunwind-dev \
+            libusb-1.0-0-dev \
+            libzmq3-dev \
+            pkg-config \
+            zlib1g-dev
+
+      - name: set make job count
+        id: make-jobs
+        run: echo "count=$(nproc)" >> "$GITHUB_OUTPUT"
+
+      - name: build
+        env:
+          CMAKE_GENERATOR: Unix Makefiles
+          CFLAGS: -Wno-deprecated-declarations
+          CXXFLAGS: -Wno-deprecated-declarations -fext-numeric-literals
+        run: |
+          ${{ env.CCACHE_SETTINGS }}
+
+          cmake -S . -B build/release \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DBUILD_DOCUMENTATION=OFF
+
+          cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
+
+      - name: package
+        id: package
+        run: |
+          mkdir -p dist
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          else
+            VERSION="dev-${GITHUB_SHA::7}"
+          fi
+
+          tar -C build/release -czf "ryo-linux-${VERSION}.tar.gz" bin
+          echo "output=ryo-linux-${VERSION}.tar.gz" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@v4
         with:
