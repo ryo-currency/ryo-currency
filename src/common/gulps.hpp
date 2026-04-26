@@ -55,8 +55,8 @@
 #include <atomic>
 #include "thdq.hpp"
 #include "string.hpp"
-#include <fmt/format.h>
-#include <fmt/chrono.h>
+#include "fmt/format.h"
+#include "fmt/chrono.h"
 #include <boost/mpl/contains.hpp>
 #include <boost/algorithm/string.hpp>
 #include "../cryptonote_config.h"
