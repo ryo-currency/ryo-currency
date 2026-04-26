@@ -323,77 +323,90 @@ jobs:
     runs-on: macos-latest
 
     env:
-      CCACHE_DIR: ${{github.workspace}}/.ccache
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
     
     steps:
-    - uses: actions/checkout@v5
-      with:
-        submodules: recursive
-    - uses: actions/cache@v4
-      with:
-        path: ${{env.CCACHE_DIR}}
-        key: ccache-${{runner.os}}-build-${{github.sha}}
-        restore-keys: |
-          ccache-${{runner.os}}-build-
-    - name: install dependencies
-      run: |
-        brew update
-        brew install \
-          boost\
-          ccache \
-          cmake \
-          expat \
-          hidapi \
-          libpgm \
-          libsodium \
-          miniupnpc \
-          openssl@3 \
-          pkg-config \
-          protobuf \
-          readline \
-          unbound \
-          xz \
-          zeromq
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
-    - name: set make job count
-      id: make-jobs
-      run: echo "count=$(syst1 -n hw.logicalcpu)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-build-
 
-    - name: build
-      env:
-        CMAKE_GENERATOR: Unix Makefiles
-        CFLAGS: -Wno-deprecated-declarations
-        OPENSSL_ROOT_DIR: /opt/homebrew/opt/opnss1@3
+      - name: install dependencies
+        run: |
+          brew update
+          brew install \
+            boost \
+            ccache \
+            cmake \
+            cppzmq \
+            expat \
+            hidapi \
+            libpgm \
+            libsodium \
+            miniupnpc \
+            openssl@3 \
+            pkg-config \
+            protobuf \
+            readline \
+            unbound \
+            xz \
+            zeromq
 
-      run: |
-        ${{env.CCACHE_SETTINGS}}
+      - name: set Homebrew prefixes
+        id: brew-prefixes
+        run: |
+          echo "boost_prefix=$(brew --prefix boost)" >> "$GITHUB_OUTPUT"
+          echo "openssl_prefix=$(brew --prefix openssl@3)" >> "$GITHUB_OUTPUT"
 
-        cmake -S . -B build/release \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-          -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT_DIR" \
-          -DBUILD_DOCUMENTATION=OFF \
-          -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-        
-        cmake --build build/release -j${{steps.make-jobs.outputs.count}}
-        
-    - name: package
-      id: package
-      run: |
-        if [["${GITHUB_REF_TYPE}"="tag"]]; then
-          VERSION="${GITHUB_REF_NAME}"
-        else
-          VERSION="dev-${GITHUB_SHA::7}"
-        fi
+      - name: set make job count
+        id: make-jobs
+        run: echo "count=$(sysctl -n hw.logicalcpu)" >> "$GITHUB_OUTPUT"
 
-        tar -C build/release -czf "ryo-macos-${VERSION}.tar.gz" bin
-        echo "output=ryo-macos-${VERSION}.tar.gz" >> "$GITHUB_OUTPUT"
+      - name: build
+        env:
+          BOOST_PREFIX: ${{ steps.brew-prefixes.outputs.boost_prefix }}
+          CMAKE_GENERATOR: Unix Makefiles
+          CFLAGS: -Wno-deprecated-declarations
+          CXXFLAGS: -Wno-deprecated-declarations -fext-numeric-literals
+          OPENSSL_ROOT_DIR: ${{ steps.brew-prefixes.outputs.openssl_prefix }}
+        run: |
+          ${{ env.CCACHE_SETTINGS }}
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ${{steps.package.outputs.outputs}}
-        path: ${{steps.package.outputs.outputs}}
-        if-no-files-found: error
+          cmake -S . -B build/release \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT_DIR" \
+            -DBOOST_ROOT="$BOOST_PREFIX" \
+            -DBOOST_INCLUDEDIR="$BOOST_PREFIX/include" \
+            -DBOOST_LIBRARYDIR="$BOOST_PREFIX/lib" \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DBoost_NO_BOOST_CMAKE=ON \
+            -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
-      
+          cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
+
+      - name: package
+        id: package
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          else
+            VERSION="dev-${GITHUB_SHA::7}"
+          fi
+
+          tar -C build/release -czf "ryo-macos-${VERSION}.tar.gz" bin
+          echo "output=ryo-macos-${VERSION}.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.package.outputs.output }}
+          path: ${{ steps.package.outputs.output }}
+          if-no-files-found: error
