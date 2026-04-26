@@ -373,7 +373,7 @@ jobs:
           BOOST_PREFIX: ${{ steps.brew-prefixes.outputs.boost_prefix }}
           CMAKE_GENERATOR: Unix Makefiles
           CFLAGS: -Wno-deprecated-declarations
-          CXXFLAGS: -Wno-deprecated-declarations -fext-numeric-literals
+          CXXFLAGS: -Wno-deprecated-declarations
           OPENSSL_ROOT_DIR: ${{ steps.brew-prefixes.outputs.openssl_prefix }}
         run: |
           ${{ env.CCACHE_SETTINGS }}
