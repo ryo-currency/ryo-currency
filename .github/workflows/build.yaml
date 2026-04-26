@@ -161,7 +161,7 @@ jobs:
           path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
           key: ${{ steps.cache-boost.outputs.cache-primary-key }}
 
-      # Temporary patches to work around Windows build issues.
+      # Patches to work around Windows build issues.
       # The first patch adds crypt32 to line 872 of CMAKELists.txt, set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi) to set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32).
       # The second patch is from console_handler.h. It changes the return type of WaitForSingleObject from int to DWORD, which is required to compile with GCC 15.
       - name: patch Windows build compatibility
