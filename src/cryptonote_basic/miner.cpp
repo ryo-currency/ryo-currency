@@ -430,7 +430,7 @@ void miner::on_synchronized()
 void miner::pause()
 {
 	CRITICAL_REGION_LOCAL(m_miners_count_lock);
-	GULPSF_LOG_L1("miner::pause: {} -> {}", m_pausers_count , (m_pausers_count + 1));
+	GULPSF_LOG_L1("miner::pause: {} -> {}", m_pausers_count.load() , (m_pausers_count + 1));
 	++m_pausers_count;
 	if(m_pausers_count == 1 && is_mining())
 		GULPS_LOG_L1("MINING PAUSED");
@@ -439,7 +439,7 @@ void miner::pause()
 void miner::resume()
 {
 	CRITICAL_REGION_LOCAL(m_miners_count_lock);
-	GULPSF_LOG_L1("miner::resume: {} -> {}", m_pausers_count , (m_pausers_count - 1));
+	GULPSF_LOG_L1("miner::resume: {} -> {}", m_pausers_count.load() , (m_pausers_count - 1));
 	--m_pausers_count;
 	if(m_pausers_count < 0)
 	{
@@ -711,7 +711,7 @@ bool miner::background_worker_thread()
 				// fall below zero because all the time functions aggregate across all processors.
 				// I'm just hard limiting to 5 millis min sleep here, other options?
 				m_miner_extra_sleep = std::max(new_miner_extra_sleep, (int64_t)5);
-				GULPSF_LOG_L1("m_miner_extra_sleep {}", m_miner_extra_sleep);
+				GULPSF_LOG_L1("m_miner_extra_sleep {}", m_miner_extra_sleep.load());
 			}
 
 			prev_total_time = current_total_time;
