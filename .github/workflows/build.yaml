@@ -361,7 +361,7 @@ jobs:
 
           missing_packages=()
           for package in "${packages[@]}"; do
-            if brew list --formula "$package"; then
+            if brew list --formula "$package" >/dev/null 2>&1; then
               echo "$package is already installed; skipping"
             else
               missing_packages+=("$package")
