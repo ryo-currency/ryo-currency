@@ -316,3 +316,84 @@ jobs:
           name: ${{ steps.package.outputs.output }}
           path: ${{ steps.package.outputs.output }}
           if-no-files-found: error
+
+
+  build-macos:
+    name: macOS
+    runs-on: macos-latest
+
+    env:
+      CCACHE_DIR: ${{github.workspace}}/.ccache
+    
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        submodules: recursive
+    - uses: actions/cache@v4
+      with:
+        path: ${{env.CCACHE_DIR}}
+        key: ccache-${{runner.os}}-build-${{github.sha}}
+        restore-keys: |
+          ccache-${{runner.os}}-build-
+    - name: install dependencies
+      run: |
+        brew update
+        brew install \
+          boost\
+          ccache \
+          cmake \
+          expat \
+          hidapi \
+          libpgm \
+          libsodium \
+          miniupnpc \
+          openss1@3 \
+          pkg-config \
+          protobuf \
+          readline \
+          unbound \
+          xz \
+          zeromq
+
+    - name: set make job count
+      id: make-jobs
+      run: echo "count=$(syst1 -n hw.logicalcpu)" >> "$GITHUB_OUTPUT"
+
+    - name: build
+      env:
+        CMAKE_GENERATOR: Unix Makefiles
+        CFLAGS: -Wno-deprecated-declarations
+        OPENSSL_ROOT_DIR: /opt/homebrew/opt/opnss1@3
+
+      run: |
+        ${{env.CCACHE_SETTINGS}}
+
+        cmake -S . -B build/release \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT_DIR" \
+          -DBUILD_DOCUMENTATION=OFF \
+          -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+        
+        cmake --build build/release -j${{steps.make-jobs.outputs.count}}
+        
+    - name: package
+      id: package
+      run: |
+        if [["${GITHUB_REF_TYPE}"="tag"]]; then
+          VERSION="${GITHUB_REF_NAME}"
+        else
+          VERSION="dev-${GITHUB_SHA::7}"
+        fi
+
+        tar -C build/release -czf "ryo-macos-${VERSION}.tar.gz" bin
+        echo "output=ryo-macos-${VERSION}.tar.gz" >> "$GITHUB_OUTPUT"
+
+    - uses: action/upload-artifact@v4
+      with:
+        name: ${{steps.package.outputs.outputs}}
+        path: ${{steps.package.outputs.outputs}}
+        if-no-files-found: error
+
+      
