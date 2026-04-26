@@ -257,7 +257,6 @@ jobs:
             ca-certificates \
             ccache \
             cmake \
-            cppzmq-dev \
             curl \
             git \
             graphviz \
