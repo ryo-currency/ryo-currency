@@ -390,7 +390,7 @@ jobs:
         tar -C build/release -czf "ryo-macos-${VERSION}.tar.gz" bin
         echo "output=ryo-macos-${VERSION}.tar.gz" >> "$GITHUB_OUTPUT"
 
-    - uses: action/upload-artifact@v4
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{steps.package.outputs.outputs}}
         path: ${{steps.package.outputs.outputs}}
