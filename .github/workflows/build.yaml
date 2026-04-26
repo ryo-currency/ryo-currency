@@ -347,7 +347,7 @@ jobs:
           libpgm \
           libsodium \
           miniupnpc \
-          openss1@3 \
+          openssl@3 \
           pkg-config \
           protobuf \
           readline \
