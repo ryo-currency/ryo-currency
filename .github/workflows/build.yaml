@@ -42,7 +42,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ runner.os }}-build-${{ github.sha }}
@@ -89,7 +89,7 @@ jobs:
 
       - name: restore Boost 1.83
         id: cache-boost
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
           key: ${{ steps.boost-cache-key.outputs.key }}
@@ -156,7 +156,7 @@ jobs:
       - name: save Boost 1.83
         if: steps.cache-boost.outputs.cache-hit != 'true'
         continue-on-error: true
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
           key: ${{ steps.cache-boost.outputs.cache-primary-key }}
@@ -224,7 +224,7 @@ jobs:
           7z a "ryo-windows-${VERSION}.zip" ./dist/*
           echo "output=ryo-windows-${VERSION}.zip" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.package.outputs.output }}
           path: ${{ steps.package.outputs.output }}
@@ -242,7 +242,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ runner.os }}-build-${{ github.sha }}
@@ -311,7 +311,7 @@ jobs:
           tar -C build/release -czf "ryo-linux-${VERSION}.tar.gz" bin
           echo "output=ryo-linux-${VERSION}.tar.gz" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.package.outputs.output }}
           path: ${{ steps.package.outputs.output }}
@@ -331,7 +331,7 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ccache-${{ runner.os }}-build-${{ github.sha }}
@@ -341,22 +341,38 @@ jobs:
       - name: install dependencies
         run: |
           brew update
-          brew install \
-            ccache \
-            cmake \
-            cppzmq \
-            expat \
-            hidapi \
-            libpgm \
-            libsodium \
-            miniupnpc \
-            openssl@3 \
-            pkg-config \
-            protobuf \
-            readline \
-            unbound \
-            xz \
+          packages=(
+            ccache
+            cmake
+            cppzmq
+            expat
+            hidapi
+            libpgm
+            libsodium
+            miniupnpc
+            openssl@3
+            pkgconf
+            protobuf
+            readline
+            unbound
+            xz
             zeromq
+          )
+
+          missing_packages=()
+          for package in "${packages[@]}"; do
+            if brew list --formula "$package"; then
+              echo "$package is already installed; skipping"
+            else
+              missing_packages+=("$package")
+            fi
+          done
+
+          if ((${#missing_packages[@]})); then
+            brew install "${missing_packages[@]}"
+          else
+            echo "All Homebrew dependencies are already installed"
+          fi
 
       - name: set make job count
         id: make-jobs
@@ -372,7 +388,7 @@ jobs:
 
       - name: restore Boost 1.83
         id: cache-boost
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{ env.BOOST_PREFIX }}
           key: ${{ steps.boost-cache-key.outputs.key }}
@@ -418,7 +434,7 @@ jobs:
       - name: save Boost 1.83
         if: steps.cache-boost.outputs.cache-hit != 'true'
         continue-on-error: true
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ env.BOOST_PREFIX }}
           key: ${{ steps.cache-boost.outputs.cache-primary-key }}
@@ -464,7 +480,7 @@ jobs:
           tar -C build/release -czf "ryo-macos-${VERSION}.tar.gz" bin
           echo "output=ryo-macos-${VERSION}.tar.gz" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.package.outputs.output }}
           path: ${{ steps.package.outputs.output }}
