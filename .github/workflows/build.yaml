@@ -161,6 +161,7 @@ jobs:
           path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
           key: ${{ steps.cache-boost.outputs.cache-primary-key }}
 
+      
       - name: build
         env:
           CMAKE_GENERATOR: MSYS Makefiles
@@ -276,11 +277,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DSTATIC=ON \
-            -DSTACK_TRACE=OFF \
-            -DOPENSSL_USE_STATIC_LIBS=ON \
-            -DBoost_USE_STATIC_LIBS=ON \
-            -DBUILD_DOCUMENTATION=OFF 
+            -DBUILD_DOCUMENTATION=OFF
 
           cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
 
