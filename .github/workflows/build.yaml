@@ -280,7 +280,6 @@ jobs:
             -DSTACK_TRACE=OFF \
             -DOPENSSL_USE_STATIC_LIBS=ON \
             -DBoost_USE_STATIC_LIBS=ON \
-            -DBoost_USE_STATIC_RUNTIME=ON \
             -DBUILD_DOCUMENTATION=OFF 
 
           cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
