@@ -161,23 +161,6 @@ jobs:
           path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
           key: ${{ steps.cache-boost.outputs.cache-primary-key }}
 
-      # Patches to work around Windows build issues.
-      # The first patch adds crypt32 to line 872 of CMAKELists.txt, set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi) to set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32).
-      # The second patch is from console_handler.h. It changes the return type of WaitForSingleObject from int to DWORD, which is required to compile with GCC 15.
-      - name: patch Windows build compatibility
-        run: |
-          perl -0pi -e 's/set\(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi\)/set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32)/' CMakeLists.txt
-          if ! grep -q 'mswsock;ws2_32;iphlpapi;crypt32' CMakeLists.txt; then
-            echo "Failed to add crypt32 to MinGW link libraries" >&2
-            exit 1
-          fi
-
-          perl -0pi -e 's/int retval = ::WaitForSingleObject\(::GetStdHandle\(STD_INPUT_HANDLE\), 100\);/DWORD retval = ::WaitForSingleObject(::GetStdHandle(STD_INPUT_HANDLE), 100);/' contrib/epee/include/console_handler.h
-          if ! grep -q 'DWORD retval = ::WaitForSingleObject' contrib/epee/include/console_handler.h; then
-            echo "Failed to patch WaitForSingleObject return type for GCC 15" >&2
-            exit 1
-          fi
-
       - name: build
         env:
           CMAKE_GENERATOR: MSYS Makefiles

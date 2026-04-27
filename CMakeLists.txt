@@ -872,7 +872,7 @@ endif()
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 if(MINGW)
-  set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi)
+  set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32)
   set(ICU_LIBRARIES ${Boost_LOCALE_LIBRARY} icuio icuin icuuc icudt icutu iconv)
 elseif(APPLE OR OPENBSD OR ANDROID)
   set(EXTRA_LIBRARIES "")
