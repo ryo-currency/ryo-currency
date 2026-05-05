@@ -1009,6 +1009,46 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 						// this can happen if a connection was sicced onto a late span, if it did not have those blocks,
 						// since we don't know that at the sic time
 						GULPS_ERROR( context_str, " Got block with unknown parent which was not requested - querying block hashes");
+						// Checks if we've already dropped the connection
+						bool dropped_span_connection = false;
+						/*
+						* found span connection checks if we have found the connection
+						* to the peer that gave the bad span and if it has found it
+						* and we've tried asking the peer again for a valid span
+						* then we drop the peer, flushing its span...
+						*/
+						const std::string processing_context_str = context_str;
+						const bool found_span_connection = m_p2p->for_connection(
+							span_connection_id,
+							[this, &dropped_span_connection, &processing_context_str](cryptonote_connection_context &span_context,
+								   nodetool::peerid_type,
+								   uint32_t) -> bool {
+								if(span_context.m_unknown_parent_span_retries) // If we decide later to give or attempts we can change this to > num
+								{
+									GULPSF_LOG_ERROR(
+										"{} query unsusesfull attempts {}, peer disconnected",
+										processing_context_str,
+										span_context.m_unknown_parent_span_retries);
+									drop_connection(span_context, false, true);
+									dropped_span_connection = true;
+								}
+								else
+								{
+									++span_context.m_unknown_parent_span_retries;
+								}
+								return true;
+							});
+
+						if(!found_span_connection)
+						{
+							GULPS_ERROR(context_str, "missing span connection ID");
+						}
+
+						if(dropped_span_connection)
+						{
+							return 1;
+						}
+
 						m_block_queue.remove_spans(span_connection_id, start_height);
 						context.m_needed_objects.clear();
 						context.m_last_response_height = 0;
@@ -1019,6 +1059,15 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 					GULPS_INFO(" parent was requested, we'll get back to it");
 					break;
 				}
+				// Reset the counter if we found the connecting span
+				m_p2p->for_connection(
+					span_connection_id,
+					[](cryptonote_connection_context &span_context,
+					   nodetool::peerid_type,
+					   uint32_t) -> bool {
+						span_context.m_unknown_parent_span_retries = 0;
+						return true;
+					});
 
 				const boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 				context.m_last_request_time = start;
