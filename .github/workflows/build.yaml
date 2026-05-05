@@ -161,7 +161,7 @@ jobs:
           path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
           key: ${{ steps.cache-boost.outputs.cache-primary-key }}
 
-      
+
       - name: build
         env:
           CMAKE_GENERATOR: MSYS Makefiles
@@ -183,7 +183,7 @@ jobs:
             -DBoost_NO_BOOST_CMAKE=ON \
             -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-          
+
           cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
 
       - name: package
@@ -213,14 +213,14 @@ jobs:
           name: ${{ steps.package.outputs.output }}
           path: ${{ steps.package.outputs.output }}
           if-no-files-found: error
-  
+
   build-linux:
     name: Linux (Ubuntu)
     runs-on: ubuntu-22.04
 
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
-    
+
     steps:
       - uses: actions/checkout@v5
         with:
@@ -277,7 +277,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DBUILD_DOCUMENTATION=OFF
+            -DBUILD_DOCUMENTATION=OFF \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
           cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
 
@@ -309,7 +310,7 @@ jobs:
     env:
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       BOOST_PREFIX: ${{ github.workspace }}/.boost-1.83
-    
+
     steps:
       - uses: actions/checkout@v5
         with:
@@ -469,10 +470,10 @@ jobs:
           name: ${{ steps.package.outputs.output }}
           path: ${{ steps.package.outputs.output }}
           if-no-files-found: error
-    
+
   publish-release:
     name: Publish Release
-    needs: 
+    needs:
       - build-linux
       - build-macos
       - build-windows
@@ -492,4 +493,3 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: release-artifacts/**/*
-      
