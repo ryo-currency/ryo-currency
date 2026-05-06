@@ -726,7 +726,7 @@ class http_simple_client_template : public i_target_handler
 				return true;
 			case http_chunked_state_undefined:
 			default:
-				GULPSF_LOG_ERROR("http_stream_filter::handle_chunked(): Wrong state{}", m_chunked_state);
+				GULPSF_LOG_ERROR("http_stream_filter::handle_chunked(): Wrong state{}", static_cast<int>(m_chunked_state));
 				return false;
 			}
 		}

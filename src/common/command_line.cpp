@@ -52,7 +52,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <unordered_set>
 
-#if defined(WIN32)
+#if defined(_WIN32)
 #include <windows.h>
 #include <shellapi.h>
 #endif
@@ -95,7 +95,7 @@ bool is_no(const std::string &str)
 	return false;
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 bool get_windows_args(std::vector<char*>& argptrs)
 {
 	int nArgs = 0;

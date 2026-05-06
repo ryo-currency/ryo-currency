@@ -884,7 +884,7 @@ bool node_server<t_payload_net_handler>::try_to_connect_and_handshake_with_new_p
 		m_current_number_of_out_peers--; // atomic variable, update time = 1s
 		return false;
 	}
-	GULPSF_LOG_L1("Connecting to {}(peer_type={}, last_seen: {})...", na.str() , peer_type , (last_seen_stamp ? epee::misc_utils::get_time_interval_string(time(NULL) - last_seen_stamp) : "never")
+	GULPSF_LOG_L1("Connecting to {}(peer_type={}, last_seen: {})...", na.str() , static_cast<int>(peer_type) , (last_seen_stamp ? epee::misc_utils::get_time_interval_string(time(NULL) - last_seen_stamp) : "never")
 							);
 
 	GULPS_CHECK_AND_ASSERT_MES(na.get_type_id() == epee::net_utils::ipv4_network_address::ID, false,
@@ -1046,7 +1046,7 @@ bool node_server<t_payload_net_handler>::make_new_connection_from_anchor_peerlis
 		}
 
 		GULPSF_LOG_L1("Selected peer: {} {}[peer_type={}] first_seen: {}", peerid_to_string(pe.id) , pe.adr.str()
-								 , anchor
+								 , static_cast<int>(anchor)
 								 , epee::misc_utils::get_time_interval_string(time(NULL) - pe.first_seen));
 
 		if(!try_to_connect_and_handshake_with_new_peer(pe.adr, false, 0, anchor, pe.first_seen))
@@ -1122,7 +1122,7 @@ bool node_server<t_payload_net_handler>::make_new_connection_from_peerlist(bool 
 			continue;
 
 		GULPSF_LOG_L1("Selected peer: {} {}[peer_list={}] last_seen: {}", peerid_to_string(pe.id) , pe.adr.str()
-								 , (use_white_list ? white : gray)
+								 , static_cast<int>(use_white_list ? white : gray)
 								 , (pe.last_seen ? epee::misc_utils::get_time_interval_string(time(NULL) - pe.last_seen) : "never"));
 
 		if(!try_to_connect_and_handshake_with_new_peer(pe.adr, false, pe.last_seen, use_white_list ? white : gray))
