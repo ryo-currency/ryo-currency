@@ -16,7 +16,7 @@ literal text, it can be escaped by doubling: ``{{`` and ``}}``.
 The grammar for a replacement field is as follows:
 
 .. productionlist:: sf
-   replacement_field: "{" [`arg_id`] [":" `format_spec`] "}"
+   replacement_field: "{" [`arg_id`] [":" (`format_spec` | `chrono_format_spec`)] "}"
    arg_id: `integer` | `identifier`
    integer: `digit`+
    digit: "0"..."9"
@@ -27,8 +27,8 @@ The grammar for a replacement field is as follows:
 In less formal terms, the replacement field can start with an *arg_id*
 that specifies the argument whose value is to be formatted and inserted into
 the output instead of the replacement field.
-The *arg_id* is optionally followed by a *format_spec*, which is preceded
-by a colon ``':'``.  These specify a non-default format for the replacement value.
+The *arg_id* is optionally followed by a *format_spec*, which is preceded by a
+colon ``':'``.  These specify a non-default format for the replacement value.
 
 See also the :ref:`formatspec` section.
 
@@ -75,20 +75,20 @@ although some of the formatting options are only supported by the numeric types.
 The general form of a *standard format specifier* is:
 
 .. productionlist:: sf
-   format_spec: [[`fill`]`align`][`sign`]["#"]["0"][`width`]["." `precision`][`type`]
+   format_spec: [[`fill`]`align`][`sign`]["#"]["0"][`width`]["." `precision`]["L"][`type`]
    fill: <a character other than '{' or '}'>
-   align: "<" | ">" | "=" | "^"
+   align: "<" | ">" | "^"
    sign: "+" | "-" | " "
-   width: `integer` | "{" `arg_id` "}"
-   precision: `integer` | "{" `arg_id` "}"
-   type: `int_type` | "a" | "A" | "c" | "e" | "E" | "f" | "F" | "g" | "G" | "p" | "s"
-   int_type: "b" | "B" | "d" | "n" | "o" | "x" | "X"
+   width: `integer` | "{" [`arg_id`] "}"
+   precision: `integer` | "{" [`arg_id`] "}"
+   type: "a" | "A" | "b" | "B" | "c" | "d" | "e" | "E" | "f" | "F" | "g" | "G" |
+       : "o" | "p" | "s" | "x" | "X"
 
-The *fill* character can be any character other than '{' or '}'.  The presence
-of a fill character is signaled by the character following it, which must be
-one of the alignment options.  If the second character of *format_spec* is not
-a valid alignment option, then it is assumed that both the fill character and
-the alignment option are absent.
+The *fill* character can be any Unicode code point other than ``'{'`` or
+``'}'``. The presence of a fill character is signaled by the character following
+it, which must be one of the alignment options. If the second character of
+*format_spec* is not a valid alignment option, then it is assumed that both the
+fill character and the alignment option are absent.
 
 The meaning of the various alignment options is as follows:
 
@@ -101,11 +101,6 @@ The meaning of the various alignment options is as follows:
 | ``'>'`` | Forces the field to be right-aligned within the          |
 |         | available space (this is the default for numbers).       |
 +---------+----------------------------------------------------------+
-| ``'='`` | Forces the padding to be placed after the sign (if any)  |
-|         | but before the digits.  This is used for printing fields |
-|         | in the form '+000000120'. This alignment option is only  |
-|         | valid for numeric types.                                 |
-+---------+----------------------------------------------------------+
 | ``'^'`` | Forces the field to be centered within the available     |
 |         | space.                                                   |
 +---------+----------------------------------------------------------+
@@ -114,21 +109,21 @@ Note that unless a minimum field width is defined, the field width will always
 be the same size as the data to fill it, so that the alignment option has no
 meaning in this case.
 
-The *sign* option is only valid for number types, and can be one of the
-following:
+The *sign* option is only valid for floating point and signed integer types,
+and can be one of the following:
 
-+---------+----------------------------------------------------------+
-| Option  | Meaning                                                  |
-+=========+==========================================================+
-| ``'+'`` | indicates that a sign should be used for both            |
-|         | positive as well as negative numbers.                    |
-+---------+----------------------------------------------------------+
-| ``'-'`` | indicates that a sign should be used only for negative   |
-|         | numbers (this is the default behavior).                  |
-+---------+----------------------------------------------------------+
-| space   | indicates that a leading space should be used on         |
-|         | positive numbers, and a minus sign on negative numbers.  |
-+---------+----------------------------------------------------------+
++---------+------------------------------------------------------------+
+| Option  | Meaning                                                    |
++=========+============================================================+
+| ``'+'`` | indicates that a sign should be used for both              |
+|         | nonnegative as well as negative numbers.                   |
++---------+------------------------------------------------------------+
+| ``'-'`` | indicates that a sign should be used only for negative     |
+|         | numbers (this is the default behavior).                    |
++---------+------------------------------------------------------------+
+| space   | indicates that a leading space should be used on           |
+|         | nonnegative numbers, and a minus sign on negative numbers. |
++---------+------------------------------------------------------------+
 
 The ``'#'`` option causes the "alternate form" to be used for the
 conversion.  The alternate form is defined differently for different
@@ -148,15 +143,17 @@ conversions, trailing zeros are not removed from the result.
 .. ifconfig:: False
 
    The ``','`` option signals the use of a comma for a thousands separator.
-   For a locale aware separator, use the ``'n'`` integer presentation type
+   For a locale aware separator, use the ``'L'`` integer presentation type
    instead.
 
 *width* is a decimal integer defining the minimum field width.  If not
 specified, then the field width will be determined by the content.
 
-Preceding the *width* field by a zero (``'0'``) character enables
-sign-aware zero-padding for numeric types.  This is equivalent to a *fill*
-character of ``'0'`` with an *alignment* type of ``'='``.
+Preceding the *width* field by a zero (``'0'``) character enables sign-aware
+zero-padding for numeric types. It forces the padding to be placed after the
+sign or base (if any) but before the digits. This is used for printing fields in
+the form '+000000120'. This option is only valid for numeric types and it has no
+effect on formatting of infinity and NaN.
 
 The *precision* is a decimal number indicating how many digits should be
 displayed after the decimal point for a floating-point value formatted with
@@ -164,7 +161,11 @@ displayed after the decimal point for a floating-point value formatted with
 value formatted with ``'g'`` or ``'G'``.  For non-number types the field
 indicates the maximum field size - in other words, how many characters will be
 used from the field content. The *precision* is not allowed for integer,
-character, Boolean, and pointer values.
+character, Boolean, and pointer values. Note that a C string must be
+null-terminated even if precision is specified.
+
+The ``'L'`` option uses the current locale setting to insert the appropriate
+number separator characters. This option is only valid for numeric types.
 
 Finally, the *type* determines how the data should be presented.
 
@@ -203,6 +204,8 @@ The available integer presentation types are:
 |         | ``'#'`` option with this type adds the prefix ``"0B"``   |
 |         | to the output value.                                     |
 +---------+----------------------------------------------------------+
+| ``'c'`` | Character format. Outputs the number as a character.     |
++---------+----------------------------------------------------------+
 | ``'d'`` | Decimal integer. Outputs the number in base 10.          |
 +---------+----------------------------------------------------------+
 | ``'o'`` | Octal format. Outputs the number in base 8.              |
@@ -216,10 +219,6 @@ The available integer presentation types are:
 |         | upper-case letters for the digits above 9. Using the     |
 |         | ``'#'`` option with this type adds the prefix ``"0X"``   |
 |         | to the output value.                                     |
-+---------+----------------------------------------------------------+
-| ``'n'`` | Number. This is the same as ``'d'``, except that it uses |
-|         | the current locale setting to insert the appropriate     |
-|         | number separator characters.                             |
 +---------+----------------------------------------------------------+
 | none    | The same as ``'d'``.                                     |
 +---------+----------------------------------------------------------+
@@ -244,7 +243,7 @@ The available presentation types for floating-point values are:
 |         | notation using the letter 'e' to indicate the exponent.  |
 +---------+----------------------------------------------------------+
 | ``'E'`` | Exponent notation. Same as ``'e'`` except it uses an     |
-|         | upper-case 'E' as the separator character.               |
+|         | upper-case ``'E'`` as the separator character.           |
 +---------+----------------------------------------------------------+
 | ``'f'`` | Fixed point. Displays the number as a fixed-point        |
 |         | number.                                                  |
@@ -264,10 +263,9 @@ The available presentation types for floating-point values are:
 |         | ``'E'`` if the number gets too large. The                |
 |         | representations of infinity and NaN are uppercased, too. |
 +---------+----------------------------------------------------------+
-| none    | The same as ``'g'``.                                     |
+| none    | Similar to ``'g'``, except that the default precision is |
+|         | as high as needed to represent the particular value.     |
 +---------+----------------------------------------------------------+
-
-Floating-point formatting is locale-dependent.
 
 .. ifconfig:: False
 
@@ -301,9 +299,215 @@ The available presentation types for pointers are:
 | none    | The same as ``'p'``.                                     |
 +---------+----------------------------------------------------------+
 
+.. _chrono-specs:
+
+Chrono Format Specifications
+============================
+
+Format specifications for chrono duration and time point types as well as
+``std::tm`` have the following syntax:
+
+.. productionlist:: sf
+   chrono_format_spec: [[`fill`]`align`][`width`]["." `precision`][`chrono_specs`]
+   chrono_specs: [`chrono_specs`] `conversion_spec` | `chrono_specs` `literal_char`
+   conversion_spec: "%" [`modifier`] `chrono_type`
+   literal_char: <a character other than '{', '}' or '%'>
+   modifier: "E" | "O"
+   chrono_type: "a" | "A" | "b" | "B" | "c" | "C" | "d" | "D" | "e" | "F" |
+              : "g" | "G" | "h" | "H" | "I" | "j" | "m" | "M" | "n" | "p" |
+              : "q" | "Q" | "r" | "R" | "S" | "t" | "T" | "u" | "U" | "V" |
+              : "w" | "W" | "x" | "X" | "y" | "Y" | "z" | "Z" | "%"
+
+Literal chars are copied unchanged to the output. Precision is valid only for
+``std::chrono::duration`` types with a floating-point representation type.
+
+The available presentation types (*chrono_type*) are:
+
++---------+--------------------------------------------------------------------+
+| Type    | Meaning                                                            |
++=========+====================================================================+
+| ``'a'`` | The abbreviated weekday name, e.g. "Sat". If the value does not    |
+|         | contain a valid weekday, an exception of type ``format_error`` is  |
+|         | thrown.                                                            |
++---------+--------------------------------------------------------------------+
+| ``'A'`` | The full weekday name, e.g. "Saturday". If the value does not      |
+|         | contain a valid weekday, an exception of type ``format_error`` is  |
+|         | thrown.                                                            |
++---------+--------------------------------------------------------------------+
+| ``'b'`` | The abbreviated month name, e.g. "Nov". If the value does not      |
+|         | contain a valid month, an exception of type ``format_error`` is    |
+|         | thrown.                                                            |
++---------+--------------------------------------------------------------------+
+| ``'B'`` | The full month name, e.g. "November". If the value does not        |
+|         | contain a valid month, an exception of type ``format_error`` is    |
+|         | thrown.                                                            |
++---------+--------------------------------------------------------------------+
+| ``'c'`` | The date and time representation, e.g. "Sat Nov 12 22:04:00 1955". |
+|         | The modified command ``%Ec`` produces the locale's alternate date  |
+|         | and time representation.                                           |
++---------+--------------------------------------------------------------------+
+| ``'C'`` | The year divided by 100 using floored division, e.g. "55". If the  |
+|         | result is a single decimal digit, it is prefixed with 0.           |
+|         | The modified command ``%EC`` produces the locale's alternative     |
+|         | representation of the century.                                     |
++---------+--------------------------------------------------------------------+
+| ``'d'`` | The day of month as a decimal number. If the result is a single    |
+|         | decimal digit, it is prefixed with 0. The modified command ``%Od`` |
+|         | produces the locale's alternative representation.                  |
++---------+--------------------------------------------------------------------+
+| ``'D'`` | Equivalent to ``%m/%d/%y``, e.g. "11/12/55".                       |
++---------+--------------------------------------------------------------------+
+| ``'e'`` | The day of month as a decimal number. If the result is a single    |
+|         | decimal digit, it is prefixed with a space. The modified command   |
+|         | ``%Oe`` produces the locale's alternative representation.          |
++---------+--------------------------------------------------------------------+
+| ``'F'`` | Equivalent to ``%Y-%m-%d``, e.g. "1955-11-12".                     |
++---------+--------------------------------------------------------------------+
+| ``'g'`` | The last two decimal digits of the ISO week-based year. If the     |
+|         | result is a single digit it is prefixed by 0.                      |
++---------+--------------------------------------------------------------------+
+| ``'G'`` | The ISO week-based year as a decimal number. If the result is less |
+|         | than four digits it is left-padded with 0 to four digits.          |
++---------+--------------------------------------------------------------------+
+| ``'h'`` | Equivalent to ``%b``, e.g. "Nov".                                  |
++---------+--------------------------------------------------------------------+
+| ``'H'`` | The hour (24-hour clock) as a decimal number. If the result is a   |
+|         | single digit, it is prefixed with 0. The modified command ``%OH``  |
+|         | produces the locale's alternative representation.                  |
++---------+--------------------------------------------------------------------+
+| ``'I'`` | The hour (12-hour clock) as a decimal number. If the result is a   |
+|         | single digit, it is prefixed with 0. The modified command ``%OI``  |
+|         | produces the locale's alternative representation.                  |
++---------+--------------------------------------------------------------------+
+| ``'j'`` | If the type being formatted is a specialization of duration, the   |
+|         | decimal number of days without padding. Otherwise, the day of the  |
+|         | year as a decimal number. Jan 1 is 001. If the result is less than |
+|         | three digits, it is left-padded with 0 to three digits.            |
++---------+--------------------------------------------------------------------+
+| ``'m'`` | The month as a decimal number. Jan is 01. If the result is a       |
+|         | single digit, it is prefixed with 0. The modified command ``%Om``  |
+|         | produces the locale's alternative representation.                  |
++---------+--------------------------------------------------------------------+
+| ``'M'`` | The minute as a decimal number. If the result is a single digit,   |
+|         | it is prefixed with 0. The modified command ``%OM`` produces the   |
+|         | locale's alternative representation.                               |
++---------+--------------------------------------------------------------------+
+| ``'n'`` | A new-line character.                                              |
++---------+--------------------------------------------------------------------+
+| ``'p'`` | The AM/PM designations associated with a 12-hour clock.            |
++---------+--------------------------------------------------------------------+
+| ``'q'`` | The duration's unit suffix.                                        |
++---------+--------------------------------------------------------------------+
+| ``'Q'`` | The duration's numeric value (as if extracted via ``.count()``).   |
++---------+--------------------------------------------------------------------+
+| ``'r'`` | The 12-hour clock time, e.g. "10:04:00 PM".                        |
++---------+--------------------------------------------------------------------+
+| ``'R'`` | Equivalent to ``%H:%M``, e.g. "22:04".                             |
++---------+--------------------------------------------------------------------+
+| ``'S'`` | Seconds as a decimal number. If the number of seconds is less than |
+|         | 10, the result is prefixed with 0. If the precision of the input   |
+|         | cannot be exactly represented with seconds, then the format is a   |
+|         | decimal floating-point number with a fixed format and a precision  |
+|         | matching that of the precision of the input (or to a microseconds  |
+|         | precision if the conversion to floating-point decimal seconds      |
+|         | cannot be made within 18 fractional digits). The character for the |
+|         | decimal point is localized according to the locale. The modified   |
+|         | command ``%OS`` produces the locale's alternative representation.  |
++---------+--------------------------------------------------------------------+
+| ``'t'`` | A horizontal-tab character.                                        |
++---------+--------------------------------------------------------------------+
+| ``'T'`` | Equivalent to ``%H:%M:%S``.                                        |
++---------+--------------------------------------------------------------------+
+| ``'u'`` | The ISO weekday as a decimal number (1-7), where Monday is 1. The  |
+|         | modified command ``%Ou`` produces the locale's alternative         |
+|         | representation.                                                    |
++---------+--------------------------------------------------------------------+
+| ``'U'`` | The week number of the year as a decimal number. The first Sunday  |
+|         | of the year is the first day of week 01. Days of the same year     |
+|         | prior to that are in week 00. If the result is a single digit, it  |
+|         | is prefixed with 0. The modified command ``%OU`` produces the      |
+|         | locale's alternative representation.                               |
++---------+--------------------------------------------------------------------+
+| ``'V'`` | The ISO week-based week number as a decimal number. If the result  |
+|         | is a single digit, it is prefixed with 0. The modified command     |
+|         | ``%OV`` produces the locale's alternative representation.          |
++---------+--------------------------------------------------------------------+
+| ``'w'`` | The weekday as a decimal number (0-6), where Sunday is 0.          |
+|         | The modified command ``%Ow`` produces the locale's alternative     |
+|         | representation.                                                    |
++---------+--------------------------------------------------------------------+
+| ``'W'`` | The week number of the year as a decimal number. The first Monday  |
+|         | of the year is the first day of week 01. Days of the same year     |
+|         | prior to that are in week 00. If the result is a single digit, it  |
+|         | is prefixed with 0. The modified command ``%OW`` produces the      |
+|         | locale's alternative representation.                               |
++---------+--------------------------------------------------------------------+
+| ``'x'`` | The date representation, e.g. "11/12/55". The modified command     |
+|         | ``%Ex`` produces the locale's alternate date representation.       |
++---------+--------------------------------------------------------------------+
+| ``'X'`` | The time representation, e.g. "10:04:00". The modified command     |
+|         | ``%EX`` produces the locale's alternate time representation.       |
++---------+--------------------------------------------------------------------+
+| ``'y'`` | The last two decimal digits of the year. If the result is a single |
+|         | digit it is prefixed by 0. The modified command ``%Oy`` produces   |
+|         | the locale's alternative representation. The modified command      |
+|         | ``%Ey`` produces the locale's alternative representation of offset |
+|         | from ``%EC`` (year only).                                          |
++---------+--------------------------------------------------------------------+
+| ``'Y'`` | The year as a decimal number. If the result is less than four      |
+|         | digits it is left-padded with 0 to four digits. The modified       |
+|         | command ``%EY`` produces the locale's alternative full year        |
+|         | representation.                                                    |
++---------+--------------------------------------------------------------------+
+| ``'z'`` | The offset from UTC in the ISO 8601:2004 format. For example -0430 |
+|         | refers to 4 hours 30 minutes behind UTC. If the offset is zero,    |
+|         | +0000 is used. The modified commands ``%Ez`` and ``%Oz`` insert a  |
+|         | ``:`` between the hours and minutes: -04:30. If the offset         |
+|         | information is not available, an exception of type                 |
+|         | ``format_error`` is thrown.                                        |
++---------+--------------------------------------------------------------------+
+| ``'Z'`` | The time zone abbreviation. If the time zone abbreviation is not   |
+|         | available, an exception of type ``format_error`` is thrown.        |
++---------+--------------------------------------------------------------------+
+| ``'%'`` | A % character.                                                     |
++---------+--------------------------------------------------------------------+
+
+Specifiers that have a calendaric component such as ``'d'`` (the day of month)
+are valid only for ``std::tm`` and time points but not durations.
+
+.. range-specs:
+
+Range Format Specifications
+===========================
+
+Format specifications for range types have the following syntax:
+
+.. productionlist:: sf
+   range_format_spec: [":" [`underlying_spec`]]
+
+The `underlying_spec` is parsed based on the formatter of the range's
+reference type.
+
+By default, a range of characters or strings is printed escaped and quoted. But
+if any `underlying_spec` is provided (even if it is empty), then the characters
+or strings are printed according to the provided specification.
+
+Examples::
+
+  fmt::format("{}", std::vector{10, 20, 30});
+  // Result: [10, 20, 30]
+  fmt::format("{::#x}", std::vector{10, 20, 30});
+  // Result: [0xa, 0x14, 0x1e]
+  fmt::format("{}", vector{'h', 'e', 'l', 'l', 'o'});
+  // Result: ['h', 'e', 'l', 'l', 'o']
+  fmt::format("{::}", vector{'h', 'e', 'l', 'l', 'o'});
+  // Result: [h, e, l, l, o]
+  fmt::format("{::d}", vector{'h', 'e', 'l', 'l', 'o'});
+  // Result: [104, 101, 108, 108, 111]
+
 .. _formatexamples:
 
-Format examples
+Format Examples
 ===============
 
 This section contains examples of the format syntax and comparison with
@@ -318,71 +522,93 @@ following examples.
 
 Accessing arguments by position::
 
-   format("{0}, {1}, {2}", 'a', 'b', 'c');
+   fmt::format("{0}, {1}, {2}", 'a', 'b', 'c');
    // Result: "a, b, c"
-   format("{}, {}, {}", 'a', 'b', 'c');
+   fmt::format("{}, {}, {}", 'a', 'b', 'c');
    // Result: "a, b, c"
-   format("{2}, {1}, {0}", 'a', 'b', 'c');
+   fmt::format("{2}, {1}, {0}", 'a', 'b', 'c');
    // Result: "c, b, a"
-   format("{0}{1}{0}", "abra", "cad");  // arguments' indices can be repeated
+   fmt::format("{0}{1}{0}", "abra", "cad");  // arguments' indices can be repeated
    // Result: "abracadabra"
 
 Aligning the text and specifying a width::
 
-   format("{:<30}", "left aligned");
+   fmt::format("{:<30}", "left aligned");
    // Result: "left aligned                  "
-   format("{:>30}", "right aligned");
+   fmt::format("{:>30}", "right aligned");
    // Result: "                 right aligned"
-   format("{:^30}", "centered");
+   fmt::format("{:^30}", "centered");
    // Result: "           centered           "
-   format("{:*^30}", "centered");  // use '*' as a fill char
+   fmt::format("{:*^30}", "centered");  // use '*' as a fill char
    // Result: "***********centered***********"
 
 Dynamic width::
 
-   format("{:<{}}", "left aligned", 30);
+   fmt::format("{:<{}}", "left aligned", 30);
    // Result: "left aligned                  "
 
 Dynamic precision::
 
-   format("{:.{}f}", 3.14, 1);
+   fmt::format("{:.{}f}", 3.14, 1);
    // Result: "3.1"
 
 Replacing ``%+f``, ``%-f``, and ``% f`` and specifying a sign::
 
-   format("{:+f}; {:+f}", 3.14, -3.14);  // show it always
+   fmt::format("{:+f}; {:+f}", 3.14, -3.14);  // show it always
    // Result: "+3.140000; -3.140000"
-   format("{: f}; {: f}", 3.14, -3.14);  // show a space for positive numbers
+   fmt::format("{: f}; {: f}", 3.14, -3.14);  // show a space for positive numbers
    // Result: " 3.140000; -3.140000"
-   format("{:-f}; {:-f}", 3.14, -3.14);  // show only the minus -- same as '{:f}; {:f}'
+   fmt::format("{:-f}; {:-f}", 3.14, -3.14);  // show only the minus -- same as '{:f}; {:f}'
    // Result: "3.140000; -3.140000"
 
 Replacing ``%x`` and ``%o`` and converting the value to different bases::
 
-   format("int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42);
+   fmt::format("int: {0:d};  hex: {0:x};  oct: {0:o}; bin: {0:b}", 42);
    // Result: "int: 42;  hex: 2a;  oct: 52; bin: 101010"
    // with 0x or 0 or 0b as prefix:
-   format("int: {0:d};  hex: {0:#x};  oct: {0:#o};  bin: {0:#b}", 42);
+   fmt::format("int: {0:d};  hex: {0:#x};  oct: {0:#o};  bin: {0:#b}", 42);
    // Result: "int: 42;  hex: 0x2a;  oct: 052;  bin: 0b101010"
 
 Padded hex byte with prefix and always prints both hex characters::
 
-   format("{:#04x}", 0);
+   fmt::format("{:#04x}", 0);
    // Result: "0x00"
 
+Box drawing using Unicode fill::
+
+   fmt::print(
+     "┌{0:─^{2}}┐\n"
+     "│{1: ^{2}}│\n"
+     "└{0:─^{2}}┘\n", "", "Hello, world!", 20);
+
+prints::
+
+   ┌────────────────────┐
+   │   Hello, world!    │
+   └────────────────────┘
+
+Using type-specific formatting::
+
+   #include <fmt/chrono.h>
+
+   auto t = tm();
+   t.tm_year = 2010 - 1900;
+   t.tm_mon = 7;
+   t.tm_mday = 4;
+   t.tm_hour = 12;
+   t.tm_min = 15;
+   t.tm_sec = 58;
+   fmt::print("{:%Y-%m-%d %H:%M:%S}", t);
+   // Prints: 2010-08-04 12:15:58
+
+Using the comma as a thousands separator::
+
+   #include <fmt/format.h>
+
+   auto s = fmt::format(std::locale("en_US.UTF-8"), "{:L}", 1234567890);
+   // s == "1,234,567,890"
+
 .. ifconfig:: False
-
-   Using the comma as a thousands separator::
-
-      format("{:,}", 1234567890);
-      '1,234,567,890'
-
-   Using type-specific formatting::
-
-      >>> import datetime
-      >>> d = datetime.datetime(2010, 7, 4, 12, 15, 58)
-      Format("{:%Y-%m-%d %H:%M:%S}") << d)
-      '2010-07-04 12:15:58'
 
    Nesting arguments and more complex examples::
 
@@ -412,4 +638,3 @@ Padded hex byte with prefix and always prints both hex characters::
           9     9    11  1001
          10     A    12  1010
          11     B    13  1011
-
