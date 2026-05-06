@@ -183,7 +183,7 @@ class async_stdin_reader
 #else
 		while(m_run.load(std::memory_order_relaxed))
 		{
-			int retval = ::WaitForSingleObject(::GetStdHandle(STD_INPUT_HANDLE), 100);
+			DWORD retval = ::WaitForSingleObject(::GetStdHandle(STD_INPUT_HANDLE), 100);
 			switch(retval)
 			{
 			case WAIT_FAILED:

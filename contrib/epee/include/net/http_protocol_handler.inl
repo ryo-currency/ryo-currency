@@ -304,7 +304,7 @@ bool simple_http_connection_handler<t_connection_context>::handle_buff_in(std::s
 		case http_state_connection_close:
 			return false;
 		default:
-			GULPSF_LOG_ERROR("simple_http_connection_handler::handle_char_out: Wrong state: {}", m_state);
+			GULPSF_LOG_ERROR("simple_http_connection_handler::handle_char_out: Wrong state: {}", static_cast<int>(m_state));
 			return false;
 		case http_state_error:
 			GULPS_LOG_ERROR("simple_http_connection_handler::handle_char_out: Error state!!!");
@@ -451,7 +451,7 @@ bool simple_http_connection_handler<t_connection_context>::handle_retriving_quer
 	case http_body_transfer_multipart:
 	case http_body_transfer_undefined:
 	default:
-		GULPSF_LOG_ERROR("simple_http_connection_handler<t_connection_context>::handle_retriving_query_body(): Unexpected m_body_query_type state:{}", m_body_transfer_type);
+		GULPSF_LOG_ERROR("simple_http_connection_handler<t_connection_context>::handle_retriving_query_body(): Unexpected m_body_query_type state:{}", static_cast<int>(m_body_transfer_type));
 		m_state = http_state_error;
 		return false;
 	}
