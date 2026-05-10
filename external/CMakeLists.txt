@@ -80,3 +80,5 @@ endif()
 add_subdirectory(db_drivers)
 # fmt is shipped as subtree
 add_subdirectory(fmt)
+# SQLite3 bundled version
+add_subdirectory(sqlite3)

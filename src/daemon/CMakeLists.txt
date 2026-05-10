@@ -53,6 +53,7 @@ if(PER_BLOCK_CHECKPOINT)
 endif()
 
 set(daemon_sources
+  chain_txids_db.cpp
   command_parser_executor.cpp
   command_server.cpp
   daemon.cpp
@@ -64,6 +65,7 @@ set(daemon_sources
 set(daemon_headers)
 
 set(daemon_private_headers
+  chain_txids_db.h
   command_parser_executor.h
   command_server.h
   core.h
@@ -121,7 +123,8 @@ target_link_libraries(daemon
     ${ZMQ_LIB}
     ${GNU_READLINE_LIBRARY}
     ${EXTRA_LIBRARIES}
-    fmt::fmt-header-only)
+    fmt::fmt-header-only
+    sqlite3)
 set_property(TARGET daemon
   PROPERTY
     OUTPUT_NAME "ryod")

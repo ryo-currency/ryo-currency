@@ -54,6 +54,7 @@
 #include <string>
 
 #include "block_queue.h"
+#include "chain_txids_lookup.h"
 #include "cryptonote_basic/connection_context.h"
 #include "cryptonote_basic/cryptonote_stat_info.h"
 #include "cryptonote_protocol_defs.h"
@@ -117,6 +118,9 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	bool init(const boost::program_options::variables_map &vm);
 	bool deinit();
 	void set_p2p_endpoint(nodetool::i_p2p_endpoint<connection_context> *p2p);
+
+	// Accepts an optional daemon-owned chain txid snapshot used for packet forensics.
+	void set_chain_txids_lookup(const i_chain_txids_lookup *lookup) { m_chain_txids_lookup = lookup; }
 	//bool process_handshake_data(const blobdata& data, cryptonote_connection_context& context);
 	bool process_payload_sync_data(const CORE_SYNC_DATA &hshd, cryptonote_connection_context &context, bool is_inital);
 	bool get_payload_sync_data(blobdata &data);
@@ -155,7 +159,11 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	bool kick_idle_peers();
 	int try_add_next_blocks(cryptonote_connection_context &context);
 
+	// Inspects a NOTIFY_RESPONSE_GET_OBJECTS block before it is queued for verification.
+	void check_chain_txids_response(const NOTIFY_RESPONSE_GET_OBJECTS::request &arg, const block_complete_entry &block_entry, const block &parsed_block, uint64_t block_height, const crypto::hash &block_hash, cryptonote_connection_context &context);
+
 	t_core &m_core;
+	const i_chain_txids_lookup *m_chain_txids_lookup; // Non-owning; daemon lifetime owns the SQLite helper.
 
 	nodetool::p2p_endpoint_stub<connection_context> m_p2p_stub;
 	nodetool::i_p2p_endpoint<connection_context> *m_p2p;

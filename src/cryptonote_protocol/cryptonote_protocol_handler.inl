@@ -81,6 +81,7 @@ namespace cryptonote
 //-----------------------------------------------------------------------------------------------------------------------
 template <class t_core>
 t_cryptonote_protocol_handler<t_core>::t_cryptonote_protocol_handler(t_core &rcore, nodetool::i_p2p_endpoint<connection_context> *p_net_layout, bool offline) : m_core(rcore),
+																																								m_chain_txids_lookup(nullptr),
 																																								m_p2p(p_net_layout),
 																																								m_syncronized_connections_count(0),
 																																								m_synchronized(offline),
@@ -810,6 +811,78 @@ double t_cryptonote_protocol_handler<t_core>::get_avg_block_size()
 }
 
 template <class t_core>
+void t_cryptonote_protocol_handler<t_core>::check_chain_txids_response(const NOTIFY_RESPONSE_GET_OBJECTS::request &arg, const block_complete_entry &block_entry, const block &parsed_block, uint64_t block_height, const crypto::hash &block_hash, cryptonote_connection_context &context)
+{
+	// No daemon-owned DB was provided, so this instrumentation stays disabled.
+	if(!m_chain_txids_lookup)
+		return;
+
+	// Avoid flagging fresh blocks that are newer than the local txid snapshot.
+	const boost::optional<uint64_t> max_height = m_chain_txids_lookup->get_max_height();
+	if(!max_height || block_height > *max_height)
+		return;
+
+	// Pull P2P metadata while the connection is still live and context is in hand.
+	std::string peer_id = "unknown";
+	uint32_t support_flags = 0;
+	m_p2p->for_connection(
+		context.m_connection_id,
+		[&](cryptonote_connection_context &, nodetool::peerid_type id, uint32_t flags) -> bool {
+			if(id)
+				peer_id = std::to_string(id);
+			support_flags = flags;
+			return true;
+		});
+
+	const std::string block_hash_hex = epee::string_tools::pod_to_hex(block_hash);
+	auto expected_tx_hash_it = parsed_block.tx_hashes.begin();
+	size_t tx_index = 0;
+
+	// Walk the tx blobs exactly as the peer placed them in this block packet.
+	for(auto tx_blob_it = block_entry.txs.begin(); tx_blob_it != block_entry.txs.end(); ++tx_blob_it, ++expected_tx_hash_it, ++tx_index)
+	{
+		transaction tx;
+		crypto::hash tx_hash;
+		crypto::hash tx_prefix_hash;
+
+		// Parse the tx blob and calculate the canonical txid the daemon would verify.
+		if(!parse_and_validate_tx_from_blob(*tx_blob_it, tx, tx_hash, tx_prefix_hash))
+		{
+			GULPSF_ERROR("{} chain_txids precheck could not parse tx from NOTIFY_RESPONSE_GET_OBJECTS: peer={}, peer_id={}, support_flags={}, block_height={}, block_hash={}, tx_index={}, tx_blob_size={}, response_blocks={}, block_txs={}, loose_txs={}, missed_ids={}",
+				context_str, context.m_remote_address.str(), peer_id, support_flags, block_height, block_hash_hex, tx_index, tx_blob_it->size(), arg.blocks.size(), block_entry.txs.size(), arg.txs.size(), arg.missed_ids.size());
+			continue;
+		}
+
+		const std::string tx_hash_hex = epee::string_tools::pod_to_hex(tx_hash);
+		const std::string expected_tx_hash_hex = epee::string_tools::pod_to_hex(*expected_tx_hash_it);
+
+		// The tx blob should hash to the txid declared by the parsed block.
+		if(tx_hash != *expected_tx_hash_it)
+		{
+			GULPSF_ERROR("{} chain_txids precheck tx hash mismatch in NOTIFY_RESPONSE_GET_OBJECTS: peer={}, peer_id={}, support_flags={}, block_height={}, block_hash={}, tx_index={}, calculated_txid={}, block_declared_txid={}, tx_blob_size={}, response_blocks={}, block_txs={}, loose_txs={}, missed_ids={}",
+				context_str, context.m_remote_address.str(), peer_id, support_flags, block_height, block_hash_hex, tx_index, tx_hash_hex, expected_tx_hash_hex, tx_blob_it->size(), arg.blocks.size(), block_entry.txs.size(), arg.txs.size(), arg.missed_ids.size());
+		}
+
+		// Check whether this txid exists in the local chain snapshot at all.
+		const boost::optional<ChainTxidEntry> db_entry = m_chain_txids_lookup->lookup_txid(tx_hash_hex);
+		if(!db_entry)
+		{
+			GULPSF_ERROR("{} chain_txids precheck MISS in NOTIFY_RESPONSE_GET_OBJECTS: peer={}, peer_id={}, support_flags={}, block_height={}, block_hash={}, tx_index={}, txid={}, block_declared_txid={}, tx_blob_size={}, db_max_height={}, response_blocks={}, block_txs={}, loose_txs={}, missed_ids={}",
+				context_str, context.m_remote_address.str(), peer_id, support_flags, block_height, block_hash_hex, tx_index, tx_hash_hex, expected_tx_hash_hex, tx_blob_it->size(), *max_height, arg.blocks.size(), block_entry.txs.size(), arg.txs.size(), arg.missed_ids.size());
+		}
+		// A present txid still has to belong to the exact block/height the peer sent.
+		else if(db_entry->height != block_height || db_entry->block_hash != block_hash_hex)
+		{
+			GULPSF_ERROR("{} chain_txids precheck location mismatch in NOTIFY_RESPONSE_GET_OBJECTS: peer={}, peer_id={}, support_flags={}, block_height={}, block_hash={}, tx_index={}, txid={}, block_declared_txid={}, db_height={}, db_block_hash={}, tx_blob_size={}, db_max_height={}, response_blocks={}, block_txs={}, loose_txs={}, missed_ids={}",
+				context_str, context.m_remote_address.str(), peer_id, support_flags, block_height, block_hash_hex, tx_index, tx_hash_hex, expected_tx_hash_hex, db_entry->height, db_entry->block_hash, tx_blob_it->size(), *max_height, arg.blocks.size(), block_entry.txs.size(), arg.txs.size(), arg.missed_ids.size());
+		}
+		/* For debugging
+		GULPSF_ERROR("{} Just checked: peer={}, peer_id={}, support_flags={}, block_height={}, block_hash={}, tx_index={}, txid={}, block_declared_txid={}, db_height={}, db_block_hash={}, tx_blob_size={}, db_max_height={}, response_blocks={}, block_txs={}, loose_txs={}, missed_ids={}",
+				context_str, context.m_remote_address.str(), peer_id, support_flags, block_height, block_hash_hex, tx_index, tx_hash_hex, expected_tx_hash_hex, db_entry->height, db_entry->block_hash, tx_blob_it->size(), *max_height, arg.blocks.size(), block_entry.txs.size(), arg.txs.size(), arg.missed_ids.size());*/
+	}
+}
+
+template <class t_core>
 int t_cryptonote_protocol_handler<t_core>::handle_response_get_objects(int command, NOTIFY_RESPONSE_GET_OBJECTS::request &arg, cryptonote_connection_context &context)
 {
 	GULPS_P2P_MESSAGE("Received NOTIFY_RESPONSE_GET_OBJECTS ({} blocks, {} txes)", arg.blocks.size() , arg.txs.size() );
@@ -881,8 +954,9 @@ int t_cryptonote_protocol_handler<t_core>::handle_response_get_objects(int comma
 			drop_connection(context, false, false);
 			return 1;
 		}
+		const uint64_t block_height = boost::get<txin_gen>(b.miner_tx.vin[0]).height;
 		if(start_height == std::numeric_limits<uint64_t>::max())
-			start_height = boost::get<txin_gen>(b.miner_tx.vin[0]).height;
+			start_height = block_height;
 
 		const crypto::hash block_hash = get_block_hash(b);
 		auto req_it = context.m_requested_objects.find(block_hash);
@@ -901,6 +975,8 @@ int t_cryptonote_protocol_handler<t_core>::handle_response_get_objects(int comma
 			drop_connection(context, false, false);
 			return 1;
 		}
+		// Check the peer's tx packet before normal verification moves it into the queue.
+		check_chain_txids_response(arg, block_entry, b, block_height, block_hash, context);
 
 		context.m_requested_objects.erase(req_it);
 		block_hashes.push_back(block_hash);

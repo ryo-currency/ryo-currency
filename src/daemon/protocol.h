@@ -47,6 +47,7 @@
 #pragma once
 
 #include "common/gulps.hpp"
+#include "cryptonote_protocol/chain_txids_lookup.h"
 
 
 
@@ -84,6 +85,12 @@ class t_protocol final
 		t_node_server &server)
 	{
 		m_protocol.set_p2p_endpoint(&server);
+	}
+
+	void set_chain_txids_lookup(const cryptonote::i_chain_txids_lookup *lookup)
+	{
+		// Forward the daemon-owned lookup object into the raw protocol handler.
+		m_protocol.set_chain_txids_lookup(lookup);
 	}
 
 	~t_protocol()

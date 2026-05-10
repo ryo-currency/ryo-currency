@@ -484,6 +484,8 @@ if(STATIC AND NOT IOS)
   endif()
 endif()
 
+message(STATUS "Using bundled SQLite3 from external/sqlite3")
+
 # find_package(PCSC) PCSC is not useful to us yet
 
 add_definition_if_library_exists(c memset_s "string.h" HAVE_MEMSET_S)

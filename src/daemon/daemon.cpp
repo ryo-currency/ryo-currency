@@ -48,11 +48,13 @@
 #include "rpc/daemon_handler.h"
 #include "rpc/zmq_server.h"
 #include <boost/algorithm/string/split.hpp>
+#include <cstdlib>
 #include <memory>
 #include <stdexcept>
 
 #include "common/password.h"
 #include "common/util.h"
+#include "daemon/chain_txids_db.h"
 #include "daemon/command_line_args.h"
 #include "daemon/command_server.h"
 #include "daemon/command_server.h"
@@ -73,11 +75,19 @@ namespace daemonize
 
 struct t_internals
 {
+  public:
+	// Core is declared before protocol because protocol's constructor receives core.
+	t_core core;
+
   private:
+	// Own the optional txid snapshot for the whole daemon lifetime.
+	// The protocol receives only a non-owning pointer to this object.
+	std::unique_ptr<ChainTxidsDb> chain_txids_db;
+
+	// Protocol is declared before p2p because p2p's constructor receives protocol.
 	t_protocol protocol;
 
   public:
-	t_core core;
 	t_p2p p2p;
 	std::vector<std::unique_ptr<t_rpc>> rpcs;
 
@@ -88,6 +98,30 @@ struct t_internals
 		// Handle circular dependencies
 		protocol.set_p2p_endpoint(p2p.get());
 		core.set_protocol(protocol.get());
+
+		// Build the local snapshot path used by the packet-inspection helper.
+		const char* home = std::getenv("HOME");
+		if(home && *home)
+		{
+			const std::string db_path = std::string(home) + "/Documents/Ryo/python-p2p/chain_txids_runtime.sqlite";
+			chain_txids_db.reset(new ChainTxidsDb(db_path));
+			if(chain_txids_db->init())
+			{
+				chain_txids_db->run_self_tests();
+
+				// The protocol handler keeps a non-owning pointer; t_internals owns the DB.
+				protocol.set_chain_txids_lookup(chain_txids_db.get());
+			}
+			else
+			{
+				// Leave protocol uninstrumented if the optional DB is unavailable.
+				chain_txids_db.reset();
+			}
+		}
+		else
+		{
+			GULPS_OUTPUT(gulps::OUT_USER_0, gulps::LEVEL_WARN, "daemon", "chain_txids", gulps::COLOR_BOLD_YELLOW, "HOME is not set; chain_txids packet inspection disabled");
+		}
 
 		const auto testnet = command_line::get_arg(vm, cryptonote::arg_testnet_on);
 		const auto stagenet = command_line::get_arg(vm, cryptonote::arg_stagenet_on);
