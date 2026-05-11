@@ -87,6 +87,7 @@ class block_queue
 	void flush_stale_spans(const std::set<boost::uuids::uuid> &live_connections);
 	bool remove_span(uint64_t start_block_height, std::list<crypto::hash> *hashes = NULL);
 	void remove_spans(const boost::uuids::uuid &connection_id, uint64_t start_block_height);
+	// Drops queued peer spans at or after a height so sync can restart from a known anchor.
 	size_t remove_spans_starting_at(uint64_t start_block_height);
 	uint64_t get_max_block_height() const;
 	void print() const;

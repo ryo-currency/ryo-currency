@@ -1008,12 +1008,16 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 					{
 						// this can happen if a connection was sicced onto a late span, if it did not have those blocks,
 						// since we don't know that at the sic time
+						// Reset queued work from the lower of the bad span and local chain height to re-anchor sync safely.
 						const uint64_t local_height = m_core.get_current_blockchain_height();
 						const uint64_t flush_from_height = start_height < local_height ? start_height : local_height;
+						// Track how many queued spans were discarded so the re-anchor action is visible in logs.
 						const size_t removed_spans = m_block_queue.remove_spans_starting_at(flush_from_height);
+						// Report the disconnected span and the queue cleanup that follows it.
 						GULPS_ERROR( context_str, " Got block with unknown parent which was not requested - re-anchoring sync at local height");
 						GULPSF_LOG_L1("{} removed {} queued spans from height {} after disconnected span {}-{}",
 							context_str, removed_spans, flush_from_height, start_height, start_height + blocks.size() - 1);
+						// Clear per-peer request state so the next request starts from the refreshed queue anchor.
 						context.m_needed_objects.clear();
 						context.m_requested_objects.clear();
 						context.m_last_response_height = 0;
