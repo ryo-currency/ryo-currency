@@ -1060,11 +1060,17 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 					{
 						if(tvc[i].m_verifivation_failed)
 						{
-							if(!m_p2p->for_connection(span_connection_id, [&](cryptonote_connection_context &context, nodetool::peerid_type peer_id, uint32_t f) -> bool {
-								   GULPSF_LOG_ERROR("{} transaction verification failed on NOTIFY_RESPONSE_GET_OBJECTS, tx_id = {}, dropping connection", context_str, epee::string_tools::pod_to_hex(get_blob_hash(*it)) );
-								   drop_connection(context, false, true);
-								   return 1;
-							   }))
+							if(!m_p2p->for_connection(span_connection_id, [&](cryptonote_connection_context &context, nodetool::peerid_type peer_id, uint32_t flag) -> bool {
+								transaction tx;
+								std::string tx_id_str;
+								if(parse_and_validate_tx_from_blob(*it, tx))
+									tx_id_str = epee::string_tools::pod_to_hex(get_transaction_hash(tx));
+								else
+									tx_id_str = "<invalid tx>";
+								GULPSF_LOG_ERROR("{} transaction verification failed on NOTIFY_RESPONSE_GET_OBJECTS, tx_id = {}, dropping connection", context_str, tx_id_str );
+								drop_connection(context, false, true);
+								return 1;
+							}))
 								GULPS_ERROR( context_str, " span connection id not found");
 
 							if(!m_core.cleanup_handle_incoming_blocks())
