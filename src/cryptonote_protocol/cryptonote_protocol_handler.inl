@@ -1020,7 +1020,7 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 						// Clear per-peer request state so the next request starts from the refreshed queue anchor.
 						context.m_needed_objects.clear();
 						context.m_requested_objects.clear();
-						context.m_last_response_height = 0;
+						context.m_last_response_height = flush_from_height > 0 ? flush_from_height - 1 : 0;
 						context.m_last_known_hash = crypto::null_hash;
 						goto skip;
 					}
