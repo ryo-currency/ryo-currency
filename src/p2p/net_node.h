@@ -250,6 +250,10 @@ class node_server : public epee::levin::levin_commands_handler<p2p_connection_co
 	size_t get_random_index_with_fixed_probability(size_t max_index);
 	bool is_peer_used(const peerlist_entry &peer);
 	bool is_peer_used(const anchor_peerlist_entry &peer);
+	// Returns true when at least one peer has completed the p2p handshake.
+	bool has_handshaked_peer();
+	// Mutes seed warnings when the daemon already has useful peer/sync state.
+	bool should_mute_seed_warnings();
 	bool is_addr_connected(const epee::net_utils::network_address &peer);
 	void add_upnp_port_mapping(uint32_t port);
 	void delete_upnp_port_mapping(uint32_t port);

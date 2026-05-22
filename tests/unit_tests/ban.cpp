@@ -53,6 +53,8 @@ class test_core
 	void on_synchronized() {}
 	void safesyncmode(const bool) {}
 	uint64_t get_current_blockchain_height() const { return 1; }
+	// Protocol handler core shim; these tests do not simulate recent block adds.
+	uint64_t get_last_block_add_tick() const { return 0; }
 	void set_target_blockchain_height(uint64_t) {}
 	bool init(const boost::program_options::variables_map &vm) { return true; }
 	bool deinit() { return true; }

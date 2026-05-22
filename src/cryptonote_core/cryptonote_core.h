@@ -316,6 +316,12 @@ class core : public i_miner_handler
 	uint64_t get_current_blockchain_height() const;
 
 	/**
+      * @copydoc Blockchain::get_last_block_add_tick
+      *
+      * @note see Blockchain::get_last_block_add_tick()
+      */
+	uint64_t get_last_block_add_tick() const;
+	/**
       * @brief get the hash and height of the most recent block
       *
       * @param height return-by-reference height of the block

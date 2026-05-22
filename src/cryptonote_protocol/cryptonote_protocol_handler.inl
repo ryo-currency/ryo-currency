@@ -1569,6 +1569,15 @@ bool t_cryptonote_protocol_handler<t_core>::on_connection_synchronized()
 }
 //------------------------------------------------------------------------------------------------------------------------
 template <class t_core>
+bool t_cryptonote_protocol_handler<t_core>::was_block_added_recently() const
+{
+	// 10 minutes in milliseconds
+	constexpr uint64_t max_wait = 10*60*1000;
+	const uint64_t last = m_core.get_last_block_add_tick();
+	return last && epee::misc_utils::get_tick_count() - last <= max_wait;
+}
+//------------------------------------------------------------------------------------------------------------------------
+template <class t_core>
 size_t t_cryptonote_protocol_handler<t_core>::get_synchronizing_connections_count()
 {
 	size_t count = 0;
