@@ -3494,6 +3494,21 @@ bool Blockchain::flush_txes_from_pool(const std::list<crypto::hash> &txids)
 	}
 	return res;
 }
+
+/**
+ * Sets m_last_block_add_tick
+ */
+void Blockchain::set_last_block_add_tick()
+{
+	m_last_block_add_tick.store(epee::misc_utils::get_tick_count());
+}
+/**
+ * Gets m_last_block_add_tick
+ */
+uint64_t Blockchain::get_last_block_add_tick() const
+{
+	return m_last_block_add_tick.load();
+}
 //------------------------------------------------------------------
 //      Needs to validate the block and acquire each transaction from the
 //      transaction mem_pool, then pass the block and transactions to
@@ -3854,6 +3869,7 @@ bool Blockchain::handle_block_to_main_chain(const block &bl, const crypto::hash 
 	}
 
 	bvc.m_added_to_main_chain = true;
+	set_last_block_add_tick();
 	++m_sync_counter;
 
 	// appears to be a NOP *and* is called elsewhere.  wat?

@@ -986,7 +986,6 @@ bool node_server<t_payload_net_handler>::check_connection_and_handshake_with_pee
 }
 
 #undef priority_str
-
 //-----------------------------------------------------------------------------------
 template <class t_payload_net_handler>
 bool node_server<t_payload_net_handler>::is_addr_recently_failed(const epee::net_utils::network_address &addr)
@@ -1000,6 +999,27 @@ bool node_server<t_payload_net_handler>::is_addr_recently_failed(const epee::net
 		return false;
 	else
 		return true;
+}
+//-----------------------------------------------------------------------------------
+template<class t_payload_net_handler>
+bool node_server<t_payload_net_handler>::has_handshaked_peer()
+{
+	bool connected = false;
+	m_net_server.get_config_object().foreach_connection([&](const p2p_connection_context &cntxt) {
+    if(cntxt.peer_id)
+    {
+      connected = true;
+      return false;
+    }
+    return true;
+  });
+  return connected;
+}
+//-----------------------------------------------------------------------------------
+template <class t_payload_net_handler>
+bool node_server<t_payload_net_handler>::should_mute_seed_warnings() 
+{
+	return has_handshaked_peer() && (m_payload_handler.is_synchronized() || m_payload_handler.was_block_added_recently());
 }
 //-----------------------------------------------------------------------------------
 template <class t_payload_net_handler>
@@ -1115,6 +1135,7 @@ bool node_server<t_payload_net_handler>::make_new_connection_from_peerlist(bool 
 	}
 	return false;
 }
+
 //-----------------------------------------------------------------------------------
 template <class t_payload_net_handler>
 bool node_server<t_payload_net_handler>::connect_to_seed()
@@ -1136,7 +1157,16 @@ bool node_server<t_payload_net_handler>::connect_to_seed()
 		{
 			if(!fallback_nodes_added)
 			{
-				GULPS_WARN("Failed to connect to any of seed peers, trying fallback seeds");
+				constexpr const char *try_fall_seeds = "Failed to connect to any of seed peers, trying fallback seeds";
+				if(!should_mute_seed_warnings())
+				{
+					GULPS_WARN(try_fall_seeds);
+				}
+				else
+				{
+					GULPS_LOG_L1(try_fall_seeds);
+				}
+
 				for(const auto &peer : get_seed_nodes(m_nettype))
 				{
 					GULPSF_LOG_L1("Fallback seed node: {}", peer);
@@ -1147,7 +1177,16 @@ bool node_server<t_payload_net_handler>::connect_to_seed()
 			}
 			else
 			{
-				GULPS_WARN("Failed to connect to any of seed peers, continuing without seeds");
+				constexpr const char *con_without_seeds = "Failed to connect to any of seed peers, continuing without seeds";
+				if(!should_mute_seed_warnings())
+				{
+					GULPS_WARN(con_without_seeds);
+				}
+				else
+				{
+					GULPS_LOG_L1(con_without_seeds);
+				}
+
 				break;
 			}
 		}

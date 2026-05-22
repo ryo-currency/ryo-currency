@@ -935,7 +935,12 @@ class Blockchain
      * @param map return-by-reference the hashes for each block
      */
 	void block_longhash_worker(cn_pow_hash_v2 &hash_ctx, const std::vector<block> &blocks, std::unordered_map<crypto::hash, crypto::hash> &map);
-
+	/**
+     * @brief gets the local tick count when the last block was added
+     *
+     * @return tick count from when the last block was accepted to the main chain
+     */
+	uint64_t get_last_block_add_tick() const;
 	/**
      * @brief returns a set of known alternate chains
      *
@@ -1034,6 +1039,11 @@ class Blockchain
 
 	cn_pow_hash_v2 m_pow_ctx;
 	std::vector<cn_pow_hash_v2> m_hash_ctxes_multi;
+
+	// Local tick count from when the last block was accepted to the main chain.
+	std::atomic<uint64_t> m_last_block_add_tick{0};
+	// Updates the last block add tick to the current local tick count.
+	void set_last_block_add_tick();
 
 	checkpoints m_checkpoints;
 	bool m_enforce_dns_checkpoints;

@@ -125,6 +125,8 @@ class t_cryptonote_protocol_handler : public i_cryptonote_protocol, cryptonote_p
 	bool on_callback(cryptonote_connection_context &context);
 	t_core &get_core() { return m_core; }
 	bool is_synchronized() { return m_synchronized; }
+	// Returns true when the core accepted a block within the recent-block window.
+	bool was_block_added_recently() const;
 	void log_connections();
 	std::list<connection_info> get_connections();
 	const block_queue &get_block_queue() const { return m_block_queue; }
