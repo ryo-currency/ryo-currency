@@ -245,11 +245,16 @@ jobs:
             git \
             graphviz \
             libboost-all-dev \
+            libbsd-dev \
             libexpat1-dev \
             libhidapi-dev \
+            libicu-dev \
+            libkrb5-dev \
             libldns-dev \
             liblzma-dev \
+            libmd-dev \
             libminiupnpc-dev \
+            libnorm-dev \
             libpgm-dev \
             libreadline-dev \
             libsodium-dev \
@@ -257,6 +262,7 @@ jobs:
             libunbound-dev \
             libunwind-dev \
             libusb-1.0-0-dev \
+            libxml2-dev \
             libzmq3-dev \
             pkg-config \
             zlib1g-dev
@@ -277,10 +283,28 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DSTATIC=ON \
             -DBUILD_DOCUMENTATION=OFF \
+            -DBoost_USE_STATIC_LIBS=ON \
+            -DBoost_NO_BOOST_CMAKE=ON \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
           cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
+
+      - name: verify Linux binary dependencies
+        run: |
+          unexpected_libs='lib(zmq|unbound|boost_[^[:space:]]*)\.so'
+          failed=0
+
+          while IFS= read -r binary; do
+            echo "Checking dynamic dependencies for ${binary}"
+            if objdump -p "${binary}" | grep -E "NEEDED[[:space:]]+${unexpected_libs}"; then
+              echo "::error file=${binary}::Linux release binary still depends on a shared Boost, libunbound, or libzmq library"
+              failed=1
+            fi
+          done < <(find build/release/bin -maxdepth 1 -type f -executable)
+
+          exit "${failed}"
 
       - name: package
         id: package
