@@ -117,3 +117,6 @@ local.properties
 
 # Document
 doc
+.clang-format
+
+.editorconfig

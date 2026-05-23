@@ -1154,44 +1154,43 @@ bool node_server<t_payload_net_handler>::connect_to_seed()
 		if(try_to_connect_and_handshake_with_new_peer(m_seed_nodes[current_index], true))
 			break;
 		if(++try_count > m_seed_nodes.size())
-				
+
+		{
+			if(!fallback_nodes_added)
 			{
-				if(!fallback_nodes_added)
-					{
-						const char *try_fall_seeds = "Failed to connect to any of seed peers, trying fallback seeds";
-						if(!should_mute_seed_warnings())
-						{
-							GULPS_WARN(try_fall_seeds);
-						}
-						else
-						{
-							GULPS_LOG_L1(try_fall_seeds);
-						}
-						
-						for(const auto &peer : get_seed_nodes(m_nettype))
-						{
-							GULPSF_LOG_L1("Fallback seed node: {}", peer);
-							append_net_address(m_seed_nodes, peer);
-						}
-						fallback_nodes_added = true;
-						// continue for another few cycles
-					}
-					else
-					{
-						const char *con_without_seeds = "Failed to connect to any of seed peers, continuing without seeds";
-						if(!should_mute_seed_warnings())
-						{
-							GULPS_WARN(con_without_seeds);
-						}
-						else
-						{
-							GULPS_LOG_L1(con_without_seeds);
-						}
-						
-						break;
-						
-					}
+				constexpr char *try_fall_seeds = "Failed to connect to any of seed peers, trying fallback seeds";
+				if(!should_mute_seed_warnings())
+				{
+					GULPS_WARN(try_fall_seeds);
+				}
+				else
+				{
+					GULPS_LOG_L1(try_fall_seeds);
+				}
+
+				for(const auto &peer : get_seed_nodes(m_nettype))
+				{
+					GULPSF_LOG_L1("Fallback seed node: {}", peer);
+					append_net_address(m_seed_nodes, peer);
+				}
+				fallback_nodes_added = true;
+				// continue for another few cycles
 			}
+			else
+			{
+				constexpr char *con_without_seeds = "Failed to connect to any of seed peers, continuing without seeds";
+				if(!should_mute_seed_warnings())
+				{
+					GULPS_WARN(con_without_seeds);
+				}
+				else
+				{
+					GULPS_LOG_L1(con_without_seeds);
+				}
+
+				break;
+			}
+		}
 		if(++current_index >= m_seed_nodes.size())
 			current_index = 0;
 	}
