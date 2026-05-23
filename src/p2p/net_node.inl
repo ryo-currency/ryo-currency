@@ -1158,7 +1158,7 @@ bool node_server<t_payload_net_handler>::connect_to_seed()
 		{
 			if(!fallback_nodes_added)
 			{
-				constexpr char *try_fall_seeds = "Failed to connect to any of seed peers, trying fallback seeds";
+				constexpr const char *try_fall_seeds = "Failed to connect to any of seed peers, trying fallback seeds";
 				if(!should_mute_seed_warnings())
 				{
 					GULPS_WARN(try_fall_seeds);
@@ -1178,7 +1178,7 @@ bool node_server<t_payload_net_handler>::connect_to_seed()
 			}
 			else
 			{
-				constexpr char *con_without_seeds = "Failed to connect to any of seed peers, continuing without seeds";
+				constexpr const char *con_without_seeds = "Failed to connect to any of seed peers, continuing without seeds";
 				if(!should_mute_seed_warnings())
 				{
 					GULPS_WARN(con_without_seeds);
