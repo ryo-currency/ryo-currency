@@ -1573,8 +1573,8 @@ bool t_cryptonote_protocol_handler<t_core>::was_block_added_recently() const
 {
 	// 10 minutes in milliseconds
 	constexpr uint64_t max_wait = 10*60*1000;
-	const uint64_t last = m_core.get_last_block_add_tick();
-	return last && epee::misc_utils::get_tick_count() - last <= max_wait;
+	const uint64_t last_block = m_core.get_last_block_add_tick();
+	return last_block && epee::misc_utils::get_tick_count() - last_block <= max_wait;
 }
 //------------------------------------------------------------------------------------------------------------------------
 template <class t_core>
