@@ -1154,7 +1154,6 @@ bool node_server<t_payload_net_handler>::connect_to_seed()
 		if(try_to_connect_and_handshake_with_new_peer(m_seed_nodes[current_index], true))
 			break;
 		if(++try_count > m_seed_nodes.size())
-
 		{
 			if(!fallback_nodes_added)
 			{
