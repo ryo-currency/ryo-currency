@@ -67,7 +67,6 @@ ZmqServer::~ZmqServer()
 
 void ZmqServer::serve()
 {
-
 	while(1)
 	{
 		try
@@ -78,7 +77,7 @@ void ZmqServer::serve()
 			{
 				throw std::runtime_error("ZMQ RPC server reply socket is null");
 			}
-			while(rep_socket->recv(&message))
+			while(rep_socket->recv(message))
 			{
 				std::string message_string(reinterpret_cast<const char *>(message.data()), message.size());
 
@@ -89,7 +88,7 @@ void ZmqServer::serve()
 				zmq::message_t reply(response.size());
 				memcpy((void *)reply.data(), response.c_str(), response.size());
 
-				rep_socket->send(reply);
+				rep_socket->send(reply, zmq::send_flags::none);
 				GULPS_LOG_L1(std::string("Sent RPC reply: \""), response, "\"");
 			}
 		}
@@ -119,7 +118,7 @@ bool ZmqServer::addTCPSocket(std::string address, std::string port)
 
 		rep_socket.reset(new zmq::socket_t(context, ZMQ_REP));
 
-		rep_socket->setsockopt(ZMQ_RCVTIMEO, &DEFAULT_RPC_RECV_TIMEOUT_MS, sizeof(DEFAULT_RPC_RECV_TIMEOUT_MS));
+		rep_socket->set(zmq::sockopt::rcvtimeo, DEFAULT_RPC_RECV_TIMEOUT_MS);
 
 		std::string bind_address = addr_prefix + address + std::string(":") + port;
 		rep_socket->bind(bind_address.c_str());
