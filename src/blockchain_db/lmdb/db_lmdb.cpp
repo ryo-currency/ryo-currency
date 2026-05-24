@@ -3370,7 +3370,9 @@ uint8_t BlockchainLMDB::get_hard_fork_version(uint64_t height) const
 	MDB_val_copy<uint64_t> val_key(height);
 	MDB_val val_ret;
 	auto result = mdb_cursor_get(m_cur_hf_versions, &val_key, &val_ret, MDB_SET);
-	if(result == MDB_NOTFOUND || result)
+	if(result == MDB_NOTFOUND)
+		throw1(DB_ERROR(lmdb_error("Error attempting to retrieve a hard fork version at height " + boost::lexical_cast<std::string>(height) + " from the db: ", result).c_str()));
+	if(result)
 		throw0(DB_ERROR(lmdb_error("Error attempting to retrieve a hard fork version at height " + boost::lexical_cast<std::string>(height) + " from the db: ", result).c_str()));
 
 	uint8_t ret = *(const uint8_t *)val_ret.mv_data;
