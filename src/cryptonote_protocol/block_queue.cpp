@@ -147,6 +147,25 @@ void block_queue::remove_spans(const boost::uuids::uuid &connection_id, uint64_t
 	}
 }
 
+// Removes queued non-placeholder spans from the given height onward and returns how many were dropped.
+size_t block_queue::remove_spans_starting_at(uint64_t start_block_height)
+{
+	boost::unique_lock<boost::recursive_mutex> lock(mutex);
+	// Count removed spans so callers can report how much stale queued work was discarded.
+	size_t removed = 0;
+	for(block_map::iterator i = blocks.begin(); i != blocks.end();)
+	{
+		block_map::iterator j = i++;
+		// Preserve blockchain placeholders while removing peer-supplied spans past the reset point.
+		if(!is_blockchain_placeholder(*j) && j->start_block_height >= start_block_height)
+		{
+			blocks.erase(j);
+			++removed;
+		}
+	}
+	return removed;
+}
+
 uint64_t block_queue::get_max_block_height() const
 {
 	boost::unique_lock<boost::recursive_mutex> lock(mutex);

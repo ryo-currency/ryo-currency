@@ -1008,10 +1008,20 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 					{
 						// this can happen if a connection was sicced onto a late span, if it did not have those blocks,
 						// since we don't know that at the sic time
-						GULPS_ERROR( context_str, " Got block with unknown parent which was not requested - querying block hashes");
-						m_block_queue.remove_spans(span_connection_id, start_height);
+						// Reset queued work from the lower of the bad span and local chain height to re-anchor sync safely.
+						const uint64_t local_height = m_core.get_current_blockchain_height();
+						const uint64_t flush_from_height = start_height < local_height ? start_height : local_height;
+						// Track how many queued spans were discarded so the re-anchor action is visible in logs.
+						const size_t removed_spans = m_block_queue.remove_spans_starting_at(flush_from_height);
+						// Report the disconnected span and the queue cleanup that follows it.
+						GULPS_ERROR( context_str, " Got block with unknown parent which was not requested - re-anchoring sync at local height");
+						GULPSF_LOG_L1("{} removed {} queued spans from height {} after disconnected span {}-{}",
+							context_str, removed_spans, flush_from_height, start_height, start_height + blocks.size() - 1);
+						// Clear per-peer request state so the next request starts from the refreshed queue anchor.
 						context.m_needed_objects.clear();
-						context.m_last_response_height = 0;
+						context.m_requested_objects.clear();
+						context.m_last_response_height = flush_from_height > 0 ? flush_from_height - 1 : 0;
+						context.m_last_known_hash = crypto::null_hash;
 						goto skip;
 					}
 
@@ -1050,11 +1060,17 @@ int t_cryptonote_protocol_handler<t_core>::try_add_next_blocks(cryptonote_connec
 					{
 						if(tvc[i].m_verifivation_failed)
 						{
-							if(!m_p2p->for_connection(span_connection_id, [&](cryptonote_connection_context &context, nodetool::peerid_type peer_id, uint32_t f) -> bool {
-								   GULPSF_LOG_ERROR("{} transaction verification failed on NOTIFY_RESPONSE_GET_OBJECTS, tx_id = {}, dropping connection", context_str, epee::string_tools::pod_to_hex(get_blob_hash(*it)) );
-								   drop_connection(context, false, true);
-								   return 1;
-							   }))
+							if(!m_p2p->for_connection(span_connection_id, [&](cryptonote_connection_context &context, nodetool::peerid_type peer_id, uint32_t flag) -> bool {
+								transaction tx;
+								std::string tx_id_str;
+								if(parse_and_validate_tx_from_blob(*it, tx))
+									tx_id_str = epee::string_tools::pod_to_hex(get_transaction_hash(tx));
+								else
+									tx_id_str = "<invalid tx>";
+								GULPSF_LOG_ERROR("{} transaction verification failed on NOTIFY_RESPONSE_GET_OBJECTS, tx_id = {}, dropping connection", context_str, tx_id_str );
+								drop_connection(context, false, true);
+								return 1;
+							}))
 								GULPS_ERROR( context_str, " span connection id not found");
 
 							if(!m_core.cleanup_handle_incoming_blocks())
