@@ -283,6 +283,11 @@ uint64_t core::get_current_blockchain_height() const
 {
 	return m_blockchain_storage.get_current_blockchain_height();
 }
+
+uint64_t core::get_last_block_add_tick() const
+{
+	return m_blockchain_storage.get_last_block_add_tick();
+}
 //-----------------------------------------------------------------------------------------------
 void core::get_blockchain_top(uint64_t &height, crypto::hash &top_id) const
 {
