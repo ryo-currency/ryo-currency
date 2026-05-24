@@ -20,7 +20,6 @@ on:
 permissions:
   contents: read
 
-
 env:
   CCACHE_SETTINGS: |
     ccache --max-size=150M
