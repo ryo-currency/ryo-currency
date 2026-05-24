@@ -1527,7 +1527,7 @@ skip:
 		{
 			if(m_core.get_current_blockchain_height() >= m_core.get_target_blockchain_height())
 			{
-				GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_GREEN, "SYNCHRONIZED OK");
+				GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_GREEN, "SYNCHRONIZED OK");
 				on_connection_synchronized();
 			}
 		}
@@ -1545,7 +1545,7 @@ bool t_cryptonote_protocol_handler<t_core>::on_connection_synchronized()
 	bool val_expected = false;
 	if(m_synchronized.compare_exchange_strong(val_expected, true))
 	{
-		GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_YELLOW, "\n**********************************************************************\n",
+		GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_GREEN, "\n**********************************************************************\n",
 						   "You are now synchronized with the network. You may now start ryo-wallet-cli.\n\n",
 						   "Use the \"help\" command to see the list of available commands.\n",
 						   "**********************************************************************\n");

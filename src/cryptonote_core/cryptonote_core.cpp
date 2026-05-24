@@ -1304,7 +1304,7 @@ bool core::on_idle()
 		else
 			main_message = "The daemon will start synchronizing with the network. This may take a long time to complete.";
 
-		GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_YELLOW, "\n**********************************************************************\n",
+		GULPS_GLOBAL_PRINT_CLR(gulps::COLOR_BOLD_GREEN, "\n**********************************************************************\n",
 			main_message,
 			"\n\nYou can set the level of process detailization through \"set_log <level|categories>\" command,\n",
 			"where <level> is between 0 (no details) and 4 (very verbose), or custom category based levels (eg, *:WARNING).\n\n",
