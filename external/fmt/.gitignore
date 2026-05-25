@@ -1,4 +1,5 @@
 .vscode/
+.vs/
 
 *.iml
 .idea/
@@ -8,12 +9,14 @@ gradle/
 gradlew*
 local.properties
 build/
+support/.cxx
 
 bin/
 /_CPack_Packages
 /CMakeScripts
 /doc/doxyxml
 /doc/html
+/doc/node_modules
 virtualenv
 /Testing
 /install_manifest.txt
@@ -31,3 +34,4 @@ CMakeFiles
 FMT.build
 Makefile
 run-msbuild.bat
+fmt.pc
