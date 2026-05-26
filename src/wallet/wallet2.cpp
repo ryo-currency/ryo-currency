@@ -2151,7 +2151,7 @@ void wallet2::refresh(uint64_t start_height, uint64_t &blocks_fetched, bool &rec
 	wallet_scan_ctx ct(*this, refresh_ctx);
 	refresh_ctx.m_running_scan_thd_cnt = thd_max;
 
-	GULPSF_LOG_L1("Running {} scanning threads", refresh_ctx.m_running_scan_thd_cnt);
+	GULPSF_LOG_L1("Running {} scanning threads", refresh_ctx.m_running_scan_thd_cnt.load());
 
 	std::vector<std::thread> scan_thds;
 	scan_thds.reserve(thd_max);
