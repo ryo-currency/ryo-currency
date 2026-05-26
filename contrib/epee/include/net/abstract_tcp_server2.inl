@@ -88,7 +88,7 @@ connection<t_protocol_handler>::connection(boost::asio::io_service &io_service,
 	  m_timer(io_service),
 	  m_local(false)
 {
-	GULPSF_LOG_L1("test, connection constructor set m_connection_type={}", m_connection_type);
+	GULPSF_LOG_L1("test, connection constructor set m_connection_type={}", static_cast<int>(m_connection_type));
 }
 PRAGMA_WARNING_DISABLE_VS(4355)
 //---------------------------------------------------------------------------------
@@ -466,7 +466,7 @@ bool connection<t_protocol_handler>::do_send(const void *ptr, size_t cb)
 
 			GULPSF_LOG_L1("do_send() DONE SPLIT from packet={} B for ptr={}", cb , ptr);
 
-			GULPSF_LOG_L1("do_send() m_connection_type = {}", m_connection_type);
+			GULPSF_LOG_L1("do_send() m_connection_type = {}", to_string(m_connection_type));
 
 			return all_ok; // done - e.g. queued - all the chunks of current do_send call
 		}				   // LOCK: chunking
@@ -868,7 +868,7 @@ void boosted_tcp_server<t_protocol_handler>::set_threads_prefix(const std::strin
 	if(it == server_type_map.end())
 		throw std::runtime_error("Unknown prefix/server type:" + std::string(prefix_name));
 	auto connection_type = it->second; // the value of type
-	GULPSF_INFO("Set server type to: {} from name: {}, prefix_name = {}", connection_type , m_thread_name_prefix , prefix_name);
+	GULPSF_INFO("Set server type to: {} from name: {}, prefix_name = {}", to_string(connection_type) , m_thread_name_prefix , prefix_name);
 }
 //---------------------------------------------------------------------------------
 template <class t_protocol_handler>
@@ -1015,7 +1015,7 @@ void boosted_tcp_server<t_protocol_handler>::handle_accept(const boost::system::
 	}
 	else
 	{
-		GULPSF_ERROR("Some problems at accept: {}, connections_count = {}", e.message() , m_sock_count);
+		GULPSF_ERROR("Some problems at accept: {}, connections_count = {}", e.message() , m_sock_count.load());
 	}
 	GULPS_CATCH_ENTRY_L0("boosted_tcp_server<t_protocol_handler>::handle_accept", void());
 }
@@ -1121,7 +1121,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 	}
 	else
 	{
-		GULPSF_ERROR("[sock {}] Failed to start connection, connections_count = {}", new_connection_l->socket().native_handle() , m_sock_count);
+		GULPSF_ERROR("[sock {}] Failed to start connection, connections_count = {}", static_cast<unsigned long long>(new_connection_l->socket().native_handle()) , m_sock_count.load());
 	}
 
 	new_connection_l->save_dbg_log();
@@ -1187,7 +1187,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 			}
 			else
 			{
-				GULPSF_LOG_L2("[sock {}] Connected success to {}:{} from {}:{}", new_connection_l->socket().native_handle() , adr , port , lep.address().to_string() , lep.port());
+				GULPSF_LOG_L2("[sock {}] Connected success to {}:{} from {}:{}", static_cast<unsigned long long>(new_connection_l->socket().native_handle()) , adr , port , lep.address().to_string() , lep.port());
 
 				// start adds the connection to the config object's list, so we don't need to have it locally anymore
 				connections_mutex.lock();
@@ -1201,14 +1201,14 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 				}
 				else
 				{
-					GULPSF_LOG_L2("[sock {}] Failed to start connection to {}:{}", new_connection_l->socket().native_handle() , adr , port);
+					GULPSF_LOG_L2("[sock {}] Failed to start connection to {}:{}", static_cast<unsigned long long>(new_connection_l->socket().native_handle()) , adr , port);
 					cb(conn_context, boost::asio::error::fault);
 				}
 			}
 		}
 		else
 		{
-			GULPSF_LOG_L2("[sock {}] Failed to connect to {}:{} from {}:{}: {}:{}", new_connection_l->socket().native_handle() , adr , port , lep.address().to_string() , lep.port() , ec_.message() , ec_.value());
+			GULPSF_LOG_L2("[sock {}] Failed to connect to {}:{} from {}:{}: {}:{}", static_cast<unsigned long long>(new_connection_l->socket().native_handle()) , adr , port , lep.address().to_string() , lep.port() , ec_.message() , ec_.value());
 			cb(conn_context, ec_);
 		}
 	});
