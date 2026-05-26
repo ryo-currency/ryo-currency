@@ -54,7 +54,7 @@ if (IOS)
     INCLUDE(CmakeLists_IOS.txt)
 endif()
 
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.8...3.28)
 
 project(ryo)
 
@@ -308,6 +308,11 @@ endif()
 #   set(BSDI TRUE)
 
 include_directories(external/rapidjson/include src contrib/epee/include external)
+
+if(APPLE AND EXISTS "${CMAKE_SOURCE_DIR}/external/fmt/include/fmt/core.h")
+  message(STATUS "Using vendored fmt headers from ${CMAKE_SOURCE_DIR}/external/fmt/include")
+  include_directories(BEFORE ${CMAKE_SOURCE_DIR}/external/fmt/include)
+endif()
 
 if(APPLE)
   include_directories(SYSTEM /usr/include/malloc)
