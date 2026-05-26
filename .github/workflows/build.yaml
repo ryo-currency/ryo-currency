@@ -1,0 +1,519 @@
+name: ci/build
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*'
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
+  pull_request:
+    branches:
+      - '**'
+    paths-ignore:
+      - 'docs/**'
+      - '**/README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CCACHE_SETTINGS: |
+    ccache --max-size=150M
+    ccache --set-config=compression=true
+
+jobs:
+  build-windows:
+    name: Windows (MSYS2)
+    runs-on: windows-latest
+    env:
+      # Environment variables for ccache telling it where to store temporary cache files and the cache itself.
+      CCACHE_TEMPDIR: C:\Users\runneradmin\.ccache-temp
+      CCACHE_DIR: C:\Users\runneradmin\.ccache
+      BOOST_PREFIX: /mingw64/boost-1.83
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: actions/cache@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-build-
+
+      - uses: msys2/setup-msys2@v2
+        id: msys2
+        with:
+          msystem: MINGW64
+          release: true
+          update: true
+          install: >-
+            mingw-w64-x86_64-toolchain
+            make
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ccache
+            mingw-w64-x86_64-openssl
+            mingw-w64-x86_64-cppzmq
+            mingw-w64-x86_64-zeromq
+            mingw-w64-x86_64-libsodium
+            mingw-w64-x86_64-hidapi
+            mingw-w64-x86_64-protobuf
+            mingw-w64-x86_64-libusb
+            mingw-w64-x86_64-unbound
+            mingw-w64-x86_64-readline
+            mingw-w64-x86_64-icu
+            mingw-w64-x86_64-rust
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-7zip
+            curl
+            git
+            perl
+
+      - name: set Boost cache key
+        id: boost-cache-key
+        run: |
+          gcc_version="$(g++ -dumpfullversion -dumpversion)"
+          gcc_major="${gcc_version%%.*}"
+          target="$(g++ -dumpmachine)"
+          key="boost-1.83-${{ runner.os }}-mingw64-${target}-gcc${gcc_major}-static-v2"
+          echo "key=${key}" >> "$GITHUB_OUTPUT"
+          echo "Boost cache key: ${key}"
+
+      - name: restore Boost 1.83
+        id: cache-boost
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
+          key: ${{ steps.boost-cache-key.outputs.key }}
+
+      - name: set make job count
+        id: make-jobs
+        run: echo "count=$(nproc)" >> "$GITHUB_OUTPUT"
+
+      # Windows defaults to Boost 1.90, which breaks this build.
+      # Manually build Boost 1.83 to match the expected dependency version.
+      - name: Build Boost 1.83 manually
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        run: |
+          curl -L --fail --retry 5 --retry-delay 5 \
+            -o boost_1_83_0.tar.gz \
+            https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz
+
+          tar -xzf boost_1_83_0.tar.gz
+          cd boost_1_83_0
+
+          ./bootstrap.sh --prefix="$BOOST_PREFIX"
+
+          ./b2 -j${{ steps.make-jobs.outputs.count }} install \
+            --prefix="$BOOST_PREFIX" \
+            address-model=64 \
+            variant=release \
+            link=static \
+            runtime-link=static \
+            threading=multi \
+            --with-filesystem \
+            --with-thread \
+            --with-date_time \
+            --with-chrono \
+            --with-regex \
+            --with-serialization \
+            --with-program_options \
+            --with-locale \
+            --with-system \
+            --with-atomic
+
+      - name: verify Boost 1.83 install
+        id: boost-install
+        run: |
+          boost_include_dir=""
+          for candidate in "$BOOST_PREFIX/include/boost-1_83" "$BOOST_PREFIX/include"; do
+            if test -f "$candidate/boost/version.hpp"; then
+              boost_include_dir="$candidate"
+              break
+            fi
+          done
+
+          if test -z "$boost_include_dir"; then
+            echo "Could not find Boost headers under $BOOST_PREFIX/include" >&2
+            find "$BOOST_PREFIX" -maxdepth 4 -type f -name version.hpp >&2 || true
+            exit 1
+          fi
+
+          test -d "$BOOST_PREFIX/lib"
+          ls "$BOOST_PREFIX"/lib/libboost_system-*.a
+          ls "$BOOST_PREFIX"/lib/libboost_filesystem-*.a
+          echo "include_dir=$boost_include_dir" >> "$GITHUB_OUTPUT"
+          echo "Boost include dir: $boost_include_dir"
+
+      - name: save Boost 1.83
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ steps.msys2.outputs.msys2-location }}\mingw64\boost-1.83
+          key: ${{ steps.cache-boost.outputs.cache-primary-key }}
+
+
+      - name: build
+        env:
+          CMAKE_GENERATOR: MSYS Makefiles
+          # Flags for conditional OpenSSL compatibility checks.
+          CFLAGS: -DHAVE_EVP_MD_CTX_NEW=1 -Wno-deprecated-declarations
+          CXXFLAGS: -DHAVE_EVP_MD_CTX_NEW=1 -Wno-deprecated-declarations -fext-numeric-literals
+        run: |
+          ${{ env.CCACHE_SETTINGS }}
+          cmake -S . -B build/release \
+            -DSTATIC=ON \
+            -DARCH="x86-64" \
+            -DBUILD_64=ON \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBOOST_ROOT="$BOOST_PREFIX" \
+            -DBOOST_INCLUDEDIR="${{ steps.boost-install.outputs.include_dir }}" \
+            -DBOOST_LIBRARYDIR="$BOOST_PREFIX/lib" \
+            -DBoost_ARCHITECTURE=-x64 \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DBoost_NO_BOOST_CMAKE=ON \
+            -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+          cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
+
+      - name: package
+        id: package
+        run: |
+          mkdir -p dist/bin
+          find build/release/bin -maxdepth 1 -type f \( -name "*.exe" -o -name "*.dll" \) -exec cp {} dist/bin/ \; || true
+
+          if ! find dist/bin -maxdepth 1 -type f -name "*.exe" | grep -q .; then
+            echo "No Windows executables were packaged" >&2
+            find build/release -maxdepth 3 -type f >&2 || true
+            exit 1
+          fi
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          else
+            VERSION="dev-${GITHUB_SHA::7}"
+          fi
+
+          rm -f "ryo-windows-${VERSION}.zip"
+          7z a "ryo-windows-${VERSION}.zip" ./dist/*
+          echo "output=ryo-windows-${VERSION}.zip" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.package.outputs.output }}
+          path: ${{ steps.package.outputs.output }}
+          if-no-files-found: error
+
+  build-linux:
+    name: Linux (Ubuntu)
+    runs-on: ubuntu-22.04
+
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: actions/cache@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-build-
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            ca-certificates \
+            ccache \
+            cmake \
+            curl \
+            git \
+            graphviz \
+            libboost-all-dev \
+            libbsd-dev \
+            libexpat1-dev \
+            libhidapi-dev \
+            libicu-dev \
+            libkrb5-dev \
+            libldns-dev \
+            liblzma-dev \
+            libmd-dev \
+            libminiupnpc-dev \
+            libnorm-dev \
+            libpgm-dev \
+            libreadline-dev \
+            libsodium-dev \
+            libssl-dev \
+            libunbound-dev \
+            libunwind-dev \
+            libusb-1.0-0-dev \
+            libxml2-dev \
+            libzmq3-dev \
+            pkg-config \
+            zlib1g-dev
+
+      - name: set make job count
+        id: make-jobs
+        run: echo "count=$(nproc)" >> "$GITHUB_OUTPUT"
+
+      - name: build
+        env:
+          CMAKE_GENERATOR: Unix Makefiles
+          CFLAGS: -Wno-deprecated-declarations
+          CXXFLAGS: -Wno-deprecated-declarations -fext-numeric-literals
+        run: |
+          ${{ env.CCACHE_SETTINGS }}
+
+          cmake -S . -B build/release \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DSTATIC=ON \
+            -DBUILD_DOCUMENTATION=OFF \
+            -DBoost_USE_STATIC_LIBS=ON \
+            -DBoost_NO_BOOST_CMAKE=ON \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+          cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
+
+      - name: verify Linux binary dependencies
+        run: |
+          unexpected_libs='lib(zmq|unbound|boost_[^[:space:]]*)\.so'
+          failed=0
+
+          while IFS= read -r binary; do
+            echo "Checking dynamic dependencies for ${binary}"
+            if objdump -p "${binary}" | grep -E "NEEDED[[:space:]]+${unexpected_libs}"; then
+              echo "::error file=${binary}::Linux release binary still depends on a shared Boost, libunbound, or libzmq library"
+              failed=1
+            fi
+          done < <(find build/release/bin -maxdepth 1 -type f -executable)
+
+          exit "${failed}"
+
+      - name: package
+        id: package
+        run: |
+          mkdir -p dist
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          else
+            VERSION="dev-${GITHUB_SHA::7}"
+          fi
+
+          tar -C build/release -czf "ryo-linux-${VERSION}.tar.gz" bin
+          echo "output=ryo-linux-${VERSION}.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.package.outputs.output }}
+          path: ${{ steps.package.outputs.output }}
+          if-no-files-found: error
+
+
+  build-macos:
+    name: macOS
+    runs-on: macos-latest
+
+    env:
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      BOOST_PREFIX: ${{ github.workspace }}/.boost-1.83
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - uses: actions/cache@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ccache-${{ runner.os }}-build-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-build-
+
+      - name: install dependencies
+        run: |
+          brew update
+          packages=(
+            ccache
+            cmake
+            cppzmq
+            expat
+            hidapi
+            libpgm
+            libsodium
+            miniupnpc
+            openssl@3
+            pkgconf
+            protobuf
+            readline
+            unbound
+            xz
+            zeromq
+          )
+
+          missing_packages=()
+          for package in "${packages[@]}"; do
+            if brew list --formula "$package" >/dev/null 2>&1; then
+              echo "$package is already installed; skipping"
+            else
+              missing_packages+=("$package")
+            fi
+          done
+
+          if ((${#missing_packages[@]})); then
+            brew install "${missing_packages[@]}"
+          else
+            echo "All Homebrew dependencies are already installed"
+          fi
+
+      - name: set make job count
+        id: make-jobs
+        run: echo "count=$(sysctl -n hw.logicalcpu)" >> "$GITHUB_OUTPUT"
+
+      - name: set Boost cache key
+        id: boost-cache-key
+        run: |
+          clang_version="$(clang++ --version | head -n 1 | sed 's/[^0-9.]*//g')"
+          key="boost-1.83-${{ runner.os }}-${{ runner.arch }}-appleclang-${clang_version}-static-v1"
+          echo "key=${key}" >> "$GITHUB_OUTPUT"
+          echo "Boost cache key: ${key}"
+
+      - name: restore Boost 1.83
+        id: cache-boost
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ env.BOOST_PREFIX }}
+          key: ${{ steps.boost-cache-key.outputs.key }}
+
+      # Homebrew Boost 1.90 no longer ships libboost_system, but this
+      # project still requires the Boost.System library at configure time.
+      - name: build Boost 1.83 manually
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        run: |
+          curl -L --fail --retry 5 --retry-delay 5 \
+            -o boost_1_83_0.tar.gz \
+            https://archives.boost.io/release/1.83.0/source/boost_1_83_0.tar.gz
+
+          tar -xzf boost_1_83_0.tar.gz
+          cd boost_1_83_0
+
+          ./bootstrap.sh --prefix="$BOOST_PREFIX"
+
+          ./b2 -j${{ steps.make-jobs.outputs.count }} install \
+            --prefix="$BOOST_PREFIX" \
+            address-model=64 \
+            variant=release \
+            link=static \
+            threading=multi \
+            --with-filesystem \
+            --with-thread \
+            --with-date_time \
+            --with-chrono \
+            --with-regex \
+            --with-serialization \
+            --with-program_options \
+            --with-locale \
+            --with-system \
+            --with-atomic
+
+      - name: verify Boost 1.83 install
+        run: |
+          test -f "$BOOST_PREFIX/include/boost/version.hpp"
+          test -d "$BOOST_PREFIX/lib"
+          ls "$BOOST_PREFIX"/lib/libboost_system*.a
+          ls "$BOOST_PREFIX"/lib/libboost_filesystem*.a
+
+      - name: save Boost 1.83
+        if: steps.cache-boost.outputs.cache-hit != 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.BOOST_PREFIX }}
+          key: ${{ steps.cache-boost.outputs.cache-primary-key }}
+
+      - name: set Homebrew prefixes
+        id: brew-prefixes
+        run: echo "openssl_prefix=$(brew --prefix openssl@3)" >> "$GITHUB_OUTPUT"
+
+      - name: build
+        env:
+          CMAKE_GENERATOR: Unix Makefiles
+          CFLAGS: -Wno-deprecated-declarations
+          CXXFLAGS: -Wno-deprecated-declarations
+          OPENSSL_ROOT_DIR: ${{ steps.brew-prefixes.outputs.openssl_prefix }}
+        run: |
+          ${{ env.CCACHE_SETTINGS }}
+
+          cmake -S . -B build/release \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT_DIR" \
+            -DBOOST_ROOT="$BOOST_PREFIX" \
+            -DBOOST_INCLUDEDIR="$BOOST_PREFIX/include" \
+            -DBOOST_LIBRARYDIR="$BOOST_PREFIX/lib" \
+            -DBoost_USE_STATIC_LIBS=ON \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DBoost_NO_BOOST_CMAKE=ON \
+            -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+          cmake --build build/release -j${{ steps.make-jobs.outputs.count }}
+
+      - name: package
+        id: package
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME}"
+          else
+            VERSION="dev-${GITHUB_SHA::7}"
+          fi
+
+          tar -C build/release -czf "ryo-macos-${VERSION}.tar.gz" bin
+          echo "output=ryo-macos-${VERSION}.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.package.outputs.output }}
+          path: ${{ steps.package.outputs.output }}
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish Release
+    needs:
+      - build-linux
+      - build-macos
+      - build-windows
+    runs-on: ubuntu-latest
+
+    if: startsWith(github.ref, 'refs/tags/')
+
+    permissions:
+        contents: write
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          path: release-artifacts
+      - name: Publish Github release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: release-artifacts/**/*
