@@ -69,7 +69,7 @@
 #define HAS_ARM
 #endif
 
-#if defined(__aarch64__)
+#if defined(__linux__) && defined(__aarch64__)
 #include <asm/hwcap.h>
 #include <sys/auxv.h>
 #define HAS_ARM_HW

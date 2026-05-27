@@ -178,6 +178,7 @@ target_link_libraries(blockchain_blackball
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_LOCALE_LIBRARY}
+    ${ICU_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBRARIES}
     fmt::fmt-header-only)
