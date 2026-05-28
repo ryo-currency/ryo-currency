@@ -856,7 +856,15 @@ if(STATIC)
   set(Boost_USE_STATIC_LIBS ON)
   set(Boost_USE_STATIC_RUNTIME ON)
 endif()
-find_package(Boost 1.58 QUIET REQUIRED COMPONENTS system filesystem thread date_time chrono regex serialization program_options locale)
+find_package(Boost 1.58 QUIET REQUIRED COMPONENTS filesystem thread date_time chrono regex serialization program_options locale OPTIONAL_COMPONENTS system)
+# Boost.System is header-only in 1.69+, so only older Boost requires the library.
+if(Boost_VERSION VERSION_LESS 1.69 AND NOT Boost_SYSTEM_FOUND)
+  message(FATAL_ERROR "Boost.System library is required for Boost < 1.69")
+endif()
+# If boost version is >= 1.69 then we initialize Boost_SYSTEM_LIBRARY with an empty string to satisfy the repos variable calls to Boost_SYSTEM_LIBRARY
+if(NOT Boost_SYSTEM_FOUND)
+  set(Boost_SYSTEM_LIBRARY "")
+endif()
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
 if(NOT Boost_FOUND)
