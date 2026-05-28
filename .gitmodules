@@ -1,6 +1,6 @@
 [submodule "external/fmt"]
 	path = external/fmt
 	url = https://github.com/fmtlib/fmt.git
-[submodule "external/miniupnpc"]
-	path = external/miniupnpc
+[submodule "external/miniupnp"]
+	path = external/miniupnp
 	url = https://github.com/miniupnp/miniupnp.git

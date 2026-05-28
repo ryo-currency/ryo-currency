@@ -39,6 +39,15 @@ find_package(Miniupnpc REQUIRED)
 
 message(STATUS "Using in-tree miniupnpc")
 
+# Defensive option to always build the static miniupnpc library target used by this project.
+set(UPNPC_BUILD_STATIC ON CACHE BOOL "Build static miniupnpc library" FORCE)
+# Do not build the shared miniupnpc library target.
+set(UPNPC_BUILD_SHARED OFF CACHE BOOL "Build shared miniupnpc library" FORCE)
+# Do not build miniupnpc test executables.
+set(UPNPC_BUILD_TESTS OFF CACHE BOOL "Build miniupnpc test executables" FORCE)
+# Do not build miniupnpc sample executables.
+set(UPNPC_BUILD_SAMPLE OFF CACHE BOOL "Build miniupnpc sample executables" FORCE)
+
 add_subdirectory(miniupnp/miniupnpc)
 
 set_property(TARGET libminiupnpc-static PROPERTY FOLDER "external")
