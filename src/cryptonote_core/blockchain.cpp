@@ -445,9 +445,9 @@ bool Blockchain::init(BlockchainDB *db, const network_type nettype, bool offline
 
 	// create general purpose async service queue
 
-	m_async_work_idle = std::unique_ptr<boost::asio::io_service::work>(new boost::asio::io_service::work(m_async_service));
+	m_async_work_idle.reset(new boost::asio::executor_work_guard<boost::asio::io_context::executor_type>(m_async_service.get_executor()));
 	// we only need 1
-	m_async_pool.create_thread(boost::bind(&boost::asio::io_service::run, &m_async_service));
+	m_async_pool.create_thread([this] { m_async_service.run(); });
 
 #if defined(PER_BLOCK_CHECKPOINT)
 	if(m_nettype != FAKECHAIN)

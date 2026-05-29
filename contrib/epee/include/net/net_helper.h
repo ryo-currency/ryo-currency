@@ -79,11 +79,11 @@ class blocked_mode_client
   public:
 	inline blocked_mode_client() : m_initialized(false),
 								   m_connected(false),
-								   m_deadline(m_io_service),
+								   m_deadline(m_io_context),
 								   m_shutdowned(0),
 								   m_ssl(false),
 								   m_ctx(boost::asio::ssl::context::sslv23),
-								   m_ssl_socket(m_io_service, m_ctx)
+								   m_ssl_socket(m_io_context, m_ctx)
 	{
 
 		m_initialized = true;
@@ -124,7 +124,7 @@ class blocked_mode_client
 
 			//////////////////////////////////////////////////////////////////////////
 
-			boost::asio::ip::tcp::resolver resolver(m_io_service);
+			boost::asio::ip::tcp::resolver resolver(m_io_context);
 			boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), addr, port, boost::asio::ip::tcp::resolver::query::canonical_name);
 			boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 			boost::asio::ip::tcp::resolver::iterator end;
@@ -153,7 +153,7 @@ class blocked_mode_client
 			m_ssl_socket.next_layer().async_connect(remote_endpoint, boost::lambda::var(ec) = boost::lambda::_1);
 			while(ec == boost::asio::error::would_block)
 			{
-				m_io_service.run_one();
+				m_io_context.run_one();
 			}
 
 			if(!ec && m_ssl_socket.next_layer().is_open())
@@ -240,7 +240,7 @@ class blocked_mode_client
 			// Block until the asynchronous operation has completed.
 			while(ec == boost::asio::error::would_block)
 			{
-				m_io_service.run_one();
+				m_io_context.run_one();
 			}
 
 			if(ec)
@@ -292,7 +292,7 @@ class blocked_mode_client
 				// Block until the asynchronous operation has completed.
 				while (ec == boost::asio::error::would_block)
 				{
-					m_io_service.run_one();
+					m_io_context.run_one();
 				}
 				*/
 			boost::system::error_code ec;
@@ -365,7 +365,7 @@ class blocked_mode_client
 			// Block until the asynchronous operation has completed.
 			while(ec == boost::asio::error::would_block && !boost::interprocess::ipcdetail::atomic_read32(&m_shutdowned))
 			{
-				m_io_service.run_one();
+				m_io_context.run_one();
 			}
 
 			if(ec)
@@ -442,7 +442,7 @@ class blocked_mode_client
 			// Block until the asynchronous operation has completed.
 			while(ec == boost::asio::error::would_block && !boost::interprocess::ipcdetail::atomic_read32(&m_shutdowned))
 			{
-				m_io_service.run_one();
+				m_io_context.run_one();
 			}
 
 			if(ec)
@@ -504,9 +504,9 @@ class blocked_mode_client
 	{
 		m_connected = connected;
 	}
-	boost::asio::io_service &get_io_service()
+	boost::asio::io_context &get_io_context()
 	{
-		return m_io_service;
+		return m_io_context;
 	}
 
 	boost::asio::ip::tcp::socket &get_socket()
@@ -546,7 +546,7 @@ class blocked_mode_client
 		m_ssl_socket.async_shutdown(boost::lambda::var(ec) = boost::lambda::_1);
 		while(ec == boost::asio::error::would_block)
 		{
-			m_io_service.run_one();
+			m_io_context.run_one();
 		}
 		// Ignore "short read" error
 		if(ec.category() == boost::asio::error::get_ssl_category() &&
@@ -588,7 +588,7 @@ class blocked_mode_client
 	}
 
   protected:
-	boost::asio::io_service m_io_service;
+	boost::asio::io_context m_io_context;
 	boost::asio::ssl::context m_ctx;
 	boost::asio::ssl::stream<boost::asio::ip::tcp::socket> m_ssl_socket;
 	bool m_ssl;
@@ -604,7 +604,7 @@ class blocked_mode_client
 class async_blocked_mode_client : public blocked_mode_client
 {
   public:
-	async_blocked_mode_client() : m_send_deadline(blocked_mode_client::m_io_service)
+	async_blocked_mode_client() : m_send_deadline(blocked_mode_client::m_io_context)
 	{
 
 		// No deadline is required until the first socket operation is started. We
@@ -650,7 +650,7 @@ class async_blocked_mode_client : public blocked_mode_client
 				// Block until the asynchronous operation has completed.
 				while(ec == boost::asio::error::would_block)
 				{
-					m_io_service.run_one();
+					m_io_context.run_one();
 				}*/
 
 			boost::system::error_code ec;

@@ -74,18 +74,18 @@ namespace net_utils
 PRAGMA_WARNING_DISABLE_VS(4355)
 
 template <class t_protocol_handler>
-connection<t_protocol_handler>::connection(boost::asio::io_service &io_service,
+connection<t_protocol_handler>::connection(boost::asio::io_context &io_context,
 										   typename t_protocol_handler::config_type &config,
 										   std::atomic<long> &ref_sock_count, // the ++/-- counter
 										   std::atomic<long> &sock_number,	// the only increasing ++ number generator
 										   i_connection_filter *&pfilter, t_connection_type connection_type)
-	: connection_basic(io_service, ref_sock_count, sock_number),
+	: connection_basic(io_context, ref_sock_count, sock_number),
 	  m_protocol_handler(this, config, context),
 	  m_pfilter(pfilter),
 	  m_connection_type(connection_type),
 	  m_throttle_speed_in("speed_in", "throttle_speed_in"),
 	  m_throttle_speed_out("speed_out", "throttle_speed_out"),
-	  m_timer(io_service),
+	  m_timer(io_context),
 	  m_local(false)
 {
 	GULPSF_LOG_L1("test, connection constructor set m_connection_type={}", static_cast<int>(m_connection_type));
@@ -207,9 +207,9 @@ bool connection<t_protocol_handler>::request_callback()
 }
 //---------------------------------------------------------------------------------
 template <class t_protocol_handler>
-boost::asio::io_service &connection<t_protocol_handler>::get_io_service()
+boost::asio::io_context &connection<t_protocol_handler>::get_io_context()
 {
-	return GET_IO_SERVICE(socket_);
+	return epee::net_utils::get_io_context(socket_);
 }
 //---------------------------------------------------------------------------------
 template <class t_protocol_handler>
@@ -371,7 +371,7 @@ bool connection<t_protocol_handler>::call_run_once_service_io()
 	if(!m_is_multithreaded)
 	{
 		//single thread model, we can wait in blocked call
-		size_t cnt = GET_IO_SERVICE(socket_).run_one();
+		size_t cnt = epee::net_utils::get_io_context(socket_).run_one();
 		if(!cnt) //service is going to quit
 			return false;
 	}
@@ -382,7 +382,7 @@ bool connection<t_protocol_handler>::call_run_once_service_io()
 		//if no handlers were called
 		//TODO: Maybe we need to have have critical section + event + callback to upper protocol to
 		//ask it inside(!) critical region if we still able to go in event wait...
-		size_t cnt = GET_IO_SERVICE(socket_).poll_one();
+		size_t cnt = epee::net_utils::get_io_context(socket_).poll_one();
 		if(!cnt)
 			misc_utils::sleep_no_w(0);
 	}
@@ -737,9 +737,9 @@ bool connection<t_protocol_handler>::speed_limit_is_enabled() const
 /************************************************************************/
 
 template <class t_protocol_handler>
-boosted_tcp_server<t_protocol_handler>::boosted_tcp_server(t_connection_type connection_type) : m_io_service_local_instance(new boost::asio::io_service()),
-																								io_service_(*m_io_service_local_instance.get()),
-																								acceptor_(io_service_),
+boosted_tcp_server<t_protocol_handler>::boosted_tcp_server(t_connection_type connection_type) : m_io_context_local_instance(new boost::asio::io_context()),
+																								io_context_(*m_io_context_local_instance.get()),
+																								acceptor_(io_context_),
 																								m_stop_signal_sent(false), m_port(0),
 																								m_sock_count(0), m_sock_number(0), m_threads_count(0),
 																								m_pfilter(NULL), m_thread_index(0),
@@ -751,8 +751,8 @@ boosted_tcp_server<t_protocol_handler>::boosted_tcp_server(t_connection_type con
 }
 
 template <class t_protocol_handler>
-boosted_tcp_server<t_protocol_handler>::boosted_tcp_server(boost::asio::io_service &extarnal_io_service, t_connection_type connection_type) : io_service_(extarnal_io_service),
-																																			  acceptor_(io_service_),
+boosted_tcp_server<t_protocol_handler>::boosted_tcp_server(boost::asio::io_context &extarnal_io_context, t_connection_type connection_type) : io_context_(extarnal_io_context),
+																																			  acceptor_(io_context_),
 																																			  m_stop_signal_sent(false), m_port(0),
 																																			  m_sock_count(0), m_sock_number(0), m_threads_count(0),
 																																			  m_pfilter(NULL), m_thread_index(0),
@@ -786,7 +786,7 @@ bool boosted_tcp_server<t_protocol_handler>::init_server(uint32_t port, const st
 	m_port = port;
 	m_address = address;
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
-	boost::asio::ip::tcp::resolver resolver(io_service_);
+	boost::asio::ip::tcp::resolver resolver(io_context_);
 	boost::asio::ip::tcp::resolver::query query(address, std::to_string(port), boost::asio::ip::tcp::resolver::query::canonical_name);
 	boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
 	acceptor_.open(endpoint.protocol());
@@ -796,7 +796,7 @@ bool boosted_tcp_server<t_protocol_handler>::init_server(uint32_t port, const st
 	boost::asio::ip::tcp::endpoint binded_endpoint = acceptor_.local_endpoint();
 	m_port = binded_endpoint.port();
 	GULPS_LOG_L1("start accept");
-	new_connection_.reset(new connection<t_protocol_handler>(io_service_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
+	new_connection_.reset(new connection<t_protocol_handler>(io_context_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
 	acceptor_.async_accept(new_connection_->socket(),
 						   boost::bind(&boosted_tcp_server<t_protocol_handler>::handle_accept, this,
 									   boost::asio::placeholders::error));
@@ -844,7 +844,7 @@ bool boosted_tcp_server<t_protocol_handler>::worker_thread()
 	{
 		try
 		{
-			io_service_.run();
+			io_context_.run();
 		}
 		catch(const std::exception &ex)
 		{
@@ -887,7 +887,7 @@ bool boosted_tcp_server<t_protocol_handler>::run_server(size_t threads_count, bo
 	while(!m_stop_signal_sent)
 	{
 
-		// Create a pool of threads to run all of the io_services.
+		// Create a pool of threads to run all of the io_contexts.
 		CRITICAL_REGION_BEGIN(m_threads_lock);
 		for(std::size_t i = 0; i < threads_count; ++i)
 		{
@@ -979,7 +979,7 @@ void boosted_tcp_server<t_protocol_handler>::send_stop_signal()
 	}
 	connections_.clear();
 	connections_mutex.unlock();
-	io_service_.stop();
+	io_context_.stop();
 	GULPS_CATCH_ENTRY_L0("boosted_tcp_server<t_protocol_handler>::send_stop_signal()", void());
 }
 //---------------------------------------------------------------------------------
@@ -1002,7 +1002,7 @@ void boosted_tcp_server<t_protocol_handler>::handle_accept(const boost::system::
 			new_connection_->setRpcStation(); // hopefully this is not needed actually
 		}
 		connection_ptr conn(std::move(new_connection_));
-		new_connection_.reset(new connection<t_protocol_handler>(io_service_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
+		new_connection_.reset(new connection<t_protocol_handler>(io_context_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
 		acceptor_.async_accept(new_connection_->socket(),
 							   boost::bind(&boosted_tcp_server<t_protocol_handler>::handle_accept, this,
 										   boost::asio::placeholders::error));
@@ -1025,7 +1025,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 {
 	GULPS_TRY_ENTRY();
 
-	connection_ptr new_connection_l(new connection<t_protocol_handler>(io_service_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
+	connection_ptr new_connection_l(new connection<t_protocol_handler>(io_context_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
 	connections_mutex.lock();
 	connections_.insert(new_connection_l);
 	GULPSF_LOG_L1("connections_ size now {}", connections_.size());
@@ -1034,7 +1034,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 	boost::asio::ip::tcp::socket &sock_ = new_connection_l->socket();
 
 	//////////////////////////////////////////////////////////////////////////
-	boost::asio::ip::tcp::resolver resolver(io_service_);
+	boost::asio::ip::tcp::resolver resolver(io_context_);
 	boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), adr, port, boost::asio::ip::tcp::resolver::query::canonical_name);
 	boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 	boost::asio::ip::tcp::resolver::iterator end;
@@ -1117,7 +1117,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 	if(r)
 	{
 		new_connection_l->get_context(conn_context);
-		//new_connection_l.reset(new connection<t_protocol_handler>(io_service_, m_config, m_sock_count, m_pfilter));
+		//new_connection_l.reset(new connection<t_protocol_handler>(io_context_, m_config, m_sock_count, m_pfilter));
 	}
 	else
 	{
@@ -1136,7 +1136,7 @@ template <class t_callback>
 bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &adr, const std::string &port, uint32_t conn_timeout, const t_callback &cb, const std::string &bind_ip)
 {
 	GULPS_TRY_ENTRY();
-	connection_ptr new_connection_l(new connection<t_protocol_handler>(io_service_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
+	connection_ptr new_connection_l(new connection<t_protocol_handler>(io_context_, m_config, m_sock_count, m_sock_number, m_pfilter, m_connection_type));
 	connections_mutex.lock();
 	connections_.insert(new_connection_l);
 	GULPSF_LOG_L1("connections_ size now {}", connections_.size());
@@ -1145,7 +1145,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 	boost::asio::ip::tcp::socket &sock_ = new_connection_l->socket();
 
 	//////////////////////////////////////////////////////////////////////////
-	boost::asio::ip::tcp::resolver resolver(io_service_);
+	boost::asio::ip::tcp::resolver resolver(io_context_);
 	boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), adr, port, boost::asio::ip::tcp::resolver::query::canonical_name);
 	boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
 	boost::asio::ip::tcp::resolver::iterator end;
@@ -1164,7 +1164,7 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 		sock_.bind(local_endpoint);
 	}
 
-	boost::shared_ptr<boost::asio::deadline_timer> sh_deadline(new boost::asio::deadline_timer(io_service_));
+	boost::shared_ptr<boost::asio::deadline_timer> sh_deadline(new boost::asio::deadline_timer(io_context_));
 	//start deadline
 	sh_deadline->expires_from_now(boost::posix_time::milliseconds(conn_timeout));
 	sh_deadline->async_wait([=](const boost::system::error_code &error) {

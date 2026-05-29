@@ -126,8 +126,8 @@ struct test_levin_commands_handler : public epee::levin::levin_commands_handler<
 class test_connection : public epee::net_utils::i_service_endpoint
 {
   public:
-	test_connection(boost::asio::io_service &io_service, test_levin_protocol_handler_config &protocol_config)
-		: m_io_service(io_service), m_send_return(true), m_protocol_handler(this, protocol_config, m_context)
+	test_connection(boost::asio::io_context &io_context, test_levin_protocol_handler_config &protocol_config)
+		: m_io_context(io_context), m_send_return(true), m_protocol_handler(this, protocol_config, m_context)
 	{
 	}
 
@@ -158,10 +158,10 @@ class test_connection : public epee::net_utils::i_service_endpoint
 		std::cout << "test_connection::request_callback()" << std::endl;
 		return true;
 	}
-	virtual boost::asio::io_service &get_io_service()
+	virtual boost::asio::io_context &get_io_context()
 	{
-		std::cout << "test_connection::get_io_service()" << std::endl;
-		return m_io_service;
+		std::cout << "test_connection::get_io_context()" << std::endl;
+		return m_io_context;
 	}
 	virtual bool add_ref()
 	{
@@ -187,7 +187,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
 	void send_return(bool v) { m_send_return = v; }
 
 private:
-	boost::asio::io_service &m_io_service;
+	boost::asio::io_context &m_io_context;
 	test_levin_connection_context m_context;
 
 	unit_test::call_counter m_send_counter;
@@ -224,7 +224,7 @@ class async_protocol_handler_test : public ::testing::Test
   protected:
 	test_connection_ptr create_connection(bool start = true)
 	{
-		test_connection_ptr conn(new test_connection(m_io_service, m_handler_config));
+		test_connection_ptr conn(new test_connection(m_io_context, m_handler_config));
 		if(start)
 		{
 			conn->start();
@@ -233,7 +233,7 @@ class async_protocol_handler_test : public ::testing::Test
 	}
 
   protected:
-	boost::asio::io_service m_io_service;
+	boost::asio::io_context m_io_context;
 	test_levin_protocol_handler_config m_handler_config;
 	test_levin_commands_handler *m_pcommands_handler, &m_commands_handler;
 };

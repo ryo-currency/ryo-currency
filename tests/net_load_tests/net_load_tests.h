@@ -32,7 +32,7 @@
 
 #include <atomic>
 
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 
 #include "include_base_utils.h"
 #include "net/abstract_tcp_server2.h"

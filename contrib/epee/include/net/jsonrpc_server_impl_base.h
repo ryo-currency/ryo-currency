@@ -22,8 +22,8 @@ class jsonrpc_server_impl_base : public net_utils::jsonrpc2::i_jsonrpc2_server_h
 	{
 	}
 
-	explicit jsonrpc_server_impl_base(boost::asio::io_service &external_io_service)
-		: m_net_server(external_io_service)
+	explicit jsonrpc_server_impl_base(boost::asio::io_context &external_io_context)
+		: m_net_server(external_io_context)
 	{
 	}
 

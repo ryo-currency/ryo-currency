@@ -348,7 +348,7 @@ inline void append_net_address(
 	std::string host = addr.substr(0, pos);
 	std::string port = addr.substr(pos + 1);
 
-	io_service io_srv;
+	io_context io_srv;
 	ip::tcp::resolver resolver(io_srv);
 	ip::tcp::resolver::query query(host, port, boost::asio::ip::tcp::resolver::query::canonical_name);
 	boost::system::error_code ec;

@@ -19,8 +19,8 @@ ENV ANDROID_SDK_ROOT ${WORKDIR}/android-sdk-linux
 ENV ANDROID_NDK_ROOT ${WORKDIR}/android-ndk-r${ANDROID_NDK_REVISION}
 
 ## INSTALL BOOST
-ENV BOOST_VERSION 1_62_0
-ENV BOOST_VERSION_DOT 1.62.0
+ENV BOOST_VERSION 1_74_0
+ENV BOOST_VERSION_DOT 1.74.0
 RUN curl -s -L -o  boost_${BOOST_VERSION}.tar.bz2 https://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION_DOT}/boost_${BOOST_VERSION}.tar.bz2/download \
     && tar -xvf boost_${BOOST_VERSION}.tar.bz2 \
     && rm -f /usr/boost_${BOOST_VERSION}.tar.bz2 \
