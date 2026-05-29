@@ -856,26 +856,18 @@ if(STATIC)
   set(Boost_USE_STATIC_LIBS ON)
   set(Boost_USE_STATIC_RUNTIME ON)
 endif()
-find_package(Boost 1.58 QUIET REQUIRED COMPONENTS filesystem thread date_time chrono regex serialization program_options locale OPTIONAL_COMPONENTS system)
-# Boost.System is header-only in 1.69+, so only older Boost requires the library.
-if(Boost_VERSION VERSION_LESS 1.69 AND NOT Boost_SYSTEM_FOUND)
-  message(FATAL_ERROR "Boost.System library is required for Boost < 1.69")
-endif()
-# If boost version is >= 1.69 then we initialize Boost_SYSTEM_LIBRARY with an empty string to satisfy the repos variable calls to Boost_SYSTEM_LIBRARY
+find_package(Boost 1.74 QUIET REQUIRED COMPONENTS filesystem thread date_time chrono regex serialization program_options locale OPTIONAL_COMPONENTS system)
+# Boost.System is header-only for all supported Boost versions, so newer
+# releases may not provide a separate library to link.
 if(NOT Boost_SYSTEM_FOUND)
   set(Boost_SYSTEM_LIBRARY "")
 endif()
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
 if(NOT Boost_FOUND)
-  die("Could not find Boost libraries, please make sure you have installed Boost or libboost-all-dev (1.58) or the equivalent")
+  die("Could not find Boost libraries, please make sure you have installed Boost or libboost-all-dev (1.74) or the equivalent")
 elseif(Boost_FOUND)
   message(STATUS "Found Boost Version: ${Boost_VERSION}")
-  if (Boost_VERSION VERSION_LESS 1.62.0 AND NOT (OPENSSL_VERSION VERSION_LESS 1.1))
-      message(FATAL_ERROR "Boost older than 1.62 is too old to link with OpenSSL 1.1 or newer. "
-                          "Update Boost or install OpenSSL 1.0 and set path to it when running cmake: "
-                          "cmake -DOPENSSL_ROOT_DIR='/usr/include/openssl-1.0;/usr/lib/openssl-1.0'")
-  endif()
 endif()
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})

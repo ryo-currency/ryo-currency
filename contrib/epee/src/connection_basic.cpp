@@ -144,10 +144,10 @@ connection_basic_pimpl::connection_basic_pimpl(const std::string &name) : m_thro
 int connection_basic_pimpl::m_default_tos;
 
 // methods:
-connection_basic::connection_basic(boost::asio::io_service &io_service, std::atomic<long> &ref_sock_count, std::atomic<long> &sock_number)
+connection_basic::connection_basic(boost::asio::io_context &io_context, std::atomic<long> &ref_sock_count, std::atomic<long> &sock_number)
 	: mI(new connection_basic_pimpl("peer")),
-	  strand_(io_service),
-	  socket_(io_service),
+	  strand_(io_context),
+	  socket_(io_context),
 	  m_want_close_connection(false),
 	  m_was_shutdown(false),
 	  m_ref_sock_count(ref_sock_count)
