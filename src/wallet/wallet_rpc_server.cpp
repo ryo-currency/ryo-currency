@@ -473,7 +473,7 @@ bool wallet_rpc_server::on_get_accounts(const wallet_rpc::COMMAND_RPC_GET_ACCOUN
 		if(!req.tag.empty() && account_tags.first.count(req.tag) == 0)
 		{
 			er.code = WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR;
-			er.message = (fmt::format(tr("Tag {} is unregistered.")), req.tag);
+			er.message = fmt::format(tr("Tag {} is unregistered."), req.tag);
 			return false;
 		}
 		for(; subaddr_index.major < m_wallet->get_num_subaddress_accounts(); ++subaddr_index.major)
@@ -2575,12 +2575,11 @@ void wallet_rpc_server::handle_rpc_exception(const std::exception_ptr &e, epee::
 	catch(const tools::error::tx_not_possible &e)
 	{
 		er.code = WALLET_RPC_ERROR_CODE_TX_NOT_POSSIBLE;
-		er.message = (fmt::format(tr("Transaction not possible. Available only {}, transaction amount {} = {} + {} (fee)")) ,
-					  cryptonote::print_money(e.available()) ,
-					  cryptonote::print_money(e.tx_amount() + e.fee()) ,
-					  cryptonote::print_money(e.tx_amount()) ,
+		er.message = fmt::format(tr("Transaction not possible. Available only {}, transaction amount {} = {} + {} (fee)"),
+					  cryptonote::print_money(e.available()),
+					  cryptonote::print_money(e.tx_amount() + e.fee()),
+					  cryptonote::print_money(e.tx_amount()),
 					  cryptonote::print_money(e.fee()));
-		er.message = e.what();
 	}
 	catch(const tools::error::not_enough_outs_to_mix &e)
 	{
