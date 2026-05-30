@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.8...3.28)
 set(Boost_USE_MULTITHREADED ON)
 #set(Boost_DEBUG 1) 
-find_package(Boost COMPONENTS system filesystem thread date_time chrono regex )
+find_package(Boost 1.74 COMPONENTS filesystem thread date_time chrono regex OPTIONAL_COMPONENTS system)
 
 include_directories( ${Boost_INCLUDE_DIRS} )
 
@@ -10,7 +10,7 @@ IF (MSVC)
 	add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4996 /wd4345  /nologo /D_WIN32_WINNT=0x0600 /DWIN32_LEAN_AND_MEAN /bigobj" )
 ELSE()
 	# set stuff for other systems
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-reorder -D_GNU_SOURCE")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wno-reorder -D_GNU_SOURCE")
 ENDIF()
 
 	
@@ -45,5 +45,4 @@ IF (NOT WIN32)
   target_link_libraries (demo_http_server rt)
   target_link_libraries (demo_levin_server rt)
 ENDIF()
-
 

@@ -58,10 +58,10 @@ cmake_minimum_required(VERSION 3.8...3.28)
 
 project(ryo)
 
-# enforce C++11
+# enforce C++14
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 # enforce C11
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -585,7 +585,7 @@ else()
     set(STATIC_ASSERT_FLAG "-Dstatic_assert=_Static_assert")
   endif()
 
-  try_compile(STATIC_ASSERT_CPP_RES "${CMAKE_CURRENT_BINARY_DIR}/static-assert" "${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-static-assert.cpp" COMPILE_DEFINITIONS "-std=c++11")
+  try_compile(STATIC_ASSERT_CPP_RES "${CMAKE_CURRENT_BINARY_DIR}/static-assert" "${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-static-assert.cpp" COMPILE_DEFINITIONS "-std=c++14")
   if(STATIC_ASSERT_CPP_RES)
     set(STATIC_ASSERT_CPP_FLAG "")
   else()
@@ -857,8 +857,8 @@ if(STATIC)
   set(Boost_USE_STATIC_RUNTIME ON)
 endif()
 find_package(Boost 1.74 QUIET REQUIRED COMPONENTS filesystem thread date_time chrono regex serialization program_options locale OPTIONAL_COMPONENTS system)
-# Boost.System is header-only for all supported Boost versions, so newer
-# releases may not provide a separate library to link.
+# Boost.System is header-only for supported Boost versions, so newer releases may
+# not provide a separate library to link.
 if(NOT Boost_SYSTEM_FOUND)
   set(Boost_SYSTEM_LIBRARY "")
 endif()
