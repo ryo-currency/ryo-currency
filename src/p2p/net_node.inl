@@ -350,18 +350,16 @@ inline void append_net_address(
 
 	io_context io_srv;
 	ip::tcp::resolver resolver(io_srv);
-	ip::tcp::resolver::query query(host, port, boost::asio::ip::tcp::resolver::query::canonical_name);
 	boost::system::error_code ec;
-	ip::tcp::resolver::iterator i = resolver.resolve(query, ec);
+	auto results = resolver.resolve(host, port, boost::asio::ip::resolver_base::canonical_name, ec);
 	GULPS_CHECK_AND_ASSERT_MES_NO_RET(!ec, "Failed to resolve host name '" , host , "': " , ec.message() , ':' , ec.value());
 
-	ip::tcp::resolver::iterator iend;
-	for(; i != iend; ++i)
+	for(const auto &entry : results)
 	{
-		ip::tcp::endpoint endpoint = *i;
+		ip::tcp::endpoint endpoint = entry.endpoint();
 		if(endpoint.address().is_v4())
 		{
-			epee::net_utils::network_address na{epee::net_utils::ipv4_network_address{boost::asio::detail::socket_ops::host_to_network_long(endpoint.address().to_v4().to_ulong()), endpoint.port()}};
+			epee::net_utils::network_address na{epee::net_utils::ipv4_network_address{boost::asio::detail::socket_ops::host_to_network_long(endpoint.address().to_v4().to_uint()), endpoint.port()}};
 			seed_nodes.push_back(na);
 			GULPSF_INFO("Added seed node: {}", na.str());
 		}
