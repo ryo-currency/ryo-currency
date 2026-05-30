@@ -46,6 +46,7 @@
 
 
 #include <algorithm>
+#include <boost/asio/dispatch.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <cstdio>
@@ -4058,7 +4059,9 @@ bool Blockchain::cleanup_handle_incoming_blocks(bool force_sync)
 			if(m_db_sync_mode == db_async)
 			{
 				m_sync_counter = 0;
-				m_async_service.dispatch(boost::bind(&Blockchain::store_blockchain, this));
+				boost::asio::dispatch(
+					m_async_service.get_executor(),
+					boost::bind(&Blockchain::store_blockchain, this));
 			}
 			else if(m_db_sync_mode == db_sync)
 			{
