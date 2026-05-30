@@ -29,11 +29,14 @@
 #include <boost/archive/iterators/ostream_iterator.hpp>
 #include <boost/archive/iterators/transform_width.hpp>
 #include <boost/asio.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <istream>
 #include <ostream>
 #include <string>
+
+#include "misc_language.h"
 
 namespace epee
 {

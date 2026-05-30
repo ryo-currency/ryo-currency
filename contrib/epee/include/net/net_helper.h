@@ -125,9 +125,9 @@ class blocked_mode_client
 			//////////////////////////////////////////////////////////////////////////
 
 			boost::asio::ip::tcp::resolver resolver(m_io_context);
-			boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), addr, port, boost::asio::ip::tcp::resolver::query::canonical_name);
-			boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-			boost::asio::ip::tcp::resolver::iterator end;
+			auto results = resolver.resolve(boost::asio::ip::tcp::v4(), addr, port, boost::asio::ip::resolver_base::canonical_name);
+			auto iterator = results.begin();
+			auto end = results.end();
 			if(iterator == end)
 			{
 				GULPSF_LOG_ERROR("Failed to resolve {}", addr);
@@ -137,12 +137,12 @@ class blocked_mode_client
 			//////////////////////////////////////////////////////////////////////////
 
 			//boost::asio::ip::tcp::endpoint remote_endpoint(boost::asio::ip::address::from_string(addr.c_str()), port);
-			boost::asio::ip::tcp::endpoint remote_endpoint(*iterator);
+			boost::asio::ip::tcp::endpoint remote_endpoint(iterator->endpoint());
 
 			m_ssl_socket.next_layer().open(remote_endpoint.protocol());
 			if(bind_ip != "0.0.0.0" && bind_ip != "0" && bind_ip != "")
 			{
-				boost::asio::ip::tcp::endpoint local_endpoint(boost::asio::ip::address::from_string(addr.c_str()), 0);
+				boost::asio::ip::tcp::endpoint local_endpoint(boost::asio::ip::make_address(addr), 0);
 				m_ssl_socket.next_layer().bind(local_endpoint);
 			}
 

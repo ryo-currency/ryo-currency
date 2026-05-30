@@ -47,6 +47,8 @@
 #include <boost/uuid/random_generator.hpp>
 
 #include <algorithm>
+#include <array>
+#include <cstdint>
 #include <iomanip>
 #include <sstream>
 
@@ -145,13 +147,15 @@ bool connection<t_protocol_handler>::start(bool is_income, bool is_multithreaded
 	GULPS_CHECK_AND_NO_ASSERT_MES(!ec, false, "Failed to get local endpoint: " , ec.message() , ":" , ec.value());
 
 	context = boost::value_initialized<t_connection_context>();
-	const unsigned long ip_{boost::asio::detail::socket_ops::host_to_network_long(remote_ep.address().to_v4().to_ulong())};
+	const uint32_t ip_{boost::asio::detail::socket_ops::host_to_network_long(remote_ep.address().to_v4().to_uint())};
 	m_local = epee::net_utils::is_ip_loopback(ip_);
 
 	// create a random uuid
-	boost::uuids::uuid random_uuid;
+	boost::uuids::uuid random_uuid{};
+	std::array<uint8_t, 16> bytes{};
 	// that stuff turns out to be included, even though it's from src... Taking advantage
-	random_uuid = crypto::rand<boost::uuids::uuid>();
+	crypto::rand(bytes.size(), bytes.data());
+	std::copy(bytes.begin(), bytes.end(), random_uuid.begin());
 
 	context.set_details(random_uuid, epee::net_utils::ipv4_network_address(ip_, remote_ep.port()), is_income);
 	GULPS_LOG_L3("[sock ", socket_.native_handle(), "] new connection from ", print_connection_context_short(context), " to ", local_ep.address().to_string(), ":", local_ep.port(), ", total sockets objects ", &m_ref_sock_count);
@@ -201,7 +205,7 @@ bool connection<t_protocol_handler>::request_callback()
 	if(!self)
 		return false;
 
-	strand_.post(boost::bind(&connection<t_protocol_handler>::call_back_starter, self));
+	boost::asio::post(strand_, boost::bind(&connection<t_protocol_handler>::call_back_starter, self));
 	GULPS_CATCH_ENTRY_L0("connection<t_protocol_handler>::request_callback()", false);
 	return true;
 }
@@ -787,8 +791,8 @@ bool boosted_tcp_server<t_protocol_handler>::init_server(uint32_t port, const st
 	m_address = address;
 	// Open the acceptor with the option to reuse the address (i.e. SO_REUSEADDR).
 	boost::asio::ip::tcp::resolver resolver(io_context_);
-	boost::asio::ip::tcp::resolver::query query(address, std::to_string(port), boost::asio::ip::tcp::resolver::query::canonical_name);
-	boost::asio::ip::tcp::endpoint endpoint = *resolver.resolve(query);
+	auto results = resolver.resolve(address, std::to_string(port), boost::asio::ip::resolver_base::canonical_name);
+	boost::asio::ip::tcp::endpoint endpoint = results.begin()->endpoint();
 	acceptor_.open(endpoint.protocol());
 	acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 	acceptor_.bind(endpoint);
@@ -1035,9 +1039,9 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 
 	//////////////////////////////////////////////////////////////////////////
 	boost::asio::ip::tcp::resolver resolver(io_context_);
-	boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), adr, port, boost::asio::ip::tcp::resolver::query::canonical_name);
-	boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-	boost::asio::ip::tcp::resolver::iterator end;
+	auto results = resolver.resolve(boost::asio::ip::tcp::v4(), adr, port, boost::asio::ip::resolver_base::canonical_name);
+	auto iterator = results.begin();
+	auto end = results.end();
 	if(iterator == end)
 	{
 		GULPSF_ERROR("Failed to resolve {}", adr);
@@ -1046,12 +1050,12 @@ bool boosted_tcp_server<t_protocol_handler>::connect(const std::string &adr, con
 	//////////////////////////////////////////////////////////////////////////
 
 	//boost::asio::ip::tcp::endpoint remote_endpoint(boost::asio::ip::address::from_string(addr.c_str()), port);
-	boost::asio::ip::tcp::endpoint remote_endpoint(*iterator);
+	boost::asio::ip::tcp::endpoint remote_endpoint(iterator->endpoint());
 
 	sock_.open(remote_endpoint.protocol());
 	if(bind_ip != "0.0.0.0" && bind_ip != "0" && bind_ip != "")
 	{
-		boost::asio::ip::tcp::endpoint local_endpoint(boost::asio::ip::address::from_string(adr.c_str()), 0);
+		boost::asio::ip::tcp::endpoint local_endpoint(boost::asio::ip::make_address(adr), 0);
 		sock_.bind(local_endpoint);
 	}
 
@@ -1146,21 +1150,21 @@ bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string &ad
 
 	//////////////////////////////////////////////////////////////////////////
 	boost::asio::ip::tcp::resolver resolver(io_context_);
-	boost::asio::ip::tcp::resolver::query query(boost::asio::ip::tcp::v4(), adr, port, boost::asio::ip::tcp::resolver::query::canonical_name);
-	boost::asio::ip::tcp::resolver::iterator iterator = resolver.resolve(query);
-	boost::asio::ip::tcp::resolver::iterator end;
+	auto results = resolver.resolve(boost::asio::ip::tcp::v4(), adr, port, boost::asio::ip::resolver_base::canonical_name);
+	auto iterator = results.begin();
+	auto end = results.end();
 	if(iterator == end)
 	{
 		GULPSF_ERROR("Failed to resolve {}", adr);
 		return false;
 	}
 	//////////////////////////////////////////////////////////////////////////
-	boost::asio::ip::tcp::endpoint remote_endpoint(*iterator);
+	boost::asio::ip::tcp::endpoint remote_endpoint(iterator->endpoint());
 
 	sock_.open(remote_endpoint.protocol());
 	if(bind_ip != "0.0.0.0" && bind_ip != "0" && bind_ip != "")
 	{
-		boost::asio::ip::tcp::endpoint local_endpoint(boost::asio::ip::address::from_string(adr.c_str()), 0);
+		boost::asio::ip::tcp::endpoint local_endpoint(boost::asio::ip::make_address(adr), 0);
 		sock_.bind(local_endpoint);
 	}
 
