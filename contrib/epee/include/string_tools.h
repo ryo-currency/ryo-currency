@@ -37,6 +37,8 @@
 #include "memwipe.h"
 #include "span.h"
 #include "warnings.h"
+#include <algorithm>
+#include <array>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -331,6 +333,15 @@ std::string pod_to_hex(const t_pod_type &s)
 {
 	static_assert(std::is_standard_layout<t_pod_type>(), "expected standard layout type");
 	return to_hex::string(as_byte_span(s));
+}
+//----------------------------------------------------------------------------
+template <>
+inline std::string pod_to_hex<boost::uuids::uuid>(const boost::uuids::uuid &id)
+{
+	std::array<std::uint8_t, 16> bytes{{}};
+	std::copy(id.begin(), id.end(), bytes.begin());
+	return to_hex::string(to_span(bytes));
+	
 }
 //----------------------------------------------------------------------------
 template <class t_pod_type>

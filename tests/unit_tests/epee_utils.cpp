@@ -43,6 +43,7 @@
 
 #include "boost/archive/portable_binary_iarchive.hpp"
 #include "boost/archive/portable_binary_oarchive.hpp"
+#include <boost/uuid/uuid.hpp>
 #include "hex.h"
 #include "net/local_ip.h"
 #include "net/net_utils_base.h"
@@ -393,6 +394,30 @@ TEST(StringTools, PodToHex)
 	EXPECT_EQ(
 		std::string{"ffab0100"},
 		(epee::string_tools::pod_to_hex(some_pod{{0xFF, 0xAB, 0x01, 0x00}})));
+}
+
+TEST(StringTools, PodToHexUuid)
+{
+	const boost::uuids::uuid id = 
+	{{
+		0x55, 0x0e, 
+		0x84, 0x00,
+   		0xe2, 0x9b,
+    	0x41, 0xd4,
+    	0xa7, 0x16,
+    	0x44, 0x66, 
+		0x55, 0x44, 
+		0x00, 0x00 
+
+	}};
+
+	const std::string hex = epee::string_tools::pod_to_hex(id);
+
+	EXPECT_EQ(std::string{"550e8400e29b41d4a716446655440000"}, hex);
+	EXPECT_EQ(32u, hex.size());
+	EXPECT_EQ(std::string::npos, hex.find("-"));
+
+
 }
 
 TEST(StringTools, GetIpString)
