@@ -365,7 +365,7 @@ inline void append_net_address(
 		}
 		else
 		{
-			GULPSF_WARN("IPv6 unsupported, skip '{}' -> {}", host , endpoint.address().to_v6().to_string(ec) );
+			GULPSF_WARN("IPv6 unsupported, skip '{}' -> {}", host , endpoint.address().to_v6().to_string() );
 			throw std::runtime_error("IPv6 unsupported");
 		}
 	}
