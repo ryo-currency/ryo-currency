@@ -178,7 +178,7 @@ struct basic_node_data
 	peerid_type peer_id;
 
 	BEGIN_KV_SERIALIZE_MAP(basic_node_data)
-	KV_SERIALIZE_VAL_POD_AS_BLOB(network_id)
+	KV_SERIALIZE(network_id)
 	KV_SERIALIZE(peer_id)
 	KV_SERIALIZE(local_time)
 	KV_SERIALIZE(my_port)
