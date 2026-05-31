@@ -48,25 +48,12 @@
 #include "cryptonote_protocol_defs.h"
 #include "string_tools.h"
 #include <boost/uuid/nil_generator.hpp>
+#include <boost/uuid/uuid_hash.hpp>
 #include <unordered_map>
 #include <vector>
-
 #include "common/gulps.hpp"
 
 GULPS_CAT_MAJOR("blk_queue");
-
-namespace std
-{
-static_assert(sizeof(size_t) <= sizeof(boost::uuids::uuid), "boost::uuids::uuid too small");
-template <>
-struct hash<boost::uuids::uuid>
-{
-	std::size_t operator()(const boost::uuids::uuid &_v) const
-	{
-		return reinterpret_cast<const std::size_t &>(_v);
-	}
-};
-}
 
 namespace cryptonote
 {
