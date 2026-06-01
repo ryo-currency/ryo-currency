@@ -31,16 +31,29 @@
 #include "cryptonote_protocol/cryptonote_protocol_defs.h"
 #include "gtest/gtest.h"
 #include <boost/uuid/uuid.hpp>
+#include <algorithm>
+#include <array>
+
+
+static boost::uuids::uuid random_uuid()
+{
+	boost::uuids::uuid id{};
+	std::array<uint8_t, 16> bytes{};
+	crypto::rand(bytes.size(), bytes.data());
+	std::copy(bytes.begin(), bytes.end(), id.begin());
+	return id;
+}
+
 
 static const boost::uuids::uuid &uuid1()
 {
-	static const boost::uuids::uuid uuid = crypto::rand<boost::uuids::uuid>();
+	static const boost::uuids::uuid uuid{random_uuid()};
 	return uuid;
 }
 
 static const boost::uuids::uuid &uuid2()
 {
-	static const boost::uuids::uuid uuid = crypto::rand<boost::uuids::uuid>();
+	static const boost::uuids::uuid uuid{random_uuid()};
 	return uuid;
 }
 
