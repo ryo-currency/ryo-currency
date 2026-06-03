@@ -26,11 +26,14 @@
 
 #pragma once
 
+#include <algorithm>
 #include <boost/mpl/contains_fwd.hpp>
 #include <boost/mpl/vector.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <deque>
 #include <list>
 #include <set>
+#include <string>
 #include <vector>
 #include "common/gulps.hpp"
 
@@ -391,7 +394,33 @@ struct selector<false>
 		return epee::serialization::unserialize_t_val_as_blob(d, stg, hparent_section, pname);
 	}
 };
+//-------------------------------------------------------------------------------------------------------------------
+template <class t_storage>
+bool kv_serialize(const boost::uuids::uuid &id, t_storage &stg, typename t_storage::hsection hparent_section, const char *pname)
+{
+	std::string blob;
+	blob.resize(id.size());
+	std::copy(id.begin(), id.end(), blob.begin());
+	return stg.set_value(pname, blob, hparent_section);
+}
+//-------------------------------------------------------------------------------------------------------------------
+template <class t_storage>
+bool kv_unserialize(boost::uuids::uuid &id, t_storage &stg, typename t_storage::hsection hparent_section, const char *pname)
+{
+	std::string blob{};
+	if(!stg.get_value(pname, blob, hparent_section))
+	{
+		return false;
+	}
+	if(blob.size() != id.size())
+	{
+		return false;
+	}
 
+	std::copy(blob.begin(), blob.end(), id.begin());
+	return true;
+}
+//-------------------------------------------------------------------------------------------------------------------
 template <class t_type, class t_storage>
 bool kv_serialize(const t_type &d, t_storage &stg, typename t_storage::hsection hparent_section, const char *pname)
 {

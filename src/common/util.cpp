@@ -697,19 +697,17 @@ bool is_local_address(const std::string &address)
 	}
 
 	// resolve to IP
-	boost::asio::io_service io_service;
-	boost::asio::ip::tcp::resolver resolver(io_service);
-	boost::asio::ip::tcp::resolver::query query(u_c.host, "");
-	boost::asio::ip::tcp::resolver::iterator i = resolver.resolve(query);
-	while(i != boost::asio::ip::tcp::resolver::iterator())
+	boost::asio::io_context io_context;
+	boost::asio::ip::tcp::resolver resolver(io_context);
+	auto results = resolver.resolve(u_c.host, "");
+	for(const auto &entry : results)
 	{
-		const boost::asio::ip::tcp::endpoint &ep = *i;
+		const auto ep = entry.endpoint();
 		if(ep.address().is_loopback())
 		{
 			GULPSF_LOG_L0("Address '{}' is local",  address );
 			return true;
 		}
-		++i;
 	}
 
 	GULPSF_LOG_L0("Address '{}' is not local",  address );

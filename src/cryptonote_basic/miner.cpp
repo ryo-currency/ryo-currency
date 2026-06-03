@@ -57,6 +57,7 @@
 #include "string_tools.h"
 #include "syncobj.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <boost/interprocess/detail/atomic.hpp>
 #include <boost/limits.hpp>

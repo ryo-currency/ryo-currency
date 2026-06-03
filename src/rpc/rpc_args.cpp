@@ -82,7 +82,7 @@ boost::optional<rpc_args> rpc_args::process(const boost::program_options::variab
 	{
 		// always parse IP here for error consistency
 		boost::system::error_code ec{};
-		const auto parsed_ip = boost::asio::ip::address::from_string(config.bind_ip, ec);
+		const auto parsed_ip = boost::asio::ip::make_address(config.bind_ip, ec);
 		if(ec)
 		{
 			GULPS_ERROR(tr("Invalid IP address given for --"), arg.rpc_bind_ip.name);

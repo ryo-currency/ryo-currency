@@ -16,7 +16,7 @@ library archives (`.a`).
 | GCC          | 4.7.3         | NO       | `build-essential`  | `base-devel` | `gcc`             | NO       |                |
 | CMake        | 3.0.0         | NO       | `cmake`            | `cmake`      | `cmake`           | NO       |                |
 | pkg-config   | any           | NO       | `pkg-config`       | `base-devel` | `pkgconf`         | NO       |                |
-| Boost        | 1.58          | NO       | `libboost-all-dev` | `boost`      | `boost-devel`     | NO       | C++ libraries  |
+| Boost        | 1.74          | NO       | `libboost-all-dev` | `boost`      | `boost-devel`     | NO       | C++ libraries  |
 | OpenSSL      | basically any | NO       | `libssl-dev`       | `openssl`    | `openssl-devel`   | NO       | sha256 sum     |
 | libzmq       | 3.0.0         | NO       | `libzmq3-dev`      | `zeromq`     | `cppzmq-devel`    | NO       | ZeroMQ library |
 | libunbound   | 1.4.16        | YES      | `libunbound-dev`   | `unbound`    | `unbound-devel`   | NO       | DNS resolver   |
@@ -154,9 +154,9 @@ If you are using the older Raspbian Jessie image, compiling Ryo is a bit more co
 * Install the latest version of boost (this may first require invoking `apt-get remove --purge libboost*` to remove a previous version if you're not using a clean install):
 ```
 	cd
-	wget https://sourceforge.net/projects/boost/files/boost/1.64.0/boost_1_64_0.tar.bz2
-	tar xvfo boost_1_64_0.tar.bz2
-	cd boost_1_64_0
+	wget https://sourceforge.net/projects/boost/files/boost/1.74.0/boost_1_74_0.tar.bz2
+	tar xvfo boost_1_74_0.tar.bz2
+	cd boost_1_74_0
 	./bootstrap.sh
 	sudo ./b2
 ```
@@ -283,11 +283,11 @@ mkdir ~/boost
 cd ~/boost
 
 # Fetch boost source
-ftp -o boost_1_64_0.tar.bz2 https://netcologne.dl.sourceforge.net/project/boost/boost/1.64.0/boost_1_64_0.tar.bz2
+ftp -o boost_1_74_0.tar.bz2 https://archives.boost.io/release/1.74.0/source/boost_1_74_0.tar.bz2
 
-# MUST output: (SHA256) boost_1_64_0.tar.bz2: OK
-echo "7bcc5caace97baa948931d712ea5f37038dbb1c5d89b43ad4def4ed7cb683332 boost_1_64_0.tar.bz2" | sha256 -c
-tar xfj boost_1_64_0.tar.bz2
+# MUST output: (SHA256) boost_1_74_0.tar.bz2: OK
+echo "83bfc1507731a0906e387fc28b7ef5417d591429e51e788417fe9ff025e116b1 boost_1_74_0.tar.bz2" | sha256 -c
+tar xfj boost_1_74_0.tar.bz2
 
 # Fetch and apply boost patches, required for OpenBSD
 ftp -o boost_test_impl_execution_monitor_ipp.patch https://raw.githubusercontent.com/openbsd/ports/bee9e6df517077a7269ff0dfd57995f5c6a10379/devel/boost/patches/patch-boost_test_impl_execution_monitor_ipp
@@ -298,7 +298,7 @@ echo "1f5e59d1154f16ee1e0cc169395f30d5e7d22a5bd9f86358f738b0ccaea5e51d boost_con
 # MUST output: (SHA256) boost_test_impl_execution_monitor_ipp.patch: OK
 echo "30cec182a1437d40c3e0bd9a866ab5ddc1400a56185b7e671bb3782634ed0206 boost_test_impl_execution_monitor_ipp.patch" | sha256 -c
 
-cd boost_1_64_0
+cd boost_1_74_0
 patch -p0 < ../boost_test_impl_execution_monitor_ipp.patch
 patch -p0 < ../boost_config_platform_bsd_hpp.patch
 

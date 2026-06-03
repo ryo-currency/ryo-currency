@@ -97,14 +97,14 @@ class connection_basic
 	volatile bool m_is_multithreaded;
 	double m_start_time;
 	/// Strand to ensure the connection's handlers are not called concurrently.
-	boost::asio::io_service::strand strand_;
+	boost::asio::io_context::strand strand_;
 	/// Socket for the connection.
 	boost::asio::ip::tcp::socket socket_;
 
 	std::atomic<long> &m_ref_sock_count; // reference to external counter of existing sockets that we will ++/--
   public:
 	// first counter is the ++/-- count of current sockets, the other socket_number is only-increasing ++ number generator
-	connection_basic(boost::asio::io_service &io_service, std::atomic<long> &ref_sock_count, std::atomic<long> &sock_number);
+	connection_basic(boost::asio::io_context &io_context, std::atomic<long> &ref_sock_count, std::atomic<long> &sock_number);
 
 	virtual ~connection_basic() noexcept(false);
 

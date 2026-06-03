@@ -85,9 +85,9 @@ class connection
 	GULPS_CAT_MAJOR("epee_tcp_srv");
   public:
 	typedef typename t_protocol_handler::connection_context t_connection_context;
-	/// Construct a connection with the given io_service.
+	/// Construct a connection with the given io_context.
 
-	explicit connection(boost::asio::io_service &io_service,
+	explicit connection(boost::asio::io_context &io_context,
 						typename t_protocol_handler::config_type &config,
 						std::atomic<long> &ref_sock_count, // the ++/-- counter
 						std::atomic<long> &sock_number,	// the only increasing ++ number generator
@@ -117,7 +117,7 @@ class connection
 	virtual bool close();
 	virtual bool call_run_once_service_io();
 	virtual bool request_callback();
-	virtual boost::asio::io_service &get_io_service();
+	virtual boost::asio::io_context &get_io_context();
 	virtual bool add_ref();
 	virtual bool release();
 	//------------------------------------------------------
@@ -179,7 +179,7 @@ class boosted_tcp_server
 	/// serve up files from the given directory.
 
 	boosted_tcp_server(t_connection_type connection_type);
-	explicit boosted_tcp_server(boost::asio::io_service &external_io_service, t_connection_type connection_type);
+	explicit boosted_tcp_server(boost::asio::io_context &external_io_context, t_connection_type connection_type);
 	~boosted_tcp_server();
 
 	std::map<std::string, t_connection_type> server_type_map;
@@ -188,7 +188,7 @@ class boosted_tcp_server
 	bool init_server(uint32_t port, const std::string address = "0.0.0.0");
 	bool init_server(const std::string port, const std::string &address = "0.0.0.0");
 
-	/// Run the server's io_service loop.
+	/// Run the server's io_context loop.
 	bool run_server(size_t threads_count, bool wait = true, const boost::thread::attributes &attrs = boost::thread::attributes());
 
 	/// wait for service workers stop
@@ -221,7 +221,7 @@ class boosted_tcp_server
 		return connections_count;
 	}
 
-	boost::asio::io_service &get_io_service() { return io_service_; }
+	boost::asio::io_context &get_io_context() { return io_context_; }
 
 	struct idle_callback_conext_base
 	{
@@ -229,7 +229,7 @@ class boosted_tcp_server
 
 		virtual bool call_handler() { return true; }
 
-		idle_callback_conext_base(boost::asio::io_service &io_serice) : m_timer(io_serice)
+		idle_callback_conext_base(boost::asio::io_context &io_serice) : m_timer(io_serice)
 		{
 		}
 		boost::asio::deadline_timer m_timer;
@@ -239,7 +239,7 @@ class boosted_tcp_server
 	template <class t_handler>
 	struct idle_callback_conext : public idle_callback_conext_base
 	{
-		idle_callback_conext(boost::asio::io_service &io_serice, t_handler &h, uint64_t period) : idle_callback_conext_base(io_serice),
+		idle_callback_conext(boost::asio::io_context &io_serice, t_handler &h, uint64_t period) : idle_callback_conext_base(io_serice),
 																								  m_handler(h)
 		{
 			this->m_period = period;
@@ -255,7 +255,7 @@ class boosted_tcp_server
 	template <class t_handler>
 	bool add_idle_handler(t_handler t_callback, uint64_t timeout_ms)
 	{
-		boost::shared_ptr<idle_callback_conext_base> ptr(new idle_callback_conext<t_handler>(io_service_, t_callback, timeout_ms));
+		boost::shared_ptr<idle_callback_conext_base> ptr(new idle_callback_conext<t_handler>(io_context_, t_callback, timeout_ms));
 		//needed call handler here ?...
 		ptr->m_timer.expires_from_now(boost::posix_time::milliseconds(ptr->m_period));
 		ptr->m_timer.async_wait(boost::bind(&boosted_tcp_server<t_protocol_handler>::global_timer_handler, this, ptr));
@@ -275,7 +275,7 @@ class boosted_tcp_server
 	template <class t_handler>
 	bool async_call(t_handler t_callback)
 	{
-		io_service_.post(t_callback);
+		boost::asio::post(io_context_, t_callback);
 		return true;
 	}
 
@@ -283,16 +283,16 @@ class boosted_tcp_server
 	typename t_protocol_handler::config_type m_config;
 
   private:
-	/// Run the server's io_service loop.
+	/// Run the server's io_context loop.
 	bool worker_thread();
 	/// Handle completion of an asynchronous accept operation.
 	void handle_accept(const boost::system::error_code &e);
 
 	bool is_thread_worker();
 
-	/// The io_service used to perform asynchronous operations.
-	std::unique_ptr<boost::asio::io_service> m_io_service_local_instance;
-	boost::asio::io_service &io_service_;
+	/// The io_context used to perform asynchronous operations.
+	std::unique_ptr<boost::asio::io_context> m_io_context_local_instance;
+	boost::asio::io_context &io_context_;
 
 	/// Acceptor used to listen for incoming connections.
 	boost::asio::ip::tcp::acceptor acceptor_;

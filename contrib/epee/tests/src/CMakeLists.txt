@@ -6,7 +6,7 @@ set(Boost_USE_MULTITHREADED ON)
 include_directories(.)
 include_directories(../../include)
 
-find_package(Boost COMPONENTS system filesystem thread date_time chrono regex)
+find_package(Boost 1.74 COMPONENTS filesystem thread date_time chrono regex OPTIONAL_COMPONENTS system)
 include_directories( ${Boost_INCLUDE_DIRS} )
 
 IF (MSVC)
@@ -15,7 +15,7 @@ IF (MSVC)
 ELSE()
 	# set stuff for other systems
 	SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11 -Wall -Werror")
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror -Wno-reorder")
+	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Werror -Wno-reorder")
 ENDIF()
 
 
@@ -30,4 +30,3 @@ source_group(general  FILES ${SRC})
 
 add_executable(tests ${SRC} )
 target_link_libraries( tests ${Boost_LIBRARIES} )
-

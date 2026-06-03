@@ -135,8 +135,8 @@ struct test_levin_commands_handler : public epee::levin::levin_commands_handler<
 class test_connection : public epee::net_utils::i_service_endpoint
 {
   public:
-	test_connection(boost::asio::io_service &io_service, test_levin_protocol_handler_config &protocol_config)
-		: m_io_service(io_service), m_protocol_handler(this, protocol_config, m_context), m_send_return(true)
+	test_connection(boost::asio::io_context &io_context, test_levin_protocol_handler_config &protocol_config)
+		: m_io_context(io_context), m_protocol_handler(this, protocol_config, m_context), m_send_return(true)
 	{
 	}
 
@@ -157,7 +157,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
 	virtual bool close() { return true; }
 	virtual bool call_run_once_service_io() { return true; }
 	virtual bool request_callback() { return true; }
-	virtual boost::asio::io_service &get_io_service() { return m_io_service; }
+	virtual boost::asio::io_context &get_io_context() { return m_io_context; }
 	virtual bool add_ref() { return true; }
 	virtual bool release() { return true; }
 
@@ -178,7 +178,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
 	test_levin_protocol_handler m_protocol_handler;
 
   private:
-	boost::asio::io_service &m_io_service;
+	boost::asio::io_context &m_io_context;
 
 	call_counter m_send_counter;
 	boost::mutex m_mutex;
@@ -213,7 +213,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
   protected:
     test_connection_ptr create_connection(bool start = true)
     {
-      test_connection_ptr conn(new test_connection(m_io_service, m_handler_config));
+      test_connection_ptr conn(new test_connection(m_io_context, m_handler_config));
       if (start)
       {
         conn->start();
@@ -222,7 +222,7 @@ class test_connection : public epee::net_utils::i_service_endpoint
     }
 
   protected:
-    boost::asio::io_service m_io_service;
+    boost::asio::io_context m_io_context;
     test_levin_protocol_handler_config m_handler_config;
     test_levin_commands_handler *m_pcommands_handler, &m_commands_handler;
   };
@@ -321,11 +321,11 @@ int LevinFuzzer::run(const std::string &filename)
 	try
 	{
 		//std::unique_ptr<test_connection> conn = new test();
-		boost::asio::io_service io_service;
+		boost::asio::io_context io_context;
 		test_levin_protocol_handler_config m_handler_config;
 		test_levin_commands_handler *m_pcommands_handler = new test_levin_commands_handler();
 		m_handler_config.set_handler(m_pcommands_handler, [](epee::levin::levin_commands_handler<test_levin_connection_context> *handler) { delete handler; });
-		std::unique_ptr<test_connection> conn(new test_connection(io_service, m_handler_config));
+		std::unique_ptr<test_connection> conn(new test_connection(io_context, m_handler_config));
 		conn->start();
 		//m_commands_handler.invoke_out_buf(expected_out_data);
 		//m_commands_handler.return_code(expected_return_code);

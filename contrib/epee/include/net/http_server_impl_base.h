@@ -48,8 +48,8 @@ class http_server_impl_base : public net_utils::http::i_http_server_handler<t_co
 	{
 	}
 
-	explicit http_server_impl_base(boost::asio::io_service &external_io_service)
-		: m_net_server(external_io_service)
+	explicit http_server_impl_base(boost::asio::io_context &external_io_context)
+		: m_net_server(external_io_context)
 	{
 	}
 

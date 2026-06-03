@@ -28,7 +28,7 @@
 #define _NET_UTILS_BASE_H_
 
 #include "serialization/keyvalue_serialization.h"
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <type_traits>
 #include <typeinfo>
@@ -325,7 +325,7 @@ struct i_service_endpoint
 	virtual bool close() = 0;
 	virtual bool call_run_once_service_io() = 0;
 	virtual bool request_callback() = 0;
-	virtual boost::asio::io_service &get_io_service() = 0;
+	virtual boost::asio::io_context &get_io_context() = 0;
 	//protect from deletion connection object(with protocol instance) during external call "invoke"
 	virtual bool add_ref() = 0;
 	virtual bool release() = 0;
@@ -345,12 +345,13 @@ inline std::ostream &operator<<(std::ostream &os, const connection_context_base 
 	return os;
 }
 
+template <typename Socket>
+inline boost::asio::io_context &get_io_context(Socket &socket)
+{
+	return static_cast<boost::asio::io_context &>(socket.get_executor().context());
+}
+
 }
 }
 
-#if BOOST_VERSION >= 107000
-#define GET_IO_SERVICE(s) ((boost::asio::io_context&)(s).get_executor().context())
-#else
-#define GET_IO_SERVICE(s) ((s).get_io_service())
-#endif
 #endif //_NET_UTILS_BASE_H_
