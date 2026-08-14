@@ -38,11 +38,3 @@ including but not limited to:
 
 Website and infrastructure issues affecting `ryo-currency.com` should also be
 sent to the address above.
-
-## Out of Scope
-
-- Third-party services and domains not owned or controlled by the Ryo Currency
-  project. In particular, historical infrastructure that has since been
-  abandoned by the project (for example, `ryowebwallet.com`, `ryoblocks.com`,
-  and their subdomains) is **not** operated by the Ryo Currency Team and is
-  not covered by this policy.
