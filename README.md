@@ -54,14 +54,14 @@ We have a solid track record and unique features that are not copied from other 
 
 ### Infrastructure
 - **[Ryo Wallet Atom](https://ryo-currency.com/atom)**. Modern, intuitive and rich with feature GUI wallet. Available for Windows, Linux and MacOSX.
-- **[Quasar Web wallet](https://ryowebwallet.com)**. Ultra-fast WEB based wallet that shares same design with Atom wallet.
-- **[Solo mining in GUI wallet](https://solo-pool.ryoblocks.com/getting-started)**. Built-in pool software with workers support, statistics and charts display.
 - **[Woo commerce plugin](https://github.com/ryo-currency/ryo-payments-woocommerce-gateway)**. Plug-in for web developers, to implement accepting Ryo on website.
 - **[Ryo Business room](https://ryo-currency.com/ryo-business-room)**. Business community of people fostering ecosystem development.
 
+> **Note:** The Quasar Web wallet (`ryowebwallet.com`) and the built-in Solo Mining Pool front-end (`solo-pool.ryoblocks.com`) are no longer maintained. The associated domains are no longer registered to the Ryo project and are now controlled by unrelated third parties &mdash; do **not** visit them or enter any wallet credentials there.
+
 GUI wallet | Web wallet | Cli wallet | Mobile | Hardware
 --- | --- | --- | --- | ---
-[v. 1.5.0](https://github.com/ryo-currency/ryo-wallet/releases/latest) | [Ryowebwallet](https://www.ryowebwallet.com/wallet-select) | [v. 0.5.0.0](https://github.com/ryo-currency/ryo-currency/releases/latest) | Developing | Planned
+[v. 1.5.0](https://github.com/ryo-currency/ryo-wallet/releases/latest) | Discontinued | [v. 0.5.0.0](https://github.com/ryo-currency/ryo-currency/releases/latest) | Developing | Planned
 
 ## Research and contributing
 With privacy and security as the core foundation of Ryo, we invest time and effort into security research as well as investigate and analyze issues with the Cryptonote protocol in order to bring true default anonymity for users.
